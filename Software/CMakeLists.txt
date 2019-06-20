@@ -1,0 +1,13 @@
+cmake_minimum_required (VERSION 3.5)
+project(Nomad)
+
+set(NOMAD_VERSION_MAJOR 0)
+set(NOMAD_VERSION_MINOR 1)
+
+#set(SOURCES ${PROJECT_SOURCE_DIR}/src/QuickStart.cpp)
+
+#include_directories("${PROJECT_SOURCE_DIR}/include")
+#add_library(QuickStart STATIC ${SOURCES})
+#enable_testing()
+
+add_subdirectory(Core/Controllers/tests)
