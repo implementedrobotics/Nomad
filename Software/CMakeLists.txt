@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.10)
 project(Nomad)
 
 set(NOMAD_VERSION_MAJOR 0)
@@ -10,4 +10,5 @@ set(NOMAD_VERSION_MINOR 1)
 #add_library(QuickStart STATIC ${SOURCES})
 #enable_testing()
 
-add_subdirectory(Core/Controllers/tests)
+add_subdirectory(Core/OptimalControl)
+add_subdirectory(Core/Controllers)
