@@ -9,9 +9,11 @@ NOMAD is a 12-DOF quadruped walking robot using Linear and Nonlinear Optimizatio
 
 The following instructions are for setup of a development environment for building executable code for Ubuntu 18.04.
 
-Install Python Deps
+Install Python Dependencies:
+```
 sudo apt-get install cython
 pip install cython
+```
 
 Install [qpOASES 3.2.1](https://projects.coin-or.org/qpOASES/wiki/QpoasesDownload):
 ```
@@ -29,7 +31,7 @@ ls
 
 ```
 
-Install [Eigen 3.3.7](http://eigen.tuxfamily.org/index.php?title=Main_Page)
+Install [Eigen 3.3.7](http://eigen.tuxfamily.org/index.php?title=Main_Page):
 ```
 tar xvzf eigen-eigen-*.tar.gz
 cd eigen-eigen-*
@@ -40,7 +42,7 @@ sudo cp -r Eigen /usr/local/include
  sudo cp -r unsupported /usr/local/include
  ```
  
-Install [bullet3](https://github.com/bulletphysics/bullet3)
+Install [bullet3](https://github.com/bulletphysics/bullet3):
  ```
 git clone https://github.com/bulletphysics/bullet3
 sudo apt-get install freeglut3-dev
@@ -49,7 +51,7 @@ cmake ..
 make 
  ```
 
-Install [DART](http://dartsim.github.io/install_dart_on_ubuntu.html)
+Install [DART](http://dartsim.github.io/install_dart_on_ubuntu.html):
 
 If you will be uisng the Python binding you will need pybind:
 
@@ -96,7 +98,7 @@ Install [RBDL](http://dartsim.github.io/install_dart_on_ubuntu.html)
 
 If you will be using the Python you will need this to setup the include directories:
 
-````
+```
 sudo apt-get install python-numpy
 ```
 
