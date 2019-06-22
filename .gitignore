@@ -3,5 +3,7 @@ CMakeFiles
 cmake_install.cmake
 Makefile
 build/
+Build/
 bin/
 .vscode/
+Software/Build/Core/OptimalControl/libOptimalControl.a
