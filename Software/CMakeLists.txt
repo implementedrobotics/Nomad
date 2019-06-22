@@ -10,5 +10,5 @@ set(NOMAD_VERSION_MINOR 1)
 #add_library(QuickStart STATIC ${SOURCES})
 #enable_testing()
 
-add_subdirectory(Core/OptimalControl)
 add_subdirectory(Core/Controllers)
+add_subdirectory(Core/OptimalControl)
