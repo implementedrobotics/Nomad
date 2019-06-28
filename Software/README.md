@@ -94,7 +94,7 @@ Now install it:
 sudo make install
 ```
 
-Install [RBDL](http://dartsim.github.io/install_dart_on_ubuntu.html)
+Install [RBDL](http://dartsim.github.io/install_dart_on_ubuntu.html):
 
 If you will be using the Python you will need this to setup the include directories:
 
