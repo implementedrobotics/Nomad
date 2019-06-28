@@ -126,6 +126,7 @@ to `SET (Python_ADDITIONAL_VERSIONS 3.*)`
 Change `INSTALL ( TARGETS rbdl-python LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages/ )`
 to `INSTALL ( TARGETS rbdl-python LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python3.*/dist-packages/ )`
 
+Copy rbdl libraries from /usr/local/lib -> /usr/lib or add /usr/local/lib to path
 
 ## Now that the dependencies are installed let's install Nomad
 Clone or Fork Nomad Repository:
