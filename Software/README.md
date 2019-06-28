@@ -27,8 +27,6 @@ sudo cp bin/libqpOASES.so /usr/local/lib
 sudo cp bin/libqpOASES.a /usr/local/lib
 
 sudo cp -r include/* /usr/local/include
-ls
-
 ```
 
 Install [Eigen 3.3.7](http://eigen.tuxfamily.org/index.php?title=Main_Page):
