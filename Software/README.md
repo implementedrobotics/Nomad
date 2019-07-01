@@ -167,7 +167,7 @@ https://github.com/nodesource/distributions#debinstall
 Now install NPM:
 ```
 sudo apt install curl
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 sudo apt-get install -y nodejs
 curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 sudo apt-get update && sudo apt-get install yarn
@@ -189,7 +189,7 @@ cd ~; hg clone https://bitbucket.org/osrf/gzweb
 cd ~/gzweb
 hg up gzweb_1.4.0
 
-source /usr/share/gazebo/setup.shn
+source /usr/share/gazebo/setup.sh
 
 #Download Models and Thumbnails:
 npm run deploy --- -m -t
