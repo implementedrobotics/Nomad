@@ -131,6 +131,75 @@ to `INSTALL ( TARGETS rbdl-python LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/li
 
 Copy rbdl libraries from /usr/local/lib -> /usr/lib or add /usr/local/lib to path
 
+Install [Gazebo](http://gazebosim.org/):
+
+```
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
+
+wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+
+sudo apt-get update
+```
+
+```
+sudo apt-get install gazebo10
+sudo apt-get install libgazebo10-dev
+
+gazebo
+```
+
+Install Gazebo Web Client:
+
+If you are having dependency issues purge old installs
+```
+sudo apt remove --purge nodejs npm
+sudo apt clean
+sudo apt autoclean
+sudo apt install -f
+sudo apt autoremove
+```
+
+Check latest version @:
+https://github.com/nodesource/distributions#debinstall
+
+Now install NPM:
+```
+sudo apt install curl
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt-get install -y nodejs
+curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+sudo apt-get update && sudo apt-get install yarn
+```
+
+Verify installation:
+```
+npm -version
+
+nodejs -v
+```
+
+Install Gazebo Web:
+```
+sudo apt install libjansson-dev libboost-dev imagemagick libtinyxml-dev mercurial cmake build-essential
+
+cd ~; hg clone https://bitbucket.org/osrf/gzweb
+
+cd ~/gzweb
+hg up gzweb_1.4.0
+
+source /usr/share/gazebo/setup.shn
+
+#Download Models and Thumbnails:
+npm run deploy --- -m -t
+```
+If using VMWARE you will need this to run the GUI:
+```
+export SVGA_VGPU10=0
+
+echo "export SVGA_VGPU10=0" >> ~/.profile
+```
+
+
 ## Now that the dependencies are installed let's install Nomad
 Clone or Fork Nomad Repository:
 ```
