@@ -37,7 +37,7 @@ public:
         joint_a = Joint(JointTypeFloatingBase);
         
         body_a_id = model->AddBody(0, Xtrans(Vector3d(0., 0., 0.)), joint_a, body_a);
-RK4
+
         Q = VectorNd::Zero (model->dof_count);
         QDot = VectorNd::Ones (model->dof_count);
         Tau = VectorNd::Zero (model->dof_count);
