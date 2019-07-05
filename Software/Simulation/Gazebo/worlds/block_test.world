@@ -1,0 +1,18 @@
+<?xml version="1.0"?> 
+<sdf version="1.4">
+  <world name="default">
+
+    <!-- Ground Plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+	    <uri>model://rigidblock</uri>
+	    <plugin name="nomad_model" filename="libnomad_model.so"/>
+    </include>
+  </world>
+</sdf>

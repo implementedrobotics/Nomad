@@ -13,6 +13,8 @@ set(NOMAD_VERSION_MINOR 1)
 add_subdirectory(Core/Physics)
 add_subdirectory(Core/Controllers)
 add_subdirectory(Core/OptimalControl)
+add_subdirectory(Core/Systems)
+add_subdirectory(Core/Nomad)
 
 # Simulation(Optional)
 add_subdirectory(Simulation/Gazebo)

@@ -4,6 +4,8 @@
 #include <gazebo/common/common.hh>
 #include <ignition/math/Vector3.hh>
 
+
+// Make model plugin that takes a force from external process
 namespace gazebo
 {
   class NomadModel : public ModelPlugin
@@ -24,7 +26,8 @@ namespace gazebo
         void OnUpdate()
         {
             // Apply a small linear velocity to the model.
-            this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
+            //this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
+            this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(0, 0, 10.0));
         }
 
     private:

@@ -1,5 +1,10 @@
 #include <gazebo/gazebo.hh>
 
+
+// TODO: Add a "box model and config"
+// Setup paths to model
+// Auto Place in this plugin\
+
 namespace gazebo
 {
   class NomadWorldPlugin : public WorldPlugin
