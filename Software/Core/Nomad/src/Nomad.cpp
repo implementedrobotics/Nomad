@@ -48,20 +48,22 @@ int main()
     RigidBlock1D block = RigidBlock1D(1.0, Eigen::Vector3d(1.0, 0.5, 0.25));
 
     Eigen::VectorXd initial_state(2);
-    initial_state[0] = 10.0;
+    initial_state[0] = 0.0;
     initial_state[1] = 0.0;
 
+    int num_steps = 100;
     block.SetState(initial_state);
     Eigen::VectorXd input(1);
-
-    input[0] = 1.5;
-    for (int i = 0; i < 10; i++)
+    Eigen::MatrixXd plot_me(2, num_steps);
+    input[0] = 10.5;
+    for (int i = 0; i < num_steps; i++)
     {
         block.Step(input);
-
-        std::cout << "State: " << block.GetState() << std::endl;
+        plot_me.col(i) = block.GetState();
     }
-    std::vector<double> v({1, 2, 3, 4});
-    plotty::plot(v);
+
+    plotty::labelPlot("pos", plot_me.row(0));
+    plotty::labelPlot("vel", plot_me.row(1));
+    plotty::legend();
     plotty::show();
 }
