@@ -16,7 +16,7 @@ public:
     virtual void Update() = 0;
 
     // Get Current State
-    Eigen::VectorXd GetState() { return _x; }
+    Eigen::VectorXd GetState() const { return _x; }
 
     // Set Current State
     void SetState(const Eigen::VectorXd &x) { _x = x; }
@@ -51,12 +51,12 @@ public:
     LinearDynamicalSystem(const int& num_states, const int& num_inputs, const double& T_s = 1e-1);
 
     // Model Matrices
-    Eigen::MatrixXd A() { return _A; };
-    Eigen::MatrixXd B() { return _B; };
+    Eigen::MatrixXd A() const { return _A; };
+    Eigen::MatrixXd B() const { return _B; };
 
     // Discrete Time Model Matrices
-    Eigen::MatrixXd A_d() { return _A_d; };
-    Eigen::MatrixXd B_d() { return _B_d; };
+    Eigen::MatrixXd A_d() const { return _A_d; };
+    Eigen::MatrixXd B_d() const { return _B_d; };
 
 protected:
 
@@ -82,12 +82,12 @@ public:
 
 
     // Model Matrices (Time Varying)
-    std::vector<Eigen::MatrixXd> A_TV() { return _A_tv; };
-    std::vector<Eigen::MatrixXd> B_TV() { return _B_tv; };
+    std::vector<Eigen::MatrixXd> A_TV() const { return _A_tv; };
+    std::vector<Eigen::MatrixXd> B_TV() const { return _B_tv; };
 
     // Discrete Time Model Matrices (Time Varying)
-    std::vector<Eigen::MatrixXd> A_d_TV() { return _A_d_tv; };
-    std::vector<Eigen::MatrixXd>B_d_TV() { return _B_d_tv; };
+    std::vector<Eigen::MatrixXd> A_d_TV() const { return _A_d_tv; };
+    std::vector<Eigen::MatrixXd> B_d_TV() const { return _B_d_tv; };
 
 protected:
 

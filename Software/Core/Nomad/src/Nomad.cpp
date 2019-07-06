@@ -1,6 +1,7 @@
 #include <Nomad/Nomad.hpp>
 #include <plotty/matplotlibcpp.hpp>
-
+#include <OptimalControl/OptimalControlProblem.hpp>
+#include <OptimalControl/LinearCondensedOCP.hpp>
 #include <iostream>
 
 RigidBlock1D::RigidBlock1D(const double &mass,
@@ -18,7 +19,7 @@ RigidBlock1D::RigidBlock1D(const double &mass,
 
     // Setup System Matrices
     _A << 0, 1,
-        0, 0;
+          0, 0;
 
     // Setup Input Matrix
     _B << 0,
@@ -40,10 +41,23 @@ void RigidBlock1D::Step(const Eigen::VectorXd &u)
 
 void RigidBlock1D::Update()
 {
+    
 }
+
+using namespace OptimalControl::LinearOptimalControl;
 
 int main()
 {
+
+    LinearCondensedOCP ocp = LinearCondensedOCP(10, 1.0, 4,4,false);
+
+    Eigen::VectorXd Q(2);
+    Q[0] = 1.0;
+    Q[1] = 2.0;
+
+    Eigen::VectorXd R(1);
+    R[0] = 0.01;
+    ocp.SetWeights(Q, R);
     RigidBlock1D block = RigidBlock1D(1.0, Eigen::Vector3d(1.0, 0.5, 0.25));
 
     Eigen::VectorXd initial_state(2);
@@ -60,6 +74,7 @@ int main()
         block.Step(input);
         plot_me.col(i) = block.GetState();
     }
+    
 
     plotty::labelPlot("pos", plot_me.row(0));
     plotty::labelPlot("vel", plot_me.row(1));

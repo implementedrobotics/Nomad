@@ -1,5 +1,7 @@
 
-set(OPTIMAL_CONTROL_SOURCES ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/ControlsLibrary.cpp)
+set(OPTIMAL_CONTROL_SOURCES ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/ControlsLibrary.cpp 
+${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/OptimalControlProblem.cpp
+${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/LinearCondensedOCP.cpp)
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 add_library(OptimalControl STATIC ${OPTIMAL_CONTROL_SOURCES})

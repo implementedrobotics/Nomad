@@ -106,7 +106,7 @@ int main()
     cout << H.data()[3] << endl;
     cout << A << endl;
 
-     cout << A.data()[0] << endl;
+    cout << A.data()[0] << endl;
     cout << A.data()[1] << endl;
     cout << A.data()[2] << endl;
     cout << A.data()[3] << endl;
