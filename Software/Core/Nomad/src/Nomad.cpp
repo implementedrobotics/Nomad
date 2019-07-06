@@ -1,4 +1,3 @@
-
 #include <Nomad/Nomad.hpp>
 #include <plotty/matplotlibcpp.hpp>
 
