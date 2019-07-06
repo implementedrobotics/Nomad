@@ -1,19 +1,20 @@
 
 #include <OptimalControl/ControlsLibrary.hpp>
 #include <Systems/DynamicalSystem.hpp>
+#include <Eigen/Dense>
 
 class RigidBlock1D : public LinearDynamicalSystem
 {
     public:
 
         // Constructor
-        RigidBlock1D(const double& mass, const int& num_states, const double& T_s = 1e-1);
-
+        RigidBlock1D(const double& mass, const Eigen::Vector3d& box_shape, const double& T_s = 1e-1);
+ 
         // Step System
-        void Step() {};
+        void Step(const Eigen::VectorXd& u);
 
         // Update
-        void Update() {};
+        void Update();
 
         // Mass
         double GetMass() {return mass;}

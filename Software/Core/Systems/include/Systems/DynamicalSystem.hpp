@@ -10,10 +10,18 @@ public:
     DynamicalSystem(const int& num_states, const double& Ts = 1e-1);
 
     // Step System
-    virtual void Step() = 0;
+    virtual void Step(const Eigen::VectorXd& u) = 0;
 
     // Update
     virtual void Update() = 0;
+
+    // Get Current State
+    Eigen::VectorXd GetState() { return _x; }
+
+    // Set Current State
+    void SetState(const Eigen::VectorXd &x) { _x = x; }
+
+
 
 protected:
 
@@ -30,6 +38,7 @@ class NonLinearDynamicalSystem : public DynamicalSystem
 {
     
 protected:
+
     virtual void f(const Eigen::MatrixXd& x, const Eigen::MatrixXd& u) = 0;
 
 };
@@ -49,11 +58,10 @@ public:
     Eigen::MatrixXd A_d() { return _A_d; };
     Eigen::MatrixXd B_d() { return _B_d; };
 
-    // Get Current State
-    Eigen::VectorXd GetState() { return _x; }
-
 protected:
+
     int num_inputs;     // Number of inputs
+
     Eigen::MatrixXd _A;  // State Transition Mat rix
     Eigen::MatrixXd _B;  // Input Matrix
 
@@ -66,6 +74,7 @@ class LinearTimeVaryingDynamicalSystem : public LinearDynamicalSystem
 {
 
 public:
+
     LinearTimeVaryingDynamicalSystem(const int& num_states, const int& num_inputs, const double& T_s = 1e-1);
 
     // Get the Time-Varying Matrices from Model
