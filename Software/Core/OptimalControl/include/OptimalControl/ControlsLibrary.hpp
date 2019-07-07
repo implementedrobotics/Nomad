@@ -1,11 +1,40 @@
+/*
+ * ControlsLibrary.hpp
+ *
+ *  Created on: July 5, 2019
+ *      Author: Quincy Jones
+ *
+ * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+
+
+#ifndef NOMAD_CORE_OPTIMALCONTROL_CONTROLSLIBRARY_H
+#define NOMAD_CORE_OPTIMALCONTROL_CONTROLSLIBRARY_H
+
 #include <iostream>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 
 
-namespace ControlsLibrary {
+namespace ControlsLibrary
+{
 
-    /**
+/**
      * Converts the linear continuous time dynamical systems model to disrete time
      * using the Zero Order Hold method
      *
@@ -16,6 +45,40 @@ namespace ControlsLibrary {
      * @param[out] B_d Discrete time input matrix
      * @param[in] data the data to analyze
      */
-    void ContinuousToDiscrete(const Eigen::MatrixXd& A, const Eigen::MatrixXd& B, double Ts, Eigen::MatrixXd& A_d, Eigen::MatrixXd& B_d);
+void ContinuousToDiscrete(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B, double Ts, Eigen::MatrixXd &A_d, Eigen::MatrixXd &B_d);
 
-}
+namespace EigenHelpers
+{
+
+// TODO: Make this more generic
+// Block Matrix Class
+class BlockMatrixXd
+{
+public:
+    BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, const int init_val = 0);
+
+    friend std::ostream &operator<<(std::ostream &os, BlockMatrixXd const &bm) { return os << bm._Matrix; }
+    // Operator Overload:
+    void operator()(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
+
+    // TODO: Fix Templated Hack so we can set this directly... i.e. matrix(1,1) = block
+    const Eigen::MatrixXd operator()(const unsigned int Row, const unsigned int Col);
+
+    // Cast Overload
+    operator Eigen::MatrixXd() { return _Matrix; }
+
+    // Fill Diagonal with a block
+    void FillDiagonal(const Eigen::MatrixXd &block_val, const int k = 0);
+
+protected:
+    unsigned int _Rows;
+    unsigned int _Cols;
+    unsigned int _BlockWidth;
+    unsigned int _BlockHeight;
+
+    Eigen::MatrixXd _Matrix;
+};
+} // namespace EigenHelpers
+} // namespace ControlsLibrary
+
+#endif // NOMAD_CORE_OPTIMALCONTROL_CONTROLSLIBRARY_H

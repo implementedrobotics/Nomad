@@ -39,6 +39,10 @@ sudo cp -r Eigen /usr/local/include
  ```
  sudo cp -r unsupported /usr/local/include
  ```
+
+ Cheat Sheet for EIGEN!:
+ https://gist.github.com/gocarlos/c91237b02c120c6319612e42fa196d77
+ 
  
 Install [bullet3](https://github.com/bulletphysics/bullet3):
  ```
