@@ -84,6 +84,11 @@ cmake .. -DCMAKE_BUILD_TYPE=Release[Debug]
 make -j4
 ```
 
+Install DART Devel Libraries
+```
+sudo apt install libdart6-all-dev
+```
+
 You will also need to setup a data path for loading dart resourcees:
 
 ```
