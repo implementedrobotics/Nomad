@@ -41,7 +41,7 @@ namespace ControlsLibrary
      * @param[in] A Continuous time system(state) transition matrix
      * @param[in] B Continuous time input matrix
      * @param[in] Ts Sampling time
-     * @param[out] A_d Discrete time system(state) transition matrix
+     * @param[out] A_d Discr#include <qpOASES.hpp>ete time system(state) transition matrix
      * @param[out] B_d Discrete time input matrix
      * @param[in] data the data to analyze
      */
@@ -55,9 +55,10 @@ namespace EigenHelpers
 class BlockMatrixXd
 {
 public:
+    BlockMatrixXd() {}
     BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, const int init_val = 0);
 
-    friend std::ostream &operator<<(std::ostream &os, BlockMatrixXd const &bm) { return os << bm._Matrix; }
+    friend std::ostream &operator<<(std::ostream &os, BlockMatrixXd const &bm) { return os << bm.Matrix_; }
     // Operator Overload:
     void operator()(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
 
@@ -65,18 +66,18 @@ public:
     const Eigen::MatrixXd operator()(const unsigned int Row, const unsigned int Col);
 
     // Cast Overload
-    operator Eigen::MatrixXd() { return _Matrix; }
+    operator Eigen::MatrixXd() { return Matrix_; }
 
     // Fill Diagonal with a block
     void FillDiagonal(const Eigen::MatrixXd &block_val, const int k = 0);
 
 protected:
-    unsigned int _Rows;
-    unsigned int _Cols;
-    unsigned int _BlockWidth;
-    unsigned int _BlockHeight;
+    unsigned int Rows_;
+    unsigned int Cols_;
+    unsigned int BlockWidth_;
+    unsigned int BlockHeight_;
 
-    Eigen::MatrixXd _Matrix;
+    Eigen::MatrixXd Matrix_;
 };
 } // namespace EigenHelpers
 } // namespace ControlsLibrary

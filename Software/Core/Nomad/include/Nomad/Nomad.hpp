@@ -42,14 +42,14 @@ class RigidBlock1D : public LinearDynamicalSystem
         void Update();
 
         // Mass
-        double GetMass() {return mass;}
+        double GetMass() {return mass_;}
     
 
     protected:
-        double mass;
-        double width;
-        double height;
-        double length;
+        double mass_;
+        double width_;
+        double height_;
+        double length_;
 
 };
 

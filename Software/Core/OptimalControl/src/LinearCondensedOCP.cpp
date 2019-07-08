@@ -24,21 +24,44 @@
 
 #include <OptimalControl/LinearCondensedOCP.hpp>
 
-
 namespace OptimalControl
 {
 namespace LinearOptimalControl
 {
-LinearCondensedOCP::LinearCondensedOCP(const int &N, const double &T, const int &num_states, const int &num_inputs, const bool time_varying) : LinearOptimalControlProblem(N, T, num_states, num_inputs)
+LinearCondensedOCP::LinearCondensedOCP(const int N,
+                                       const double T,
+                                       const int num_states,
+                                       const int num_inputs,
+                                       const bool time_varying,
+                                       const int max_iterations) : LinearOptimalControlProblem(N, T, num_states, num_inputs, max_iterations)
 {
 
+    //U_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs * (N - 1), 1);
+
+    A_N_ = EigenHelpers::BlockMatrixXd(N, 1, num_states, num_states);
+    B_N_ = EigenHelpers::BlockMatrixXd(N, N - 1, num_states, num_inputs);
+
+    H_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs * (N - 1), num_inputs * (N - 1));
+    g_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs * (N - 1), 1);
+
+    qp_ = qpOASES::QProblem(num_inputs * N, 0);
+
+    // TODO: Push this up?  Or have a specific qpOASES type?
+    qpOASES::Options myOptions;
+    //myOptions.enableRamping = BT_FALSE;
+    //myOptions.maxPrimalJump = 1;
+    //myOptions.setToMPC();
+    qp_.setPrintLevel(qpOASES::PL_HIGH);
+    qp_.setOptions(myOptions);
 }
 
 void LinearCondensedOCP::Solve()
 {
+    qp_.init(H_.data(), g_.data(), NULL, NULL, NULL, NULL, NULL, max_iterations_);
+    Eigen::MatrixXd x_out(num_inputs_ * N_, 1);
 
+    qp_.getPrimalSolution(x_out.data());
 }
 
 } // namespace LinearOptimalControl
 } // namespace OptimalControl
-

@@ -32,36 +32,31 @@
 RigidBlock1D::RigidBlock1D(const double &mass,
                            const Eigen::Vector3d &box_shape,
                            const double &T_s /* = 1e-1*/) : LinearDynamicalSystem(2, 1, T_s),
-                                                            mass(mass)
+                                                            mass_(mass)
 {
     //std::cout << "Num States: " << num_states << std::endl;
-    length = box_shape[0];
-    width = box_shape[1];
-    height = box_shape[2];
+    length_ = box_shape[0];
+    width_ = box_shape[1];
+    height_ = box_shape[2];
 
     // Setup initial states
     SetState(Eigen::VectorXd::Zero(num_states));
 
     // Setup System Matrices
-    _A << 0, 1,
+    A_ << 0, 1,
           0, 0;
 
     // Setup Input Matrix
-    _B << 0,
-        1.0 / mass;
-
-    //std::cout << "A: " << std::endl
-    //          << _A << std::endl;
-    //std::cout << "B: " << std::endl
-    //          << _B << std::endl;
+    B_ << 0,
+        1.0 / mass_;
 
     // Cache Discrete Time Variant
-    ControlsLibrary::ContinuousToDiscrete(_A, _B, T_s, _A_d, _B_d);
+    ControlsLibrary::ContinuousToDiscrete(A_, B_, T_s_, A_d_, B_d_);
 }
 
 void RigidBlock1D::Step(const Eigen::VectorXd &u)
 {
-    _x = _A_d * _x + _B_d * u;
+    x_ = A_d_ * x_ + B_d_ * u;
 }
 
 void RigidBlock1D::Update()

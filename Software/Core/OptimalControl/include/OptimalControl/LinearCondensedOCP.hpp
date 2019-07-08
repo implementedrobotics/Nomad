@@ -22,11 +22,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <qpOASES.hpp>
+#include <OptimalControl/ControlsLibrary.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <vector>
 
 #ifndef NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 #define NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
+
+
+using namespace ControlsLibrary;
 
 namespace OptimalControl
 {
@@ -40,38 +45,39 @@ public:
     // T = Horizon Length
     // num_states = Number of States of OCP
     // num_inputs = Number of Inputs of OCP
-    LinearCondensedOCP(const int &N, const double &T, const int &num_states, const int &num_inputs, const bool time_varying = false);
+    LinearCondensedOCP(const int N, const double T, const int num_states, const int num_inputs, const bool time_varying = false, const int max_iterations = 1000);
 
     // Set Model Matrices (Time Invariant)
     void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B)
     {
         // TODO: Check for Time Varying Here
         // TODO: Check Dimensions and make sure they match num_states/inputs
-        _A[0] = A;
-        _B[0] = B;
+        A_[0] = A;
+        B_[0] = B;
     }
 
     // Set Model Matrices (Time Varying)
     void SetModelMatrices(const std::vector<Eigen::MatrixXd> &A, const std::vector<Eigen::MatrixXd> &B)
     {
-        _A = A;
-        _B = B;
+        A_ = A;
+        B_ = B;
     }
 
     // Solve
     virtual void Solve();
 
 protected:
-    std::vector<Eigen::MatrixXd> _A; // System State Transition Matrix (Vector List for Time Varying)
-    std::vector<Eigen::MatrixXd> _B; // Input Matrix (Vector List for Time Varying)
+    std::vector<Eigen::MatrixXd> A_; // System State Transition Matrix (Vector List for Time Varying)
+    std::vector<Eigen::MatrixXd> B_; // Input Matrix (Vector List for Time Varying)
 
-    Eigen::MatrixXd _A_N; // Condensed System State Transition Matrix for QP
-    Eigen::MatrixXd _B_N; // Condensed Input Matrix for QP
+    EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
+    EigenHelpers::BlockMatrixXd B_N_; // Condensed Input Matrix for QP
 
-    Eigen::MatrixXd _H; // Hessian
-    Eigen::MatrixXd _g; 
+    Eigen::MatrixXd H_; // Hessian
+    Eigen::MatrixXd g_; 
 
-    bool _time_varying;
+    qpOASES::QProblem qp_;
+    bool time_varying_;
 };
 } // namespace OptimalControl
 } // namespace LinearOptimalControl
