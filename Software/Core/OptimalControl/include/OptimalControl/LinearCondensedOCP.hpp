@@ -30,8 +30,6 @@
 #ifndef NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 #define NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 
-using namespace ControlsLibrary;
-
 namespace OptimalControl
 {
 namespace LinearOptimalControl
@@ -44,7 +42,14 @@ public:
     // T = Horizon Length
     // num_states = Number of States of OCP
     // num_inputs = Number of Inputs of OCP
-    LinearCondensedOCP(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const bool time_varying = false, const unsigned int max_iterations = 1000);
+    // time_varying = Are system matrices time varying?
+    // max_iterations = Maximum number of iterations for solve
+    LinearCondensedOCP(const unsigned int N, 
+    const double T, 
+    const unsigned int num_states, 
+    const unsigned int num_inputs, 
+    const bool time_varying = false, 
+    const unsigned int max_iterations = 1000);
 
     // Set Model Matrices (Time Invariant)
     void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B, bool condense = true)
@@ -98,8 +103,8 @@ protected:
     std::vector<Eigen::MatrixXd> A_; // System State Transition Matrix (Vector List for Time Varying)
     std::vector<Eigen::MatrixXd> B_; // Input Matrix (Vector List for Time Varying)
 
-    EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
-    EigenHelpers::BlockMatrixXd B_N_; // Condensed Input Matrix for QP
+    ControlsLibrary::EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
+    ControlsLibrary::EigenHelpers::BlockMatrixXd B_N_; // Condensed Input Matrix for QP
 
     Eigen::MatrixXd H_;   // Hessian Matrix
     Eigen::MatrixXd g_;   // Gradient Vector
@@ -111,12 +116,14 @@ protected:
 
     // TODO: Need qpOASES::SQProblem for MPC and Varying QP Matrices(H,g,C)
     //qpOASES::QProblem qp_;
-    qpOASES::QProblemB qp_;
-    //qpOASES::SQProblem qp_;
+    qpOASES::QProblemB qp_; // This will probably go away.  Just use QProblem with 0 constraints. Will be slighly less efficient
+    qpOASES::SQProblem sqp_;
     int num_vars_; // Number of Variables in QP Problem
     int num_cons_; // Number of Constraints in QP Problem
 
-    bool time_varying_;
+    bool is_hot; // Is the QP Problem warmed up?
+    bool time_varying_; // Is system a LTV?
+    bool is_sequential_;  // This problem type is sequential. i.e. run in a loop such as MPC to product control sequences over time.
 };
 } // namespace LinearOptimalControl
 } // namespace OptimalControl

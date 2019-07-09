@@ -30,6 +30,9 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <vector>
 
+
+// TODO: Need to split all of this into Discrete Time and Continuous Time Systems
+// TODO: Also Maybe a SS Container?
 class DynamicalSystem
 {
 

@@ -31,7 +31,13 @@ OptimalControlProblem::OptimalControlProblem(const unsigned int N,
                                              const double T,
                                              const unsigned int num_states,
                                              const unsigned int num_inputs,
-                                             const unsigned int max_iterations) : T_(T), N_(N), num_states_(num_states), num_inputs_(num_inputs), max_iterations_(max_iterations)
+                                             const unsigned int max_iterations) : 
+                                             T_(T), 
+                                             N_(N), 
+                                             num_states_(num_states), 
+                                             num_inputs_(num_inputs), 
+                                             max_iterations_(max_iterations),
+                                             solved_(false)
 {
     // Initial Condition
     x_0_ = Eigen::VectorXd(num_states);

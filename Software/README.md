@@ -151,7 +151,7 @@ Copy rbdl libraries from /usr/local/lib -> /usr/lib or add /usr/local/lib to pat
 Install [Ascent](https://github.com/AnyarInc/Ascent):
 
 Ascent is a lightweight integrating library.  This is needed for instance to simulate 
-an RBDL system dynamics.  See rbdl_test.cpp in the Nomad [Physics](https://github.com/implementedrobotics/Nomad/tree/master/Software/Core/Physics/test) library.
+an RBDL system dynamics.  See rbdl_test.cpp in the Nomad [Physics](https://github.com/implementedrobotics/Nomad/tree/master/Software/Core/Physics/test) for an example.
 
 ```
 git clone https://github.com/AnyarInc/Ascent

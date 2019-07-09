@@ -74,7 +74,6 @@ using namespace ControlsLibrary;
 
 int main()
 {
-
     //EigenHelpers::BlockMatrixXd bm_test = EigenHelpers::BlockMatrixXd(24, 24, 13, 13);
     //Eigen::MatrixXd block_val = Eigen::MatrixXd::Ones(13,13);
 
@@ -94,9 +93,9 @@ int main()
 
     //return 0;
 
-    int num_steps = 24;
+    //int num_steps = 24;
 
-    LinearCondensedOCP ocp = LinearCondensedOCP(num_steps, 2.0, 2,1,false);
+    LinearCondensedOCP ocp = LinearCondensedOCP(16, 1.5, 2,1,false);
 
     // State Weights
     Eigen::VectorXd Q(2);
@@ -106,9 +105,9 @@ int main()
     // Input Weights
     Eigen::VectorXd R(1);
     R[0] = 0.1;
-    ocp.SetWeights(Q, R);
+    
 
-    RigidBlock1D block = RigidBlock1D(1.0, Eigen::Vector3d(1.0, 0.5, 0.25));
+    RigidBlock1D block = RigidBlock1D(2.0, Eigen::Vector3d(1.0, 0.5, 0.25));
 
     Eigen::VectorXd initial_state(2);
     initial_state[0] = 1.0;
@@ -116,26 +115,48 @@ int main()
 
     block.SetState(initial_state);
 
-    ocp.SetInitialCondition(block.GetState());
-    ocp.SetModelMatrices(block.A_d(), block.B_d());
+    ocp.SetWeights(Q, R);
+    
+    double sim_time = 5.0;
+    int sim_steps = (int)(sim_time/ocp.SampleTime());
 
-    ocp.Solve();
+    Eigen::MatrixXd plot_me(2, sim_steps);
+    Eigen::MatrixXd u_plot(1, sim_steps-1);
+    Eigen::MatrixXd ref_plot(1, sim_steps);
+    Eigen::VectorXd ref(2);
 
-//std::cout << ocp.U().rows() << std::endl;
-//std::cout << ocp.U().cols() << std::endl;
-
-    //Eigen::VectorXd input(1);
-    Eigen::MatrixXd plot_me(2, num_steps-1);
-    //input[0] = 10.5;
-    for (int i = 0; i < num_steps-1; i++)
+    plot_me.col(0) = block.GetState();
+    for (int i = 0; i < sim_steps-1; i++)
     {
-        block.Step(ocp.U()(0,i));
-        plot_me.col(i) = block.GetState();
+        if(i < 30){
+            ref[0] = 7.5;
+            ref[1] = 0;
+        }
+        else {
+            ref[0] = 1.5;
+            ref[1] = 0;
+        }
+        ref_plot(0,i+1) = ref[0];
+        Eigen::MatrixXd X_ref = ref.replicate(1, ocp.N());
+        ocp.SetInitialCondition(block.GetState());
+        ocp.SetModelMatrices(block.A_d(), block.B_d());
+        ocp.SetReference(X_ref);
+        ocp.Solve();
+
+        block.Step(ocp.U()(0,0));
+        plot_me.col(i+1) = block.GetState();
+        u_plot(0,i )= ocp.U()(0,0);
     }
 
  //std::cout << ocp.X() << std::endl;
-    plotty::labelPlot("U", ocp.U());
+    plotty::subplot(3, 1, 1);
+    plotty::labelPlot("U", u_plot);
+    plotty::legend();
+    plotty::subplot(3, 1, 2);
     plotty::labelPlot("pos", plot_me.row(0));
+    plotty::labelPlot("ref", ref_plot.row(0));
+    plotty::legend();
+    plotty::subplot(3, 1, 3);
     plotty::labelPlot("vel", plot_me.row(1));
     plotty::legend();
     plotty::show();

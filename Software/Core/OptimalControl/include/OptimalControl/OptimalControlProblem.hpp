@@ -45,10 +45,12 @@ public:
     // Solve
     virtual void Solve() = 0;
 
-    // Get System State Vector
-    Eigen::MatrixXd X() const { return X_; }
+    // Get System State Trajectory Vector
+    // TODO: Compute this depending on U solutions.  X_ = Ax+Bu
+    // TODO: Make pure virtual
+    virtual Eigen::MatrixXd X() const { return X_; }
 
-    //Get Current Input Solution
+    //Get Current Input Sequence Solution
     Eigen::MatrixXd U() const { return U_; }
 
     // Set Weight Matrices
@@ -65,12 +67,18 @@ public:
     // Set Reference Trajectory
     void SetReference(const Eigen::MatrixXd &X_ref) { X_ref_ = X_ref; }
 
+    // Time step sample time
+    double SampleTime() const { return T_s_; }
+
+    // Prediction Horizon Steps
+    int N() const { return N_; }
+    
 protected:
     Eigen::VectorXd x_0_;   // Current State/Initial Condition
     Eigen::MatrixXd X_ref_; // Reference Trajectory
 
-    Eigen::MatrixXd X_; // System State
-    Eigen::MatrixXd U_; // Optimal Input Solution
+    Eigen::MatrixXd X_; // System State Trajectory
+    Eigen::MatrixXd U_; // Optimal Input Sequence Solution
 
     Eigen::MatrixXd Q_; // State Weights
     Eigen::MatrixXd R_; // Input Weights
@@ -83,7 +91,15 @@ protected:
     double T_s_; // Sample Time
     double T_;   // Horizon Length
 
-    int max_iterations_; // Max Iterations for QP
+    int max_iterations_; // Max Iterations for Solver
+    int solver_iterations_; // Total number of Solver iterations for solution
+    double solver_time_; // Total time for Solver to compute a solution
+
+    bool solved_;
+    // TODO: 
+    // Infeasible, BlahBlah
+
+
 };
 } // namespace OptimalControl
 
@@ -100,7 +116,11 @@ public:
     // num_states = Number of States of OCP
     // num_inputs = Number of Inputs of OCP
     // max_iterations = Maximum number of solver iterations
-    LinearOptimalControlProblem(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const unsigned int max_iterations = 1000);
+    LinearOptimalControlProblem(const unsigned int N, 
+    const double T, 
+    const unsigned int num_states, 
+    const unsigned int num_inputs, 
+    const unsigned int max_iterations = 1000);
 
     // Set Model Matrices
     void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B)
@@ -115,6 +135,8 @@ public:
 protected:
     Eigen::MatrixXd A_; // System State Transition Matrix
     Eigen::MatrixXd B_; // Input Matrix
+
+
 
 };
 } // namespace LinearOptimalControl

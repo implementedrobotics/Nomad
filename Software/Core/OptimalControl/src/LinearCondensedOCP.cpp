@@ -23,8 +23,9 @@
  */
 
 #include <OptimalControl/LinearCondensedOCP.hpp>
-#include <chrono> 
+#include <chrono>
 
+using namespace ControlsLibrary;
 
 namespace OptimalControl
 {
@@ -47,30 +48,38 @@ LinearCondensedOCP::LinearCondensedOCP(const unsigned int N,
     H_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_vars_, num_vars_);
     g_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_vars_, 1);
     C_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_cons_, num_vars_);
-    lb_ = Eigen::VectorXd(num_vars_);
-    ub_ = Eigen::VectorXd(num_vars_);
-    lbC_ = Eigen::VectorXd(num_cons_);
-    ubC_ = Eigen::VectorXd(num_cons_);
 
+    // Default to Unbounded
+    lb_ = Eigen::VectorXd::Constant(num_vars_, -50);
+    ub_ = Eigen::VectorXd::Constant(num_vars_, 50);
+
+    // Default to Unbounded
+    lbC_ = Eigen::VectorXd::Constant(num_cons_, -qpOASES::INFTY);
+    ubC_ = Eigen::VectorXd::Constant(num_cons_, qpOASES::INFTY);
+
+    // Setup QP
+    is_hot = false; // Default to Cold Start
     qp_ = qpOASES::QProblemB(num_vars_);
 
     // TODO: Push this up?  Or have a specific qpOASES type?
-    qpOASES::Options myOptions;
-    //myOptions.enableRamping = BT_FALSE;
-    //myOptions.maxPrimalJump = 1;
-    //myOptions.setToMPC();
-    qp_.setPrintLevel(qpOASES::PL_HIGH);
-    qp_.setOptions(myOptions);
+    qpOASES::Options qp_options;
+
+    // TODO: Not all OCPs are MPC.  Make this a flag.  Otherwise you can do a more "accurate" solver setup
+    qp_options.setToMPC(); // Default to Fast MPC Options
+    qp_options.printLevel = qpOASES::PL_LOW;
+    //qp_options.terminationTolerance = 1e-4;
+    //qp_options.boundTolerance = 1e-4;
+    qp_.setOptions(qp_options);
 }
 
 void LinearCondensedOCP::Condense()
 {
-    A_N_.SetBlock(0,0, Eigen::MatrixXd::Identity(num_states_, num_states_));
+    A_N_.SetBlock(0, 0, Eigen::MatrixXd::Identity(num_states_, num_states_));
 
     for (int i = 0; i < N_ - 1; i++)
     {
         A_N_.SetBlock(i + 1, 0, A_N_(i, 0) * A_[i]);
-        B_N_.FillDiagonal(A_N_(i,0)*B_[i], (-i-1));
+        B_N_.FillDiagonal(A_N_(i, 0) * B_[i], (-i - 1));
     }
 
     //std::cout << "Condensed A: " << std::endl;
@@ -91,36 +100,31 @@ void LinearCondensedOCP::Solve()
     std::cout << R_.rows() << std::endl;
     std::cout << R_.cols() << std::endl;*/
 
-    // Get starting timepoint 
-    auto start = std::chrono::high_resolution_clock::now(); 
-    //bm_test.FillDiagonal(block_val, 0);
+    // Get starting timepoint
+    auto start = std::chrono::high_resolution_clock::now();
+    Eigen::Map<const Eigen::VectorXd> X_ref(X_ref_.data(), X_ref_.size());
 
+    H_ = 2 * (B_N_.MatrixXd().transpose() * Q_ * B_N_.MatrixXd() + R_);
+    g_ = 2 * B_N_.MatrixXd().transpose() * Q_ * ((A_N_.MatrixXd() * x_0_)-X_ref);
+    
+    solver_iterations_ = max_iterations_;
+    if (is_hot)
+        qp_.hotstart(g_.data(), lb_.data(), ub_.data(), solver_iterations_);
+    else
+    {
+        //qp_.init(H_.data(), g_.data(), NULL, NULL, NULL, NULL, NULL, max_iterations_); (Constraint Version)
+        qp_.init(H_.data(), g_.data(), lb_.data(), ub_.data(), solver_iterations_);
+        is_hot = true;
+    }
 
-    H_ = 2 * (B_N_.MatrixXd().transpose()*Q_*B_N_.MatrixXd() + R_);
-    g_ = 2 * B_N_.MatrixXd().transpose()*Q_*(A_N_.MatrixXd() * x_0_);// - X_ref_);
-
-    //qp_.init(H_.data(), g_.data(), NULL, NULL, NULL, NULL, NULL, max_iterations_);
-    qp_.init(H_.data(), g_.data(), NULL, NULL, max_iterations_);
-
+    // Get Solution
     qp_.getPrimalSolution(U_.data());
 
-    // Get ending timepoint 
-    auto stop = std::chrono::high_resolution_clock::now(); 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
+    // Get ending timepoint
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
-    std::cout << "Time taken by function: " << duration.count() << " microseconds" << std::endl; 
-
-    qp_.hotstart(g_.data(), NULL, NULL, max_iterations_);
-
-    qp_.getPrimalSolution(U_.data());
-
-
-    // Get ending timepoint 
-    auto stop2 = std::chrono::high_resolution_clock::now(); 
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop2 - stop); 
-
-    std::cout << "Time taken by function Hot: " << duration.count() << " microseconds" << std::endl; 
-
+    std::cout << "Solver Time: " << duration.count() << " microseconds" << std::endl;
 
 }
 
