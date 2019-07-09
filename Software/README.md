@@ -11,8 +11,12 @@ The following instructions are for setup of a development environment for buildi
 
 Install Python Dependencies:
 ```
-sudo apt-get install cython
+sudo apt-get install python-tk # GUI for plotting
+pip install matplotlib # Plottling Library
+
+sudo apt-get install cython # Cython for wrappers
 pip install cython
+
 ```
 
 Install [qpOASES 3.2.1](https://projects.coin-or.org/qpOASES/wiki/QpoasesDownload):
@@ -40,9 +44,11 @@ sudo cp -r Eigen /usr/local/include
  sudo cp -r unsupported /usr/local/include
  ```
 
- Cheat Sheet for EIGEN!:
+ Cheat Sheet for Eigen!:
  https://gist.github.com/gocarlos/c91237b02c120c6319612e42fa196d77
  
+ Matlab to Eigen:
+ https://eigen.tuxfamily.org/dox/AsciiQuickReference.txt
  
 Install [bullet3](https://github.com/bulletphysics/bullet3):
  ```
@@ -141,6 +147,17 @@ Change `INSTALL ( TARGETS rbdl-python LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX
 to `INSTALL ( TARGETS rbdl-python LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python3.*/dist-packages/ )`
 
 Copy rbdl libraries from /usr/local/lib -> /usr/lib or add /usr/local/lib to path
+
+Install [Ascent](https://github.com/AnyarInc/Ascent):
+
+Ascent is a lightweight integrating library.  This is needed for instance to simulate 
+an RBDL system dynamics.  See rbdl_test.cpp in the Nomad [Physics](https://github.com/implementedrobotics/Nomad/tree/master/Software/Core/Physics/test) library.
+
+```
+git clone https://github.com/AnyarInc/Ascent
+cd Ascent/include
+sudo cp -rf ascent/ /usr/include
+```
 
 Install [Gazebo](http://gazebosim.org/):
 
