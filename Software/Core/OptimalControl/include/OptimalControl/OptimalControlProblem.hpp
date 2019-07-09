@@ -40,7 +40,7 @@ public:
     // T = Horizon Length
     // num_states = Number of States of OCP
     // num_inputs = Number of Inputs of OCP
-    OptimalControlProblem(const int N, const double T, const int num_states, const int num_inputs, const int max_terations = 1000);
+    OptimalControlProblem(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const unsigned int max_iterations = 1000);
 
     // Solve
     virtual void Solve() = 0;
@@ -52,7 +52,7 @@ public:
     Eigen::MatrixXd U() const { return U_; }
 
     // Set Weight Matrices
-    void SetWeights(const Eigen::VectorXd &Q, const Eigen::VectorXd &R)
+    virtual void SetWeights(const Eigen::VectorXd &Q, const Eigen::VectorXd &R)
     {
         // TODO: Verify Vector Size Matches correct state and inputs
         Q_ = Q.matrix().asDiagonal().toDenseMatrix();
@@ -60,10 +60,10 @@ public:
     }
 
     // Set Problem Initial Condition
-    void SetInitialCondition(Eigen::VectorXd &x_0) { x_0_ = x_0; }
+    void SetInitialCondition(const Eigen::VectorXd &x_0) { x_0_ = x_0; }
 
     // Set Reference Trajectory
-    void SetReference(Eigen::VectorXd &X_ref) { X_ref_ = X_ref; }
+    void SetReference(const Eigen::MatrixXd &X_ref) { X_ref_ = X_ref; }
 
 protected:
     Eigen::VectorXd x_0_;   // Current State/Initial Condition
@@ -99,9 +99,10 @@ public:
     // T = Horizon Length
     // num_states = Number of States of OCP
     // num_inputs = Number of Inputs of OCP
-    LinearOptimalControlProblem(const int N, const double T, const int num_states, const int num_inputs, const int max_iterations = 1000);
+    // max_iterations = Maximum number of solver iterations
+    LinearOptimalControlProblem(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const unsigned int max_iterations = 1000);
 
-    // Set Weight Matrices
+    // Set Model Matrices
     void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B)
     {
         A_ = A;

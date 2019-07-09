@@ -37,12 +37,13 @@ class RigidBlock1D : public LinearDynamicalSystem
  
         // Step System
         void Step(const Eigen::VectorXd& u);
+        void Step(double u);
 
         // Update
         void Update();
 
         // Mass
-        double GetMass() {return mass_;}
+        double GetMass() const {return mass_;}
     
 
     protected:

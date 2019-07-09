@@ -30,7 +30,6 @@
 #ifndef NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 #define NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 
-
 using namespace ControlsLibrary;
 
 namespace OptimalControl
@@ -45,26 +44,55 @@ public:
     // T = Horizon Length
     // num_states = Number of States of OCP
     // num_inputs = Number of Inputs of OCP
-    LinearCondensedOCP(const int N, const double T, const int num_states, const int num_inputs, const bool time_varying = false, const int max_iterations = 1000);
+    LinearCondensedOCP(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const bool time_varying = false, const unsigned int max_iterations = 1000);
 
     // Set Model Matrices (Time Invariant)
-    void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B)
+    void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B, bool condense = true)
     {
         // TODO: Check for Time Varying Here
         // TODO: Check Dimensions and make sure they match num_states/inputs
-        A_[0] = A;
-        B_[0] = B;
+        //A_[0] = A;
+        //B_[0] = B;
+
+        // TODO: For now everything is considered "time varying".  Although it is just a constant matrix set over the prediction horizon
+        // for(int i = 0; i < N_; i++)
+        // {
+        //     A_[i] = A;
+        //     B_[i] = B;
+        // }
+        A_ = std::vector<Eigen::MatrixXd>(N_, A);
+        B_ = std::vector<Eigen::MatrixXd>(N_, B);
+
+        // Condense Formulation
+        if (condense)
+            Condense();
     }
 
     // Set Model Matrices (Time Varying)
-    void SetModelMatrices(const std::vector<Eigen::MatrixXd> &A, const std::vector<Eigen::MatrixXd> &B)
+    void SetModelMatrices(const std::vector<Eigen::MatrixXd> &A, const std::vector<Eigen::MatrixXd> &B, bool condense = true)
     {
         A_ = A;
         B_ = B;
+
+        // Condense Formulation
+        if (condense)
+            Condense();
+    }
+
+    // Set Weight Matrices
+    virtual void SetWeights(const Eigen::VectorXd &Q, const Eigen::VectorXd &R)
+    {
+        // TODO: Verify Vector Size Matches correct state and inputs
+        Q_ = Q.replicate(N_, 1).matrix().asDiagonal().toDenseMatrix();
+
+        R_ = R.replicate(N_ - 1, 1).matrix().asDiagonal().toDenseMatrix();
     }
 
     // Solve
     virtual void Solve();
+
+protected:
+    void Condense();
 
 protected:
     std::vector<Eigen::MatrixXd> A_; // System State Transition Matrix (Vector List for Time Varying)
@@ -73,13 +101,24 @@ protected:
     EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
     EigenHelpers::BlockMatrixXd B_N_; // Condensed Input Matrix for QP
 
-    Eigen::MatrixXd H_; // Hessian
-    Eigen::MatrixXd g_; 
+    Eigen::MatrixXd H_;   // Hessian Matrix
+    Eigen::MatrixXd g_;   // Gradient Vector
+    Eigen::MatrixXd C_;   // Constaint Matrix(A in qpOASES)
+    Eigen::VectorXd lb_;  // Lower bound on U
+    Eigen::VectorXd ub_;  // Upper bound on U
+    Eigen::VectorXd lbC_; // Lower constraint bound
+    Eigen::VectorXd ubC_; // Upper Constraint bound
 
-    qpOASES::QProblem qp_;
+    // TODO: Need qpOASES::SQProblem for MPC and Varying QP Matrices(H,g,C)
+    //qpOASES::QProblem qp_;
+    qpOASES::QProblemB qp_;
+    //qpOASES::SQProblem qp_;
+    int num_vars_; // Number of Variables in QP Problem
+    int num_cons_; // Number of Constraints in QP Problem
+
     bool time_varying_;
 };
-} // namespace OptimalControl
 } // namespace LinearOptimalControl
+} // namespace OptimalControl
 
 #endif // NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_

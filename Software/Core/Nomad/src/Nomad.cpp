@@ -40,7 +40,7 @@ RigidBlock1D::RigidBlock1D(const double &mass,
     height_ = box_shape[2];
 
     // Setup initial states
-    SetState(Eigen::VectorXd::Zero(num_states));
+    SetState(Eigen::VectorXd::Zero(num_states_));
 
     // Setup System Matrices
     A_ << 0, 1,
@@ -59,6 +59,11 @@ void RigidBlock1D::Step(const Eigen::VectorXd &u)
     x_ = A_d_ * x_ + B_d_ * u;
 }
 
+void RigidBlock1D::Step(double u)
+{
+    x_ = A_d_ * x_ + B_d_ * u;
+}
+
 void RigidBlock1D::Update()
 {
     
@@ -70,53 +75,69 @@ using namespace ControlsLibrary;
 int main()
 {
 
-    EigenHelpers::BlockMatrixXd bm_test = EigenHelpers::BlockMatrixXd(24, 24, 13, 13);
-    Eigen::MatrixXd block_val = Eigen::MatrixXd::Ones(13,13);
+    //EigenHelpers::BlockMatrixXd bm_test = EigenHelpers::BlockMatrixXd(24, 24, 13, 13);
+    //Eigen::MatrixXd block_val = Eigen::MatrixXd::Ones(13,13);
 
     // Get starting timepoint 
-    auto start = std::chrono::high_resolution_clock::now(); 
-    bm_test.FillDiagonal(block_val, 0);
+    //auto start = std::chrono::high_resolution_clock::now(); 
+    //bm_test.FillDiagonal(block_val, 0);
     // Get ending timepoint 
-    auto stop = std::chrono::high_resolution_clock::now(); 
+    //auto stop = std::chrono::high_resolution_clock::now(); 
 
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
+    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
 
-    std::cout << "Time taken by function: " << duration.count() << " microseconds" << std::endl; 
+    //std::cout << "Time taken by function: " << duration.count() << " microseconds" << std::endl; 
 
     //bm_test(1,1, block_val);
-    std::cout << bm_test << std::endl;
+    //std::cout << bm_test << std::endl;
 
-    return 0;
-    LinearCondensedOCP ocp = LinearCondensedOCP(10, 1.0, 4,4,false);
+    //return 0;
 
+    int num_steps = 24;
+
+    LinearCondensedOCP ocp = LinearCondensedOCP(num_steps, 2.0, 2,1,false);
+
+    // State Weights
     Eigen::VectorXd Q(2);
-    Q[0] = 1.0;
-    Q[1] = 2.0;
+    Q[0] = 100.0;
+    Q[1] = 1.0;
 
+    // Input Weights
     Eigen::VectorXd R(1);
-    R[0] = 0.01;
+    R[0] = 0.1;
     ocp.SetWeights(Q, R);
+
     RigidBlock1D block = RigidBlock1D(1.0, Eigen::Vector3d(1.0, 0.5, 0.25));
 
     Eigen::VectorXd initial_state(2);
-    initial_state[0] = 0.0;
+    initial_state[0] = 1.0;
     initial_state[1] = 0.0;
 
-    int num_steps = 100;
     block.SetState(initial_state);
-    Eigen::VectorXd input(1);
-    Eigen::MatrixXd plot_me(2, num_steps);
-    input[0] = 10.5;
-    for (int i = 0; i < num_steps; i++)
+
+    ocp.SetInitialCondition(block.GetState());
+    ocp.SetModelMatrices(block.A_d(), block.B_d());
+
+    ocp.Solve();
+
+//std::cout << ocp.U().rows() << std::endl;
+//std::cout << ocp.U().cols() << std::endl;
+
+    //Eigen::VectorXd input(1);
+    Eigen::MatrixXd plot_me(2, num_steps-1);
+    //input[0] = 10.5;
+    for (int i = 0; i < num_steps-1; i++)
     {
-        block.Step(input);
+        block.Step(ocp.U()(0,i));
         plot_me.col(i) = block.GetState();
     }
-    
 
+ //std::cout << ocp.X() << std::endl;
+    plotty::labelPlot("U", ocp.U());
     plotty::labelPlot("pos", plot_me.row(0));
     plotty::labelPlot("vel", plot_me.row(1));
     plotty::legend();
     plotty::show();
+    
 }

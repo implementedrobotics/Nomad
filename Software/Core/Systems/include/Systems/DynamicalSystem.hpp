@@ -34,7 +34,7 @@ class DynamicalSystem
 {
 
 public:
-    DynamicalSystem(const int& num_states, const double& Ts = 1e-1);
+    DynamicalSystem(const int& num_states, const int& num_inputs, const double& Ts = 1e-1);
 
     // Step System
     virtual void Step(const Eigen::VectorXd& u) = 0;
@@ -48,13 +48,15 @@ public:
     // Set Current State
     void SetState(const Eigen::VectorXd &x) { x_ = x; }
 
-
+    int NumStates() const { return num_states_; }
+    int NumInputs() const { return num_inputs_; }
 
 protected:
 
     Eigen::VectorXd x_;  // State Vector
 
-    int num_states; // Number of System States
+    int num_states_; // Number of System States
+    int num_inputs_;     // Number of inputs
 
     double T_s_; // Sample Time
     double t_; // Current Time
@@ -86,8 +88,6 @@ public:
     Eigen::MatrixXd B_d() const { return B_d_; };
 
 protected:
-
-    int num_inputs;     // Number of inputs
 
     Eigen::MatrixXd A_;  // State Transition Mat rix
     Eigen::MatrixXd B_;  // Input Matrix

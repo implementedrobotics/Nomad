@@ -73,6 +73,12 @@ const Eigen::MatrixXd BlockMatrixXd::operator()(const unsigned int Row, const un
     return Matrix_.block(Row * BlockHeight_, Col * BlockWidth_, BlockHeight_, BlockWidth_);
 }
 
+
+void BlockMatrixXd::SetBlock(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val)
+{
+    assert(Row < Rows_ && Col < Cols_);
+    Matrix_.block(Row * BlockHeight_, Col * BlockWidth_, BlockHeight_, BlockWidth_) = block_val;
+}
 void BlockMatrixXd::FillDiagonal(const Eigen::MatrixXd &block_val, const int k) 
 {
     // Handle Super and Sub Diagonals (k)

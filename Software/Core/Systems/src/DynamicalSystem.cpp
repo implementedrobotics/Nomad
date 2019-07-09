@@ -24,7 +24,7 @@
 
 #include <Systems/DynamicalSystem.hpp>
 
-DynamicalSystem::DynamicalSystem(const int& num_states, const double& T_s /* = 1e-1*/) : T_s_(T_s), t_(0), num_states(num_states)
+DynamicalSystem::DynamicalSystem(const int& num_states, const int& num_inputs, const double& T_s /* = 1e-1*/) : T_s_(T_s), t_(0), num_states_(num_states), num_inputs_(num_inputs)
 {
     x_ = Eigen::VectorXd(num_states);
 }
