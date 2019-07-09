@@ -58,9 +58,9 @@ LinearCondensedOCP::LinearCondensedOCP(const int N,
 void LinearCondensedOCP::Solve()
 {
     qp_.init(H_.data(), g_.data(), NULL, NULL, NULL, NULL, NULL, max_iterations_);
-    Eigen::MatrixXd x_out(num_inputs_ * N_, 1);
+    //Eigen::MatrixXd x_out(num_inputs_ * N_, 1);
 
-    qp_.getPrimalSolution(x_out.data());
+    qp_.getPrimalSolution(U_.data());
 }
 
 } // namespace LinearOptimalControl

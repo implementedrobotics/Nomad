@@ -13,8 +13,7 @@ target_link_libraries(rbdl_test ${PHYSICS_TEST_LIBS} )
 # DART Tests
 set(required_components utils-urdf gui)
 set(required_libraries dart dart-utils-urdf dart-gui)
-
-find_package(DART 6.6.0 REQUIRED COMPONENTS ${required_components} CONFIG)
+#find_package(DART 6.9.0 REQUIRED COMPONENTS ${required_components} CONFIG)
 
 #file(GLOB srcs "*.cpp" "*.hpp")
 add_executable(dart_test dart_test.cpp)
