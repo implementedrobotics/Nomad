@@ -8,6 +8,6 @@ NOMAD is a 12-DOF quadruped walking robot using Linear and Nonlinear Optimizatio
 # Software Installation
 
 First thing to do is setup your software/development environment to build the source code:
-[Software Setup](https://github.com/implementedrobotics/Nomad/tree/master/Software):
+[Software Setup](https://github.com/implementedrobotics/Nomad/tree/master/Software).
 
 
