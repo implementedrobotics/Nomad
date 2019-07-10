@@ -18,6 +18,13 @@ sudo apt-get install cython # Cython for wrappers
 pip install cython
 
 ```
+Install [0MQ](http://zeromq.org/):
+
+We will use this for message passing both Inter Thread/Process as well is between seperate devices.
+
+```
+sudo apt-get install libzmq3-dev
+```
 
 Install [qpOASES 3.2.1](https://projects.coin-or.org/qpOASES/wiki/QpoasesDownload):
 ```
@@ -166,7 +173,7 @@ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `ls
 
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
-sudo apt-get update
+sudo apt-get updatapt-get install libzmq3-deve
 ```
 
 ```
