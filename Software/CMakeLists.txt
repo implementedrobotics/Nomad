@@ -17,5 +17,9 @@ add_subdirectory(Core/Systems)
 add_subdirectory(Core/Nomad)
 add_subdirectory(Core/Plotting)
 
+# Communications Library
+add_subdirectory(Communications)
+
 # Simulation(Optional)
 add_subdirectory(Simulation/Gazebo)
+
