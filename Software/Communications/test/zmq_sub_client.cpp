@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Received: " << rx_str << " : " << num_rx << std::endl;
         ++num_rx;
 
-        usleep(100000);
+        usleep(2000000);
     }
 
 
