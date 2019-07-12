@@ -45,6 +45,8 @@ namespace ControlsLibrary
 {
 namespace EigenHelpers
 {
+
+    // TODO: Change this to a template so we can pass constexpr to get more efficient eigen arrays
 BlockMatrixXd::BlockMatrixXd(const unsigned int Rows,
                              const unsigned int Cols,
                              const unsigned int BlockHeight,
