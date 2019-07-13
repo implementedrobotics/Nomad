@@ -74,6 +74,15 @@ using namespace ControlsLibrary;
 
 int main()
 {
+
+    // TODO: Where Does this go?
+    /* Lock memory */
+   // if (mlockall(MCL_CURRENT | MCL_FUTURE) == -1)
+   // {
+   //    printf("mlockall failed: %m\n");
+   //     exit(-2);
+   // }
+
     //EigenHelpers::BlockMatrixXd bm_test = EigenHelpers::BlockMatrixXd(24, 24, 13, 13);
     //Eigen::MatrixXd block_val = Eigen::MatrixXd::Ones(13,13);
 
