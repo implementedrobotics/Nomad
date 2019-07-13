@@ -37,6 +37,9 @@
 // TODO: Setup CPU Sets properly for affinity if set
 // TODO: Create a subclassed task class
 // TODO: Add in ZMQ Messaging+Context Passing and Test
+// TODO: Add Support for Thread Cancellation
+// TODO: Add Thread Manager Class to Hold all running threads.  Static Singleton Instance.
+
 namespace OptimalControl
 {
 namespace RealTimeControl
