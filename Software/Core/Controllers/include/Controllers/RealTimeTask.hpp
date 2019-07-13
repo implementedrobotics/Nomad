@@ -21,12 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// C Includes
 #include <limits.h>
 #include <pthread.h>
 #include <sched.h>
 
+// C++ Includes
 #include <iostream>
 #include <string>
+
+// Third Party Includes
+#include <zmq.hpp>
+
 
 #ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
 #define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
@@ -89,6 +95,21 @@ protected:
     // Override Me for thread function
     virtual void Run() = 0;
 
+    // We use ZMQ for thread message/data communications
+    
+    // ZMQ Context
+    zmq::context_t *context_;
+
+    // ZMQ Socket
+    zmq::socket_t *socket_;
+
+    // ZMQ Transport
+    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
+    // TODO: Also a port int
+    // TODO: Also a Socket Type
+    // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
+    std::string transport_;
+
 private:
 
     // STATIC Task Delay
@@ -114,6 +135,9 @@ private:
 
     // Thread ID
     pthread_t thread_id_;
+
+    // Process ID
+    pid_t process_id_;
 
     // Thread Status
     int thread_status_;

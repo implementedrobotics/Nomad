@@ -50,7 +50,8 @@ RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
                                                                     rt_priority_(rt_priority),
                                                                     rt_core_id_(rt_core_id),
                                                                     stack_size_(stack_size),
-                                                                    thread_status_(-1)
+                                                                    thread_status_(-1),
+                                                                    process_id_(-1)
 {
 }
 
@@ -58,8 +59,64 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
 {
     // TODO: Setup CPU sets, etc.
     RealTimeTaskNode *task = static_cast<RealTimeTaskNode *>(task_instance);
-    std::cout << "RealTimeTaskNode: "
+    std::cout << "[RealTimeTaskNode]: "
               << "Starting Task: " << task->task_name_ << std::endl;
+
+    task->process_id_ = getpid();
+    // TODO: Add task to future Task Manager here.
+
+    // TODO: Do we want to have support for adding to multiple CPUs here?
+    // TODO: Task manager should keep up with which task are pinned to which CPUs.  Could make sure high priority task maybe get pinned to unused cores
+    // TODO: Look up max number of CPUs. And make sure core_id falls within that range
+    cpu_set_t cpu_set;
+    if (task->rt_core_id_ >= 0)
+    {
+        std::cout << "[RealTimeTaskNode]: "
+                  << "Setting Thread Affinity to CPU CORE: " << task->rt_core_id_ << std::endl;
+
+        // Clear out CPU set type
+        CPU_ZERO(&cpu_set);
+
+        // Set CPU Core to CPU SET
+        CPU_SET(task->rt_core_id_, &cpu_set);
+
+        // Set CPU Core Affinity to desired cpu_set
+        const int set_result = pthread_setaffinity_np(task->thread_id_, sizeof(cpu_set_t), &cpu_set);
+        if (set_result != 0)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "Failed to set thread affinity: " << set_result << std::endl;
+        }
+
+        // Verify it was set successfully
+        if (CPU_ISSET(task->rt_core_id_, &cpu_set))
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "Successfully set thread " << task->thread_id_ << " affinity to CORE: " << task->rt_core_id_ << std::endl;
+        }
+        else
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "Failed to set thread " << task->thread_id_ << " affinity to CORE: " << task->rt_core_id_ << std::endl;
+        }
+    }
+
+    // Output what the actually task thread affinity is
+    const int set_result = pthread_getaffinity_np(task->thread_id_, sizeof(cpu_set_t), &cpu_set);
+    if (set_result != 0)
+    {
+        std::cout << "[RealTimeTaskNode]: "
+                  << "Failed to get thread affinity: " << set_result << std::endl;
+    }
+
+    std::cout << "[RealTimeTaskNode]: " << task->task_name_ << " running on CORES: " << std::endl;
+    for (int j = 0; j < CPU_SETSIZE; j++)
+    {
+        if (CPU_ISSET(j, &cpu_set))
+        {
+            std::cout << "CPU " << j << std::endl;
+        }
+    }
 
     // Setup thread cancellation.
     // TODO: Look into PTHREAD_CANCEL_DEFERRED
@@ -77,7 +134,7 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
         long int remainder = TaskDelay(task->rt_period_ - total_us);
         //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
     }
-    std::cout << "RealTimeTaskNode: "
+    std::cout << "[RealTimeTaskNode]: "
               << "Ending Task: " << task->task_name_ << std::endl;
 
     // Stop the task
@@ -96,7 +153,7 @@ int RealTimeTaskNode::Start(void *task_param)
     thread_status_ = pthread_attr_init(&attr);
     if (thread_status_)
     {
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to init attributes!" << std::endl;
         return thread_status_;
     }
@@ -105,7 +162,7 @@ int RealTimeTaskNode::Start(void *task_param)
     thread_status_ = pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN);
     if (thread_status_)
     {
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to set stack size!" << std::endl;
         return thread_status_;
     }
@@ -114,7 +171,7 @@ int RealTimeTaskNode::Start(void *task_param)
     thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
     if (thread_status_)
     {
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to set schedule policy!" << std::endl;
         return thread_status_;
     }
@@ -123,7 +180,7 @@ int RealTimeTaskNode::Start(void *task_param)
     thread_status_ = pthread_attr_setschedparam(&attr, &param);
     if (thread_status_)
     {
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to set thread priority!" << std::endl;
         return thread_status_;
     }
@@ -132,7 +189,7 @@ int RealTimeTaskNode::Start(void *task_param)
     thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
     if (thread_status_)
     {
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
         return thread_status_;
     }
@@ -141,7 +198,7 @@ int RealTimeTaskNode::Start(void *task_param)
     thread_status_ = pthread_create(&thread_id_, &attr, &RunTask, this);
     if (thread_status_)
     {
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to create thread!" << std::endl;
         return thread_status_;
     }
@@ -149,7 +206,7 @@ int RealTimeTaskNode::Start(void *task_param)
     // Set as Detached
     thread_status_ = pthread_detach(thread_id_);
     if (thread_status_)
-        std::cout << "RealTimeTaskNode: "
+        std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to detach thread!" << std::endl;
 }
 
