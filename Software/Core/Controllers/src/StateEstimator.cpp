@@ -1,5 +1,5 @@
 /*
- * StateEstimator.hpp
+ * StateEstimator.cpp
  *
  *  Created on: July 13, 2019
  *      Author: Quincy Jones
@@ -21,47 +21,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// C System Files
+// Primary Include
+#include <Controllers/StateEstimator.hpp>
+
+// C System Includes
 #include <limits.h>
 #include <pthread.h>
 #include <sched.h>
 
-// C++ System Files
+// C++ System Includes
 #include <iostream>
 #include <string>
 
-#include <Controllers/RealTimeTask.hpp>
-
-#ifndef NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
-#define NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
+// Third-Party Includes
+// Project Includes
 
 namespace Controllers
 {
 namespace Estimators
 {
-class StateEstimator : public RealTimeControl::RealTimeTaskNode
+StateEstimator::StateEstimator(const std::string &name,
+                               const long rt_period,
+                               unsigned int rt_priority,
+                               const int rt_core_id,
+                               const unsigned int stack_size) : RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
 {
+    i = 0;
+}
 
-public:
-    // Base Class State Estimator Task Node
-    // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    StateEstimator(const std::string &name = "State_Estimator_Task",
-                   const long rt_period = 10000,
-                   const unsigned int rt_priority = RealTimeControl::Priority::MEDIUM,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-protected:
-    virtual void Run();
-
-private:
-int i;
-};
+void StateEstimator::Run()
+{
+    printf("RUNNING: %d\n", i++);
+}
 } // namespace Estimators
 } // namespace Controllers
-
-#endif // NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_

@@ -21,62 +21,76 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OptimalControl/RealTimeTask.hpp>
+#include <Controllers/RealTimeTask.hpp>
 
 #include <limits.h>
 #include <pthread.h>
 #include <sched.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <iostream>
 #include <string>
+#include <chrono>
 
-// TODO: Add proper sleep/delay functions
-// TODO: Verify Task Frequency
-// TODO: Run FIFO without root lookup
 // TODO: Setup CPU Sets properly for affinity if set
-// TODO: Create a subclassed task class
 // TODO: Add in ZMQ Messaging+Context Passing and Test
-// TODO: Add Support for Thread Cancellation
 // TODO: Add Thread Manager Class to Hold all running threads.  Static Singleton Instance.
 
-namespace OptimalControl
+namespace Controllers
 {
 namespace RealTimeControl
 {
 RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
-                                   const unsigned int stack_size,
-                                   unsigned int rt_priority,
                                    const long rt_period,
-                                   const int rt_core_id) : task_name_(name),
-                                                           stack_size_(stack_size),
-                                                           rt_priority_(rt_priority),
-                                                           rt_period_(rt_period),
-                                                           rt_core_id_(rt_core_id),
-                                                           thread_status_(-1)
+                                   unsigned int rt_priority,
+                                   const int rt_core_id,
+                                   const unsigned int stack_size) : task_name_(name),
+                                                                    rt_period_(rt_period),
+                                                                    rt_priority_(rt_priority),
+                                                                    rt_core_id_(rt_core_id),
+                                                                    stack_size_(stack_size),
+                                                                    thread_status_(-1)
 {
 }
 
-void *RealTimeTaskNode::runTask(void *task_instance)
+void *RealTimeTaskNode::RunTask(void *task_instance)
 {
     // TODO: Setup CPU sets, etc.
     RealTimeTaskNode *task = static_cast<RealTimeTaskNode *>(task_instance);
     std::cout << "RealTimeTaskNode: "
               << "Starting Task: " << task->task_name_ << std::endl;
 
-    task->run(task->task_param_);
+    // Setup thread cancellation.
+    // TODO: Look into PTHREAD_CANCEL_DEFERRED
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
+    // TODO:  Check Control deadlines as well.  If run over we can throw exception here
+    while (1)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
+        task->Run();
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long total_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+        //std::cout << "Run Time: " << total_us << std::endl;
+
+        long int remainder = TaskDelay(task->rt_period_ - total_us);
+        //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
+    }
     std::cout << "RealTimeTaskNode: "
               << "Ending Task: " << task->task_name_ << std::endl;
 
     // Stop the task
-    task->stop();
+    task->Stop();
 }
 
-int RealTimeTaskNode::start(void *task_param)
+int RealTimeTaskNode::Start(void *task_param)
 {
     struct sched_param param;
     pthread_attr_t attr;
+
+    // Set Task Thread Paramters
+    task_param_ = task_param;
 
     // Initialize default thread attributes
     thread_status_ = pthread_attr_init(&attr);
@@ -124,7 +138,7 @@ int RealTimeTaskNode::start(void *task_param)
     }
 
     // Create our pthread.  Pass an instance of 'this' class as a parameter
-    thread_status_ = pthread_create(&thread_id, &attr, &runTask, this);
+    thread_status_ = pthread_create(&thread_id_, &attr, &RunTask, this);
     if (thread_status_)
     {
         std::cout << "RealTimeTaskNode: "
@@ -133,20 +147,67 @@ int RealTimeTaskNode::start(void *task_param)
     }
 
     // Set as Detached
-    thread_status_ = pthread_detach(thread_id);
+    thread_status_ = pthread_detach(thread_id_);
     if (thread_status_)
         std::cout << "RealTimeTaskNode: "
                   << "POSIX Thread failed to detach thread!" << std::endl;
 }
 
-void RealTimeTaskNode::stop() {
+void RealTimeTaskNode::Stop()
+{
     // TODO: Check for thread running, etc.
-    // TODO: Setup signal to inform run task to stop
+    // TODO: Setup signal to inform run task to stop/exit cleanly.  For now we just kill it
+    pthread_cancel(thread_id_);
 }
 
-void RealTimeTaskNode::delay(int microseconds)
+long int RealTimeTaskNode::TaskDelay(long int microseconds)
 {
-    usleep(microseconds);
+    // TODO: Absolute wait or relative?
+    // For now we use relative.
+    struct timespec delay;
+    struct timespec remainder;
+    struct timespec ats;
+
+    // Setup Delay Timespec
+    delay.tv_sec = 0;
+    delay.tv_nsec = microseconds * 1e3;
+    if (delay.tv_nsec >= 1000000000) // Wrap Overruns
+    {
+        delay.tv_nsec -= 1000000000;
+        delay.tv_sec++;
+    }
+
+    // Get the start time of the delay.  To be used to know over and underruns
+    clock_gettime(CLOCK_MONOTONIC, &ats);
+
+    // Add the delay offset to know when this SHOULD end.
+    ats.tv_sec += delay.tv_sec;
+    ats.tv_nsec += delay.tv_nsec;
+
+    // Sleep for delay
+    clock_nanosleep(CLOCK_MONOTONIC, 0, &delay, &remainder);
+
+    // Get the time now after the delay.
+    clock_gettime(CLOCK_MONOTONIC, &remainder);
+
+    // Compute difference and calculcate over/underrung
+    remainder.tv_sec -= ats.tv_sec;
+    remainder.tv_nsec -= ats.tv_nsec;
+    if (remainder.tv_nsec < 0) // Wrap nanosecond overruns
+    {
+        remainder.tv_nsec += 1000000000;
+        remainder.tv_sec++;
+    }
+    return remainder.tv_nsec / 1000;
+}
+
+void RealTimeTaskNode::SetTaskFrequency(const unsigned int frequency_hz)
+{
+    // Frequency must be greater than 0
+    assert(frequency_hz > 0);
+
+    // Period in microseconds
+    SetTaskPeriod(long((1.0 / frequency_hz) * 1e6));
 }
 } // namespace RealTimeControl
-} // namespace OptimalControl
+} // namespace Controllers

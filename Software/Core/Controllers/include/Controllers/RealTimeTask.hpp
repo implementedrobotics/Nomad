@@ -28,14 +28,13 @@
 #include <iostream>
 #include <string>
 
-#ifndef NOMAD_CORE_OPTIMALCONTROL_REALTIMETASK_H_
-#define NOMAD_CORE_OPTIMALCONTROL_REALTIMETASK_H_
+#ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
+#define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
 
-namespace OptimalControl
+namespace Controllers
 {
 namespace RealTimeControl
 {
-
 enum Priority
 {
     LOWEST = 99,
@@ -51,47 +50,53 @@ class RealTimeTaskNode
 public:
     // Base Class Real Time Task Node
     // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
     // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+    // rt_priority = Task Thread Priority
     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+    // stack_size = Task Thread Stack Size
     RealTimeTaskNode(const std::string &name = "RT_Task",
-                     const unsigned int stack_size = PTHREAD_STACK_MIN,
-                     const unsigned int rt_priority = Priority::MEDIUM,
                      const long rt_period = 10000,
-                     const int rt_core_id = -1);
-
-    // Task Delay Helper
-    virtual void delay(int microseconds);
+                     const unsigned int rt_priority = Priority::MEDIUM,
+                     const int rt_core_id = -1,
+                     const unsigned int stack_size = PTHREAD_STACK_MIN);
 
     // Task Start
-    int start(void *task_param);
+    int Start(void *task_param = NULL);
 
     // Task Stop
-    void stop();
+    void Stop();
 
     // Set Task Name
-    void setTaskName(const std::string &name) { task_name_ = name; }
+    void SetTaskName(const std::string &name) { task_name_ = name; }
 
     // Set Stack Size
-    void setStackSize(const unsigned int stack_size) { stack_size_ = stack_size; }
+    void SetStackSize(const unsigned int stack_size) { stack_size_ = stack_size; }
 
     // Set Task Priority
-    void setTaskPriority(const unsigned int priority) { rt_priority_ = priority; }
+    void SetTaskPriority(const unsigned int priority) { rt_priority_ = priority; }
 
-    // Set Task Period
-    void setTaskPeriod(const long period) { rt_period_ = period; }
+    // Set Task Frequency (Convenience to set a "rate" in HZ)
+    void SetTaskFrequency(const unsigned int freqeuncy_hz);
+
+    // Set Task Period (Microseconds)
+    void SetTaskPeriod(const long period) { rt_period_ = period; }
 
     // Set CPU Core Affinity
-    void setCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
+    void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
+protected:
+    
     // Override Me for thread function
-    virtual void run(void *data) = 0;
-
-    // STATIC Member Task Run
-    static void *runTask(void *task_instance);
+    virtual void Run() = 0;
 
 private:
+
+    // STATIC Task Delay
+    static long int TaskDelay(long int microseconds);
+
+    // STATIC Member Task Run
+    static void *RunTask(void *task_instance);
+
     // Task Name
     std::string task_name_;
 
@@ -101,14 +106,14 @@ private:
     // Task Priority (0 to 99)
     unsigned int rt_priority_;
 
-    // Task Period
+    // Task Period (microseconds)
     long rt_period_;
 
     // Task CPU Affinity/CoreID
     int rt_core_id_;
 
     // Thread ID
-    pthread_t thread_id;
+    pthread_t thread_id_;
 
     // Thread Status
     int thread_status_;
@@ -117,6 +122,6 @@ private:
     void *task_param_;
 };
 } // namespace RealTimeControl
-} // namespace OptimalControl
+} // namespace Controllers
 
-#endif // NOMAD_CORE_OPTIMALCONTROL_REALTIMETASK_H_
+#endif // NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_

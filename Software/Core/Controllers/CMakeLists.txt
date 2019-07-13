@@ -1,1 +1,16 @@
+
+cmake_minimum_required (VERSION 3.10)
+
+set(CONTROLLERS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/src/RealTimeTask.cpp
+${PROJECT_SOURCE_DIR}/Core/Controllers/src/StateEstimator.cpp
+)
+
+set(CONTROLLERS_LIBS OptimalControl pthread rt)
+
+include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
+add_library(Controllers STATIC ${CONTROLLERS_SOURCES})
+target_link_libraries(Controllers ${CONTROLLERS_LIBS})
+#add_test(QuickStartTest test_main COMMAND test_main)
+
+# TODO: Make Options "Build Test/Examples etc"
 add_subdirectory(test)
