@@ -22,9 +22,6 @@
  */
 
 // C System Files
-#include <limits.h>
-#include <pthread.h>
-#include <sched.h>
 
 // C++ System Files
 #include <iostream>
@@ -55,11 +52,37 @@ public:
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 
+    void SetInputTransport(const std::string &transport) { input_transport_ = transport; }
+    void SetOutputTransport(const std::string &transport) { output_transport_ = transport; }
+
+    const std::string &GetInputTransport() const { return input_transport_; }
+    const std::string &GetOutputTransport() const { return output_transport_; }
+
 protected:
+    // Overriden Run Function
     virtual void Run();
 
+    // Pre-Run Setup Routine.  Setup any one time initialization here.
+    virtual void Setup();
+
+    // Using ZMQ for thread sync and message passing
+    // ZMQ Socket
+    zmq::socket_t *socket_;
+
+    // ZMQ Transport
+    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
+    // TODO: Also a port int
+    // TODO: Also a Socket Type
+    // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
+
+    // Transport for input to State Estimator
+    std::string input_transport_;
+
+    // Transport for output of State Estimator
+    std::string output_transport_;
+
 private:
-int i;
+    int state_estimate_num_;
 };
 } // namespace Estimators
 } // namespace Controllers

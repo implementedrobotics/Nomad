@@ -25,34 +25,57 @@
 #include <Controllers/StateEstimator.hpp>
 
 // C System Includes
-#include <limits.h>
-#include <pthread.h>
-#include <sched.h>
 
 // C++ System Includes
 #include <iostream>
 #include <string>
+#include <sstream>
 
 // Third-Party Includes
 // Project Includes
+#include <Controllers/RealTimeTask.hpp>
 
 namespace Controllers
 {
+
 namespace Estimators
 {
+//using namespace RealTimeControl;
+
 StateEstimator::StateEstimator(const std::string &name,
                                const long rt_period,
                                unsigned int rt_priority,
                                const int rt_core_id,
-                               const unsigned int stack_size) : RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
+                               const unsigned int stack_size) : 
+                               RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
+                               state_estimate_num_(0)
 {
-    i = 0;
 }
-
 
 void StateEstimator::Run()
 {
-    printf("RUNNING: %d\n", i++);
+    // Publish State
+
+    // TODO: Zero Copy Publish
+    std::stringstream s;
+    s << "Hello " << state_estimate_num_;
+    auto msg = s.str();
+    zmq::message_t message(msg.length());
+    memcpy(message.data(), msg.c_str(), msg.length());
+    socket_->send(message);
+
+    std::cout << "[StateEstimator]: Publishing: " << msg << std::endl;
+
+    state_estimate_num_++;
 }
+
+void StateEstimator::Setup()
+{
+    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+    socket_ = new zmq::socket_t(*ctx, ZMQ_PUB);
+    socket_->bind(output_transport_);
+    std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
+}
+
 } // namespace Estimators
 } // namespace Controllers

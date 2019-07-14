@@ -72,7 +72,7 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
     task->process_id_ = getpid();
 
     // TODO: Do we want to have support for adding to multiple CPUs here?
-    // TODO: Task manager keepd up with which task are pinned to which CPUs.  Could make sure high priority task maybe get pinned to unused cores?
+    // TODO: Task manager keeps up with which task are pinned to which CPUs.  Could make sure high priority task maybe get pinned to unused cores?
     cpu_set_t cpu_set;
     if (task->rt_core_id_ >= 0 && task->rt_core_id_ < RealTimeTaskManager::Instance()->GetCPUCount())
     {
@@ -105,6 +105,12 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
                       << "Failed to set thread " << task->thread_id_ << " affinity to CORE: " << task->rt_core_id_ << std::endl;
         }
     }
+    else if (task->rt_core_id_ >= RealTimeTaskManager::Instance()->GetCPUCount())
+    {
+        std::cout << "[RealTimeTaskNode]: " << task->task_name_ 
+                  << "\tERROR.  Desired CPU Affinity exceeds number of available cores!" << std::endl
+                  << "Please check system configuration." << std::endl;
+    }
 
     // Output what the actually task thread affinity is
     const int set_result = pthread_getaffinity_np(task->thread_id_, sizeof(cpu_set_t), &cpu_set);
@@ -126,6 +132,9 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
     // Setup thread cancellation.
     // TODO: Look into PTHREAD_CANCEL_DEFERRED
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+    // Call Setup
+    task->Setup();
 
     // TODO:  Check Control deadlines as well.  If run over we can throw exception here
     while (1)
@@ -283,13 +292,12 @@ RealTimeTaskManager *RealTimeTaskManager::manager_instance_ = NULL;
 RealTimeTaskManager::RealTimeTaskManager()
 {
     // ZMQ Context
-    zmq::context_t *context_ = new zmq::context_t(1);
+    context_ = new zmq::context_t(1);
 
     // Get CPU Count
     cpu_count_ = sysconf(_SC_NPROCESSORS_ONLN);
 
     std::cout << "[RealTimeTaskManager]: Task manager RUNNING.  Total Number of CPUS available: " << cpu_count_ << std::endl;
-
 }
 
 RealTimeTaskManager *RealTimeTaskManager::Instance()

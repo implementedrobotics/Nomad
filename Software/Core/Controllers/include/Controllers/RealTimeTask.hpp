@@ -97,20 +97,23 @@ protected:
     // Override Me for thread function
     virtual void Run() = 0;
 
+    // Setup function called prior to run loop.  Put any setup/initialization here, i.e. socket setup, pub sub etc.
+    virtual void Setup() = 0;
+
     // Using ZMQ for thread sync and message passing
 
     // ZMQ Context
-    zmq::context_t *context_;
+    //zmq::context_t *context_;
 
     // ZMQ Socket
-    zmq::socket_t *socket_;
+    //zmq::socket_t *socket_;
 
     // ZMQ Transport
     // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
     // TODO: Also a port int
     // TODO: Also a Socket Type
     // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
-    std::string transport_;
+    //std::string transport_;
 
 private:
     // STATIC Task Delay
@@ -164,7 +167,7 @@ public:
     bool EndTask(const std::string &name);
     void PrintActiveTasks();
 
-    const zmq::context_t *GetZMQContext() const { return context_; }
+    zmq::context_t *GetZMQContext() const { return context_; }
 
 protected:
     // Using ZMQ for thread sync and message passing
