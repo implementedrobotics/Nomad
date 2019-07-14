@@ -32,10 +32,10 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <map>
 
 // TODO: Setup CPU Sets properly for affinity if set
 // TODO: Add in ZMQ Messaging+Context Passing and Test
-// TODO: Add Thread Manager Class to Hold all running threads.  Static Singleton Instance.
 
 namespace Controllers
 {
@@ -53,23 +53,28 @@ RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
                                                                     thread_status_(-1),
                                                                     process_id_(-1)
 {
+    // Add to task manager
+    RealTimeTaskManager::Instance()->AddTask(this);
+}
+
+RealTimeTaskNode::~RealTimeTaskNode()
+{
+    // Remove from task manager
+    RealTimeTaskManager::Instance()->EndTask(this);
 }
 
 void *RealTimeTaskNode::RunTask(void *task_instance)
 {
-    // TODO: Setup CPU sets, etc.
     RealTimeTaskNode *task = static_cast<RealTimeTaskNode *>(task_instance);
     std::cout << "[RealTimeTaskNode]: "
               << "Starting Task: " << task->task_name_ << std::endl;
 
     task->process_id_ = getpid();
-    // TODO: Add task to future Task Manager here.
 
     // TODO: Do we want to have support for adding to multiple CPUs here?
-    // TODO: Task manager should keep up with which task are pinned to which CPUs.  Could make sure high priority task maybe get pinned to unused cores
-    // TODO: Look up max number of CPUs. And make sure core_id falls within that range
+    // TODO: Task manager keepd up with which task are pinned to which CPUs.  Could make sure high priority task maybe get pinned to unused cores?
     cpu_set_t cpu_set;
-    if (task->rt_core_id_ >= 0)
+    if (task->rt_core_id_ >= 0 && task->rt_core_id_ < RealTimeTaskManager::Instance()->GetCPUCount())
     {
         std::cout << "[RealTimeTaskNode]: "
                   << "Setting Thread Affinity to CPU CORE: " << task->rt_core_id_ << std::endl;
@@ -206,8 +211,11 @@ int RealTimeTaskNode::Start(void *task_param)
     // Set as Detached
     thread_status_ = pthread_detach(thread_id_);
     if (thread_status_)
+    {
         std::cout << "[RealTimeTaskNode]: "
                   << "POSIX Thread failed to detach thread!" << std::endl;
+        return thread_status_;
+    }
 }
 
 void RealTimeTaskNode::Stop()
@@ -266,5 +274,100 @@ void RealTimeTaskNode::SetTaskFrequency(const unsigned int frequency_hz)
     // Period in microseconds
     SetTaskPeriod(long((1.0 / frequency_hz) * 1e6));
 }
+
+// Task Manager Source
+
+// Global static pointer used to ensure a single instance of the class.
+RealTimeTaskManager *RealTimeTaskManager::manager_instance_ = NULL;
+
+RealTimeTaskManager::RealTimeTaskManager()
+{
+    // ZMQ Context
+    zmq::context_t *context_ = new zmq::context_t(1);
+
+    // Get CPU Count
+    cpu_count_ = sysconf(_SC_NPROCESSORS_ONLN);
+
+    std::cout << "[RealTimeTaskManager]: Task manager RUNNING.  Total Number of CPUS available: " << cpu_count_ << std::endl;
+
+}
+
+RealTimeTaskManager *RealTimeTaskManager::Instance()
+{
+    if (manager_instance_ == NULL)
+    {
+        manager_instance_ = new RealTimeTaskManager();
+    }
+    return manager_instance_;
+}
+
+bool RealTimeTaskManager::AddTask(RealTimeTaskNode *task)
+{
+    assert(task != NULL);
+
+    for (int i = 0; i < task_map_.size(); i++)
+    {
+        if (task_map_[i] == task)
+        {
+            std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " already exists." << std::endl;
+            return false;
+        }
+    }
+
+    // TODO: Why does this not work with pointers properly?
+    //std::vector<RealTimeTaskNode* >::iterator it;
+
+    //std::find(task_map_.begin(), task_map_.end(), task);
+    //if(it != task_map_.end())
+    //{
+    //   printf("FOUND: %p\n", *it);
+    //   std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " already exists." << std::endl;
+    //   return false;
+    //}
+    task_map_.push_back(task);
+
+    std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " successfully added." << std::endl;
+    return true;
+}
+
+bool RealTimeTaskManager::EndTask(RealTimeTaskNode *task)
+{
+    assert(task != NULL);
+
+    for (int i = 0; i < task_map_.size(); i++)
+    {
+        if (task_map_[i] == task)
+        {
+            task->Stop();
+            task_map_.erase(task_map_.begin() + i);
+            std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " successfully removed" << std::endl;
+            return true;
+        }
+    }
+
+    // std::vector<RealTimeTaskNode *>::iterator it;
+    // std::find(task_map_.begin(), task_map_.end(), task);
+    // if (it != task_map_.end())
+    // {
+    //     task->Stop();
+    //     task_map_.erase(it);
+
+    //     // TODO: Should we clean up memory here?
+    //     std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " successfully removed" << std::endl;
+    //     return true;
+    // }
+
+    std::cout << "[RealTimeTaskManager]: No Task " << task->task_name_ << " currently running" << std::endl;
+    return false;
+}
+
+void RealTimeTaskManager::PrintActiveTasks()
+{
+    for (auto task : task_map_)
+    {
+        std::cout << "[RealTimeTaskManager]: Task: " << task->task_name_ << "\tPriority: " << task->rt_priority_ << "\tCPU Affinity: " << task->rt_core_id_ << std::endl;
+    }
+}
+
 } // namespace RealTimeControl
 } // namespace Controllers

@@ -5,7 +5,7 @@ set(CONTROLLERS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/src/RealTimeTask.
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/StateEstimator.cpp
 )
 
-set(CONTROLLERS_LIBS OptimalControl pthread rt)
+set(CONTROLLERS_LIBS OptimalControl pthread rt zmq)
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
 add_library(Controllers STATIC ${CONTROLLERS_SOURCES})

@@ -29,10 +29,10 @@
 // C++ Includes
 #include <iostream>
 #include <string>
+#include <map>
 
 // Third Party Includes
 #include <zmq.hpp>
-
 
 #ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
 #define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
@@ -52,6 +52,7 @@ enum Priority
 
 class RealTimeTaskNode
 {
+    friend class RealTimeTaskManager;
 
 public:
     // Base Class Real Time Task Node
@@ -65,6 +66,8 @@ public:
                      const unsigned int rt_priority = Priority::MEDIUM,
                      const int rt_core_id = -1,
                      const unsigned int stack_size = PTHREAD_STACK_MIN);
+
+    ~RealTimeTaskNode();
 
     // Task Start
     int Start(void *task_param = NULL);
@@ -91,12 +94,11 @@ public:
     void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
 protected:
-    
     // Override Me for thread function
     virtual void Run() = 0;
 
-    // We use ZMQ for thread message/data communications
-    
+    // Using ZMQ for thread sync and message passing
+
     // ZMQ Context
     zmq::context_t *context_;
 
@@ -111,7 +113,6 @@ protected:
     std::string transport_;
 
 private:
-
     // STATIC Task Delay
     static long int TaskDelay(long int microseconds);
 
@@ -130,7 +131,7 @@ private:
     // Task Period (microseconds)
     long rt_period_;
 
-    // Task CPU Affinity/CoreID
+    // Task CPU Affinboolity/CoreID
     int rt_core_id_;
 
     // Thread ID
@@ -144,6 +145,42 @@ private:
 
     // Task Parameter
     void *task_param_;
+};
+
+class RealTimeTaskManager
+{
+
+public:
+    // Base Class Real Time Task Manager
+    RealTimeTaskManager();
+
+    // STATIC Singleton Instance
+    static RealTimeTaskManager *Instance();
+
+    int GetCPUCount() { return cpu_count_; }
+
+    bool AddTask(RealTimeTaskNode *task);
+    bool EndTask(RealTimeTaskNode *task);
+    bool EndTask(const std::string &name);
+    void PrintActiveTasks();
+
+    const zmq::context_t *GetZMQContext() const { return context_; }
+
+protected:
+    // Using ZMQ for thread sync and message passing
+    // ZMQ Context
+    // Thread inproc messaging must share a single context.  We put it in the singleton here to keep it unique;
+    zmq::context_t *context_;
+
+private:
+    // Singleton Instance
+    static RealTimeTaskManager *manager_instance_;
+
+    // Vector to hold running tasks.  Assumed to not be THAT many running task.  Hence the std::vector
+    std::vector<RealTimeTaskNode *> task_map_;
+
+    // Max numbers of CPUs
+    int cpu_count_;
 };
 } // namespace RealTimeControl
 } // namespace Controllers
