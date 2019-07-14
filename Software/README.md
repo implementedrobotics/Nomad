@@ -244,8 +244,8 @@ git clone https://github.com/implementedrobotics/Nomad
 Setup CMake Build Sources
 ```
 cd Nomad/Software
-mkdir Build
-cd Build/
+mkdir build
+cd build/
 cmake ..
 ```
 
