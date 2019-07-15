@@ -83,6 +83,10 @@ protected:
     // Transport for output of State Estimator
     std::string output_transport_;
 
+    std::vector<std::string> input_port_;
+
+    std::vector<std::string> output_port_;
+
 private:
     int control_sequence_num_;
 };

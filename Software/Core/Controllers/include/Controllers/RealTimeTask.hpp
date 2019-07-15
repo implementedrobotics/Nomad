@@ -24,7 +24,6 @@
 // C Includes
 #include <limits.h>
 #include <pthread.h>
-#include <sched.h>
 
 // C++ Includes
 #include <iostream>
@@ -114,6 +113,11 @@ protected:
     // TODO: Also a Socket Type
     // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
     //std::string transport_;
+
+    std::map<unsigned int, std::string> input_port_map_;
+
+    std::map<unsigned int, std::string> output_port_map_;
+
 
 private:
     // STATIC Task Delay

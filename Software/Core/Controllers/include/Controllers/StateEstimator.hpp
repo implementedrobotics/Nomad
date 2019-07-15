@@ -40,6 +40,18 @@ class StateEstimator : public RealTimeControl::RealTimeTaskNode
 {
 
 public:
+    enum OutputPort
+    {
+        STATE_HAT = 0 // State Estimate
+    };
+
+    enum InputPort
+    {
+        IMU = 0,    // IMU Sensor Input
+        LEG_KINEMATICS = 1, // Leg Kinematics Input
+        VISUAL_ODOM = 2 // Visual Odometry Sensor Input
+    };
+
     // Base Class State Estimator Task Node
     // name = Task Name
     // stack_size = Task Thread Stack Size
