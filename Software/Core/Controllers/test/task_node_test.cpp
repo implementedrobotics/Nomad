@@ -1,6 +1,7 @@
 #include <Controllers/RealTimeTask.hpp>
 #include <Controllers/StateEstimator.hpp>
 #include <Controllers/ConvexMPC.hpp>
+#include <Controllers/GaitScheduler.hpp>
 #include <unistd.h>
 
 int main(int argc, char *argv[])
@@ -24,6 +25,16 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetCoreAffinity(2);
     convex_mpc_node.SetInputTransport(estimator_node.GetOutputTransport());
     convex_mpc_node.Start();
+
+    Controllers::Locomotion::GaitScheduler gait_scheduler_node("Gait_Scheduler_Task");
+    gait_scheduler_node.SetStackSize(100000);
+    gait_scheduler_node.SetTaskPriority(Controllers::RealTimeControl::Priority::MEDIUM);
+    gait_scheduler_node.SetTaskFrequency(10); // 100 HZ
+    gait_scheduler_node.SetCoreAffinity(2);
+    gait_scheduler_node.SetOutputTransport("inproc://nomad/gait");
+    gait_scheduler_node.Start();
+
+
 
     Controllers::RealTimeControl::RealTimeTaskManager::Instance()->PrintActiveTasks();
 

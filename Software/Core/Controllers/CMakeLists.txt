@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.10)
 set(CONTROLLERS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/src/RealTimeTask.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/StateEstimator.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ConvexMPC.cpp
+${PROJECT_SOURCE_DIR}/Core/Controllers/src/GaitScheduler.cpp
 )
 
 set(CONTROLLERS_LIBS OptimalControl pthread rt zmq)
