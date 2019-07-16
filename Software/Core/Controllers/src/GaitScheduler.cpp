@@ -49,6 +49,13 @@ GaitScheduler::GaitScheduler(const std::string &name,
                      const unsigned int stack_size) : RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                                       gait_schedule_sequence_num_(0)
 {
+    // Create Ports
+    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+
+    // Gait Scheduler Output Ports
+    // TODO: Independent port speeds.  For now all ports will be same speed as task node
+    RealTimeControl::Port *port = new RealTimeControl::Port("CONTACT_STATE", ctx, "gait/contact", rt_period);
+    output_port_map_[OutputPort::CONTACT_STATE] = port;
 }
 
 void GaitScheduler::Run()
@@ -64,7 +71,8 @@ void GaitScheduler::Run()
     auto msg = s.str();
     zmq::message_t message(msg.length());
     memcpy(message.data(), msg.c_str(), msg.length());
-    socket_->send(message);
+
+    GetOutputPort(0)->Send(message);
 
     std::cout << "[GaitScheduler]: Publishing: " << msg << std::endl;
 
@@ -73,9 +81,7 @@ void GaitScheduler::Run()
 
 void GaitScheduler::Setup()
 {
-    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
-    socket_ = new zmq::socket_t(*ctx, ZMQ_PUB);
-    socket_->bind(output_transport_);
+    GetOutputPort(0)->Bind();
     std::cout << "[GaitScheduler]: " << "Gait Scheduler Publisher Running!" << std::endl;
 }
 

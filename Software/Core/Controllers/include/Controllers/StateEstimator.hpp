@@ -40,6 +40,20 @@ class StateEstimator : public RealTimeControl::RealTimeTaskNode
 {
 
 public:
+
+    enum OutputPort
+    {
+        STATE_HAT = 0 // State Estimate
+    };
+
+    enum InputPort
+    {
+        IMU = 0,    // IMU Sensor Input
+        LEG_KINEMATICS = 1, // Leg Kinematics Input
+        VISUAL_ODOM = 2 // Visual Odometry Sensor Input
+    };
+
+
     // Base Class State Estimator Task Node
     // name = Task Name
     // stack_size = Task Thread Stack Size
@@ -52,34 +66,12 @@ public:
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-    void SetInputTransport(const std::string &transport) { input_transport_ = transport; }
-    void SetOutputTransport(const std::string &transport) { output_transport_ = transport; }
-
-    const std::string &GetInputTransport() const { return input_transport_; }
-    const std::string &GetOutputTransport() const { return output_transport_; }
-
 protected:
     // Overriden Run Function
     virtual void Run();
 
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
-
-    // Using ZMQ for thread sync and message passing
-    // ZMQ Socket
-    zmq::socket_t *socket_;
-
-    // ZMQ Transport
-    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
-    // TODO: Also a port int
-    // TODO: Also a Socket Type
-    // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
-
-    // Transport for input to State Estimator
-    std::string input_transport_;
-
-    // Transport for output of State Estimator
-    std::string output_transport_;
 
 private:
     int state_estimate_num_;

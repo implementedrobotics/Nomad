@@ -50,20 +50,28 @@ StateEstimator::StateEstimator(const std::string &name,
                                RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                state_estimate_num_(0)
 {
+    
+    // Create Ports
+    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+
+    // State Estimate Output Port
+    // TODO: Independent port speeds.  For now all ports will be same speed as task node
+    RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
+    output_port_map_[OutputPort::STATE_HAT] = port;
+    
 }
 
 void StateEstimator::Run()
 {
     // Publish State
-
     // TODO: Zero Copy Publish
     std::stringstream s;
     s << "Hello " << state_estimate_num_;
     auto msg = s.str();
     zmq::message_t message(msg.length());
     memcpy(message.data(), msg.c_str(), msg.length());
-    socket_->send(message);
 
+    GetOutputPort(0)->Send(message);
     std::cout << "[StateEstimator]: Publishing: " << msg << std::endl;
 
     state_estimate_num_++;
@@ -71,9 +79,7 @@ void StateEstimator::Run()
 
 void StateEstimator::Setup()
 {
-    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
-    socket_ = new zmq::socket_t(*ctx, ZMQ_PUB);
-    socket_->bind(output_transport_);
+    GetOutputPort(0)->Bind();
     std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
 }
 

@@ -48,14 +48,26 @@ ConvexMPC::ConvexMPC(const std::string &name,
                      const unsigned int stack_size) : RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                                       control_sequence_num_(0)
 {
+    // Create Ports
+    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+
+    // State Estimate Input Port
+    // TODO: Independent port speeds.  For now all ports will be same speed as task node
+    RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
+    input_port_map_[InputPort::STATE_HAT] = port;
+
+    port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
+    output_port_map_[OutputPort::FORCES] = port;
+
 }
 
 void ConvexMPC::Run()
 {
     control_sequence_num_++;
     zmq::message_t rx_msg;
-
-    socket_->recv(&rx_msg);
+    GetInputPort(0)->Receive(rx_msg);
+    //socket_->recv(&rx_msg);
+    
     std::string rx_str;
     rx_str.assign(static_cast<char *>(rx_msg.data()), rx_msg.size());
     std::cout << "[ConvexMPC]: Received: " << rx_str << " : " << control_sequence_num_ << std::endl;
@@ -63,18 +75,7 @@ void ConvexMPC::Run()
 
 void ConvexMPC::Setup()
 {
-    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
-    socket_ = new zmq::socket_t(*ctx, ZMQ_SUB);
-
-    // Keep only most recent message.  Drop all others from state estimator publisher
-    socket_->setsockopt(ZMQ_CONFLATE, 1);
-
-    // Connect to Publisher
-    socket_->connect(input_transport_);
-
-    // Setup Message Filter(None)
-    socket_->setsockopt(ZMQ_SUBSCRIBE, "", 0);
-
+    GetInputPort(0)->Connect();
     std::cout << "[ConvexMPC]: "
               << "ConvexMPC State Subscriber Running!" << std::endl;
 }

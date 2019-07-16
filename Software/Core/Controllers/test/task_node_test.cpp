@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskPriority(Controllers::RealTimeControl::Priority::MEDIUM);
     estimator_node.SetTaskFrequency(10); // 100 HZ
     estimator_node.SetCoreAffinity(1);
-    estimator_node.SetOutputTransport("inproc://nomad/state");
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad/state");
     estimator_node.Start();
 
     Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task");
@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetTaskPriority(Controllers::RealTimeControl::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(2); // 100 HZ
     convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetInputTransport(estimator_node.GetOutputTransport());
+    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, "nomad/forces");
+    Controllers::RealTimeControl::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT), estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     convex_mpc_node.Start();
 
     Controllers::Locomotion::GaitScheduler gait_scheduler_node("Gait_Scheduler_Task");
@@ -31,10 +32,8 @@ int main(int argc, char *argv[])
     gait_scheduler_node.SetTaskPriority(Controllers::RealTimeControl::Priority::MEDIUM);
     gait_scheduler_node.SetTaskFrequency(10); // 100 HZ
     gait_scheduler_node.SetCoreAffinity(2);
-    gait_scheduler_node.SetOutputTransport("inproc://nomad/gait");
+    gait_scheduler_node.SetPortOutput(Controllers::Locomotion::GaitScheduler::OutputPort::CONTACT_STATE, "nomad/gait_contacts");
     gait_scheduler_node.Start();
-
-
 
     Controllers::RealTimeControl::RealTimeTaskManager::Instance()->PrintActiveTasks();
 

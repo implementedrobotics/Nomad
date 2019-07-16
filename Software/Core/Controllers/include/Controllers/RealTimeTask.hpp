@@ -37,6 +37,7 @@
 #ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
 #define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
 
+
 namespace Controllers
 {
 namespace RealTimeControl
@@ -50,11 +51,71 @@ enum Priority
     HIGHEST = 1
 };
 
+// TODO: Port Type, etc
+class Port
+{
+
+public:
+
+    // Base class for RealTimeTaskNode Port
+    // name = Port Name
+    // ctx = ZMQ Context
+    // transport = ZMQ Socket Transport Location String
+    // period = Update period
+    Port(const std::string &name, zmq::context_t *ctx, const std::string &transport, int period);
+    ~Port();
+
+    // Transport
+    void SetTransport(const std::string &transport) {transport_ = transport;}
+    // Map Ports
+    static bool Map(Port *input, Port *output);
+
+    // Connect Port
+    bool Connect();
+
+    // Bind Port
+    bool Bind();
+
+    // Send data on port
+    bool Send(zmq::message_t &msg, int flags = 0);
+    bool Send(void *, const unsigned int length, int flags = 0);
+    bool Send(const std::string &str, const unsigned int length, int flags = 0);
+
+    // Receive data on port
+    bool Receive(zmq::message_t &msg, int flags = 0);
+    bool Receive(void *, const unsigned int length, int flags = 0);
+    bool Receive(const std::string &str, const unsigned int length, int flags = 0);
+
+private:
+    // Port Name
+    std::string name_;
+
+    // Update Period
+    unsigned int update_period_;
+
+    // Using ZMQ for thread sync and message passing
+    
+    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
+    // TODO: Also a port int
+    // TODO: Also a Socket Type
+    // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
+
+    // Transport
+    std::string transport_;
+
+    // Socket
+    zmq::socket_t *socket_;
+
+    // Context
+    zmq::context_t *context_;
+};
+
 class RealTimeTaskNode
 {
     friend class RealTimeTaskManager;
 
 public:
+    static const int MAX_PORTS = 16;
     // Base Class Real Time Task Node
     // name = Task Name
     // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
@@ -93,6 +154,16 @@ public:
     // Set CPU Core Affinity
     void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
+    // Get Output Port
+    Port* GetOutputPort(const int port_id) const;
+
+    // Get Input Port
+    Port* GetInputPort(const int port_id) const;
+
+    // Set Topic
+    // TODO: Add a "type" (TCP/UDP, THREAD ETC)
+    void SetPortOutput(const int port_id, const std::string& path);
+
 protected:
     // Override Me for thread function
     virtual void Run() = 0;
@@ -100,20 +171,11 @@ protected:
     // Setup function called prior to run loop.  Put any setup/initialization here, i.e. socket setup, pub sub etc.
     virtual void Setup() = 0;
 
-    // Using ZMQ for thread sync and message passing
+    // Input Port Map
+    std::vector<Port *> input_port_map_;
 
-    // ZMQ Context
-    //zmq::context_t *context_;
-
-    // ZMQ Socket
-    //zmq::socket_t *socket_;
-
-    // ZMQ Transport
-    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
-    // TODO: Also a port int
-    // TODO: Also a Socket Type
-    // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
-    //std::string transport_;
+    // Output Port Map
+    std::vector<Port *> output_port_map_;
 
 private:
     // STATIC Task Delay

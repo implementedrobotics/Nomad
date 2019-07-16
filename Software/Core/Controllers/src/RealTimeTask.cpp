@@ -55,6 +55,10 @@ RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
 {
     // Add to task manager
     RealTimeTaskManager::Instance()->AddTask(this);
+
+    // Reserve Ports
+    input_port_map_.reserve(MAX_PORTS);
+    output_port_map_.reserve(MAX_PORTS);
 }
 
 RealTimeTaskNode::~RealTimeTaskNode()
@@ -107,7 +111,7 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
     }
     else if (task->rt_core_id_ >= RealTimeTaskManager::Instance()->GetCPUCount())
     {
-        std::cout << "[RealTimeTaskNode]: " << task->task_name_ 
+        std::cout << "[RealTimeTaskNode]: " << task->task_name_
                   << "\tERROR.  Desired CPU Affinity exceeds number of available cores!" << std::endl
                   << "Please check system configuration." << std::endl;
     }
@@ -284,6 +288,27 @@ void RealTimeTaskNode::SetTaskFrequency(const unsigned int frequency_hz)
     SetTaskPeriod(long((1.0 / frequency_hz) * 1e6));
 }
 
+// Get Output Port
+Port *RealTimeTaskNode::GetOutputPort(const int port_id) const
+{
+    assert(port_id >= 0 && port_id < MAX_PORTS);
+    return output_port_map_[port_id];
+}
+
+// Get Input Port
+Port *RealTimeTaskNode::GetInputPort(const int port_id) const
+{
+    assert(port_id >= 0 && port_id < MAX_PORTS);
+    return input_port_map_[port_id];
+}
+
+// TODO: Add a "type" (TCP/UDP, THREAD ETC)
+void RealTimeTaskNode::SetPortOutput(const int port_id, const std::string &path)
+{
+    assert(port_id >= 0 && port_id < MAX_PORTS);
+    output_port_map_[port_id]->SetTransport("inproc://" + path); // TODO: Prefix depends on type/port.  For now INPROC only.
+}
+
 // Task Manager Source
 
 // Global static pointer used to ensure a single instance of the class.
@@ -375,6 +400,59 @@ void RealTimeTaskManager::PrintActiveTasks()
     {
         std::cout << "[RealTimeTaskManager]: Task: " << task->task_name_ << "\tPriority: " << task->rt_priority_ << "\tCPU Affinity: " << task->rt_core_id_ << std::endl;
     }
+}
+
+Port::Port(const std::string &name, zmq::context_t *ctx, const std::string &transport, int period) : name_(name),
+                                                                       context_(ctx),
+                                                                       transport_(transport),
+                                                                       update_period_(period)
+{
+}
+Port::~Port()
+{
+}
+
+bool Port::Map(Port *input, Port *output)
+{
+    input->transport_ = output->transport_;
+}
+
+// Connect Port
+bool Port::Connect()
+{
+    // TODO: For now always a subscriber
+    socket_ = new zmq::socket_t(*context_, ZMQ_SUB);
+
+    // Keep only most recent message.  Drop all others from state estimator publisher
+    socket_->setsockopt(ZMQ_CONFLATE, 1);
+
+    // Connect to Publisher
+    socket_->connect(transport_);
+
+    // TODO: Topics later?
+    // Setup Message Filter(None)
+    socket_->setsockopt(ZMQ_SUBSCRIBE, "", 0);
+}
+
+// Bind Port
+bool Port::Bind()
+{
+    // TODO: For now always a publisher
+    socket_ = new zmq::socket_t(*context_, ZMQ_PUB);
+    socket_->bind(transport_);
+}
+
+// Send data on port
+bool Port::Send(zmq::message_t &tx_msg, int flags)
+{
+    // TODO: Zero Copy Publish
+    socket_->send(tx_msg);
+}
+
+// Receive data on port
+bool Port::Receive(zmq::message_t &rx_msg, int flags)
+{
+    socket_->recv(&rx_msg);
 }
 
 } // namespace RealTimeControl
