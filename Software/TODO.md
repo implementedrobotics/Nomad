@@ -7,7 +7,7 @@
 5. Finish Gazebo API controller example.  Then do (6)
 6. Gazebo Model API to read from ZeroMQ Queue..  To make similar to real system we'll have one for each "leg".  4 Controller Topics.
 7. Communications to Gazebo for Simulating OCP
-8. Add Logging/Plotting Interface to visualize trajectories (Bokeh?)
+8. Add Logging/Plotting Interface to visualize trajectories [https://makersportal.com/blog/2018/8/14/real-time-graphing-in-python]
 9. RealTime Plotting Task Node
 10. "Discrete" Time System Classes
 11. Bring up a good trasnformations library(RBDL, KDL, DART, or Custom w/ Eigen)

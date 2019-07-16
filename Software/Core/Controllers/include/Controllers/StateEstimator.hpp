@@ -40,7 +40,6 @@ class StateEstimator : public RealTimeControl::RealTimeTaskNode
 {
 
 public:
-
     enum OutputPort
     {
         STATE_HAT = 0 // State Estimate
@@ -52,7 +51,6 @@ public:
         LEG_KINEMATICS = 1, // Leg Kinematics Input
         VISUAL_ODOM = 2 // Visual Odometry Sensor Input
     };
-
 
     // Base Class State Estimator Task Node
     // name = Task Name
