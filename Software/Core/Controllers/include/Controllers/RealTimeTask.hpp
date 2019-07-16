@@ -176,11 +176,6 @@ protected:
     // Output Port Map
     std::vector<Port *> output_port_map_;
 
-    std::map<unsigned int, std::string> input_port_map_;
-
-    std::map<unsigned int, std::string> output_port_map_;
-
-
 private:
     // STATIC Task Delay
     static long int TaskDelay(long int microseconds);
