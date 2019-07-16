@@ -30,7 +30,6 @@ int main(int argc, char *argv[]) {
 
     while(true) {
         zmq::message_t rx_msg;
-
         subscriber.recv(&rx_msg);
         std::string rx_str;
         rx_str.assign(static_cast<char *>(rx_msg.data()), rx_msg.size());

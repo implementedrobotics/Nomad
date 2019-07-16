@@ -1,7 +1,7 @@
 /*
- * StateEstimator.hpp
+ * ReferenceTrajectoryGenerator.hpp
  *
- *  Created on: July 13, 2019
+ *  Created on: July 16, 2019
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -27,49 +27,50 @@
 #include <iostream>
 #include <string>
 
+// Third Party Includes
+#include <Eigen/Dense>
+
+// Project Include Files
 #include <Controllers/RealTimeTask.hpp>
 
-#ifndef NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
-#define NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
+#ifndef NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_
+#define NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_
 
 namespace Controllers
 {
-namespace Estimators
+namespace Locomotion
 {
 
-struct CoMState
+struct TrajectorySetpoint
 {
-    double x[13];
+    double x_dot;
+    double y_dot;
+    double yaw_dot;
+    double z_com;
 };
 
-
-class StateEstimator : public RealTimeControl::RealTimeTaskNode
+class ReferenceTrajectoryGenerator : public RealTimeControl::RealTimeTaskNode
 {
 
 public:
     enum OutputPort
     {
-        STATE_HAT = 0 // State Estimate
+        REFERENCE = 0 // Trajectory Reference
     };
 
     enum InputPort
     {
-        IMU = 0,    // IMU Sensor Input
-        LEG_KINEMATICS = 1, // Leg Kinematics Input
-        VISUAL_ODOM = 2 // Visual Odometry Sensor Input
+        STATE_HAT = 0,  // State Estimate
+        SETPOINT = 1 // Input Setpoint (Operator)
     };
 
-    // Base Class State Estimator Task Node
+    // Base Class Reference Trajectory Generator Task Node
     // name = Task Name
     // stack_size = Task Thread Stack Size
     // rt_priority = Task Thread Priority
     // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    StateEstimator(const std::string &name = "State_Estimator_Task",
-                   const long rt_period = 10000,
-                   const unsigned int rt_priority = RealTimeControl::Priority::MEDIUM,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
+    ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T);
 
 protected:
     // Overriden Run Function
@@ -78,10 +79,21 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
+    // Trajectory State
+    Eigen::MatrixXd X_ref_;
+
+    int num_states_; // Number of System States
+
+    int N_; // Number of Sample Points
+
+    double T_s_; // Sample Time
+    double T_;   // Horizon Length
+
 private:
-    int state_estimate_num_;
+
+    int reference_sequence_num_;
 };
-} // namespace Estimators
+} // namespace Locomotion
 } // namespace Controllers
 
-#endif // NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
+#endif // NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_

@@ -77,12 +77,12 @@ public:
 
     // Send data on port
     bool Send(zmq::message_t &msg, int flags = 0);
-    bool Send(void *, const unsigned int length, int flags = 0);
+    bool Send(void *buffer, const unsigned int length, int flags = 0);
     bool Send(const std::string &str, const unsigned int length, int flags = 0);
 
     // Receive data on port
     bool Receive(zmq::message_t &msg, int flags = 0);
-    bool Receive(void *, const unsigned int length, int flags = 0);
+    bool Receive(void *buffer, const unsigned int length, int flags = 0);
     bool Receive(const std::string &str, const unsigned int length, int flags = 0);
 
 private:
@@ -118,14 +118,14 @@ public:
     // Base Class Real Time Task Node
     // name = Task Name
     // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_priority = Task Thread Priority
+    // rt_priority = Task Thread Priority -> Priority::MEDIUM,
     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    // stack_size = Task Thread Stack Size
-    RealTimeTaskNode(const std::string &name = "RT_Task",
-                     const long rt_period = 10000,
-                     const unsigned int rt_priority = Priority::MEDIUM,
-                     const int rt_core_id = -1,
-                     const unsigned int stack_size = PTHREAD_STACK_MIN);
+    // stack_size = Task Thread Stack Size -> PTHREAD_STACK_MIN
+    RealTimeTaskNode(const std::string &name,
+                     const long rt_period,
+                     const unsigned int rt_priority,
+                     const int rt_core_id,
+                     const unsigned int stack_size);
 
     ~RealTimeTaskNode();
 
@@ -176,13 +176,6 @@ protected:
     // Output Port Map
     std::vector<Port *> output_port_map_;
 
-private:
-    // STATIC Task Delay
-    static long int TaskDelay(long int microseconds);
-
-    // STATIC Member Task Run
-    static void *RunTask(void *task_instance);
-
     // Task Name
     std::string task_name_;
 
@@ -209,6 +202,16 @@ private:
 
     // Task Parameter
     void *task_param_;
+
+
+private:
+    // STATIC Task Delay
+    static long int TaskDelay(long int microseconds);
+
+    // STATIC Member Task Run
+    static void *RunTask(void *task_instance);
+
+
 };
 
 class RealTimeTaskManager

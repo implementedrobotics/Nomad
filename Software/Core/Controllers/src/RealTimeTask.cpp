@@ -426,6 +426,7 @@ bool Port::Connect()
     // Keep only most recent message.  Drop all others from state estimator publisher
     socket_->setsockopt(ZMQ_CONFLATE, 1);
 
+    std::cout<<"Connecting: " << transport_ << std::endl;
     // Connect to Publisher
     socket_->connect(transport_);
 
@@ -447,13 +448,27 @@ bool Port::Send(zmq::message_t &tx_msg, int flags)
 {
     // TODO: Zero Copy Publish
     socket_->send(tx_msg);
+    return true;
+}
+bool Port::Send(void *buffer, const unsigned int length, int flags)
+{
+    zmq::message_t message(length);
+    memcpy(message.data(), buffer, length);
+    return Send(message, flags);
 }
 
 // Receive data on port
 bool Port::Receive(zmq::message_t &rx_msg, int flags)
 {
     socket_->recv(&rx_msg);
+    return true;
 }
-
+bool Port::Receive(void *buffer, const unsigned int length, int flags)
+{
+    zmq::message_t rx_msg;
+    Receive(rx_msg); // Receive State Estimate
+    memcpy(buffer, rx_msg.data(), rx_msg.size());
+    return true;
+}
 } // namespace RealTimeControl
 } // namespace Controllers

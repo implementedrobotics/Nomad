@@ -5,6 +5,7 @@ set(CONTROLLERS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/src/RealTimeTask.
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/StateEstimator.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ConvexMPC.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/GaitScheduler.cpp
+${PROJECT_SOURCE_DIR}/Core/Controllers/src/ReferenceTrajectoryGen.cpp
 )
 
 set(CONTROLLERS_LIBS OptimalControl pthread rt zmq)

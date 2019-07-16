@@ -64,16 +64,37 @@ StateEstimator::StateEstimator(const std::string &name,
 
 void StateEstimator::Run()
 {
+    // Estimate State
+    CoMState output_state;
+
+    output_state.x[0] = 1.0;
+    output_state.x[1] = 2.0;
+    output_state.x[2] = 31.0;
+    output_state.x[3] = 40.0;
+    output_state.x[4] = 555.0;
+    output_state.x[5] = 66.0;
+    output_state.x[6] = 7.0;
+    output_state.x[7] = 8.0;
+    output_state.x[8] = 9.0;
+    output_state.x[9] = 10.0;
+    output_state.x[10] = 11.0;
+    output_state.x[11] = 12.0;
+    output_state.x[12] = 13.0;
+
+    std::cout << "State Size: " << sizeof(output_state) << std::endl;
+
     // Publish State
     // TODO: Zero Copy Publish
-    std::stringstream s;
-    s << "Hello " << state_estimate_num_;
-    auto msg = s.str();
-    zmq::message_t message(msg.length());
-    memcpy(message.data(), msg.c_str(), msg.length());
+    //std::stringstream s;
+    //s << "Hello " << state_estimate_num_;
+    //auto msg = s.str();
+    //const int length = sizeof(output_state);
+    //zmq::message_t message(length);
+    //memcpy(message.data(), &output_state, length);
 
-    GetOutputPort(0)->Send(message);
-    std::cout << "[StateEstimator]: Publishing: " << msg << std::endl;
+    //GetOutputPort(0)->Send(message);
+    GetOutputPort(0)->Send(&output_state, sizeof(output_state));
+    std::cout << "[StateEstimator]: Publishing: " << output_state.x << std::endl;
 
     state_estimate_num_++;
 }

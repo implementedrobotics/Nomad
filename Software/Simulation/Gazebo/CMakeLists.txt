@@ -11,3 +11,4 @@ target_link_libraries(nomad_world ${GAZEBO_LIBRARIES})
 add_library(nomad_model SHARED src/nomad_model.cpp)
 target_link_libraries(nomad_model ${GAZEBO_LIBRARIES})
 
+ 
