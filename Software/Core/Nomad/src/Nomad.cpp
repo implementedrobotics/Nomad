@@ -88,7 +88,7 @@ int main()
 
     // Get starting timepoint 
     //auto start = std::chrono::high_resolution_clock::now(); 
-    //bm_test.FillDiagonal(block_val, 0);
+
     // Get ending timepoint 
     //auto stop = std::chrono::high_resolution_clock::now(); 
 

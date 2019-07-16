@@ -29,6 +29,8 @@
 
 // Project Include Files
 #include <Controllers/RealTimeTask.hpp>
+#include <OptimalControl/OptimalControlProblem.hpp>
+#include <OptimalControl/LinearCondensedOCP.hpp>
 
 #ifndef NOMAD_CORE_CONTROLLERS_CONVEXMPC_H_
 #define NOMAD_CORE_CONTROLLERS_CONVEXMPC_H_
@@ -72,6 +74,14 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
+    // Optimal Control Problem
+    OptimalControl::LinearOptimalControl::LinearCondensedOCP *ocp_;
+
+    // TODO:
+    // Dynamic System Block
+    // State/Input Weights
+    // Time/Steps Etc.
+    // Num States/Num Outputs
 private:
     int control_sequence_num_;
 };
