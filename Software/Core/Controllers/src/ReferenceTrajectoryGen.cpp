@@ -82,7 +82,7 @@ void ReferenceTrajectoryGenerator::Run()
 
     TrajectorySetpoint setpoint;
     setpoint.x_dot = 1.0;
-    setpoint.y_dot = 2.0;
+    setpoint.y_dot = 0.0;
     setpoint.yaw_dot = 0.0;
     setpoint.z_com = 0.5;
 
@@ -96,6 +96,30 @@ void ReferenceTrajectoryGenerator::Run()
     //GetInputPort(1)->Receive((void *)&setpoint, sizeof(setpoint)); // Receive Setpoint
 
     // Compute Trajectory
+    X_ref_(0,0) = x_hat.x[0];
+    X_ref_(1,0) = x_hat.x[1];
+    X_ref_.row(2).setConstant(setpoint.z_com);
+    X_ref_.row(3).setConstant(setpoint.x_dot);
+    X_ref_.row(4).setConstant(setpoint.y_dot);
+    X_ref_.row(5).setConstant(0);
+    X_ref_.row(6).setConstant(0);
+    X_ref_.row(7).setConstant(0);
+    X_ref_.row(8).setConstant(x_hat.x[8]);
+    X_ref_.row(9).setConstant(0);
+    X_ref_.row(10).setConstant(0);
+    X_ref_.row(11).setConstant(0);
+    X_ref_.row(12).setConstant(9.81);
+
+    for(int i =0;i < N_; i++)
+    {
+        X_ref_(0,i+1) = X_ref_(0,i) + setpoint.x_dot * T_s_;
+        X_ref_(1,i+1) = X_ref_(1,i) + setpoint.y_dot * T_s_;
+        X_ref_(8,i+1) = X_ref_(8,i) + setpoint.yaw_dot * T_s_;
+    }
+    Eigen::Vector3d orient_d(0,0,setpoint.yaw_dot);
+  //  Eigen::AngleAxis<double> R_z(x_hat.x[8], Eigen::Vector3f(0,0,1));
+  //  Eigen::Vector3d omega = R_z * orient_d;
+
 
     // Publish Trajectory
     // TODO: Zero Copy Publish
