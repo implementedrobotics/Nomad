@@ -1,6 +1,7 @@
 # TODO:
 
 1. Operator Input Task Node
+2. Move RealTimeTask Base Class to new library, "Realtime"
 2. Add Logging/Plotting Interface to visualize trajectories [https://makersportal.com/blog/2018/8/14/real-time-graphing-in-python]
 3. RealTime Plotting Task Node
 4. Gait Scheduler Phasing EQ mod(2*pi*T+phase_shift/gait_period), 2*pi)/2*pi = (0 to 1)

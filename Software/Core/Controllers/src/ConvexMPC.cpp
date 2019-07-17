@@ -56,28 +56,49 @@ ConvexMPC::ConvexMPC(const std::string &name,
     RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
     input_port_map_[InputPort::STATE_HAT] = port;
 
-    port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
+    // Referenence Input Port
+    port = new RealTimeControl::Port("REFERENCE", ctx, "reference", rt_period);
+    input_port_map_[InputPort::REFERENCE_TRAJECTORY] = port;
+
+    // Optimal Force Solution Output Port
+    port = new RealTimeControl::Port("FORCES", ctx, "forces", rt_period);
     output_port_map_[OutputPort::FORCES] = port;
 
 }
 
 void ConvexMPC::Run()
 {
-    control_sequence_num_++;
-    zmq::message_t rx_msg;
-    GetInputPort(0)->Receive(rx_msg);
-    //socket_->recv(&rx_msg);
+    // TODO:
+
+    // Receive State Estimate and Unpack
     
-    std::string rx_str;
-    rx_str.assign(static_cast<char *>(rx_msg.data()), rx_msg.size());
-    std::cout << "[ConvexMPC]: Received: " << rx_str << " : " << control_sequence_num_ << std::endl;
+    // Receive Reference Trajectory and Unpack
+
+    // Pass to Optimal Control Problem
+
+    // Solve
+
+    // Output Optimal Forces
+   // zmq::message_t rx_msg;
+   // GetInputPort(0)->Receive(rx_msg);
+    
+   // std::string rx_str;
+   // rx_str.assign(static_cast<char *>(rx_msg.data()), rx_msg.size());
+   // std::cout << "[ConvexMPC]: Received: " << rx_str << " : " << control_sequence_num_ << std::endl;
+    control_sequence_num_++;
 }
 
 void ConvexMPC::Setup()
 {
-    GetInputPort(0)->Connect();
+    // Connect Input Ports
+    GetInputPort(0)->Connect(); // State Estimate
+    GetInputPort(1)->Connect(); // Reference Trajectory
+
+    // Bind Output Ports
+    GetOutputPort(0)->Bind(); // Optimal Force Output
+
     std::cout << "[ConvexMPC]: "
-              << "ConvexMPC State Subscriber Running!" << std::endl;
+              << "ConvexMPC Task Node Running!" << std::endl;
 }
 
 } // namespace Locomotion

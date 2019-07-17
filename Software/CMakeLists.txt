@@ -20,6 +20,9 @@ add_subdirectory(Core/Plotting)
 # Communications Library
 add_subdirectory(Communications)
 
+# Operator Interface
+add_subdirectory(OperatorInterface)
+
 # Simulation(Optional)
 add_subdirectory(Simulation/Gazebo)
 
