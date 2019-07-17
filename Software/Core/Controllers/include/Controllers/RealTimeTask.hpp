@@ -21,6 +21,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
+#ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
+#define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
+
 // C Includes
 #include <limits.h>
 #include <pthread.h>
@@ -32,10 +36,6 @@
 
 // Third Party Includes
 #include <zmq.hpp>
-
-#ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
-#define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
-
 
 namespace Controllers
 {

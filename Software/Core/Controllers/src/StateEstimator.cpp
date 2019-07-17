@@ -35,12 +35,18 @@
 
 // Project Includes
 #include <Controllers/RealTimeTask.hpp>
+#include <Controllers/Messages.hpp>
+
+
 
 namespace Controllers
 {
 
 namespace Estimators
 {
+
+    // TODO: Static Variable in "Physics" Class somewhere
+double kGravity = 9.81;
 //using namespace RealTimeControl;
 
 StateEstimator::StateEstimator(const std::string &name,
@@ -65,36 +71,33 @@ StateEstimator::StateEstimator(const std::string &name,
 void StateEstimator::Run()
 {
     // Estimate State
-    CoMState output_state;
+    Messages::Controllers::Estimators::CoMState output_state;
 
-    output_state.x[0] = 1.0;
-    output_state.x[1] = 2.0;
-    output_state.x[2] = 31.0;
-    output_state.x[3] = 40.0;
-    output_state.x[4] = 555.0;
-    output_state.x[5] = 66.0;
-    output_state.x[6] = 7.0;
-    output_state.x[7] = 8.0;
-    output_state.x[8] = 9.0;
-    output_state.x[9] = 10.0;
-    output_state.x[10] = 11.0;
-    output_state.x[11] = 12.0;
-    output_state.x[12] = 13.0;
+    // Get Timestamp
+    // TODO: "GetUptime" Static function in a time class
+    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    output_state.timestamp = time_now;
+    output_state.sequence_number = state_estimate_num_;
+    output_state.x[0] = 0.0; // X Position
+    output_state.x[1] = 0.0; // Y Position
+    output_state.x[2] = 0.0; // Z Position
+    output_state.x[3] = 0.0; // X Velocity
+    output_state.x[4] = 0.0; // Y Velocity
+    output_state.x[5] = 0.0; // Z Velocity
+    output_state.x[6] = 0.0; // Roll Orientation
+    output_state.x[7] = 0.0; // Pitch Orientation
+    output_state.x[8] = 2.0; // Yaw Orientation
+    output_state.x[9] = 0.0; // Roll Rate
+    output_state.x[10] = 0.0; // Pitch Rate
+    output_state.x[11] = 0.0; // Yaw Rate
+    output_state.x[12] = kGravity; // Gravity
 
     std::cout << "State Size: " << sizeof(output_state) << std::endl;
 
     // Publish State
-    // TODO: Zero Copy Publish
-    //std::stringstream s;
-    //s << "Hello " << state_estimate_num_;
-    //auto msg = s.str();
-    //const int length = sizeof(output_state);
-    //zmq::message_t message(length);
-    //memcpy(message.data(), &output_state, length);
-
-    //GetOutputPort(0)->Send(message);
     GetOutputPort(0)->Send(&output_state, sizeof(output_state));
-    std::cout << "[StateEstimator]: Publishing: " << output_state.x << std::endl;
+    std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << std::endl;
 
     state_estimate_num_++;
 }

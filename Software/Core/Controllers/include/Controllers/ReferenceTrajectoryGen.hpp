@@ -21,6 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_
+#define NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_
+
 // C System Files
 
 // C++ System Files
@@ -33,22 +36,10 @@
 // Project Include Files
 #include <Controllers/RealTimeTask.hpp>
 
-#ifndef NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_
-#define NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_
-
 namespace Controllers
 {
 namespace Locomotion
 {
-
-struct TrajectorySetpoint
-{
-    double x_dot;
-    double y_dot;
-    double yaw_dot;
-    double z_com;
-};
-
 class ReferenceTrajectoryGenerator : public RealTimeControl::RealTimeTaskNode
 {
 
@@ -60,8 +51,8 @@ public:
 
     enum InputPort
     {
-        STATE_HAT = 0,  // State Estimate
-        SETPOINT = 1 // Input Setpoint (Operator)
+        STATE_HAT = 0, // State Estimate
+        SETPOINT = 1   // Input Setpoint (Operator)
     };
 
     // Base Class Reference Trajectory Generator Task Node
@@ -80,7 +71,7 @@ protected:
     virtual void Setup();
 
     // Trajectory State
-    Eigen::MatrixXd X_ref_;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> X_ref_;
 
     int num_states_; // Number of System States
 
@@ -90,7 +81,6 @@ protected:
     double T_;   // Horizon Length
 
 private:
-
     int reference_sequence_num_;
 };
 } // namespace Locomotion

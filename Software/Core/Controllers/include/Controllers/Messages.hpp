@@ -1,7 +1,7 @@
 /*
- * GaitScheduler.hpp
+ * Messages.hpp
  *
- *  Created on: July 14, 2019
+ *  Created on: July 17, 2019
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,58 +21,76 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_CORE_CONTROLLERS_GAITSCHEDULER_H_
-#define NOMAD_CORE_CONTROLLERS_GAITSCHEDULER_H_
+#ifndef NOMAD_CORE_CONTROLLERS_MESSAGES_H_
+#define NOMAD_CORE_CONTROLLERS_MESSAGES_H_
 
 // C System Files
+#include <stdint.h>
 
 // C++ System Files
-#include <iostream>
-#include <string>
+
+// Third Party Includes
 
 // Project Include Files
-#include <Controllers/RealTimeTask.hpp>
 
+
+namespace Messages
+{
 namespace Controllers
 {
+namespace Estimators
+{
+struct CoMState
+{
+    // Timestamp
+    uint64_t timestamp;
+
+    // Sequence Number
+    uint64_t sequence_number;
+
+    // State
+    double x[13];
+};
+} // namespace Estimators
+
 namespace Locomotion
 {
-class GaitScheduler : public RealTimeControl::RealTimeTaskNode
+struct TrajectorySetpoint
 {
+    // Timestamp
+    uint64_t timestamp;
 
-public:
-    enum OutputPort
-    {
-        CONTACT_STATE = 0 // Leg Contact State
-    };
+    // Sequence Number
+    uint64_t sequence_number;
 
-    enum InputPort
-    {
-    };
+    // Desired Forward Velocity
+    double x_dot;
 
-    // Base Class Gait Scheduler Task Node
-    // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    GaitScheduler(const std::string &name = "GaitScheduler_Task",
-                   const long rt_period = 20000,
-                   const unsigned int rt_priority = RealTimeControl::Priority::HIGH,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
+    // Desired Lateral Velocity
+    double y_dot;
 
-protected:
-    // Overriden Run Function
-    virtual void Run();
+    // Desired Yaw(Turn) Rate
+    double yaw_dot;
 
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
-
-private:
-    int gait_schedule_sequence_num_;
+    // Desired CoM Height above ground
+    double z_com;
 };
+
+struct ReferenceTrajectory
+{
+    // Timestamp
+    uint64_t timestamp;
+
+    // Sequence Number
+    uint64_t sequence_number;
+
+    // Desired Reference
+    double X_ref[24*13]; // TODO: Make this variable and wokring with ZMQ
+};
+
+
 } // namespace Locomotion
 } // namespace Controllers
+} // namespace Messages
 
-#endif // NOMAD_CORE_CONTROLLERS_GAITSCHEDULER_H_
+#endif // NOMAD_CORE_CONTROLLERS_MESSAGES_H_

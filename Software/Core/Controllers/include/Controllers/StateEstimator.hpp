@@ -21,7 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
+#define NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
+
 // C System Files
+#include <stdint.h>
 
 // C++ System Files
 #include <iostream>
@@ -29,20 +33,10 @@
 
 #include <Controllers/RealTimeTask.hpp>
 
-#ifndef NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
-#define NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_
-
 namespace Controllers
 {
 namespace Estimators
 {
-
-struct CoMState
-{
-    double x[13];
-};
-
-
 class StateEstimator : public RealTimeControl::RealTimeTaskNode
 {
 
