@@ -8,10 +8,12 @@ ${PROJECT_SOURCE_DIR}/Core/Controllers/src/GaitScheduler.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ReferenceTrajectoryGen.cpp
 )
 
-set(CONTROLLERS_LIBS OptimalControl pthread rt zmq)
+set(CONTROLLERS_LIBS OptimalControl Systems pthread rt zmq)
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
+include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
+
 add_library(Controllers STATIC ${CONTROLLERS_SOURCES})
 target_link_libraries(Controllers ${CONTROLLERS_LIBS})
 #add_test(QuickStartTest test_main COMMAND test_main)

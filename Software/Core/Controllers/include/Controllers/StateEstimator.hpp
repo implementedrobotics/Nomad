@@ -72,8 +72,13 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
+    // Number of states
+    unsigned int num_states_;
+
+    
+
 private:
-    int state_estimate_num_;
+    int sequence_num_;
 };
 } // namespace Estimators
 } // namespace Controllers

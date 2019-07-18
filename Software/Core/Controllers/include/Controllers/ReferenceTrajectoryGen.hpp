@@ -41,6 +41,9 @@ namespace Controllers
 {
 namespace Locomotion
 {
+
+// TODO: This could just be a base class.  For now it is our specific trajectory generator for the convex mpc.  i.e. Number of states is fixed, and uses all assumptions (like 0 z-velocity, etc)
+// Long story short this is not universal...
 class ReferenceTrajectoryGenerator : public RealTimeControl::RealTimeTaskNode
 {
 
@@ -58,10 +61,8 @@ public:
 
     // Base Class Reference Trajectory Generator Task Node
     // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+    // N = Trajectory Steps
+    // T = Trajectory Time Window
     ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T);
 
 protected:
@@ -72,7 +73,7 @@ protected:
     virtual void Setup();
 
     // Trajectory State
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> X_ref_;
+    Eigen::MatrixXd X_ref_;
     
     // Number of System States
     int num_states_; 

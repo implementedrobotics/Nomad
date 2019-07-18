@@ -8,7 +8,7 @@ ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/LinearCondensedOCP.cpp
 )
 
 # Set Required Libraries
-set(OPTIMAL_CONTROL_LIBS pthread rt)
+set(OPTIMAL_CONTROL_LIBS pthread rt qpOASES)
 
 # Setup output
 add_library(OptimalControl STATIC ${OPTIMAL_CONTROL_SOURCES})

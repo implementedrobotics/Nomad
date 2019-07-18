@@ -129,16 +129,14 @@ void ReferenceTrajectoryGenerator::Run()
     }
     //std::cout << X_ref_ << std::endl;
 
-    // Update Publish Buffer
+    // Update Publish Trajectory Buffer
     reference_out_.timestamp = time_now;
     reference_out_.sequence_number = sequence_num_;
     memcpy(reference_out_.X_ref, X_ref_.data(), sizeof(double) * X_ref_.size());
 
     // Publish Trajectory
     GetOutputPort(0)->Send(&reference_out_, sizeof(reference_out_));
-
-    //std::cout << "[ReferenceTrajectoryGenerator]: Publishing: " << reference_out_.sequence_number << std::endl;
-
+    
     // Update our Sequence Counter
     sequence_num_++;
 }

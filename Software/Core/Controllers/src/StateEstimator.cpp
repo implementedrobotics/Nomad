@@ -55,7 +55,8 @@ StateEstimator::StateEstimator(const std::string &name,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
                                RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                               state_estimate_num_(0)
+                               sequence_num_(0),
+                               num_states_(13)
 {
     
     // Create Ports
@@ -71,6 +72,7 @@ StateEstimator::StateEstimator(const std::string &name,
 void StateEstimator::Run()
 {
     // Estimate State
+    //Messages::Controllers::Estimators::CoMState<13> output_state;
     Messages::Controllers::Estimators::CoMState output_state;
 
     // Get Timestamp
@@ -78,7 +80,7 @@ void StateEstimator::Run()
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     output_state.timestamp = time_now;
-    output_state.sequence_number = state_estimate_num_;
+    output_state.sequence_number = sequence_num_;
     output_state.x[0] = 0.0; // X Position
     output_state.x[1] = 0.0; // Y Position
     output_state.x[2] = 0.0; // Z Position
@@ -99,7 +101,7 @@ void StateEstimator::Run()
     GetOutputPort(0)->Send(&output_state, sizeof(output_state));
     //std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << std::endl;
 
-    state_estimate_num_++;
+    sequence_num_++;
 }
 
 void StateEstimator::Setup()

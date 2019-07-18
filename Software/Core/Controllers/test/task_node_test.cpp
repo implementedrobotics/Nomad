@@ -8,6 +8,10 @@
 
 int main(int argc, char *argv[])
 {
+
+    const int N = 10;
+    const double T = 1.0;
+
     // Create Task Manager Instance Singleton.  Must make sure this is done before any thread tries to access.  And thus tries to allocate memory inside the thread heap.
     Controllers::RealTimeControl::RealTimeTaskManager::Instance();
 
@@ -34,7 +38,7 @@ int main(int argc, char *argv[])
     usleep(100000);
 
     // Reference Trajectory Generator
-    Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", 24, 1.0);
+    Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
     ref_generator_node.SetStackSize(100000);
     ref_generator_node.SetTaskPriority(Controllers::RealTimeControl::Priority::MEDIUM);
     ref_generator_node.SetTaskFrequency(2); // 50 HZ
@@ -49,7 +53,7 @@ int main(int argc, char *argv[])
     usleep(100000);
 
     // Convex Model Predicive Controller for Locomotion
-    Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task");
+    Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
     convex_mpc_node.SetStackSize(100000);
     convex_mpc_node.SetTaskPriority(Controllers::RealTimeControl::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(2); // 50 HZ

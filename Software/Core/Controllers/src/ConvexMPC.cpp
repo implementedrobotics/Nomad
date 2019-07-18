@@ -40,32 +40,53 @@ namespace Controllers
 namespace Locomotion
 {
 //using namespace RealTimeControl;
-
-ConvexMPC::ConvexMPC(const std::string &name,
-                     const long rt_period,
-                     unsigned int rt_priority,
-                     const int rt_core_id,
-                     const unsigned int stack_size) : RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                                                      control_sequence_num_(0)
+ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double T) : 
+                               RealTimeControl::RealTimeTaskNode(name, 20000, RealTimeControl::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
+                               sequence_num_(0),
+                               num_states_(13),
+                               num_inputs_(12),
+                               T_(T),
+                               N_(N)
 {
+    // Sample Time
+    T_s_ = T_ / (N_);
+
+    // Create OCP
+    ocp_ = new OptimalControl::LinearOptimalControl::LinearCondensedOCP(N_, T_, 2,1,false);
+
+    // TODO: Should be SET from outside
+    // Create Rigid Body
+    block_ = RigidBlock1D(2.0, Eigen::Vector3d(1.0, 0.5, 0.25));
+
+    // State Weights
+    Eigen::VectorXd Q(2);
+    Q[0] = 100.0;
+    Q[1] = 1.0;
+
+    // Input Weights
+    Eigen::VectorXd R(1);
+    R[0] = 0.1;
+    
+    ocp_->SetWeights(Q, R);
+
     // Create Ports
     zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
 
     // State Estimate Input Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
+    RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period_);
     input_port_map_[InputPort::STATE_HAT] = port;
 
     // Referenence Input Port
-    port = new RealTimeControl::Port("REFERENCE", ctx, "reference", rt_period);
+    port = new RealTimeControl::Port("REFERENCE", ctx, "reference", rt_period_);
     input_port_map_[InputPort::REFERENCE_TRAJECTORY] = port;
 
     // Optimal Force Solution Output Port
-    port = new RealTimeControl::Port("FORCES", ctx, "forces", rt_period);
+    port = new RealTimeControl::Port("FORCES", ctx, "forces", rt_period_);
     output_port_map_[OutputPort::FORCES] = port;
 
-}
 
+}
 void ConvexMPC::Run()
 {  
      // Get Inputs
@@ -82,23 +103,47 @@ void ConvexMPC::Run()
 
     Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.x, 13);
     // Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> X_ref_ = Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>>(reference_in_.X_ref,13,24);
-    Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.X_ref,13,24);
+    Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.X_ref,13,10);
     std::cout <<  X_ref_ << std::endl;
     std::cout <<  x_hat_ << std::endl;
+
+    // Update our Dynamics Current State
+    Eigen::VectorXd initial_state(2);
+    initial_state[0] = x_hat_[0];
+    initial_state[1] = x_hat_[1];
+
+    block_.SetState(initial_state);
+
+    ocp_->SetInitialCondition(block_.GetState());
+    ocp_->SetModelMatrices(block_.A_d(), block_.B_d());
+    Eigen::MatrixXd ref_test(2,N_);
+    ref_test.row(0) = X_ref_.row(0);
+    ref_test.row(1) = X_ref_.row(3);
+    std::cout << "Refactor: " << std::endl;
+    std::cout <<  initial_state << std::endl;
+    std::cout <<  ref_test << std::endl;
+
+    ocp_->SetReference(ref_test);
+    ocp_->Solve();
+
+    for(int i = 0; i < N_-1; i++)
+    {
+        std::cout << "U: " << ocp_->U() << std::endl;
+        block_.Step(ocp_->U()(0,i));
+
+        std::cout << "X: " << block_.GetState()[0] << std::endl;
+    }
+
+
     // Pass to Optimal Control Problem
 
     // Solve
 
     // Output Optimal Forces
-   // zmq::message_t rx_msg;
-   // GetInputPort(0)->Receive(rx_msg);
-    
-   // std::string rx_str;
-   // rx_str.assign(static_cast<char *>(rx_msg.data()), rx_msg.size());
-    
-    control_sequence_num_++;
-}
+    // GetInputPort(0)->Receive(rx_msg);
 
+    sequence_num_++;
+}
 void ConvexMPC::Setup()
 {
     // Connect Input Ports

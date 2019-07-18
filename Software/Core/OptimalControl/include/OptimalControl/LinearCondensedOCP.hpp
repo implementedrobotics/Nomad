@@ -104,7 +104,7 @@ protected:
     std::vector<Eigen::MatrixXd> B_; // Input Matrix (Vector List for Time Varying)
 
     ControlsLibrary::EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
-    ControlsLibrary::EigenHelpers::BlockMatrixXd B_N_; // Condensed Input Matrix for QP
+    ControlsLibrary::EigenHelpers::BlockMatrixXd B_N_; // Condensed Control Input Matrix for QP
 
     Eigen::MatrixXd H_;   // Hessian Matrix
     Eigen::MatrixXd g_;   // Gradient Vector

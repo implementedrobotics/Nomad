@@ -35,7 +35,7 @@
 #include <Controllers/Messages.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
-
+#include <Systems/RigidBody.hpp>
 
 namespace Controllers
 {
@@ -57,17 +57,12 @@ public:
         REFERENCE_TRAJECTORY = 1 // Reference Trajectory
     };
 
-    // Base Class State Estimator Task Node
+    // Base Class Convex Model Predictive Controller Locomotion Task Node
     // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    ConvexMPC(const std::string &name = "ConvexMPC_Task",
-                   const long rt_period = 20000,
-                   const unsigned int rt_priority = RealTimeControl::Priority::HIGH,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
+    // N = Trajectory Steps
+    // T = Trajectory Time Window
+    ConvexMPC(const std::string &name, const unsigned int N, const double T);
+
 
 protected:
     // Overriden Run Function
@@ -81,14 +76,23 @@ protected:
 
     // TODO:
     // Dynamic System Block
-    // State/Input Weights
-    // Time/Steps Etc.
-    // Num States/Num Outputs
+    RigidBlock1D block_;
 
+    // State/Input Weights
+
+    // Number of System States
     unsigned int num_states_;
+
+    // Number of System Inputs
     unsigned int num_inputs_;
+
+    // Prediction Steps
     unsigned int N_;
+
+    // Prediction Length (s)
     double T_;
+
+    // Sampling Time (s)
     double T_s_;
 
     // Input (State Estimate)
@@ -98,7 +102,7 @@ protected:
     Messages::Controllers::Locomotion::ReferenceTrajectory reference_in_;
 
 private:
-    int control_sequence_num_;
+    int sequence_num_;
 };
 } // namespace Locomotion
 } // namespace Controllers

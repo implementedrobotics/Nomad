@@ -78,7 +78,7 @@ protected:
     Eigen::MatrixXd X_ref_; // Reference Trajectory
 
     Eigen::MatrixXd X_; // System State Trajectory
-    Eigen::MatrixXd U_; // Optimal Input Sequence Solution
+    Eigen::MatrixXd U_; // Optimal Control Input Sequence Solution
 
     Eigen::MatrixXd Q_; // State Weights
     Eigen::MatrixXd R_; // Input Weights
@@ -134,7 +134,7 @@ public:
 
 protected:
     Eigen::MatrixXd A_; // System State Transition Matrix
-    Eigen::MatrixXd B_; // Input Matrix
+    Eigen::MatrixXd B_; // Control Input Matrix
 
 
 

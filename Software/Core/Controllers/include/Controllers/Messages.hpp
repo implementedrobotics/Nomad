@@ -40,6 +40,8 @@ namespace Controllers
 {
 namespace Estimators
 {
+
+//template <unsigned int num_states> 
 struct CoMState
 {
     // Timestamp
@@ -76,6 +78,7 @@ struct TrajectorySetpoint
     double z_com;
 };
 
+//template <unsigned int num_states, unsigned int N> 
 struct ReferenceTrajectory
 {
     // Timestamp
@@ -85,7 +88,7 @@ struct ReferenceTrajectory
     uint64_t sequence_number;
 
     // Desired Reference
-    double X_ref[24*13]; // TODO: Make this variable and wokring with ZMQ
+    double X_ref[13*10]; // TODO: Make this variable and working with ZMQ
 };
 
 

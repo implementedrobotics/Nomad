@@ -81,8 +81,8 @@ void RemoteTeleop::Run()
     setpoint.timestamp = time_now;
     setpoint.sequence_number = sequence_num_;
     setpoint.x_dot = 1.0;
-    setpoint.y_dot = sequence_num_;
-    setpoint.yaw_dot = 1.0;
+    setpoint.y_dot = 0.0;
+    setpoint.yaw_dot = 0.0;
     setpoint.z_com = 0.5;
 
     // Publish Setpoint

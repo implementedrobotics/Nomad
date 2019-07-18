@@ -25,49 +25,9 @@
 #include <plotty/matplotlibcpp.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
+#include <Systems/RigidBody.hpp>
 #include <iostream>
 #include <chrono> 
-
-
-RigidBlock1D::RigidBlock1D(const double &mass,
-                           const Eigen::Vector3d &box_shape,
-                           const double &T_s /* = 1e-1*/) : LinearDynamicalSystem(2, 1, T_s),
-                                                            mass_(mass)
-{
-    //std::cout << "Num States: " << num_states << std::endl;
-    length_ = box_shape[0];
-    width_ = box_shape[1];
-    height_ = box_shape[2];
-
-    // Setup initial states
-    SetState(Eigen::VectorXd::Zero(num_states_));
-
-    // Setup System Matrices
-    A_ << 0, 1,
-          0, 0;
-
-    // Setup Input Matrix
-    B_ << 0,
-        1.0 / mass_;
-
-    // Cache Discrete Time Variant
-    ControlsLibrary::ContinuousToDiscrete(A_, B_, T_s_, A_d_, B_d_);
-}
-
-void RigidBlock1D::Step(const Eigen::VectorXd &u)
-{
-    x_ = A_d_ * x_ + B_d_ * u;
-}
-
-void RigidBlock1D::Step(double u)
-{
-    x_ = A_d_ * x_ + B_d_ * u;
-}
-
-void RigidBlock1D::Update()
-{
-    
-}
 
 using namespace OptimalControl::LinearOptimalControl;
 using namespace ControlsLibrary;
@@ -105,7 +65,7 @@ int main()
     //int num_steps = 24;
 
     LinearCondensedOCP ocp = LinearCondensedOCP(16, 1.5, 2,1,false);
-
+    
     // State Weights
     Eigen::VectorXd Q(2);
     Q[0] = 100.0;

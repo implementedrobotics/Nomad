@@ -93,7 +93,7 @@ public:
 protected:
 
     Eigen::MatrixXd A_;  // State Transition Mat rix
-    Eigen::MatrixXd B_;  // Input Matrix
+    Eigen::MatrixXd B_;  // Control Input Matrix
 
     Eigen::MatrixXd A_d_;  // Discrete Time State Transition Mat rix
     Eigen::MatrixXd B_d_;  // Discrete Time Input Matrix
@@ -121,10 +121,11 @@ public:
 
 protected:
 
-    // Time Varying Matrices
+    // Model Matrices (Time Varying)
     std::vector<Eigen::MatrixXd> A_tv_;
     std::vector<Eigen::MatrixXd> B_tv_;
 
+    // Discrete Time Model Matrices (Time Varying)
     std::vector<Eigen::MatrixXd> A_d_tv_;
     std::vector<Eigen::MatrixXd> B_d_tv_;
 };

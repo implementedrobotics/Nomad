@@ -1,7 +1,7 @@
 /*
- * Nomad.hpp
+ * RigidBody.hpp
  *
- *  Created on: July 7, 2019
+ *  Created on: July 18, 2019
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,12 +21,48 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_CORE_NOMAD_NOMAD_H
-#define NOMAD_CORE_NOMAD_NOMAD_H
+#ifndef NOMAD_SYSTEMS_RIGIDBODY_H
+#define NOMAD_SYSTEMS_RIGIDBODY_H
 
-#include <OptimalControl/ControlsLibrary.hpp>
+// 
 #include <Systems/DynamicalSystem.hpp>
+
+// C System Files
+
+// C++ System Files
+#include <iostream>
+#include <string>
+
+// Third Party Includes
 #include <Eigen/Dense>
 
+// Project Include Files
 
-#endif // NOMAD_CORE_NOMAD_NOMAD_H
+class RigidBlock1D : public LinearDynamicalSystem
+{
+    public:
+
+        // Constructor
+        RigidBlock1D();
+        RigidBlock1D(const double& mass, const Eigen::Vector3d& box_shape, const double& T_s = 1e-1);
+ 
+        // Step System
+        void Step(const Eigen::VectorXd& u);
+        void Step(double u);
+
+        // Update
+        void Update();
+
+        // Mass
+        double GetMass() const {return mass_;}
+    
+
+    protected:
+        double mass_;
+        double width_;
+        double height_;
+        double length_;
+
+};
+
+#endif // NOMAD_SYSTEMS_RIGIDBODY_H
