@@ -93,11 +93,11 @@ void StateEstimator::Run()
     output_state.x[11] = 0.0; // Yaw Rate
     output_state.x[12] = kGravity; // Gravity
 
-    std::cout << "State Size: " << sizeof(output_state) << std::endl;
+    //std::cout << "State Size: " << sizeof(output_state) << std::endl;
 
     // Publish State
     GetOutputPort(0)->Send(&output_state, sizeof(output_state));
-    std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << std::endl;
+    //std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << std::endl;
 
     state_estimate_num_++;
 }

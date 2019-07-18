@@ -72,7 +72,7 @@ protected:
     virtual void Setup();
 
     // Trajectory State
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> X_ref_;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> X_ref_;
     
     // Number of System States
     int num_states_; 

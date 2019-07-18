@@ -62,7 +62,7 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
     T_s_ = T_ / (N_);
 
     // Reference State Trajectory
-    X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states_, N_);
+    X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
 
     // Create Ports
     zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();

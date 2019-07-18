@@ -85,6 +85,12 @@ protected:
     // Time/Steps Etc.
     // Num States/Num Outputs
 
+    unsigned int num_states_;
+    unsigned int num_inputs_;
+    unsigned int N_;
+    double T_;
+    double T_s_;
+
     // Input (State Estimate)
     Messages::Controllers::Estimators::CoMState x_hat_in_;
 

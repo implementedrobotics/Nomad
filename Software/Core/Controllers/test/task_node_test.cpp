@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        printf("[TASK_NODE_TEST]: IDLE TASK\n");
+        //printf("[TASK_NODE_TEST]: IDLE TASK\n");
         usleep(1000000);
         //estimator_node.Stop();
     }
