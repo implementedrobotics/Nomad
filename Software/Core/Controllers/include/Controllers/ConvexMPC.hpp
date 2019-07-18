@@ -32,8 +32,10 @@
 
 // Project Include Files
 #include <Controllers/RealTimeTask.hpp>
+#include <Controllers/Messages.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
+
 
 namespace Controllers
 {
@@ -82,6 +84,13 @@ protected:
     // State/Input Weights
     // Time/Steps Etc.
     // Num States/Num Outputs
+
+    // Input (State Estimate)
+    Messages::Controllers::Estimators::CoMState x_hat_in_;
+
+    // Input (Reference Trajectory)
+    Messages::Controllers::Locomotion::ReferenceTrajectory reference_in_;
+
 private:
     int control_sequence_num_;
 };

@@ -67,12 +67,21 @@ ConvexMPC::ConvexMPC(const std::string &name,
 }
 
 void ConvexMPC::Run()
-{
-    // TODO:
+{  
+     // Get Inputs
 
     // Receive State Estimate and Unpack
-    
-    // Receive Reference Trajectory and Unpack
+    GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
+
+    // Receive Trajectory Reference and Unpack
+    GetInputPort(1)->Receive((void *)&reference_in_, sizeof(reference_in_)); // Receive Setpoint
+
+    // Get Timestamp
+    // TODO: "GetUptime" Static function in a time class
+    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    Eigen::Matrix<double,13,24,Eigen::RowMajor> X_ref_ = Eigen::Map<Eigen::Matrix<double,13,24,Eigen::RowMajor>>(reference_in_.X_ref);
+    std::cout <<  X_ref_ << std::endl;
 
     // Pass to Optimal Control Problem
 
@@ -84,7 +93,7 @@ void ConvexMPC::Run()
     
    // std::string rx_str;
    // rx_str.assign(static_cast<char *>(rx_msg.data()), rx_msg.size());
-   // std::cout << "[ConvexMPC]: Received: " << rx_str << " : " << control_sequence_num_ << std::endl;
+    
     control_sequence_num_++;
 }
 

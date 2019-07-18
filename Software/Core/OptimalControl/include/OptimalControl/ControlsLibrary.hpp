@@ -50,6 +50,8 @@ void ContinuousToDiscrete(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B, do
 namespace EigenHelpers
 {
 
+// Typedefs
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RowMatrixXd;
 // TODO: Make this more generic
 // Block Matrix Class
 class BlockMatrixXd

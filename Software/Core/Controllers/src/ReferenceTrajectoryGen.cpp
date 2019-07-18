@@ -91,17 +91,8 @@ void ReferenceTrajectoryGenerator::Run()
     // TODO: "GetUptime" Static function in a time class
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    // TODO: Move to Operator Input Node
-    // Messages::Controllers::Locomotion::TrajectorySetpoint setpoint_in_;
-    // setpoint_in_.timestamp = time_now;
-    // setpoint_in_.sequence_number = 1;
-    // setpoint_in_.x_dot = 1.0;
-    // setpoint_in_.y_dot = 0.0;
-    // setpoint_in_.yaw_dot = 1.0;
-    // setpoint_in_.z_com = 0.5;
-
-    std::cout << "X: " << x_hat_in_.x[3] << std::endl;
-    std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
+    //std::cout << "X: " << x_hat_in_.x[3] << std::endl;
+    //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
     X_ref_(0,0) = x_hat_in_.x[0]; // X Position
@@ -136,7 +127,7 @@ void ReferenceTrajectoryGenerator::Run()
         X_ref_(1,i+1) = X_ref_(1,i) + setpoint_in_.y_dot * T_s_;
         X_ref_(8,i+1) = X_ref_(8,i) + setpoint_in_.yaw_dot * T_s_;
     }
-    std::cout << X_ref_ << std::endl;
+    //std::cout << X_ref_ << std::endl;
 
     // Update Publish Buffer
     reference_out_.timestamp = time_now;
@@ -146,7 +137,7 @@ void ReferenceTrajectoryGenerator::Run()
     // Publish Trajectory
     GetOutputPort(0)->Send(&reference_out_, sizeof(reference_out_));
 
-    std::cout << "[ReferenceTrajectoryGenerator]: Publishing: " << reference_out_.sequence_number << std::endl;
+    //std::cout << "[ReferenceTrajectoryGenerator]: Publishing: " << reference_out_.sequence_number << std::endl;
 
     // Update our Sequence Counter
     sequence_num_++;
