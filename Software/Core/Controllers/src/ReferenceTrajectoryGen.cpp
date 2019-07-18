@@ -52,14 +52,14 @@ namespace Locomotion
 
 ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T) : 
                                RealTimeControl::RealTimeTaskNode(name, 20000, RealTimeControl::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
-                               reference_sequence_num_(0),
+                               sequence_num_(0),
                                num_states_(13),
                                T_(T),
                                N_(N)
 {
     
     // Sample Time
-    T_s_ = T_ / N_;
+    T_s_ = T_ / (N_);
 
     // Reference State Trajectory
     X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states_, N_);
@@ -82,48 +82,39 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
 
 void ReferenceTrajectoryGenerator::Run()
 {
-    // Input (State Estimate)
-    Messages::Controllers::Estimators::CoMState x_hat;
 
-    // Input (Setpoint)
-    Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
-
-    // Output (Reference Trajectory)
-    Messages::Controllers::Locomotion::ReferenceTrajectory reference_out;
+    // Get Inputs
+    GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
+    GetInputPort(1)->Receive((void *)&setpoint_in_, sizeof(setpoint_in_)); // Receive Setpoint
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     // TODO: Move to Operator Input Node
-    setpoint.timestamp = time_now;
-    setpoint.sequence_number = 1;
-    setpoint.x_dot = 1.0;
-    setpoint.y_dot = 0.0;
-    setpoint.yaw_dot = 1.0;
-    setpoint.z_com = 0.5;
+    // Messages::Controllers::Locomotion::TrajectorySetpoint setpoint_in_;
+    // setpoint_in_.timestamp = time_now;
+    // setpoint_in_.sequence_number = 1;
+    // setpoint_in_.x_dot = 1.0;
+    // setpoint_in_.y_dot = 0.0;
+    // setpoint_in_.yaw_dot = 1.0;
+    // setpoint_in_.z_com = 0.5;
 
-    // Get Inputs
-    GetInputPort(0)->Receive((void *)&x_hat, sizeof(x_hat)); // Receive State Estimate
-
-    // TODO: Add This back in
-    //GetInputPort(1)->Receive((void *)&setpoint, sizeof(setpoint)); // Receive Setpoint
-    
-    std::cout << "X: " << x_hat.x[3] << std::endl;
-    std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat.x[3] << " : " << reference_sequence_num_ << std::endl;
+    std::cout << "X: " << x_hat_in_.x[3] << std::endl;
+    std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
-    X_ref_(0,0) = x_hat.x[0]; // X Position
-    X_ref_(1,0) = x_hat.x[1]; // Y Position
-    X_ref_.row(2).setConstant(setpoint.z_com); // Z Position
+    X_ref_(0,0) = x_hat_in_.x[0]; // X Position
+    X_ref_(1,0) = x_hat_in_.x[1]; // Y Position
+    X_ref_.row(2).setConstant(setpoint_in_.z_com); // Z Position
 
-    X_ref_.row(3).setConstant(setpoint.x_dot); // X Velocity
-    X_ref_.row(4).setConstant(setpoint.y_dot); // Y Velocity
+    X_ref_.row(3).setConstant(setpoint_in_.x_dot); // X Velocity
+    X_ref_.row(4).setConstant(setpoint_in_.y_dot); // Y Velocity
     X_ref_.row(5).setConstant(0); // Z Velocity
 
     X_ref_.row(6).setConstant(0); // Roll Orientation
     X_ref_.row(7).setConstant(0); // Pitch Orientation
-    X_ref_.row(8).setConstant(x_hat.x[8]); // Yaw Orientation
+    X_ref_.row(8).setConstant(x_hat_in_.x[8]); // Yaw Orientation
 
     X_ref_.row(9).setConstant(0); // Roll Rate
     X_ref_.row(10).setConstant(0); // Pitch Rate
@@ -136,40 +127,41 @@ void ReferenceTrajectoryGenerator::Run()
     //std::cout << R_z << std::endl;
     //std::cout << omega;
 
-    X_ref_.row(11).setConstant(setpoint.yaw_dot); // Yaw Rate
+    X_ref_.row(11).setConstant(setpoint_in_.yaw_dot); // Yaw Rate
     X_ref_.row(12).setConstant(kGravity); // Gravity
 
     for(int i = 0;i < N_-1; i++)
     {
-        X_ref_(0,i+1) = X_ref_(0,i) + setpoint.x_dot * T_s_;
-        X_ref_(1,i+1) = X_ref_(1,i) + setpoint.y_dot * T_s_;
-        X_ref_(8,i+1) = X_ref_(8,i) + setpoint.yaw_dot * T_s_;
+        X_ref_(0,i+1) = X_ref_(0,i) + setpoint_in_.x_dot * T_s_;
+        X_ref_(1,i+1) = X_ref_(1,i) + setpoint_in_.y_dot * T_s_;
+        X_ref_(8,i+1) = X_ref_(8,i) + setpoint_in_.yaw_dot * T_s_;
     }
     std::cout << X_ref_ << std::endl;
 
     // Update Publish Buffer
-    reference_out.timestamp = time_now;
-    reference_out.sequence_number = reference_sequence_num_;
-    memcpy(reference_out.X_ref, X_ref_.data(), sizeof(double) * X_ref_.size());
+    reference_out_.timestamp = time_now;
+    reference_out_.sequence_number = sequence_num_;
+    memcpy(reference_out_.X_ref, X_ref_.data(), sizeof(double) * X_ref_.size());
 
     // Publish Trajectory
-    GetOutputPort(0)->Send(&reference_out, sizeof(reference_out));
+    GetOutputPort(0)->Send(&reference_out_, sizeof(reference_out_));
 
-    std::cout << "[ReferenceTrajectoryGenerator]: Publishing: " << reference_out.sequence_number << std::endl;
+    std::cout << "[ReferenceTrajectoryGenerator]: Publishing: " << reference_out_.sequence_number << std::endl;
 
-    reference_sequence_num_++;
+    // Update our Sequence Counter
+    sequence_num_++;
 }
 
 void ReferenceTrajectoryGenerator::Setup()
 {
 
-    // State Estimate
+    // State Estimate INPUT
     GetInputPort(0)->Connect();
 
-    // Setpoint Input
-    //GetInputPort(1)->Connect();
+    // Setpoint INPUT
+    GetInputPort(1)->Connect();
 
-    // Reference Output
+    // Reference OUTPUT
     GetOutputPort(0)->Bind();
     std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
 }

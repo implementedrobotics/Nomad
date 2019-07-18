@@ -35,6 +35,7 @@
 
 // Project Include Files
 #include <Controllers/RealTimeTask.hpp>
+#include <Controllers/Messages.hpp>
 
 namespace Controllers
 {
@@ -72,16 +73,30 @@ protected:
 
     // Trajectory State
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> X_ref_;
+    
+    // Number of System States
+    int num_states_; 
+    
+    // Number of Sample Points
+    int N_; 
 
-    int num_states_; // Number of System States
+    // Sample Time
+    double T_s_; 
 
-    int N_; // Number of Sample Points
+    // Horizon Length
+    double T_;   
 
-    double T_s_; // Sample Time
-    double T_;   // Horizon Length
+    // Input (State Estimate)
+    Messages::Controllers::Estimators::CoMState x_hat_in_;
+
+    // Input (Setpoint)
+    Messages::Controllers::Locomotion::TrajectorySetpoint setpoint_in_;
+
+    // Output (Reference Trajectory)
+    Messages::Controllers::Locomotion::ReferenceTrajectory reference_out_;
 
 private:
-    int reference_sequence_num_;
+    int sequence_num_;
 };
 } // namespace Locomotion
 } // namespace Controllers

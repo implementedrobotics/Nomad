@@ -1,4 +1,5 @@
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/OperatorInterface/include")
 
 set(CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/qp_solver_test.cpp)
 set(CONTROLLER_TEST_LIBS qpOASES OptimalControl)
@@ -7,7 +8,7 @@ set(ZEROMQ_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/zero_mq_test
 set(ZEROMQ_TEST_LIBS zmq pthread)
 
 set(TASK_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/task_node_test.cpp)
-set(TASK_TEST_LIBS Controllers)
+set(TASK_TEST_LIBS Controllers OperatorInterface)
 
 # Definitions
 add_definitions(-D_GNU_SOURCE)

@@ -37,8 +37,6 @@
 #include <Controllers/RealTimeTask.hpp>
 #include <Controllers/Messages.hpp>
 
-
-
 namespace OperatorInterface
 {
 
@@ -50,57 +48,54 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
                                Controllers::RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                               setpoint_sequence_num_(0)
+                               sequence_num_(0)
 {
     
-    // // Create Ports
-    // zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+    // Create Ports
+    zmq::context_t *ctx = Controllers::RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
 
-    // // State Estimate Output Port
-    // // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    // RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
-    // output_port_map_[OutputPort::STATE_HAT] = port;
-    
+    // Setpoint OUTPUT Port
+    // TODO: Independent port speeds.  For now all ports will be same speed as task node
+    Controllers::RealTimeControl::Port *port = new Controllers::RealTimeControl::Port("SETPOINT", ctx, "setpoint", rt_period);
+    output_port_map_[OutputPort::SETPOINT] = port;
+
+    // TODO: Multiple Inputs with relative control priorities. i.e. Autonomous Mapping vs. Remote Controller vs. "Safety" Controller
+    // Remote INPUT Port
+    port = new Controllers::RealTimeControl::Port("REMOTE", ctx, "remote", rt_period);
+    output_port_map_[OutputPort::SETPOINT] = port;
+   
 }
 
 void RemoteTeleop::Run()
 {
-    // // Estimate State
-    // Messages::Controllers::Estimators::CoMState output_state;
+    // Input (Remote)
+    //Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
 
-    // // Get Timestamp
-    // // TODO: "GetUptime" Static function in a time class
-    // uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    // Output (Reference Setpoint)
+    Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
 
-    // output_state.timestamp = time_now;
-    // output_state.sequence_number = state_estimate_num_;
-    // output_state.x[0] = 0.0; // X Position
-    // output_state.x[1] = 0.0; // Y Position
-    // output_state.x[2] = 0.0; // Z Position
-    // output_state.x[3] = 0.0; // X Velocity
-    // output_state.x[4] = 0.0; // Y Velocity
-    // output_state.x[5] = 0.0; // Z Velocity
-    // output_state.x[6] = 0.0; // Roll Orientation
-    // output_state.x[7] = 0.0; // Pitch Orientation
-    // output_state.x[8] = 2.0; // Yaw Orientation
-    // output_state.x[9] = 0.0; // Roll Rate
-    // output_state.x[10] = 0.0; // Pitch Rate
-    // output_state.x[11] = 0.0; // Yaw Rate
-    // output_state.x[12] = kGravity; // Gravity
+    // Get Timestamp
+    // TODO: "GetUptime" Static function in a time class
+    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    // std::cout << "State Size: " << sizeof(output_state) << std::endl;
+    setpoint.timestamp = time_now;
+    setpoint.sequence_number = sequence_num_;
+    setpoint.x_dot = 1.0;
+    setpoint.y_dot = sequence_num_;
+    setpoint.yaw_dot = 1.0;
+    setpoint.z_com = 0.5;
 
-    // // Publish State
-    // GetOutputPort(0)->Send(&output_state, sizeof(output_state));
-    // std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << std::endl;
+    // Publish Setpoint
+    GetOutputPort(0)->Send(&setpoint, sizeof(setpoint));
+     std::cout << "[RemoteTeleop]: Publishing: " << setpoint.sequence_number << std::endl;
 
-    // state_estimate_num_++;
+    sequence_num_++;
 }
 
 void RemoteTeleop::Setup()
 {
-    // GetOutputPort(0)->Bind();
-    // std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
+    GetOutputPort(0)->Bind();
+    std::cout << "[RemoteTeleop]: " << "Remote Teleop Task Running!" << std::endl;
 }
 
 } // namespace Teleop
