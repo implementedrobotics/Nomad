@@ -494,13 +494,12 @@ bool Port::Bind()
 }
 
 // Send data on port
-bool Port::Send(zmq::message_t &tx_msg, int flags)
+int Port::Send(zmq::message_t &tx_msg, int flags)
 {
     // TODO: Zero Copy Publish
-    socket_->send(tx_msg);
-    return true;
+    return socket_->send(tx_msg);
 }
-bool Port::Send(void *buffer, const unsigned int length, int flags)
+int Port::Send(void *buffer, const unsigned int length, int flags)
 {
     zmq::message_t message(length);
     memcpy(message.data(), buffer, length);
@@ -508,16 +507,18 @@ bool Port::Send(void *buffer, const unsigned int length, int flags)
 }
 
 // Receive data on port
-bool Port::Receive(zmq::message_t &rx_msg, int flags)
+int Port::Receive(zmq::message_t &rx_msg, int flags)
 {
-    socket_->recv(&rx_msg);
-    return true;
+    return socket_->recv(&rx_msg);
 }
-bool Port::Receive(void *buffer, const unsigned int length, int flags)
+int Port::Receive(void *buffer, const unsigned int length, int flags)
 {
     zmq::message_t rx_msg;
-    Receive(rx_msg); // Receive State Estimate
-    memcpy(buffer, rx_msg.data(), rx_msg.size());
-    return true;
+    int ret_status = Receive(rx_msg); // Receive Buffer
+    if(!ret_status) 
+    {
+        memcpy(buffer, rx_msg.data(), rx_msg.size());
+    }
+    return ret_status;
 }
 } // namespace Realtime
