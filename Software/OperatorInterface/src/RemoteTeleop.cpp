@@ -47,21 +47,21 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
                                unsigned int rt_priority,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
-                               Controllers::RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
+                               Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                sequence_num_(0)
 {
     
     // Create Ports
-    zmq::context_t *ctx = Controllers::RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+    zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
 
     // Setpoint OUTPUT Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Controllers::RealTimeControl::Port *port = new Controllers::RealTimeControl::Port("SETPOINT", ctx, "setpoint", rt_period);
+    Realtime::Port *port = new Realtime::Port("SETPOINT", ctx, "setpoint", rt_period);
     output_port_map_[OutputPort::SETPOINT] = port;
 
     // TODO: Multiple Inputs with relative control priorities. i.e. Autonomous Mapping vs. Remote Controller vs. "Safety" Controller
     // Remote INPUT Port
-    port = new Controllers::RealTimeControl::Port("REMOTE", ctx, "remote", rt_period);
+    port = new Realtime::Port("REMOTE", ctx, "remote", rt_period);
     output_port_map_[OutputPort::SETPOINT] = port;
    
 }

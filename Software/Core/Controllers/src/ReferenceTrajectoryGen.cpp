@@ -51,7 +51,7 @@ namespace Locomotion
 //using namespace RealTimeControl;
 
 ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T) : 
-                               RealTimeControl::RealTimeTaskNode(name, 20000, RealTimeControl::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
+                               Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
                                sequence_num_(0),
                                num_states_(13),
                                T_(T),
@@ -65,17 +65,17 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
     X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
 
     // Create Ports
-    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+    zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
 
     // Reference Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    RealTimeControl::Port *port = new RealTimeControl::Port("REFERENCE", ctx, "reference", rt_period_);
+    Realtime::Port *port = new Realtime::Port("REFERENCE", ctx, "reference", rt_period_);
     output_port_map_[OutputPort::REFERENCE] = port;
 
-    port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period_);
+    port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period_);
     input_port_map_[InputPort::STATE_HAT] = port;
 
-    port = new RealTimeControl::Port("SETPOINT", ctx, "setpoint", rt_period_);
+    port = new Realtime::Port("SETPOINT", ctx, "setpoint", rt_period_);
     input_port_map_[InputPort::SETPOINT] = port;
     
 }

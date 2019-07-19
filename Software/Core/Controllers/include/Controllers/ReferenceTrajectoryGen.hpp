@@ -44,7 +44,7 @@ namespace Locomotion
 
 // TODO: This could just be a base class.  For now it is our specific trajectory generator for the convex mpc.  i.e. Number of states is fixed, and uses all assumptions (like 0 z-velocity, etc)
 // Long story short this is not universal...
-class ReferenceTrajectoryGenerator : public RealTimeControl::RealTimeTaskNode
+class ReferenceTrajectoryGenerator : public Realtime::RealTimeTaskNode
 {
 
 public:

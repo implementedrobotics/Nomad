@@ -37,9 +37,7 @@
 // TODO: Setup CPU Sets properly for affinity if set
 // TODO: Add in ZMQ Messaging+Context Passing and Test
 
-namespace Controllers
-{
-namespace RealTimeControl
+namespace Realtime
 {
 RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
                                    const long rt_period,
@@ -470,5 +468,4 @@ bool Port::Receive(void *buffer, const unsigned int length, int flags)
     memcpy(buffer, rx_msg.data(), rx_msg.size());
     return true;
 }
-} // namespace RealTimeControl
-} // namespace Controllers
+} // namespace Realtime

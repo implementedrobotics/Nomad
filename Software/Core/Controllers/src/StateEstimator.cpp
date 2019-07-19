@@ -54,17 +54,17 @@ StateEstimator::StateEstimator(const std::string &name,
                                unsigned int rt_priority,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
-                               RealTimeControl::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
+                               Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                sequence_num_(0),
                                num_states_(13)
 {
     
     // Create Ports
-    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+    zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
 
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period);
+    Realtime::Port *port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period);
     output_port_map_[OutputPort::STATE_HAT] = port;
     
 }

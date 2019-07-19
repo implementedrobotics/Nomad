@@ -39,7 +39,7 @@ namespace OperatorInterface
 {
 namespace Teleop
 {
-class RemoteTeleop : public Controllers::RealTimeControl::RealTimeTaskNode
+class RemoteTeleop : public Realtime::RealTimeTaskNode
 {
 
 public:
@@ -61,7 +61,7 @@ public:
     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
     RemoteTeleop(const std::string &name = "Remote_Teleop",
                    const long rt_period = 10000,
-                   const unsigned int rt_priority = Controllers::RealTimeControl::Priority::MEDIUM,
+                   const unsigned int rt_priority = Realtime::Priority::MEDIUM,
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 

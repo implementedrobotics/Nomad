@@ -37,7 +37,7 @@ namespace Controllers
 {
 namespace Estimators
 {
-class StateEstimator : public RealTimeControl::RealTimeTaskNode
+class StateEstimator : public Realtime::RealTimeTaskNode
 {
 
 public:
@@ -61,7 +61,7 @@ public:
     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
     StateEstimator(const std::string &name = "State_Estimator_Task",
                    const long rt_period = 10000,
-                   const unsigned int rt_priority = RealTimeControl::Priority::MEDIUM,
+                   const unsigned int rt_priority = Realtime::Priority::MEDIUM,
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 

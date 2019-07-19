@@ -41,7 +41,7 @@ namespace Controllers
 {
 namespace Locomotion
 {
-class ConvexMPC : public RealTimeControl::RealTimeTaskNode
+class ConvexMPC : public Realtime::RealTimeTaskNode
 {
 
 public:

@@ -37,7 +37,7 @@ namespace Controllers
 {
 namespace Locomotion
 {
-class GaitScheduler : public RealTimeControl::RealTimeTaskNode
+class GaitScheduler : public Realtime::RealTimeTaskNode
 {
 
 public:
@@ -58,7 +58,7 @@ public:
     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
     GaitScheduler(const std::string &name = "GaitScheduler_Task",
                    const long rt_period = 20000,
-                   const unsigned int rt_priority = RealTimeControl::Priority::HIGH,
+                   const unsigned int rt_priority = Realtime::Priority::HIGH,
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 

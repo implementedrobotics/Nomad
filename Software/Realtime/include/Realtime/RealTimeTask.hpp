@@ -37,9 +37,7 @@
 // Third Party Includes
 #include <zmq.hpp>
 
-namespace Controllers
-{
-namespace RealTimeControl
+namespace Realtime
 {
 enum Priority
 {
@@ -249,7 +247,6 @@ private:
     // Max numbers of CPUs
     int cpu_count_;
 };
-} // namespace RealTimeControl
-} // namespace Controllers
+} // namespace Realtime
 
 #endif // NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_

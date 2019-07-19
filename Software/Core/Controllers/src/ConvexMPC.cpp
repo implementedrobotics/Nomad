@@ -41,7 +41,7 @@ namespace Locomotion
 {
 //using namespace RealTimeControl;
 ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double T) : 
-                               RealTimeControl::RealTimeTaskNode(name, 20000, RealTimeControl::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
+                               Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
                                sequence_num_(0),
                                num_states_(13),
                                num_inputs_(12),
@@ -70,19 +70,19 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
     ocp_->SetWeights(Q, R);
 
     // Create Ports
-    zmq::context_t *ctx = RealTimeControl::RealTimeTaskManager::Instance()->GetZMQContext();
+    zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
 
     // State Estimate Input Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    RealTimeControl::Port *port = new RealTimeControl::Port("STATE_HAT", ctx, "state", rt_period_);
+    Realtime::Port *port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period_);
     input_port_map_[InputPort::STATE_HAT] = port;
 
     // Referenence Input Port
-    port = new RealTimeControl::Port("REFERENCE", ctx, "reference", rt_period_);
+    port = new Realtime::Port("REFERENCE", ctx, "reference", rt_period_);
     input_port_map_[InputPort::REFERENCE_TRAJECTORY] = port;
 
     // Optimal Force Solution Output Port
-    port = new RealTimeControl::Port("FORCES", ctx, "forces", rt_period_);
+    port = new Realtime::Port("FORCES", ctx, "forces", rt_period_);
     output_port_map_[OutputPort::FORCES] = port;
 
 
