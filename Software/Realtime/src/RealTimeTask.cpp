@@ -515,10 +515,10 @@ int Port::Receive(void *buffer, const unsigned int length, int flags)
 {
     zmq::message_t rx_msg;
     int ret_status = Receive(rx_msg); // Receive Buffer
+    
     if(!ret_status) 
-    {
         memcpy(buffer, rx_msg.data(), rx_msg.size());
-    }
+
     return ret_status;
 }
 } // namespace Realtime

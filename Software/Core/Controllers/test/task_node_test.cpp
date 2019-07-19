@@ -4,6 +4,7 @@
 #include <Controllers/GaitScheduler.hpp>
 #include <Controllers/ReferenceTrajectoryGen.hpp>
 #include <OperatorInterface/RemoteTeleop.hpp>
+#include <Plotting/PlotterTaskNode.hpp>
 #include <unistd.h>
 
 int main(int argc, char *argv[])
