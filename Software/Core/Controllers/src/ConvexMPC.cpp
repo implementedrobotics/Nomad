@@ -104,8 +104,8 @@ void ConvexMPC::Run()
     Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.x, 13);
     // Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> X_ref_ = Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>>(reference_in_.X_ref,13,24);
     Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.X_ref,13,10);
-    std::cout <<  X_ref_ << std::endl;
-    std::cout <<  x_hat_ << std::endl;
+    //std::cout <<  X_ref_ << std::endl;
+    //std::cout <<  x_hat_ << std::endl;
 
     // Update our Dynamics Current State
     Eigen::VectorXd initial_state(2);
@@ -119,13 +119,13 @@ void ConvexMPC::Run()
     Eigen::MatrixXd ref_test(2,N_);
     ref_test.row(0) = X_ref_.row(0);
     ref_test.row(1) = X_ref_.row(3);
-    std::cout << "Refactor: " << std::endl;
-    std::cout <<  initial_state << std::endl;
-    std::cout <<  ref_test << std::endl;
+   // std::cout << "Refactor: " << std::endl;
+   // std::cout <<  initial_state << std::endl;
+  //  std::cout <<  ref_test << std::endl;
 
     ocp_->SetReference(ref_test);
     ocp_->Solve();
-
+/*
     for(int i = 0; i < N_-1; i++)
     {
         std::cout << "U: " << ocp_->U() << std::endl;
@@ -133,7 +133,7 @@ void ConvexMPC::Run()
 
         std::cout << "X: " << block_.GetState()[0] << std::endl;
     }
-
+*/
 
     // Pass to Optimal Control Problem
 

@@ -202,9 +202,14 @@ protected:
     void *task_param_;
 
 
+
 private:
-    // STATIC Task Delay
-    static long int TaskDelay(long int microseconds);
+    // STATIC Task Delay (More accurate but uses a busy wait)
+    static long int TaskDelay(long int microseconds); // Usuful for tight timings or periods below 1000us
+    // Static Task Sleep (Less accurate but less resource intensive) // Useful for sotter timings and periods > 1000us
+    static long int TaskSleep(long int microseconds);
+
+
 
     // STATIC Member Task Run
     static void *RunTask(void *task_instance);

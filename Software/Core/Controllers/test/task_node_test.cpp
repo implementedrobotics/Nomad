@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
     teleop_node.SetStackSize(100000);
     teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    teleop_node.SetTaskFrequency(2); // 50 HZ
+    teleop_node.SetTaskFrequency(1); // 50 HZ
     teleop_node.SetCoreAffinity(-1);
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, "nomad/setpoint");
     teleop_node.Start();

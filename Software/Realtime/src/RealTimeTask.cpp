@@ -37,6 +37,31 @@
 // TODO: Setup CPU Sets properly for affinity if set
 // TODO: Add in ZMQ Messaging+Context Passing and Test
 
+
+# define tscmp(a, b, CMP)                             \
+  (((a)->tv_sec == (b)->tv_sec) ?                         \
+   ((a)->tv_nsec CMP (b)->tv_nsec) :                          \
+   ((a)->tv_sec CMP (b)->tv_sec))
+# define tsadd(a, b, result)                              \
+  do {                                        \
+    (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;                 \
+    (result)->tv_nsec = (a)->tv_nsec + (b)->tv_nsec;                  \
+    if ((result)->tv_nsec >= 1000000000)                          \
+      {                                       \
+    ++(result)->tv_sec;                           \
+    (result)->tv_nsec -= 1000000000;                          \
+      }                                       \
+  } while (0)
+# define tssub(a, b, result)                              \
+  do {                                        \
+    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                 \
+    (result)->tv_nsec = (a)->tv_nsec - (b)->tv_nsec;                  \
+    if ((result)->tv_nsec < 0) {                          \
+      --(result)->tv_sec;                             \
+      (result)->tv_nsec += 1000000000;                        \
+    }                                         \
+  } while (0)
+
 namespace Realtime
 {
 RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
@@ -148,7 +173,9 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
         //std::cout << "Run Time: " << total_us << std::endl;
 
         long int remainder = TaskDelay(task->rt_period_ - total_us);
+       // std::cout << "Period: " << task->rt_period_ << std::endl;
         //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
+        //std::cout << "Total Task Time: " <<  task->rt_period_ - total_us + remainder + total_us << " Frequency: " <<  1.0 / ((task->rt_period_ - total_us + remainder + total_us) * 1e-6) << " HZ" << std::endl;
     }
     std::cout << "[RealTimeTaskNode]: "
               << "Ending Task: " << task->task_name_ << std::endl;
@@ -183,32 +210,33 @@ int RealTimeTaskNode::Start(void *task_param)
         return thread_status_;
     }
 
+    // TODO: Back of RT Priority until PREEMPT Kernel.
     // Set Scheduler Policy to RT(SCHED_FIFO)
-    thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-    if (thread_status_)
-    {
-        std::cout << "[RealTimeTaskNode]: "
-                  << "POSIX Thread failed to set schedule policy!" << std::endl;
-        return thread_status_;
-    }
+    // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+    // if (thread_status_)
+    // {
+    //     std::cout << "[RealTimeTaskNode]: "
+    //               << "POSIX Thread failed to set schedule policy!" << std::endl;
+    //     return thread_status_;
+    // }
     // Set Thread Priority
-    param.sched_priority = rt_priority_;
-    thread_status_ = pthread_attr_setschedparam(&attr, &param);
-    if (thread_status_)
-    {
-        std::cout << "[RealTimeTaskNode]: "
-                  << "POSIX Thread failed to set thread priority!" << std::endl;
-        return thread_status_;
-    }
+    // param.sched_priority = rt_priority_;
+    // thread_status_ = pthread_attr_setschedparam(&attr, &param);
+    // if (thread_status_)
+    // {
+    //     std::cout << "[RealTimeTaskNode]: "
+    //               << "POSIX Thread failed to set thread priority!" << std::endl;
+    //     return thread_status_;
+    // }
 
-    // Use Scheduling Policy from Attributes.
-    thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-    if (thread_status_)
-    {
-        std::cout << "[RealTimeTaskNode]: "
-                  << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
-        return thread_status_;
-    }
+    // // Use Scheduling Policy from Attributes.
+    // thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+    // if (thread_status_)
+    // {
+    //     std::cout << "[RealTimeTaskNode]: "
+    //               << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
+    //     return thread_status_;
+    // }
 
     // Create our pthread.  Pass an instance of 'this' class as a parameter
     thread_status_ = pthread_create(&thread_id_, &attr, &RunTask, this);
@@ -235,8 +263,32 @@ void RealTimeTaskNode::Stop()
     // TODO: Setup signal to inform run task to stop/exit cleanly.  For now we just kill it
     pthread_cancel(thread_id_);
 }
-
 long int RealTimeTaskNode::TaskDelay(long int microseconds)
+{
+    struct timespec now;
+    struct timespec then;
+    struct timespec start;
+    struct timespec sleep;
+    struct timespec remainder;
+    long int nanoseconds = microseconds * 1e3;
+    if ( nanoseconds > 999999999 )
+    {
+        return microseconds;
+    }
+    clock_gettime( CLOCK_MONOTONIC_RAW, &start);
+    now = start;
+    sleep.tv_sec = 0;
+    sleep.tv_nsec = nanoseconds;
+    tsadd( &start, &sleep, &then );
+    while ( tscmp( &now, &then, < )  )
+    {
+        clock_gettime( CLOCK_MONOTONIC_RAW, &now);
+    }
+    tssub(&now, &start, &remainder);
+    
+    return (remainder.tv_nsec / 1000) - microseconds;
+}
+long int RealTimeTaskNode::TaskSleep(long int microseconds)
 {
     // TODO: Absolute wait or relative?
     // For now we use relative.
@@ -254,19 +306,19 @@ long int RealTimeTaskNode::TaskDelay(long int microseconds)
     }
 
     // Get the start time of the delay.  To be used to know over and underruns
-    clock_gettime(CLOCK_MONOTONIC, &ats);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ats);
 
     // Add the delay offset to know when this SHOULD end.
     ats.tv_sec += delay.tv_sec;
     ats.tv_nsec += delay.tv_nsec;
 
     // Sleep for delay
-    clock_nanosleep(CLOCK_MONOTONIC, 0, &delay, &remainder);
+    clock_nanosleep(CLOCK_MONOTONIC_RAW, 0, &delay, &remainder);
 
     // Get the time now after the delay.
-    clock_gettime(CLOCK_MONOTONIC, &remainder);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &remainder);
 
-    // Compute difference and calculcate over/underrung
+    // Compute difference and calculcate over/underrun
     remainder.tv_sec -= ats.tv_sec;
     remainder.tv_nsec -= ats.tv_nsec;
     if (remainder.tv_nsec < 0) // Wrap nanosecond overruns
