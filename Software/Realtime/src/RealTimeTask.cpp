@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <Controllers/RealTimeTask.hpp>
+#include <Realtime/RealTimeTask.hpp>
 
 #include <limits.h>
 #include <pthread.h>

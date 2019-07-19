@@ -36,7 +36,7 @@
 #include <Eigen/Dense>
 
 // Project Includes
-#include <Controllers/RealTimeTask.hpp>
+#include <Realtime/RealTimeTask.hpp>
 #include <Controllers/StateEstimator.hpp>
 #include <Controllers/Messages.hpp>
 
@@ -136,7 +136,7 @@ void ReferenceTrajectoryGenerator::Run()
 
     // Publish Trajectory
     GetOutputPort(0)->Send(&reference_out_, sizeof(reference_out_));
-    
+
     // Update our Sequence Counter
     sequence_num_++;
 }

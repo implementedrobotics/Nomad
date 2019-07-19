@@ -23,6 +23,9 @@ add_subdirectory(Communications)
 # Operator Interface
 add_subdirectory(OperatorInterface)
 
+# Realtime Interface
+add_subdirectory(Realtime)
+
 # Simulation(Optional)
 add_subdirectory(Simulation/Gazebo)
 

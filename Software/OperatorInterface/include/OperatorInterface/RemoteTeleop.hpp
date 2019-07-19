@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string>
 
-#include <Controllers/RealTimeTask.hpp>
+#include <Realtime/RealTimeTask.hpp>
 
 // TODO: Evaluate the need for the class... Could be handled all in the Trajectory Generator.  But if latency permits this is a good intermediate layer to handle translation of network/gamepad calls etc.
 // Also this a good place to put test trajectory setpoints since we don't have a remote control UI yet.
