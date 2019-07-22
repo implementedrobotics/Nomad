@@ -99,7 +99,7 @@ void StateEstimator::Run()
 
     // Publish State
     GetOutputPort(0)->Send(&output_state, sizeof(output_state));
-    //std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << std::endl;
+    //std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << " Send: " << send_status << std::endl;
     sequence_num_++;
 }
 

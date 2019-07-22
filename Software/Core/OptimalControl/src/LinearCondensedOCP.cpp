@@ -102,10 +102,17 @@ void LinearCondensedOCP::Solve()
 
     // Get starting timepoint
     auto start = std::chrono::high_resolution_clock::now();
+
+    // Reshape and Flatten to 1D
     Eigen::Map<const Eigen::VectorXd> X_ref(X_ref_.data(), X_ref_.size());
 
-    H_ = 2 * (B_N_.MatrixXd().transpose() * Q_ * B_N_.MatrixXd() + R_);
-    g_ = 2 * B_N_.MatrixXd().transpose() * Q_ * ((A_N_.MatrixXd() * x_0_)-X_ref);
+    // Make some temp variables.  Not sure why this is necessary but having some segfaults without.
+    Eigen::MatrixXd A_N = A_N_.MatrixXd();
+    Eigen::MatrixXd B_N = B_N_.MatrixXd();
+    Eigen::MatrixXd B_N_T = B_N.transpose();
+
+    H_ = 2 * (B_N_T * Q_ * B_N + R_);
+    g_ = 2 * B_N_T * Q_ * ((A_N * x_0_)-X_ref);
     
     solver_iterations_ = max_iterations_;
     if (is_hot)

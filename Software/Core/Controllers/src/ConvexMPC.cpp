@@ -31,6 +31,7 @@
 #include <string>
 
 // Third-Party Includes
+
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 
@@ -92,10 +93,15 @@ void ConvexMPC::Run()
      // Get Inputs
 
     // Receive State Estimate and Unpack
-    GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
+    bool state_recv = GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
 
     // Receive Trajectory Reference and Unpack
-    GetInputPort(1)->Receive((void *)&reference_in_, sizeof(reference_in_)); // Receive Setpoint
+    bool setpoint_recv =  GetInputPort(1)->Receive((void *)&reference_in_, sizeof(reference_in_)); // Receive Setpoint
+    if(!state_recv || !setpoint_recv)
+    {
+        std::cout << "[ConvexMPC]: Receive Buffer Empty!" << std::endl; 
+        return;
+    }
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
@@ -114,34 +120,30 @@ void ConvexMPC::Run()
 
     block_.SetState(initial_state);
 
+    // Pass to Optimal Control Problem
     ocp_->SetInitialCondition(block_.GetState());
     ocp_->SetModelMatrices(block_.A_d(), block_.B_d());
     Eigen::MatrixXd ref_test(2,N_);
     ref_test.row(0) = X_ref_.row(0);
     ref_test.row(1) = X_ref_.row(3);
-   // std::cout << "Refactor: " << std::endl;
-   // std::cout <<  initial_state << std::endl;
-  //  std::cout <<  ref_test << std::endl;
+    //std::cout << "Refactor: " << std::endl;
+    //std::cout <<  initial_state << std::endl;
+    //std::cout <<  ref_test << std::endl;
 
     ocp_->SetReference(ref_test);
-    ocp_->Solve();
-/*
-    for(int i = 0; i < N_-1; i++)
-    {
-        std::cout << "U: " << ocp_->U() << std::endl;
-        block_.Step(ocp_->U()(0,i));
-
-        std::cout << "X: " << block_.GetState()[0] << std::endl;
-    }
-*/
-
-    // Pass to Optimal Control Problem
 
     // Solve
+    ocp_->Solve();
+
+    for(int i = 0; i < N_-1; i++)
+    {
+        //std::cout << "U: " << ocp_->U() << std::endl;
+        block_.Step(ocp_->U()(0,i));
+        //std::cout << "X: " << block_.GetState()[0] << std::endl;
+    }
 
     // Output Optimal Forces
-    // GetInputPort(0)->Receive(rx_msg);
-
+    // GetOutputPort(0)->Send(rx_msg);
     sequence_num_++;
 }
 void ConvexMPC::Setup()

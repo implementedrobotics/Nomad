@@ -86,8 +86,8 @@ void RemoteTeleop::Run()
     setpoint.z_com = 0.5;
 
     // Publish Setpoint
-    GetOutputPort(0)->Send(&setpoint, sizeof(setpoint));
-    // std::cout << "[RemoteTeleop]: Publishing: " << setpoint.sequence_number << std::endl;
+    bool send_status = GetOutputPort(0)->Send(&setpoint, sizeof(setpoint));
+    //std::cout << "[RemoteTeleop]: Publishing: " << setpoint.sequence_number << " status: " << send_status << std::endl;
 
     sequence_num_++;
 }

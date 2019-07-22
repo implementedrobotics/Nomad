@@ -10,6 +10,7 @@
 int main(int argc, char *argv[])
 {
 
+    std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
     const int N = 10;
     const double T = 1.0;
 
@@ -20,7 +21,7 @@ int main(int argc, char *argv[])
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
     teleop_node.SetStackSize(100000);
     teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    teleop_node.SetTaskFrequency(1); // 50 HZ
+    teleop_node.SetTaskFrequency(2); // 50 HZ
     teleop_node.SetCoreAffinity(-1);
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, "nomad/setpoint");
     teleop_node.Start();
@@ -45,8 +46,12 @@ int main(int argc, char *argv[])
     ref_generator_node.SetTaskFrequency(2); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
     ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, "nomad/reference");
+    
+    // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
     estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+    
+    // Map Setpoint Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT), 
     teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     ref_generator_node.Start();

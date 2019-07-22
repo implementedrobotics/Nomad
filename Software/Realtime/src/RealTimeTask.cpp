@@ -147,14 +147,15 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
                   << "Failed to get thread affinity: " << set_result << std::endl;
     }
 
-    std::cout << "[RealTimeTaskNode]: " << task->task_name_ << " running on CORES: " << std::endl;
+    std::cout << "[RealTimeTaskNode]: " << task->task_name_ << " running on CPU CORES: \t[";
     for (int j = 0; j < CPU_SETSIZE; j++)
     {
         if (CPU_ISSET(j, &cpu_set))
         {
-            std::cout << "CPU " << j << std::endl;
+            std::cout << j << "\t";
         }
     }
+    std::cout << "]" << std::endl;
 
     // Setup thread cancellation.
     // TODO: Look into PTHREAD_CANCEL_DEFERRED
@@ -173,7 +174,7 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
         //std::cout << "Run Time: " << total_us << std::endl;
 
         long int remainder = TaskDelay(task->rt_period_ - total_us);
-       // std::cout << "Period: " << task->rt_period_ << std::endl;
+        //std::cout << "Period: " << task->rt_period_ << std::endl;
         //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
         //std::cout << "Total Task Time: " <<  task->rt_period_ - total_us + remainder + total_us << " Frequency: " <<  1.0 / ((task->rt_period_ - total_us + remainder + total_us) * 1e-6) << " HZ" << std::endl;
     }
@@ -491,15 +492,18 @@ bool Port::Bind()
     // TODO: For now always a publisher
     socket_ = new zmq::socket_t(*context_, ZMQ_PUB);
     socket_->bind(transport_);
+
+    // TODO: Error Check Bind
+    return true;
 }
 
 // Send data on port
-int Port::Send(zmq::message_t &tx_msg, int flags)
+bool Port::Send(zmq::message_t &tx_msg, int flags)
 {
     // TODO: Zero Copy Publish
-    return socket_->send(tx_msg);
+    return socket_->send(tx_msg, flags);
 }
-int Port::Send(void *buffer, const unsigned int length, int flags)
+bool Port::Send(void *buffer, const unsigned int length, int flags)
 {
     zmq::message_t message(length);
     memcpy(message.data(), buffer, length);
@@ -507,16 +511,16 @@ int Port::Send(void *buffer, const unsigned int length, int flags)
 }
 
 // Receive data on port
-int Port::Receive(zmq::message_t &rx_msg, int flags)
+bool Port::Receive(zmq::message_t &rx_msg, int flags)
 {
-    return socket_->recv(&rx_msg);
+    return socket_->recv(&rx_msg, flags);
 }
-int Port::Receive(void *buffer, const unsigned int length, int flags)
+bool Port::Receive(void *buffer, const unsigned int length, int flags)
 {
     zmq::message_t rx_msg;
-    int ret_status = Receive(rx_msg); // Receive Buffer
+    bool ret_status = Receive(rx_msg, flags); // Receive Buffer
     
-    if(!ret_status) 
+    if(ret_status) 
         memcpy(buffer, rx_msg.data(), rx_msg.size());
 
     return ret_status;

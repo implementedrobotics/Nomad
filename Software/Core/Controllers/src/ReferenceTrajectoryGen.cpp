@@ -84,15 +84,23 @@ void ReferenceTrajectoryGenerator::Run()
 {
 
     // Get Inputs
-    GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
-    GetInputPort(1)->Receive((void *)&setpoint_in_, sizeof(setpoint_in_)); // Receive Setpoint
+    bool state_recv = GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
+    bool setpoint_recv = GetInputPort(1)->Receive((void *)&setpoint_in_, sizeof(setpoint_in_)); // Receive Setpoint
+
+    // TODO: Add a metric for how far behind this node can get before erroring out.
+    if(!state_recv || !setpoint_recv)
+    {
+        std::cout << "[ReferenceTrajectoryGenerator]: Receive Buffer Empty!" << std::endl; 
+        return;
+    }
+    //std::cout << "[ReferenceTrajectoryGenerator]: " << "State: " << state_recv << " Setpoint: " << setpoint_recv << std::endl;
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     //std::cout << "X: " << x_hat_in_.x[3] << std::endl;
-    //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
+    std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
     X_ref_(0,0) = x_hat_in_.x[0]; // X Position
@@ -137,6 +145,7 @@ void ReferenceTrajectoryGenerator::Run()
     // Publish Trajectory
     GetOutputPort(0)->Send(&reference_out_, sizeof(reference_out_));
 
+    //std::cout << "[ReferenceTrajectoryGenerator]: Send Status: " << send_recv <<std::endl;
     // Update our Sequence Counter
     sequence_num_++;
 }

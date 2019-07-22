@@ -74,14 +74,14 @@ public:
     bool Bind();
 
     // Send data on port
-    int Send(zmq::message_t &msg, int flags = ZMQ_NOBLOCK);
-    int Send(void *buffer, const unsigned int length, int flags = ZMQ_NOBLOCK);
-    int Send(const std::string &str, const unsigned int length, int flags = ZMQ_NOBLOCK);
+    bool Send(zmq::message_t &msg, int flags = ZMQ_NOBLOCK);
+    bool Send(void *buffer, const unsigned int length, int flags = ZMQ_NOBLOCK);
+    bool Send(const std::string &str, const unsigned int length, int flags = ZMQ_NOBLOCK);
 
     // Receive data on port
-    int Receive(zmq::message_t &msg, int flags = ZMQ_NOBLOCK);
-    int Receive(void *buffer, const unsigned int length, int flags = ZMQ_NOBLOCK);
-    int Receive(const std::string &str, const unsigned int length, int flags = ZMQ_NOBLOCK);
+    bool Receive(zmq::message_t &msg, int flags = ZMQ_NOBLOCK);
+    bool Receive(void *buffer, const unsigned int length, int flags = ZMQ_NOBLOCK);
+    bool Receive(const std::string &str, const unsigned int length, int flags = ZMQ_NOBLOCK);
 
 private:
     // Port Name
