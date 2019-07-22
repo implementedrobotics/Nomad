@@ -101,6 +101,9 @@ protected:
     // Input (Reference Trajectory)
     Messages::Controllers::Locomotion::ReferenceTrajectory reference_in_;
 
+    // Output (Optimal Forces)
+    Messages::Generic::Vector<1> force_output_;
+
 private:
     int sequence_num_;
 };

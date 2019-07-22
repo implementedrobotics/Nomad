@@ -143,6 +143,7 @@ void ConvexMPC::Run()
     }
 
     // Output Optimal Forces
+    GetOutputPort(0)->Send((void *)&force_output_, sizeof(force_output_));
     // GetOutputPort(0)->Send(rx_msg);
     sequence_num_++;
 }

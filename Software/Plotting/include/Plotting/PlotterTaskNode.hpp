@@ -36,6 +36,7 @@
 #include <Eigen/Dense>
 
 // Project Includes
+#include <Controllers/Messages.hpp>
 #include <Realtime/RealTimeTask.hpp>
 
 

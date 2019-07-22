@@ -33,15 +33,30 @@
 
 // Project Include Files
 
-
 namespace Messages
 {
+namespace Generic
+{
+template<const int size>
+struct Vector
+{
+    // Timestamp
+    uint64_t timestamp;
+
+    // Sequence Number
+    uint64_t sequence_number;
+
+    // Data 
+    double data[size];
+
+};
+} // namespace Generic
 namespace Controllers
 {
 namespace Estimators
 {
 
-//template <unsigned int num_states> 
+//template <unsigned int num_states>
 struct CoMState
 {
     // Timestamp
@@ -78,7 +93,7 @@ struct TrajectorySetpoint
     double z_com;
 };
 
-//template <unsigned int num_states, unsigned int N> 
+//template <unsigned int num_states, unsigned int N>
 struct ReferenceTrajectory
 {
     // Timestamp
@@ -88,9 +103,15 @@ struct ReferenceTrajectory
     uint64_t sequence_number;
 
     // Desired Reference
-    double X_ref[13*10]; // TODO: Make this variable and working with ZMQ
+    double X_ref[13 * 10]; // TODO: Make this variable and working with ZMQ
 };
-
+struct student 
+{ 
+int stud_id; 
+int name_len; 
+int struct_size; 
+char stud_name[]; 
+}; 
 
 } // namespace Locomotion
 } // namespace Controllers
