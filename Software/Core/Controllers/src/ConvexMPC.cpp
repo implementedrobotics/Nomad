@@ -127,8 +127,8 @@ void ConvexMPC::Run()
     ref_test.row(0) = X_ref_.row(0);
     ref_test.row(1) = X_ref_.row(3);
     //std::cout << "Refactor: " << std::endl;
-    //std::cout <<  initial_state << std::endl;
-    //std::cout <<  ref_test << std::endl;
+    std::cout <<  initial_state << std::endl;
+    std::cout <<  ref_test << std::endl;
 
     ocp_->SetReference(ref_test);
 

@@ -111,8 +111,10 @@ void LinearCondensedOCP::Solve()
     Eigen::MatrixXd B_N = B_N_.MatrixXd();
     Eigen::MatrixXd B_N_T = B_N.transpose();
 
-    H_ = 2 * (B_N_T * Q_ * B_N + R_);
-    g_ = 2 * B_N_T * Q_ * ((A_N * x_0_)-X_ref);
+    Eigen::MatrixXd m = B_N_T * Q_ * B_N;
+    Eigen::MatrixXd n = (A_N * x_0_);
+    H_ = 2 * (m + R_);
+    g_ = 2 * B_N_T * Q_ * ((n)-X_ref);
     
     solver_iterations_ = max_iterations_;
     if (is_hot)

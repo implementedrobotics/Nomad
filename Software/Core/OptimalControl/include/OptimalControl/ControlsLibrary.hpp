@@ -70,7 +70,7 @@ public:
     // Cast Overload
     operator Eigen::MatrixXd() { return Matrix_; }
 
-    const Eigen::MatrixXd MatrixXd() const { return Matrix_; }
+    Eigen::MatrixXd MatrixXd() const { return Matrix_; }
     // Set Block Matrix Value
     // TODO: Should be Matrix(1,1) = value
     void SetBlock(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
