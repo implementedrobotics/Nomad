@@ -456,7 +456,8 @@ void RealTimeTaskManager::PrintActiveTasks()
 Port::Port(const std::string &name, zmq::context_t *ctx, const std::string &transport, int period) : name_(name),
                                                                        context_(ctx),
                                                                        transport_(transport),
-                                                                       update_period_(period)
+                                                                       update_period_(period),
+                                                                       sequence_num_(0)
 {
 }
 Port::~Port()
@@ -500,13 +501,30 @@ bool Port::Bind()
 // Send data on port
 bool Port::Send(zmq::message_t &tx_msg, int flags)
 {
+    
     // TODO: Zero Copy Publish
-    return socket_->send(tx_msg, flags);
+    bool status = socket_->send(tx_msg, flags);
+    sequence_num_++;
+
+    return status;
 }
 bool Port::Send(void *buffer, const unsigned int length, int flags)
 {
-    zmq::message_t message(length);
-    memcpy(message.data(), buffer, length);
+    zmq::message_t message(length + HEADER_SIZE);
+
+    // Update Sequence Count
+    packet_.sequence_number = sequence_num_;
+
+    // Get Timestamp
+    // TODO: "GetUptime" Static function in a time class
+    packet_.timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    // Copy to packet
+    memcpy((void *)&packet_.data, buffer, length);
+
+    // TODO: Zero Copy
+    memcpy(message.data(), (void *)&packet_, length + HEADER_SIZE);
+
     return Send(message, flags);
 }
 
@@ -519,9 +537,16 @@ bool Port::Receive(void *buffer, const unsigned int length, int flags)
 {
     zmq::message_t rx_msg;
     bool ret_status = Receive(rx_msg, flags); // Receive Buffer
-    
     if(ret_status) 
-        memcpy(buffer, rx_msg.data(), rx_msg.size());
+    {
+        // Copy to packet
+        memcpy((void *)&packet_, rx_msg.data(), rx_msg.size());
+    
+        // TODO: Check Timestamps and sequence for errors and latency
+        // TODO: Should be able to just copy pointer as it will stay valid until another send.
+        // Copy to output
+        memcpy(buffer, (void *)&packet_.data, length);
+    }
 
     return ret_status;
 }

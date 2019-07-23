@@ -37,18 +37,11 @@ namespace Messages
 {
 namespace Generic
 {
-template<const int size>
-struct Vector
+//template<const int size>
+struct VectorArray
 {
-    // Timestamp
-    uint64_t timestamp;
-
-    // Sequence Number
-    uint64_t sequence_number;
-
-    // Data 
-    double data[size];
-
+    // Vector Data Array
+    double *data;
 };
 } // namespace Generic
 namespace Controllers
@@ -56,30 +49,19 @@ namespace Controllers
 namespace Estimators
 {
 
-//template <unsigned int num_states>
 struct CoMState
 {
-    // Timestamp
-    uint64_t timestamp;
-
-    // Sequence Number
-    uint64_t sequence_number;
-
     // State
     double x[13];
 };
+
 } // namespace Estimators
 
 namespace Locomotion
 {
+
 struct TrajectorySetpoint
 {
-    // Timestamp
-    uint64_t timestamp;
-
-    // Sequence Number
-    uint64_t sequence_number;
-
     // Desired Forward Velocity
     double x_dot;
 
@@ -96,23 +78,9 @@ struct TrajectorySetpoint
 //template <unsigned int num_states, unsigned int N>
 struct ReferenceTrajectory
 {
-    // Timestamp
-    uint64_t timestamp;
-
-    // Sequence Number
-    uint64_t sequence_number;
-
     // Desired Reference
     double X_ref[13 * 10]; // TODO: Make this variable and working with ZMQ
 };
-struct student 
-{ 
-int stud_id; 
-int name_len; 
-int struct_size; 
-char stud_name[]; 
-}; 
-
 } // namespace Locomotion
 } // namespace Controllers
 } // namespace Messages

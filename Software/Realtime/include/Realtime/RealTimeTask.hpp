@@ -51,6 +51,19 @@ enum Priority
 // TODO: Port Type, etc
 class Port
 {
+    static const int MAX_SIZE = 32768;
+    static const int HEADER_SIZE = sizeof(uint64_t) * 2;
+    struct packet_t
+    {
+        // Timestamp
+        uint64_t timestamp;
+
+        // Sequence Number
+        uint64_t sequence_number;
+
+        // Data 
+        double data[MAX_SIZE];
+    };
 
 public:
 
@@ -105,6 +118,15 @@ private:
 
     // Context
     zmq::context_t *context_;
+
+    // Packet
+    packet_t packet_;
+
+    // Keep up with sequence
+    unsigned int sequence_num_;
+
+
+
 };
 
 class RealTimeTaskNode

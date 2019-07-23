@@ -100,7 +100,7 @@ void ReferenceTrajectoryGenerator::Run()
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     //std::cout << "X: " << x_hat_in_.x[3] << std::endl;
-    std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
+    //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
     X_ref_(0,0) = x_hat_in_.x[0]; // X Position
@@ -138,14 +138,17 @@ void ReferenceTrajectoryGenerator::Run()
     //std::cout << X_ref_ << std::endl;
 
     // Update Publish Trajectory Buffer
-    reference_out_.timestamp = time_now;
-    reference_out_.sequence_number = sequence_num_;
+    //reference_out_.timestamp = time_now;
+    //reference_out_.sequence_number = sequence_num_;
+
+    // TODO: Should be able to send array directly here.
     memcpy(reference_out_.X_ref, X_ref_.data(), sizeof(double) * X_ref_.size());
 
     // Publish Trajectory
-    GetOutputPort(0)->Send(&reference_out_, sizeof(reference_out_));
+    bool send_status = GetOutputPort(0)->Send((void *)&reference_out_, sizeof(reference_out_));
 
-    //std::cout << "[ReferenceTrajectoryGenerator]: Send Status: " << send_recv <<std::endl;
+
+    //std::cout << "[ReferenceTrajectoryGenerator]: Send Status: " << send_status <<std::endl;
     // Update our Sequence Counter
     sequence_num_++;
 }

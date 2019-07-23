@@ -78,8 +78,8 @@ void RemoteTeleop::Run()
     // TODO: "GetUptime" Static function in a time class
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    setpoint.timestamp = time_now;
-    setpoint.sequence_number = sequence_num_;
+    //setpoint.timestamp = time_now;
+    //setpoint.sequence_number = sequence_num_;
     setpoint.x_dot = 1.0;
     setpoint.y_dot = 0.0;
     setpoint.yaw_dot = 0.0;
@@ -87,7 +87,8 @@ void RemoteTeleop::Run()
 
     // Publish Setpoint
     bool send_status = GetOutputPort(0)->Send(&setpoint, sizeof(setpoint));
-    //std::cout << "[RemoteTeleop]: Publishing: " << setpoint.sequence_number << " status: " << send_status << std::endl;
+
+    //std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
 
     sequence_num_++;
 }

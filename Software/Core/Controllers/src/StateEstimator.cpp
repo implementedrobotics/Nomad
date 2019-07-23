@@ -77,17 +77,17 @@ void StateEstimator::Run()
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
-    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    //uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    output_state.timestamp = time_now;
-    output_state.sequence_number = sequence_num_;
-    output_state.x[0] = 0.0; // X Position
-    output_state.x[1] = 0.0; // Y Position
-    output_state.x[2] = 0.0; // Z Position
-    output_state.x[3] = 0.0; // X Velocity
-    output_state.x[4] = 0.0; // Y Velocity
-    output_state.x[5] = 0.0; // Z Velocity
-    output_state.x[6] = 0.0; // Roll Orientation
+    //output_state.timestamp = time_now;
+    //output_state.sequence_number = sequence_num_;
+    output_state.x[0] = 1.0; // X Position
+    output_state.x[1] = 2.0; // Y Position
+    output_state.x[2] = 3.0; // Z Position
+    output_state.x[3] = 4.0; // X Velocity
+    output_state.x[4] = 5.0; // Y Velocity
+    output_state.x[5] = 6.0; // Z Velocity
+    output_state.x[6] = 7.0; // Roll Orientation
     output_state.x[7] = 0.0; // Pitch Orientation
     output_state.x[8] = 2.0; // Yaw Orientation
     output_state.x[9] = 0.0; // Roll Rate
@@ -98,8 +98,8 @@ void StateEstimator::Run()
     //std::cout << "State Size: " << sizeof(output_state) << std::endl;
 
     // Publish State
-    GetOutputPort(0)->Send(&output_state, sizeof(output_state));
-    //std::cout << "[StateEstimator]: Publishing: " << output_state.timestamp << " Send: " << send_status << std::endl;
+    bool send_status = GetOutputPort(0)->Send(&output_state, sizeof(output_state));
+    //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
     sequence_num_++;
 }
 
