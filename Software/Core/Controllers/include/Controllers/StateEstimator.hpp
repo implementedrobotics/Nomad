@@ -31,6 +31,10 @@
 #include <iostream>
 #include <string>
 
+// Third Party Inclues
+#include <Controllers/Messages.hpp>
+
+// Project Includes
 #include <Realtime/RealTimeTask.hpp>
 
 namespace Controllers
@@ -74,6 +78,9 @@ protected:
 
     // Number of states
     unsigned int num_states_;
+
+    // (Output) State Estimate
+    Messages::Generic::VectorArray output_state_;
 
     
 

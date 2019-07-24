@@ -476,6 +476,7 @@ bool Port::Connect()
     socket_ = new zmq::socket_t(*context_, ZMQ_SUB);
 
     // Keep only most recent message.  Drop all others from state estimator publisher
+    //socket_->setsockopt(ZMQ_RCVHWM, 1);
     socket_->setsockopt(ZMQ_CONFLATE, 1);
 
     std::cout<<"Connecting: " << transport_ << std::endl;
@@ -501,7 +502,6 @@ bool Port::Bind()
 // Send data on port
 bool Port::Send(zmq::message_t &tx_msg, int flags)
 {
-    
     // TODO: Zero Copy Publish
     bool status = socket_->send(tx_msg, flags);
     sequence_num_++;
@@ -510,7 +510,7 @@ bool Port::Send(zmq::message_t &tx_msg, int flags)
 }
 bool Port::Send(void *buffer, const unsigned int length, int flags)
 {
-    zmq::message_t message(length + HEADER_SIZE);
+    //zmq::message_t message(length + HEADER_SIZE);
 
     // Update Sequence Count
     packet_.sequence_number = sequence_num_;
@@ -520,12 +520,18 @@ bool Port::Send(void *buffer, const unsigned int length, int flags)
     packet_.timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     // Copy to packet
-    memcpy((void *)&packet_.data, buffer, length);
+    memcpy((void *)packet_.data, buffer, length);
+
+    bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, 0);
+    sequence_num_++;
 
     // TODO: Zero Copy
-    memcpy(message.data(), (void *)&packet_, length + HEADER_SIZE);
+    //memcpy(message.data(), (void *)&packet_, length + HEAflagsDER_SIZE);
 
-    return Send(message, flags);
+    std::cout << "Send: " << this << " "  << sequence_num_ << std::endl;
+    return status;
+
+    //return Send(message, flags);
 }
 
 // Receive data on port
@@ -535,19 +541,25 @@ bool Port::Receive(zmq::message_t &rx_msg, int flags)
 }
 bool Port::Receive(void *buffer, const unsigned int length, int flags)
 {
-    zmq::message_t rx_msg;
-    bool ret_status = Receive(rx_msg, flags); // Receive Buffer
-    if(ret_status) 
+
+    //bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, flags);
+    int bytes = socket_->recv((void*)&packet_, length + HEADER_SIZE, 0);
+    std::cout << "Received Bytes: " << bytes << std::endl;
+    //zmq::message_t rx_msg;
+    //bool ret_status = Receive(rx_msg, flags); // Receive Buffer
+    if(bytes) 
     {
         // Copy to packet
-        memcpy((void *)&packet_, rx_msg.data(), rx_msg.size());
+        //memcpy((void *)&packet_, rx_msg.data(), rx_msg.size());
     
         // TODO: Check Timestamps and sequence for errors and latency
         // TODO: Should be able to just copy pointer as it will stay valid until another send.
         // Copy to output
-        memcpy(buffer, (void *)&packet_.data, length);
+        memcpy(buffer, (void *)packet_.data, length);
+
+        std::cout << "Receive: " << packet_.sequence_number << std::endl;
     }
 
-    return ret_status;
+    return bytes > 0;
 }
 } // namespace Realtime

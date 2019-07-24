@@ -119,8 +119,13 @@ private:
     // Context
     zmq::context_t *context_;
 
+    // Message
+    zmq::message_t message_;
+
     // Packet
     packet_t packet_;
+
+
 
     // Keep up with sequence
     unsigned int sequence_num_;

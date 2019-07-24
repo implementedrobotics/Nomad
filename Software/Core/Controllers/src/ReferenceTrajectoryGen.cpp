@@ -58,6 +58,10 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
                                N_(N)
 {
     
+    // Allocate Message Structures
+    x_hat_in_.data = new double[num_states_];
+    x_hat_in_.size = sizeof(double) * num_states_;
+
     // Sample Time
     T_s_ = T_ / (N_);
 
@@ -84,7 +88,8 @@ void ReferenceTrajectoryGenerator::Run()
 {
 
     // Get Inputs
-    bool state_recv = GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
+    std::cout << "Time to RECEIVE in RTG" << std::endl;
+    bool state_recv = GetInputPort(0)->Receive((void *)x_hat_in_.data, x_hat_in_.size); // Receive State Estimate
     bool setpoint_recv = GetInputPort(1)->Receive((void *)&setpoint_in_, sizeof(setpoint_in_)); // Receive Setpoint
 
     // TODO: Add a metric for how far behind this node can get before erroring out.
@@ -97,14 +102,15 @@ void ReferenceTrajectoryGenerator::Run()
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
-    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    //uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data, 13);
 
-    //std::cout << "X: " << x_hat_in_.x[3] << std::endl;
-    //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.x[3] << " : " << sequence_num_ << std::endl;
+    std::cout << "X2: " << x_hat_ << std::endl;
+    //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.data[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
-    X_ref_(0,0) = x_hat_in_.x[0]; // X Position
-    X_ref_(1,0) = x_hat_in_.x[1]; // Y Position
+    X_ref_(0,0) = x_hat_in_.data[0]; // X Position
+    X_ref_(1,0) = x_hat_in_.data[1]; // Y Position
     X_ref_.row(2).setConstant(setpoint_in_.z_com); // Z Position
 
     X_ref_.row(3).setConstant(setpoint_in_.x_dot); // X Velocity
@@ -113,7 +119,7 @@ void ReferenceTrajectoryGenerator::Run()
 
     X_ref_.row(6).setConstant(0); // Roll Orientation
     X_ref_.row(7).setConstant(0); // Pitch Orientation
-    X_ref_.row(8).setConstant(x_hat_in_.x[8]); // Yaw Orientation
+    X_ref_.row(8).setConstant(x_hat_in_.data[8]); // Yaw Orientation
 
     X_ref_.row(9).setConstant(0); // Roll Rate
     X_ref_.row(10).setConstant(0); // Pitch Rate
@@ -135,7 +141,7 @@ void ReferenceTrajectoryGenerator::Run()
         X_ref_(1,i+1) = X_ref_(1,i) + setpoint_in_.y_dot * T_s_;
         X_ref_(8,i+1) = X_ref_(8,i) + setpoint_in_.yaw_dot * T_s_;
     }
-    //std::cout << X_ref_ << std::endl;
+   // std::cout << X_ref_ << std::endl;
 
     // Update Publish Trajectory Buffer
     //reference_out_.timestamp = time_now;

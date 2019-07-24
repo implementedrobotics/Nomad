@@ -73,7 +73,7 @@ void RemoteTeleop::Run()
 
     // Output (Reference Setpoint)
     Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
-
+    
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();

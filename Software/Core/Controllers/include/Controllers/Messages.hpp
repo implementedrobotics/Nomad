@@ -42,7 +42,11 @@ struct VectorArray
 {
     // Vector Data Array
     double *data;
+
+    // Size of data
+    unsigned int size;
 };
+
 } // namespace Generic
 namespace Controllers
 {

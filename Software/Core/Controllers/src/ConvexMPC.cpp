@@ -70,6 +70,10 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
     
     ocp_->SetWeights(Q, R);
 
+    // Allocate Message Structures
+    x_hat_in_.data = new double[num_states_];
+    x_hat_in_.size = sizeof(double) * num_states_;
+
     // Create Ports
     zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
 
@@ -86,14 +90,13 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
     port = new Realtime::Port("FORCES", ctx, "forces", rt_period_);
     output_port_map_[OutputPort::FORCES] = port;
 
-
 }
 void ConvexMPC::Run()
 {  
-     // Get Inputs
-
+    // Get Inputs
+    std::cout << "Time to RECEIVE in CONVEXMPC" << std::endl;
     // Receive State Estimate and Unpack
-    bool state_recv = GetInputPort(0)->Receive((void *)&x_hat_in_, sizeof(x_hat_in_)); // Receive State Estimate
+    bool state_recv = GetInputPort(0)->Receive((void *)x_hat_in_.data, x_hat_in_.size); // Receive State Estimate
 
     // Receive Trajectory Reference and Unpack
     bool setpoint_recv =  GetInputPort(1)->Receive((void *)&reference_in_, sizeof(reference_in_)); // Receive Setpoint
@@ -107,7 +110,7 @@ void ConvexMPC::Run()
     // TODO: "GetUptime" Static function in a time class
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.x, 13);
+    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data, 13);
     // Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> X_ref_ = Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>>(reference_in_.X_ref,13,24);
     Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.X_ref,13,10);
     //std::cout <<  X_ref_ << std::endl;

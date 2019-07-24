@@ -88,7 +88,7 @@ protected:
     double T_;   
 
     // Input (State Estimate)
-    Messages::Controllers::Estimators::CoMState x_hat_in_;
+    Messages::Generic::VectorArray x_hat_in_;
 
     // Input (Setpoint)
     Messages::Controllers::Locomotion::TrajectorySetpoint setpoint_in_;
