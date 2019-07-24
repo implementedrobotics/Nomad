@@ -1,17 +1,17 @@
-#include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Communications/include")
 
 #set(CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/qp_solver_test.cpp)
 #set(CONTROLLER_TEST_LIBS qpOASES OptimalControl)
 
-set(ZEROMQ__SOURCES ${PROJECT_SOURCE_DIR}/Communications/test/zmq_pub_server.cpp)
-set(ZEROMQ_TEST_LIBS zmq pthread)
+set(ZCM_SOURCES ${PROJECT_SOURCE_DIR}/Communications/test/zcm_hello_world.cpp)
+set(ZCM_TEST_LIBS zcm pthread)
 
 
-add_executable(zmq_pub_server ${PROJECT_SOURCE_DIR}/Communications/test/zmq_pub_server.cpp)
-target_link_libraries(zmq_pub_server ${ZEROMQ_TEST_LIBS} )
+add_executable(zcm_hello_world ${PROJECT_SOURCE_DIR}/Communications/test/zcm_hello_world.cpp ${PROJECT_SOURCE_DIR}/Communications/include/Communications/Messages/msg_t.c)
+target_link_libraries(zcm_hello_world ${ZCM_TEST_LIBS} )
 
 
-add_executable(zmq_sub_client ${PROJECT_SOURCE_DIR}/Communications/test/zmq_sub_client.cpp)
-target_link_libraries(zmq_sub_client ${ZEROMQ_TEST_LIBS} )
+# add_executable(zmq_sub_client ${PROJECT_SOURCE_DIR}/Communications/test/zmq_sub_client.cpp)
+# target_link_libraries(zmq_sub_client ${ZEROMQ_TEST_LIBS} )
 
 #add_test(QuickStartTest test_main COMMAND test_main)
