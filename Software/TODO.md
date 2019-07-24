@@ -1,4 +1,5 @@
 # TODO:
+1. Switch to ZeroCM
 2. Add Logging/Plotting Interface to visualize trajectories [https://makersportal.com/blog/2018/8/14/real-time-graphing-in-python]
 3. Leg Controller Task Node
 4. RealTime Plotting Task Node
