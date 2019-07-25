@@ -94,7 +94,7 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
 void ConvexMPC::Run()
 {  
     // Get Inputs
-    std::cout << "Time to RECEIVE in CONVEXMPC" << std::endl;
+    //std::cout << "Time to RECEIVE in RTG" << std::endl;
     // Receive State Estimate and Unpack
     bool state_recv = GetInputPort(0)->Receive((void *)x_hat_in_.data, x_hat_in_.size); // Receive State Estimate
 
@@ -114,7 +114,7 @@ void ConvexMPC::Run()
     // Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> X_ref_ = Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>>(reference_in_.X_ref,13,24);
     Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.X_ref,13,10);
     //std::cout <<  X_ref_ << std::endl;
-    //std::cout <<  x_hat_ << std::endl;
+    std::cout <<  x_hat_ << std::endl;
 
     // Update our Dynamics Current State
     Eigen::VectorXd initial_state(2);

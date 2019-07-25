@@ -357,7 +357,7 @@ Port *RealTimeTaskNode::GetInputPort(const int port_id) const
 void RealTimeTaskNode::SetPortOutput(const int port_id, const std::string &path)
 {
     assert(port_id >= 0 && port_id < MAX_PORTS);
-    output_port_map_[port_id]->SetTransport("inproc://" + path); // TODO: Prefix depends on type/port.  For now INPROC only.
+    output_port_map_[port_id]->SetTransport("ipc:///tmp/"+ path); // TODO: Prefix depends on type/port.  For now INPROC only.
 }
 
 // Task Manager Source
@@ -528,7 +528,7 @@ bool Port::Send(void *buffer, const unsigned int length, int flags)
     // TODO: Zero Copy
     //memcpy(message.data(), (void *)&packet_, length + HEAflagsDER_SIZE);
 
-    std::cout << "Send: " << this << " "  << sequence_num_ << std::endl;
+    //std::cout << "Send: " << this << " "  << sequence_num_ << std::endl;
     return status;
 
     //return Send(message, flags);
@@ -544,7 +544,7 @@ bool Port::Receive(void *buffer, const unsigned int length, int flags)
 
     //bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, flags);
     int bytes = socket_->recv((void*)&packet_, length + HEADER_SIZE, 0);
-    std::cout << "Received Bytes: " << bytes << std::endl;
+    //std::cout << "Received Bytes: " << bytes << std::endl;
     //zmq::message_t rx_msg;
     //bool ret_status = Receive(rx_msg, flags); // Receive Buffer
     if(bytes) 
@@ -557,7 +557,7 @@ bool Port::Receive(void *buffer, const unsigned int length, int flags)
         // Copy to output
         memcpy(buffer, (void *)packet_.data, length);
 
-        std::cout << "Receive: " << packet_.sequence_number << std::endl;
+        //std::cout << "Receive: " << packet_.sequence_number << std::endl;
     }
 
     return bytes > 0;

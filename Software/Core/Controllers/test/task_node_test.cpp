@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     teleop_node.SetTaskFrequency(2); // 50 HZ
     teleop_node.SetCoreAffinity(-1);
-    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, "nomad/setpoint");
+    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, "nomad-setpoint");
     teleop_node.Start();
 
     usleep(100000);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     estimator_node.SetTaskFrequency(10); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad/state");
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad-state");
     estimator_node.Start();
 
     usleep(100000);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     ref_generator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     ref_generator_node.SetTaskFrequency(2); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
-    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, "nomad/reference");
+    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, "nomad-reference");
     
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(2); // 50 HZ
     convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, "nomad/forces");
+    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, "nomad-forces");
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT), estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY), ref_generator_node.GetOutputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE));
     convex_mpc_node.Start();

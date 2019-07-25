@@ -88,7 +88,7 @@ void ReferenceTrajectoryGenerator::Run()
 {
 
     // Get Inputs
-    std::cout << "Time to RECEIVE in RTG" << std::endl;
+    //std::cout << "Time to RECEIVE in RTG" << std::endl;
     bool state_recv = GetInputPort(0)->Receive((void *)x_hat_in_.data, x_hat_in_.size); // Receive State Estimate
     bool setpoint_recv = GetInputPort(1)->Receive((void *)&setpoint_in_, sizeof(setpoint_in_)); // Receive Setpoint
 

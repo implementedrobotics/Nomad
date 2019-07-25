@@ -99,7 +99,7 @@ void StateEstimator::Run()
 
     //std::cout << "State Size: " << sizeof(output_state_) << std::endl;
 
-    std::cout << "State Estimator Send: " << std::endl;
+    //std::cout << "State Estimator Send: " << std::endl;
     // Publish State
     bool send_status = GetOutputPort(0)->Send((void*)output_state_.data, output_state_.size);
     //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
