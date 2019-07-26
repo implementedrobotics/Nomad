@@ -80,6 +80,8 @@ protected:
     // Update Period
     unsigned int update_period_;
 
+    int queue_size_;
+
     // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
 
     // Transport(Channel)
@@ -107,6 +109,7 @@ public:
                        const std::string &chan,
                        const T *msg);
 
+    inline const std::deque<T>& GetMessageQueue() const { return msg_buffer_; }
     std::deque<T> msg_buffer_;
 
 private:

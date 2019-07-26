@@ -39,6 +39,7 @@ PortImpl<T>::PortImpl(const std::string &name, zcm::ZCM *ctx, const std::string 
     context_ = ctx;
     transport_ = transport;
     update_period_ = period;
+    queue_size_ = 20;
 }
 
 template <class T>
@@ -57,9 +58,14 @@ void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
 
     // TODO: Check against a maximum queue size, blah blah
     // TODO: Mutex For Read
+    if(msg_buffer_.size() >= queue_size_)
+    {
+        // Kill Old Message
+        msg_buffer_.pop_front();
+    }
     msg_buffer_.push_back(*msg);
 
-    msg_buffer_.front().str;
+    std::cout << msg_buffer_.size() << std::endl;
 }
 
 // Send data on port
@@ -80,8 +86,12 @@ bool Port::Send(T &tx_msg)
 template <class T>
 bool Port::Receive(T &rx_msg)
 {
-    //return socket_->recv(&rx_msg, flags);
-    ((PortImpl<T> *)this)->msg_buffer_.back();
+    std::cout << static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() << std::endl;
+    if(static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() == 0)
+        return false;
+    
+    
+    rx_msg = static_cast<PortImpl<T> *>(this)->GetMessageQueue().back();
     return true;
 }
 
@@ -89,9 +99,8 @@ bool Port::Receive(T &rx_msg)
 template <class T>
 bool Port::Connect()
 {
-
     // TODO: More correct CAST here?
-    auto subs = context_->subscribe(".*", &PortImpl<T>::HandleMessage, (PortImpl<T> *)this);
+    auto subs = context_->subscribe(".*", &PortImpl<T>::HandleMessage, static_cast<PortImpl<T> *>(this));
     return true;
 }
 
