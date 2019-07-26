@@ -32,26 +32,41 @@
 namespace Realtime
 {
 
-// //template <class T>
-// PortImpl<T>::PortImpl(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
-// {
-//     name_ = name;
-//     context_ = ctx;
-//     transport_ = transport;
-//     update_period_ = period;
-// }
+template <class T>
+PortImpl<T>::PortImpl(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
+{
+    name_ = name;
+    context_ = ctx;
+    transport_ = transport;
+    update_period_ = period;
+}
 
-// template <class T>
-// PortImpl<T>::~PortImpl()
-// {
-//     //TODO: Clear any buffers, etc.
-// }
+template <class T>
+PortImpl<T>::~PortImpl()
+{
+    //TODO: Clear any buffers, etc.
+}
+
+template <class T>
+void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
+                                const std::string &chan,
+                                const T *msg)
+{
+    printf("Received message on channel \"%s\":\n", chan.c_str());
+    printf("  Message   = %s\n", msg->str.c_str());
+
+    // TODO: Check against a maximum queue size, blah blah
+    // TODO: Mutex For Read
+    msg_buffer_.push_back(*msg);
+
+    msg_buffer_.front().str;
+}
 
 // Send data on port
 template <class T>
 bool Port::Send(T &tx_msg)
 {
-    std::cout << "Channel: " << transport_  << std::endl;
+    std::cout << "Channel: " << transport_ << std::endl;
     // Publish
     int rc = context_->publish(transport_, &tx_msg);
 
@@ -66,44 +81,17 @@ template <class T>
 bool Port::Receive(T &rx_msg)
 {
     //return socket_->recv(&rx_msg, flags);
+    ((PortImpl<T> *)this)->msg_buffer_.back();
     return true;
 }
-template <class T>
-void Port::handleMessage(const zcm::ReceiveBuffer* rbuf,
-                           const std::string& chan,
-                           const T *msg)
-        {
-            printf("Received message on channel \"%s\":\n", chan.c_str());
-            //printf("  Message   = %s\n", msg->str.c_str());
-            //pthread_self();
-            //std::cout << "PID: " << pthread_self() << std::endl;
-        }
-
 
 // Connect Port
 template <class T>
 bool Port::Connect()
 {
 
-
-    auto subs = context_->subscribe(".*", &Port::handleMessage<T>, this);
-
-    //zcm_context.run();
-
-    // // TODO: For now always a subscriber
-    // socket_ = new zmq::socket_t(*context_, ZMQ_SUB);
-
-    // // Keep only most recent message.  Drop all others from state estimator publisher
-    // //socket_->setsockopt(ZMQ_RCVHWM, 1);
-    // socket_->setsockopt(ZMQ_CONFLATE, 1);
-
-    // std::cout<<"Connecting: " << transport_ << std::endl;
-    // // Connect to Publisher
-    // socket_->connect(transport_);
-
-    // // TODO: Topics later?
-    // // Setup Message Filter(None)
-    // socket_->setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    // TODO: More correct CAST here?
+    auto subs = context_->subscribe(".*", &PortImpl<T>::HandleMessage, (PortImpl<T> *)this);
     return true;
 }
 

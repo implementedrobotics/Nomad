@@ -74,13 +74,13 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
 
     // Reference Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port("REFERENCE", ctx, "reference", rt_period_);
+    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t>("REFERENCE", ctx, "reference", rt_period_);
     output_port_map_[OutputPort::REFERENCE] = port;
 
-    port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period_);
+    port = new Realtime::PortImpl<msg_t>("STATE_HAT", ctx, "state", rt_period_);
     input_port_map_[InputPort::STATE_HAT] = port;
 
-    port = new Realtime::Port("SETPOINT", ctx, "setpoint", rt_period_);
+    port = new Realtime::PortImpl<msg_t>("SETPOINT", ctx, "setpoint", rt_period_);
     input_port_map_[InputPort::SETPOINT] = port;
     
 }

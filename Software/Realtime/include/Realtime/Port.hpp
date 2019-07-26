@@ -21,40 +21,33 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #ifndef NOMAD_REALTIME_PORT_H_
 #define NOMAD_REALTIME_PORT_H_
 
 // C Includes
 
 // C++ Includes
+#include <deque>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
 
 namespace Realtime
 {
-
 class Port
 {
 
 public:
-
     // Base class for RealTimeTaskNode Port
     // name = Port Name
     // ctx = ZCM Context
     // transport = ZCM Message Transport Location String
     // period = Update period (Does not matter for Input Ports)
-    Port(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
-    ~Port();
-
-template <class T>
-void handleMessage(const zcm::ReceiveBuffer* rbuf,
-                           const std::string& chan,
-                           const T *msg);
+    //Port(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
+    //~Port();
 
     // Transport
-    void SetTransport(const std::string &transport) {transport_ = transport;}
+    void SetTransport(const std::string &transport) { transport_ = transport; }
 
     // Map Ports
     static bool Map(Port *input, Port *output);
@@ -70,7 +63,7 @@ void handleMessage(const zcm::ReceiveBuffer* rbuf,
     bool Send(void *buffer, const unsigned int length);
 
     // Receive data on port raw
-    bool Receive(void *buffer, const unsigned int length);  
+    bool Receive(void *buffer, const unsigned int length);
 
     // Send message type data on port
     template <class T>
@@ -95,7 +88,6 @@ protected:
     // Using ZeroCM for thread sync and message passing
     // Context
     zcm::ZCM *context_;
-
 };
 
 template <class T>
@@ -103,19 +95,21 @@ class PortImpl : public Port
 {
 
 public:
-
     // Base class for RealTimeTaskNode Port
     // name = Port Name
     // ctx = ZCM Context
     // transport = ZCM Message Transport Location String
     // period = Update period (Does not matter for Input Ports)
-    // PortImpl(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
-    // ~PortImpl();
+    PortImpl(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
+    ~PortImpl();
 
+    void HandleMessage(const zcm::ReceiveBuffer *rbuf,
+                       const std::string &chan,
+                       const T *msg);
 
+    std::deque<T> msg_buffer_;
 
 private:
-
 };
 } // namespace Realtime
 

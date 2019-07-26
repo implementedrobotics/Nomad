@@ -37,18 +37,18 @@
 namespace Realtime
 {
 
-Port::Port(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
-{
-    name_ = name;
-    context_ = ctx;
-    transport_ = transport;
-    update_period_ = period;
-}
+// Port::Port(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
+// {
+//     name_ = name;
+//     context_ = ctx;
+//     transport_ = transport;
+//     update_period_ = period;
+// }
 
-Port::~Port()
-{
-    //TODO: Clear any buffers, etc.
-}
+// Port::~Port()
+// {
+//     //TODO: Clear any buffers, etc.
+// }
 
 bool Port::Map(Port *input, Port *output)
 {
