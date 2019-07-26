@@ -38,6 +38,7 @@
 #include <Realtime/RealTimeTask.hpp>
 #include <Controllers/Messages.hpp>
 #include <Controllers/Messages/msg_t.hpp>
+#include <Controllers/Messages/com_state_t.hpp>
 
 
 namespace Controllers
@@ -60,13 +61,13 @@ StateEstimator::StateEstimator(const std::string &name,
                                num_states_(13)
 {
     // Create Message
-    output_state_.data = new double[num_states_];
-    output_state_.size = sizeof(double) * num_states_;
+    //output_state_.data = new double[num_states_];
+    //output_state_.size = sizeof(double) * num_states_;
 
     // Create Ports
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t> ("STATE_HAT", rt_period);
+    Realtime::PortImpl<com_state_t> *port = new Realtime::PortImpl<com_state_t> ("STATE_HAT", rt_period);
     output_port_map_[OutputPort::STATE_HAT] = port;
     
 }
@@ -76,30 +77,29 @@ void StateEstimator::Run()
     // Estimate State
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
-    //uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    //output_state.timestamp = time_now;
-    //output_state.sequence_number = sequence_num_;
-    // output_state_.data[0] = 1.0; // X Position
-    // output_state_.data[1] = 2.0; // Y Position
-    // output_state_.data[2] = 3.0; // Z Position
-    // output_state_.data[3] = 4.0; // X Velocity
-    // output_state_.data[4] = 5.0; // Y Velocity
-    // output_state_.data[5] = 6.0; // Z Velocity
-    // output_state_.data[6] = 7.0; // Roll Orientation
-    // output_state_.data[7] = 0.0; // Pitch Orientation
-    // output_state_.data[8] = 2.0; // Yaw Orientation
-    // output_state_.data[9] = 0.0; // Roll Rate
-    // output_state_.data[10] = 0.0; // Pitch Rate
-    // output_state_.data[11] = 0.0; // Yaw Rate
-    // output_state_.data[12] = kGravity; // Gravity
+    output_state_.timestamp = time_now;
+    output_state_.sequence_num = sequence_num_;
+    output_state_.x[0] = 1.0; // X Position
+    output_state_.x[1] = 2.0; // Y Position
+    output_state_.x[2] = 3.0; // Z Position
+    output_state_.x[3] = 4.0; // X Velocity
+    output_state_.x[4] = 5.0; // Y Velocity
+    output_state_.x[5] = 6.0; // Z Velocity
+    output_state_.x[6] = 7.0; // Roll Orientation
+    output_state_.x[7] = 0.0; // Pitch Orientation
+    output_state_.x[8] = 2.0; // Yaw Orientation
+    output_state_.x[9] = 0.0; // Roll Rate
+    output_state_.x[10] = 0.0; // Pitch Rate
+    output_state_.x[11] = 0.0; // Yaw Rate
+    output_state_.x[12] = kGravity; // Gravity
 
     //std::cout << "State Estimator Send: " << std::endl;
+    
     // Publish State
-    msg_t my_data {};
-    my_data.str = (char*)"HELLO, WORLD!\n";
-
-    bool send_status = GetOutputPort(0)->Send<msg_t>(my_data);
+    bool send_status = GetOutputPort(0)->Send<com_state_t>(output_state_);
+    
     //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
     sequence_num_++;
 }

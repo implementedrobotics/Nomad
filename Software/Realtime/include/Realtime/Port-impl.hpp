@@ -54,7 +54,7 @@ void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
                                 const T *msg)
 {
     printf("Received message on channel \"%s\":\n", chan.c_str());
-    printf("  Message   = %s\n", msg->str.c_str());
+    printf("  Message   = %ld\n", msg->sequence_num);
 
     std::unique_lock<std::mutex> lck (mutex_);
     if(msg_buffer_.size() >= queue_size_)

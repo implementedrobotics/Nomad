@@ -36,6 +36,9 @@
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
 #include <Controllers/Messages.hpp>
+#include <Controllers/Messages/com_state_t.hpp>
+#include <Controllers/Messages/trajectory_setpoint_t.hpp>
+#include <Controllers/Messages/ref_trajectory_t.hpp>
 
 namespace Controllers
 {
@@ -74,7 +77,7 @@ protected:
 
     // Trajectory State
     Eigen::MatrixXd X_ref_;
-    
+
     // Number of System States
     int num_states_; 
     
@@ -88,13 +91,16 @@ protected:
     double T_;   
 
     // Input (State Estimate)
-    Messages::Generic::VectorArray x_hat_in_;
+    //Messages::Generic::VectorArray x_hat_in_;
+    com_state_t x_hat_in_;
 
     // Input (Setpoint)
-    Messages::Controllers::Locomotion::TrajectorySetpoint setpoint_in_;
+    trajectory_setpoint_t setpoint_in_;
+    //Messages::Controllers::Locomotion::TrajectorySetpoint setpoint_in_;
 
     // Output (Reference Trajectory)
-    Messages::Controllers::Locomotion::ReferenceTrajectory reference_out_;
+    ref_trajectory_t reference_out_;
+    //Messages::Controllers::Locomotion::ReferenceTrajectory reference_out_;
 
 private:
     int sequence_num_;

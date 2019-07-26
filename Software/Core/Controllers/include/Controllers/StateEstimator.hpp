@@ -33,6 +33,7 @@
 
 // Third Party Inclues
 #include <Controllers/Messages.hpp>
+#include <Controllers/Messages/com_state_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -80,8 +81,10 @@ protected:
     unsigned int num_states_;
 
     // (Output) State Estimate
-    Messages::Generic::VectorArray output_state_;
+    //Messages::Generic::VectorArray output_state_;
 
+    // (Output) State Estimate
+    com_state_t output_state_;
     
 
 private:
