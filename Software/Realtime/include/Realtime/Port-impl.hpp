@@ -71,7 +71,7 @@ void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
 template <class T>
 bool Port::Send(T &tx_msg)
 {
-    //std::cout << "Channel: " << channel_ << std::endl;
+    std::cout << "Sending Channel: " << channel_ << std::endl;
 
     // Publish
     int rc = context_->publish(channel_, &tx_msg);

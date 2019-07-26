@@ -167,8 +167,8 @@ void ReferenceTrajectoryGenerator::Setup()
     GetInputPort(1)->Connect<trajectory_setpoint_t>();
 
     // Reference OUTPUT
-    //GetOutputPort(0)->Bind();
-   // std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
+    GetOutputPort(0)->Bind();
+    std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
 }
 
 } // namespace Locomotion

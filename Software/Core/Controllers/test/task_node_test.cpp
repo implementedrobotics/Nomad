@@ -19,16 +19,16 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
 
-    // // Remote Teleop Task
-    // OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
-    // teleop_node.SetStackSize(100000);
-    // teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // teleop_node.SetTaskFrequency(2); // 50 HZ
-    // teleop_node.SetCoreAffinity(-1);
-    // teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, "nomad/setpoint");
-    // teleop_node.Start();
+    // Remote Teleop Task
+    OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
+    teleop_node.SetStackSize(100000);
+    teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    teleop_node.SetTaskFrequency(2); // 50 HZ
+    teleop_node.SetCoreAffinity(-1);
+    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
+    teleop_node.Start();
 
-    // usleep(100000);
+    usleep(100000);
 
     // State Estimator
     Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
@@ -53,12 +53,12 @@ int main(int argc, char *argv[])
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
     estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     
-    // // // Map Setpoint Output to Trajectory Reference Input
-    // // Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT), 
-    // // teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
+    // Map Setpoint Output to Trajectory Reference Input
+    Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT), 
+    teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     ref_generator_node.Start();
 
-    // usleep(100000);
+    usleep(100000);
 
     // // Convex Model Predicive Controller for Locomotion
     // Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
