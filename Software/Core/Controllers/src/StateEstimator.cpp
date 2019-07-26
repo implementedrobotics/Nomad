@@ -68,7 +68,7 @@ StateEstimator::StateEstimator(const std::string &name,
 
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t>("STATE_HAT", ctx, "state", rt_period);
+    Realtime::Port *port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period);
     output_port_map_[OutputPort::STATE_HAT] = port;
     
 }
@@ -96,9 +96,12 @@ void StateEstimator::Run()
     // output_state_.data[11] = 0.0; // Yaw Rate
     // output_state_.data[12] = kGravity; // Gravity
 
-    std::cout << "State Estimator Send: " << std::endl;
+    //std::cout << "State Estimator Send: " << std::endl;
     // Publish State
-    //bool send_status = GetOutputPort(0)->Send((void*)output_state_.data, output_state_.size);
+    msg_t my_data {};
+    my_data.str = (char*)"HELLO, WORLD!\n";
+
+    bool send_status = GetOutputPort(0)->Send<msg_t>(my_data);
     //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
     sequence_num_++;
 }

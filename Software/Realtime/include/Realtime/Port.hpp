@@ -26,13 +26,8 @@
 #define NOMAD_REALTIME_PORT_H_
 
 // C Includes
-#include <limits.h>
-#include <pthread.h>
 
 // C++ Includes
-#include <iostream>
-#include <string>
-#include <map>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -50,8 +45,13 @@ public:
     // ctx = ZCM Context
     // transport = ZCM Message Transport Location String
     // period = Update period (Does not matter for Input Ports)
-    //Port(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
-    //~Port();
+    Port(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
+    ~Port();
+
+template <class T>
+void handleMessage(const zcm::ReceiveBuffer* rbuf,
+                           const std::string& chan,
+                           const T *msg);
 
     // Transport
     void SetTransport(const std::string &transport) {transport_ = transport;}
@@ -60,6 +60,7 @@ public:
     static bool Map(Port *input, Port *output);
 
     // Connect Port
+    template <class T>
     bool Connect();
 
     // Bind Port
@@ -71,6 +72,13 @@ public:
     // Receive data on port raw
     bool Receive(void *buffer, const unsigned int length);  
 
+    // Send message type data on port
+    template <class T>
+    bool Send(T &msg);
+
+    // Receive message type data on port
+    template <class T>
+    bool Receive(T &msg);
 
 protected:
     // Port Name
@@ -79,13 +87,12 @@ protected:
     // Update Period
     unsigned int update_period_;
 
-    // Using ZeroCM for thread sync and message passing
-    
     // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
 
-    // Transport
+    // Transport(Channel)
     std::string transport_;
 
+    // Using ZeroCM for thread sync and message passing
     // Context
     zcm::ZCM *context_;
 
@@ -102,19 +109,12 @@ public:
     // ctx = ZCM Context
     // transport = ZCM Message Transport Location String
     // period = Update period (Does not matter for Input Ports)
-    PortImpl(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
-    ~PortImpl();
+    // PortImpl(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
+    // ~PortImpl();
 
-    // Send message type data on port
-    bool Send(T &msg);
 
-    // Receive message type data on port
-    bool Receive(T &msg);
 
 private:
-
-    // Message
-    T message_;
 
 };
 } // namespace Realtime

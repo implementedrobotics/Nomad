@@ -1,91 +1,92 @@
-// /*
-//  * ReferenceTrajectoryGenerator.cpp
-//  *
-//  *  Created on: July 16, 2019
-//  *      Author: Quincy Jones
-//  *
-//  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
-//  * Permission is hereby granted, free of charge, to any person obtaining a
-//  * copy of this software and associated documentation files (the "Software"),
-//  * to deal in the Software without restriction, including without limitation
-//  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
-//  * and/or sell copies of the Software, and to permit persons to whom the Software
-//  * is furnished to do so, subject to the following conditions:
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-//  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-//  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//  */
+/*
+ * ReferenceTrajectoryGenerator.cpp
+ *
+ *  Created on: July 16, 2019
+ *      Author: Quincy Jones
+ *
+ * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
-// // Primary Include
-// #include <Controllers/ReferenceTrajectoryGen.hpp>
+// Primary Include
+#include <Controllers/ReferenceTrajectoryGen.hpp>
 
-// // C System Includes
+// C System Includes
 
-// // C++ System Includes
-// #include <iostream>
-// #include <string>
-// #include <sstream>
-// #include <chrono>
+// C++ System Includes
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <chrono>
 
-// // Third-Party Includes
-// #include <Eigen/Dense>
+// Third-Party Includes
+#include <Eigen/Dense>
 
-// // Project Includes
-// #include <Realtime/RealTimeTask.hpp>
-// #include <Controllers/StateEstimator.hpp>
-// #include <Controllers/Messages.hpp>
+// Project Includes
+#include <Realtime/RealTimeTask.hpp>
+#include <Controllers/StateEstimator.hpp>
+#include <Controllers/Messages.hpp>
+#include <Controllers/Messages/msg_t.hpp>
 
-// // TODO: Static Variable in "Physics" Class somewhere
+// TODO: Static Variable in "Physics" Class somewhere
 
-// double kGravity = 9.81;
+double kGravity = 9.81;
 
-// namespace Controllers
-// {
-// namespace Locomotion
-// {
-// //using namespace RealTimeControl;
+namespace Controllers
+{
+namespace Locomotion
+{
+//using namespace RealTimeControl;
 
-// ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T) : 
-//                                Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
-//                                sequence_num_(0),
-//                                num_states_(13),
-//                                T_(T),
-//                                N_(N)
-// {
+ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T) : 
+                               Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
+                               sequence_num_(0),
+                               num_states_(13),
+                               T_(T),
+                               N_(N)
+{
     
-//     // Allocate Message Structures
-//     x_hat_in_.data = new double[num_states_];
-//     x_hat_in_.size = sizeof(double) * num_states_;
+    // Allocate Message Structures
+    x_hat_in_.data = new double[num_states_];
+    x_hat_in_.size = sizeof(double) * num_states_;
 
-//     // Sample Time
-//     T_s_ = T_ / (N_);
+    // Sample Time
+    T_s_ = T_ / (N_);
 
-//     // Reference State Trajectory
-//     X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
+    // Reference State Trajectory
+    X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
 
-//     // Create Ports
-//     zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
+    // Create Ports
+    zcm::ZCM *ctx = Realtime::RealTimeTaskManager::Instance()->GetZCMContext();
 
-//     // Reference Output Port
-//     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-//     Realtime::Port *port = new Realtime::Port("REFERENCE", ctx, "reference", rt_period_);
-//     output_port_map_[OutputPort::REFERENCE] = port;
+    // Reference Output Port
+    // TODO: Independent port speeds.  For now all ports will be same speed as task node
+    Realtime::Port *port = new Realtime::Port("REFERENCE", ctx, "reference", rt_period_);
+    output_port_map_[OutputPort::REFERENCE] = port;
 
-//     port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period_);
-//     input_port_map_[InputPort::STATE_HAT] = port;
+    port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period_);
+    input_port_map_[InputPort::STATE_HAT] = port;
 
-//     port = new Realtime::Port("SETPOINT", ctx, "setpoint", rt_period_);
-//     input_port_map_[InputPort::SETPOINT] = port;
+    port = new Realtime::Port("SETPOINT", ctx, "setpoint", rt_period_);
+    input_port_map_[InputPort::SETPOINT] = port;
     
-// }
+}
 
-// void ReferenceTrajectoryGenerator::Run()
-// {
+void ReferenceTrajectoryGenerator::Run()
+{
 
 //     // Get Inputs
 //     std::cout << "Time to RECEIVE in RTG" << std::endl;
@@ -157,21 +158,21 @@
 //     //std::cout << "[ReferenceTrajectoryGenerator]: Send Status: " << send_status <<std::endl;
 //     // Update our Sequence Counter
 //     sequence_num_++;
-// }
+}
 
-// void ReferenceTrajectoryGenerator::Setup()
-// {
+void ReferenceTrajectoryGenerator::Setup()
+{
 
-//     // State Estimate INPUT
-//     GetInputPort(0)->Connect();
+    // State Estimate INPUT
+    GetInputPort(0)->Connect<msg_t>();
+    
+    // Setpoint INPUT
+    //GetInputPort(1)->Connect();
 
-//     // Setpoint INPUT
-//     GetInputPort(1)->Connect();
+    // Reference OUTPUT
+    //GetOutputPort(0)->Bind();
+   // std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
+}
 
-//     // Reference OUTPUT
-//     GetOutputPort(0)->Bind();
-//     std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
-// }
-
-// } // namespace Locomotion
-// } // namespace Controllers
+} // namespace Locomotion
+} // namespace Controllers

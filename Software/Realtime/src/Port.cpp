@@ -37,31 +37,25 @@
 namespace Realtime
 {
 
+Port::Port(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
+{
+    name_ = name;
+    context_ = ctx;
+    transport_ = transport;
+    update_period_ = period;
+}
+
+Port::~Port()
+{
+    //TODO: Clear any buffers, etc.
+}
 
 bool Port::Map(Port *input, Port *output)
 {
     input->transport_ = output->transport_;
 }
 
-// Connect Port
-bool Port::Connect()
-{
-    // // TODO: For now always a subscriber
-    // socket_ = new zmq::socket_t(*context_, ZMQ_SUB);
 
-    // // Keep only most recent message.  Drop all others from state estimator publisher
-    // //socket_->setsockopt(ZMQ_RCVHWM, 1);
-    // socket_->setsockopt(ZMQ_CONFLATE, 1);
-
-    // std::cout<<"Connecting: " << transport_ << std::endl;
-    // // Connect to Publisher
-    // socket_->connect(transport_);
-
-    // // TODO: Topics later?
-    // // Setup Message Filter(None)
-    // socket_->setsockopt(ZMQ_SUBSCRIBE, "", 0);
-    return true;
-}
 
 // Bind Port
 bool Port::Bind()

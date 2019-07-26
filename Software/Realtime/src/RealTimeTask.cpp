@@ -369,7 +369,7 @@ RealTimeTaskManager *RealTimeTaskManager::manager_instance_ = NULL;
 RealTimeTaskManager::RealTimeTaskManager()
 {
     // ZMQ Context
-    context_ = new zcm::ZCM();
+    context_ = new zcm::ZCM("inproc");
 
     // Get CPU Count
     cpu_count_ = sysconf(_SC_NPROCESSORS_ONLN);

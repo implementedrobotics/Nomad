@@ -34,29 +34,29 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     estimator_node.SetTaskFrequency(10); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad/state");
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad.state");
     estimator_node.Start();
 
     // usleep(100000);
 
-    // // Reference Trajectory Generator
-    // Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
-    // ref_generator_node.SetStackSize(100000);
-    // ref_generator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // ref_generator_node.SetTaskFrequency(2); // 50 HZ
-    // ref_generator_node.SetCoreAffinity(-1);
-    // ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, "nomad/reference");
+    // Reference Trajectory Generator
+    Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
+    ref_generator_node.SetStackSize(100000);
+    ref_generator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    ref_generator_node.SetTaskFrequency(2); // 50 HZ
+    ref_generator_node.SetCoreAffinity(-1);
+    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, "nomad.reference");
     
-    // // Map State Estimator Output to Trajectory Reference Input
-    // Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
-    // estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+    // Map State Estimator Output to Trajectory Reference Input
+    Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
+    estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     
     // // Map Setpoint Output to Trajectory Reference Input
     // Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT), 
     // teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
-    // ref_generator_node.Start();
+    ref_generator_node.Start();
 
-    // usleep(100000);
+    usleep(100000);
 
     // // Convex Model Predicive Controller for Locomotion
     // Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
     // gait_scheduler_node.SetPortOutput(Controllers::Locomotion::GaitScheduler::OutputPort::CONTACT_STATE, "nomad/gait_contacts");
     // gait_scheduler_node.Start();
 
+    Realtime::RealTimeTaskManager::Instance()->GetZCMContext()->start();
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
     while (1)
