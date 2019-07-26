@@ -32,7 +32,6 @@
 // C++ Includes
 #include <iostream>
 #include <string>
-#include <map>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -101,11 +100,11 @@ public:
     // Get Input Port
     Port* GetInputPort(const int port_id) const;
 
-    // Set Topic
-    // TODO: Add a "type" (TCP/UDP, THREAD ETC)
-    void SetPortOutput(const int port_id, const std::string& path);
+    // Set Transport Configuration for Port
+    void SetPortOutput(const int port_id, const Port::TransportType transport, const std::string &transport_url, const std::string &channel);
 
 protected:
+
     // Override Me for thread function
     virtual void Run() = 0;
 
@@ -145,19 +144,16 @@ protected:
     // Task Parameter
     void *task_param_;
 
-
-
 private:
+
     // STATIC Task Delay (More accurate but uses a busy wait)
     static long int TaskDelay(long int microseconds); // Usuful for tight timings or periods below 1000us
+
     // Static Task Sleep (Less accurate but less resource intensive) // Useful for sotter timings and periods > 1000us
     static long int TaskSleep(long int microseconds);
 
-
-
     // STATIC Member Task Run
     static void *RunTask(void *task_instance);
-
 
 };
 
@@ -165,29 +161,30 @@ class RealTimeTaskManager
 {
 
 public:
+
     // Base Class Real Time Task Manager
     RealTimeTaskManager();
 
     // STATIC Singleton Instance
     static RealTimeTaskManager *Instance();
 
+    // Number of CPU Cores available in the system
     int GetCPUCount() { return cpu_count_; }
 
+    // Add Task to the Manager
     bool AddTask(RealTimeTaskNode *task);
+
+    // End Task and Shutdown
     bool EndTask(RealTimeTaskNode *task);
+
+    // End Task and Shutdown
     bool EndTask(const std::string &name);
+
+    // Print the currently active task lists
     void PrintActiveTasks();
 
-    // Context
-    zcm::ZCM *GetZCMContext() const { return context_; }
-
-protected:
-    // Using ZCM for thread sync and message passing
-    // ZCM Context
-    // Thread inproc messaging must share a single context.  We put it in the singleton here to keep it unique;
-    zcm::ZCM *context_;
-
 private:
+
     // Singleton Instance
     static RealTimeTaskManager *manager_instance_;
 

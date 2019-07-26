@@ -353,12 +353,10 @@ Port *RealTimeTaskNode::GetInputPort(const int port_id) const
     return input_port_map_[port_id];
 }
 
-// TODO: Add a "type" (TCP/UDP, THREAD ETC)
-void RealTimeTaskNode::SetPortOutput(const int port_id, const std::string &channel)
+void RealTimeTaskNode::SetPortOutput(const int port_id, const Port::TransportType transport, const std::string &transport_url, const std::string &channel)
 {
     assert(port_id >= 0 && port_id < MAX_PORTS);
-    //output_port_map_[port_id]->SetTransport("inproc://" + path); // TODO: Prefix depends on type/port.  For now INPROC only.
-    output_port_map_[port_id]->SetTransport(channel); // TODO: Prefix depends on type/port.  For now INPROC only.
+    output_port_map_[port_id]->SetTransport(transport, transport_url, channel);
 }
 
 // Task Manager Source
@@ -368,9 +366,6 @@ RealTimeTaskManager *RealTimeTaskManager::manager_instance_ = NULL;
 
 RealTimeTaskManager::RealTimeTaskManager()
 {
-    // ZMQ Context
-    context_ = new zcm::ZCM("inproc");
-
     // Get CPU Count
     cpu_count_ = sysconf(_SC_NPROCESSORS_ONLN);
 

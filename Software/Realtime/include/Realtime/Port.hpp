@@ -28,6 +28,7 @@
 
 // C++ Includes
 #include <deque>
+#include <memory>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -38,18 +39,23 @@ class Port
 {
 
 public:
-    // Base class for RealTimeTaskNode Port
-    // name = Port Name
-    // ctx = ZCM Context
-    // transport = ZCM Message Transport Location String
-    // period = Update period (Does not matter for Input Ports)
-    //Port(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
-    //~Port();
+
+    // Transport Type Enum
+    enum TransportType {
+        INPROC=0,
+        IPC,
+        UDP,
+        SERIAL
+    };
 
     // Transport
-    void SetTransport(const std::string &transport) { transport_ = transport; }
+    // For INPROC/IPC transport URL should depend on block/noblock?  Not technically necessary to set.
+    void SetTransport(const TransportType transport, const std::string &transport_url, const std::string &channel) { 
+        transport_type_ = transport;
+        transport_url_ = transport_url;
+        channel_ = channel; }
 
-    // Map Ports
+    // Map Portsconst
     static bool Map(Port *input, Port *output);
 
     // Connect Port
@@ -61,59 +67,102 @@ public:
 
     // Send data on port raw
     bool Send(void *buffer, const unsigned int length);
-
-    // Receive data on port raw
-    bool Receive(void *buffer, const unsigned int length);
-
+    
     // Send message type data on port
     template <class T>
     bool Send(T &msg);
+    
+    // Receive data on port raw
+    bool Receive(void *buffer, const unsigned int length);
 
     // Receive message type data on port
     template <class T>
     bool Receive(T &msg);
 
 protected:
+
     // Port Name
     std::string name_;
 
     // Update Period
     unsigned int update_period_;
 
+    // Size of the queue bufferr
     int queue_size_;
 
-    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
+    // Transport Type
+    TransportType transport_type_;
 
-    // Transport(Channel)
-    std::string transport_;
+    // Transport URL
+    std::string transport_url_;
+
+    // Channel
+    std::string channel_;
 
     // Using ZeroCM for thread sync and message passing
     // Context
-    zcm::ZCM *context_;
+    std::shared_ptr<zcm::ZCM> context_;
+
 };
 
+// TODO: Better name for this class?
 template <class T>
 class PortImpl : public Port
 {
-
+friend class Port;
 public:
     // Base class for RealTimeTaskNode Port
     // name = Port Name
     // ctx = ZCM Context
     // transport = ZCM Message Transport Location String
     // period = Update period (Does not matter for Input Ports)
-    PortImpl(const std::string &name, zcm::ZCM *zcm_context, const std::string &transport, int period);
+    PortImpl(const std::string &name, int period);
     ~PortImpl();
 
+    // Message Handling Callback
     void HandleMessage(const zcm::ReceiveBuffer *rbuf,
                        const std::string &chan,
                        const T *msg);
 
-    inline const std::deque<T>& GetMessageQueue() const { return msg_buffer_; }
+protected:
+
+    // Get Message Buffer
+    inline std::deque<T>& GetMessageQueue() { return msg_buffer_; }
+
+    // Message Buffer
     std::deque<T> msg_buffer_;
 
 private:
 };
+
+
+class PortManager
+{
+
+public:
+    // Base Class Real Time Task Manager
+    PortManager();
+
+    // STATIC Singleton Instance
+    static PortManager *Instance();
+
+    // Singleton ZCM Context for INPROC messaging
+   std::shared_ptr<zcm::ZCM> GetInprocContext() const { return inproc_context_; }
+
+protected:
+    // Using ZMQ for thread sync and message passing
+    // ZMQ Context
+    // Thread inproc messaging must share a single context.  We put it in the singleton here to keep it unique;
+    //zcm::ZCM *inproc_context_;
+
+    std::shared_ptr<zcm::ZCM> inproc_context_;
+
+private:
+    // Singleton Instance
+    static PortManager *manager_instance_;
+};
+
+
 } // namespace Realtime
 
 #include <Realtime/Port-impl.hpp>

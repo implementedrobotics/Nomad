@@ -64,12 +64,9 @@ StateEstimator::StateEstimator(const std::string &name,
     output_state_.size = sizeof(double) * num_states_;
 
     // Create Ports
-    zcm::ZCM *ctx = Realtime::RealTimeTaskManager::Instance()->GetZCMContext();
-
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    //Realtime::Port *port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period);
-    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t> ("STATE_HAT", ctx, "state", rt_period);
+    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t> ("STATE_HAT", rt_period);
     output_port_map_[OutputPort::STATE_HAT] = port;
     
 }

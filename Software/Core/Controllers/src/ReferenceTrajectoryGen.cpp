@@ -70,17 +70,16 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
     X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
 
     // Create Ports
-    zcm::ZCM *ctx = Realtime::RealTimeTaskManager::Instance()->GetZCMContext();
 
     // Reference Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t>("REFERENCE", ctx, "reference", rt_period_);
+    Realtime::PortImpl<msg_t> *port = new Realtime::PortImpl<msg_t>("REFERENCE", rt_period_);
     output_port_map_[OutputPort::REFERENCE] = port;
 
-    port = new Realtime::PortImpl<msg_t>("STATE_HAT", ctx, "state", rt_period_);
+    port = new Realtime::PortImpl<msg_t>("STATE_HAT", rt_period_);
     input_port_map_[InputPort::STATE_HAT] = port;
 
-    port = new Realtime::PortImpl<msg_t>("SETPOINT", ctx, "setpoint", rt_period_);
+    port = new Realtime::PortImpl<msg_t>("SETPOINT", rt_period_);
     input_port_map_[InputPort::SETPOINT] = port;
     
 }
@@ -167,7 +166,7 @@ void ReferenceTrajectoryGenerator::Setup()
 
     // State Estimate INPUT
     GetInputPort(0)->Connect<msg_t>();
-    
+
     // Setpoint INPUT
     //GetInputPort(1)->Connect();
 

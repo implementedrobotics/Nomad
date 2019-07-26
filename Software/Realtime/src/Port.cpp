@@ -37,34 +37,41 @@
 namespace Realtime
 {
 
-// Port::Port(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
-// {
-//     name_ = name;
-//     context_ = ctx;
-//     transport_ = transport;
-//     update_period_ = period;
-// }
-
-// Port::~Port()
-// {
-//     //TODO: Clear any buffers, etc.
-// }
-
+// TODO: I do not love this...
 bool Port::Map(Port *input, Port *output)
 {
-    input->transport_ = output->transport_;
+    input->transport_url_ = output->transport_url_;
+    input->channel_ = output->channel_;
+    input->transport_type_ = output->transport_type_;
 }
 
-
-
-// Bind Port
-bool Port::Bind()
+bool Port::Bind() 
 {
-    // // TODO: For now always a publisher
-    // socket_ = new zmq::socket_t(*context_, ZMQ_PUB);
-    // socket_->bind(transport_);
+    // Reset and Clear Reference
+    context_.reset();
 
-    // // TODO: Error Check Bind
+    // Setup Contexts
+    if(transport_type_ == TransportType::INPROC)
+    {
+        context_ = PortManager::Instance()->GetInprocContext();
+    }
+    else if(transport_type_ == TransportType::IPC)
+    {
+        context_ = std::make_shared<zcm::ZCM>("ipc");
+    }
+    else if(transport_type_ == TransportType::UDP)
+    {
+        context_ = std::make_shared<zcm::ZCM>(transport_url_);
+    }
+    else if(transport_type_ == TransportType::SERIAL)
+    {
+        context_ = std::make_shared<zcm::ZCM>(transport_url_);
+    }
+    else
+    {
+        std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
+    }
+
     return true;
 }
 
@@ -121,4 +128,25 @@ bool Port::Receive(void *buffer, const unsigned int length)
     return true;
 }
 
+
+// Port Manager Source
+
+// Global static pointer used to ensure a single instance of the class.
+PortManager *PortManager::manager_instance_ = NULL;
+
+PortManager::PortManager()
+{
+    // ZCM Context
+    inproc_context_ = std::make_shared<zcm::ZCM>("inproc");
+    //inproc_context_ = new zcm::ZCM("inproc");
+}
+
+PortManager *PortManager::Instance()
+{
+    if (manager_instance_ == NULL)
+    {
+        manager_instance_ = new PortManager();
+    }
+    return manager_instance_;
+}
 } // namespace Realtime

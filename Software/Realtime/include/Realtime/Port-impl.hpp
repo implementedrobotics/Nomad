@@ -33,13 +33,13 @@ namespace Realtime
 {
 
 template <class T>
-PortImpl<T>::PortImpl(const std::string &name, zcm::ZCM *ctx, const std::string &transport, int period)
+PortImpl<T>::PortImpl(const std::string &name, int period)
 {
     name_ = name;
-    context_ = ctx;
-    transport_ = transport;
     update_period_ = period;
     queue_size_ = 20;
+    transport_type_ = TransportType::INPROC;
+    transport_url_ = "inproc";  // TODO: Noblock?
 }
 
 template <class T>
@@ -72,13 +72,12 @@ void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
 template <class T>
 bool Port::Send(T &tx_msg)
 {
-    std::cout << "Channel: " << transport_ << std::endl;
+    std::cout << "Channel: " << channel_ << std::endl;
+
     // Publish
-    int rc = context_->publish(transport_, &tx_msg);
+    int rc = context_->publish(channel_, &tx_msg);
 
-    // sequence_num_++;
-
-    //return status;
+    // True if OK
     return rc == ZCM_EOK;
 }
 
@@ -86,10 +85,10 @@ bool Port::Send(T &tx_msg)
 template <class T>
 bool Port::Receive(T &rx_msg)
 {
+    // TODO: Critical Thread Section Here
     std::cout << static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() << std::endl;
     if(static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() == 0)
         return false;
-    
     
     rx_msg = static_cast<PortImpl<T> *>(this)->GetMessageQueue().back();
     return true;
@@ -99,8 +98,34 @@ bool Port::Receive(T &rx_msg)
 template <class T>
 bool Port::Connect()
 {
-    // TODO: More correct CAST here?
-    auto subs = context_->subscribe(".*", &PortImpl<T>::HandleMessage, static_cast<PortImpl<T> *>(this));
+    // Reset and Clear Reference
+    context_.reset();
+
+    // Setup Contexts
+    if(transport_type_ == TransportType::INPROC)
+    {
+        context_ = PortManager::Instance()->GetInprocContext();
+    }
+    else if(transport_type_ == TransportType::IPC)
+    {
+        context_ = std::make_shared<zcm::ZCM>("ipc");
+    }
+    else if(transport_type_ == TransportType::UDP)
+    {
+        context_ = std::make_shared<zcm::ZCM>(transport_url_);
+    }
+    else if(transport_type_ == TransportType::SERIAL)
+    {
+        context_ = std::make_shared<zcm::ZCM>(transport_url_);
+    }
+    else
+    {
+        std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
+    }
+
+    // Now Subscribe
+    // TODO: Save subs somewhere for unsubscribe
+    auto subs = context_->subscribe(channel_, &PortImpl<T>::HandleMessage, static_cast<PortImpl<T> *>(this));
     return true;
 }
 
