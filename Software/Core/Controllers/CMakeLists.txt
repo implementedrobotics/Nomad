@@ -7,7 +7,7 @@ ${PROJECT_SOURCE_DIR}/Core/Controllers/src/GaitScheduler.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ReferenceTrajectoryGen.cpp
 )
 
-set(CONTROLLERS_LIBS OptimalControl Systems pthread rt zmq)
+set(CONTROLLERS_LIBS OptimalControl Systems pthread rt zcm)
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")

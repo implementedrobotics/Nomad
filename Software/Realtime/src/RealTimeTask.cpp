@@ -354,10 +354,11 @@ Port *RealTimeTaskNode::GetInputPort(const int port_id) const
 }
 
 // TODO: Add a "type" (TCP/UDP, THREAD ETC)
-void RealTimeTaskNode::SetPortOutput(const int port_id, const std::string &path)
+void RealTimeTaskNode::SetPortOutput(const int port_id, const std::string &channel)
 {
     assert(port_id >= 0 && port_id < MAX_PORTS);
-    output_port_map_[port_id]->SetTransport("inproc://" + path); // TODO: Prefix depends on type/port.  For now INPROC only.
+    //output_port_map_[port_id]->SetTransport("inproc://" + path); // TODO: Prefix depends on type/port.  For now INPROC only.
+    output_port_map_[port_id]->SetTransport(channel); // TODO: Prefix depends on type/port.  For now INPROC only.
 }
 
 // Task Manager Source
@@ -368,7 +369,7 @@ RealTimeTaskManager *RealTimeTaskManager::manager_instance_ = NULL;
 RealTimeTaskManager::RealTimeTaskManager()
 {
     // ZMQ Context
-    context_ = new zmq::context_t(1);
+    context_ = new zcm::ZCM();
 
     // Get CPU Count
     cpu_count_ = sysconf(_SC_NPROCESSORS_ONLN);
@@ -451,115 +452,5 @@ void RealTimeTaskManager::PrintActiveTasks()
     {
         std::cout << "[RealTimeTaskManager]: Task: " << task->task_name_ << "\tPriority: " << task->rt_priority_ << "\tCPU Affinity: " << task->rt_core_id_ << std::endl;
     }
-}
-
-Port::Port(const std::string &name, zmq::context_t *ctx, const std::string &transport, int period) : name_(name),
-                                                                       context_(ctx),
-                                                                       transport_(transport),
-                                                                       update_period_(period),
-                                                                       sequence_num_(0)
-{
-}
-Port::~Port()
-{
-}
-
-bool Port::Map(Port *input, Port *output)
-{
-    input->transport_ = output->transport_;
-}
-
-// Connect Port
-bool Port::Connect()
-{
-    // TODO: For now always a subscriber
-    socket_ = new zmq::socket_t(*context_, ZMQ_SUB);
-
-    // Keep only most recent message.  Drop all others from state estimator publisher
-    //socket_->setsockopt(ZMQ_RCVHWM, 1);
-    socket_->setsockopt(ZMQ_CONFLATE, 1);
-
-    std::cout<<"Connecting: " << transport_ << std::endl;
-    // Connect to Publisher
-    socket_->connect(transport_);
-
-    // TODO: Topics later?
-    // Setup Message Filter(None)
-    socket_->setsockopt(ZMQ_SUBSCRIBE, "", 0);
-}
-
-// Bind Port
-bool Port::Bind()
-{
-    // TODO: For now always a publisher
-    socket_ = new zmq::socket_t(*context_, ZMQ_PUB);
-    socket_->bind(transport_);
-
-    // TODO: Error Check Bind
-    return true;
-}
-
-// Send data on port
-bool Port::Send(zmq::message_t &tx_msg, int flags)
-{
-    // TODO: Zero Copy Publish
-    bool status = socket_->send(tx_msg, flags);
-    sequence_num_++;
-
-    return status;
-}
-bool Port::Send(void *buffer, const unsigned int length, int flags)
-{
-    //zmq::message_t message(length + HEADER_SIZE);
-
-    // Update Sequence Count
-    packet_.sequence_number = sequence_num_;
-
-    // Get Timestamp
-    // TODO: "GetUptime" Static function in a time class
-    packet_.timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-    // Copy to packet
-    memcpy((void *)packet_.data, buffer, length);
-
-    bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, 0);
-    sequence_num_++;
-
-    // TODO: Zero Copy
-    //memcpy(message.data(), (void *)&packet_, length + HEAflagsDER_SIZE);
-
-    std::cout << "Send: " << this << " "  << sequence_num_ << std::endl;
-    return status;
-
-    //return Send(message, flags);
-}
-
-// Receive data on port
-bool Port::Receive(zmq::message_t &rx_msg, int flags)
-{
-    return socket_->recv(&rx_msg, flags);
-}
-bool Port::Receive(void *buffer, const unsigned int length, int flags)
-{
-
-    //bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, flags);
-    int bytes = socket_->recv((void*)&packet_, length + HEADER_SIZE, 0);
-    std::cout << "Received Bytes: " << bytes << std::endl;
-    //zmq::message_t rx_msg;
-    //bool ret_status = Receive(rx_msg, flags); // Receive Buffer
-    if(bytes) 
-    {
-        // Copy to packet
-        //memcpy((void *)&packet_, rx_msg.data(), rx_msg.size());
-    
-        // TODO: Check Timestamps and sequence for errors and latency
-        // TODO: Should be able to just copy pointer as it will stay valid until another send.
-        // Copy to output
-        memcpy(buffer, (void *)packet_.data, length);
-
-        std::cout << "Receive: " << packet_.sequence_number << std::endl;
-    }
-
-    return bytes > 0;
 }
 } // namespace Realtime

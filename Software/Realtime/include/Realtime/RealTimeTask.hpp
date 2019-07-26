@@ -22,8 +22,8 @@
  */
 
 
-#ifndef NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
-#define NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
+#ifndef NOMAD_REALTIME_REALTIMETASK_H_
+#define NOMAD_REALTIME_REALTIMETASK_H_
 
 // C Includes
 #include <limits.h>
@@ -35,7 +35,10 @@
 #include <map>
 
 // Third Party Includes
-#include <zmq.hpp>
+#include <zcm/zcm-cpp.hpp>
+
+// Project Includes
+#include <Realtime/Port.hpp>
 
 namespace Realtime
 {
@@ -46,92 +49,6 @@ enum Priority
     MEDIUM = 50,
     HIGH = 20,
     HIGHEST = 1
-};
-
-// TODO: Port Type, etc
-class Port
-{
-    static const int MAX_SIZE = 32768;
-    static const int HEADER_SIZE = sizeof(uint64_t) * 2;
-    struct packet_t
-    {
-        // Timestamp
-        uint64_t timestamp;
-
-        // Sequence Number
-        uint64_t sequence_number;
-
-        // Data 
-        double data[MAX_SIZE];
-    };
-
-public:
-
-    // Base class for RealTimeTaskNode Port
-    // name = Port Name
-    // ctx = ZMQ Context
-    // transport = ZMQ Socket Transport Location String
-    // period = Update period
-    Port(const std::string &name, zmq::context_t *ctx, const std::string &transport, int period);
-    ~Port();
-
-    // Transport
-    void SetTransport(const std::string &transport) {transport_ = transport;}
-    // Map Ports
-    static bool Map(Port *input, Port *output);
-
-    // Connect Port
-    bool Connect();
-
-    // Bind Port
-    bool Bind();
-
-    // Send data on port
-    bool Send(zmq::message_t &msg, int flags = ZMQ_NOBLOCK);
-    bool Send(void *buffer, const unsigned int length, int flags = ZMQ_NOBLOCK);
-    bool Send(const std::string &str, const unsigned int length, int flags = ZMQ_NOBLOCK);
-
-    // Receive data on port
-    bool Receive(zmq::message_t &msg, int flags = ZMQ_NOBLOCK);
-    bool Receive(void *buffer, const unsigned int length, int flags = ZMQ_NOBLOCK);
-    bool Receive(const std::string &str, const unsigned int length, int flags = ZMQ_NOBLOCK);
-
-private:
-    // Port Name
-    std::string name_;
-
-    // Update Period
-    unsigned int update_period_;
-
-    // Using ZMQ for thread sync and message passing
-    
-    // TODO: Need a enum for types, i.e. TCP, UDP, IPC, INPROC
-    // TODO: Also a port int
-    // TODO: Also a Socket Type
-    // TODO: Also Queue/Message Options, i.e. HWM and CONFLATE
-
-    // Transport
-    std::string transport_;
-
-    // Socket
-    zmq::socket_t *socket_;
-
-    // Context
-    zmq::context_t *context_;
-
-    // Message
-    zmq::message_t message_;
-
-    // Packet
-    packet_t packet_;
-
-
-
-    // Keep up with sequence
-    unsigned int sequence_num_;
-
-
-
 };
 
 class RealTimeTaskNode
@@ -261,13 +178,14 @@ public:
     bool EndTask(const std::string &name);
     void PrintActiveTasks();
 
-    zmq::context_t *GetZMQContext() const { return context_; }
+    // Context
+    zcm::ZCM *GetZCMContext() const { return context_; }
 
 protected:
-    // Using ZMQ for thread sync and message passing
-    // ZMQ Context
+    // Using ZCM for thread sync and message passing
+    // ZCM Context
     // Thread inproc messaging must share a single context.  We put it in the singleton here to keep it unique;
-    zmq::context_t *context_;
+    zcm::ZCM *context_;
 
 private:
     // Singleton Instance
@@ -281,4 +199,4 @@ private:
 };
 } // namespace Realtime
 
-#endif // NOMAD_CORE_CONTROLLERS_REALTIMETASK_H_
+#endif // NOMAD_REALTIME_REALTIMETASK_H_
