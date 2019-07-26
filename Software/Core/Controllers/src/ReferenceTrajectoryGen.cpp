@@ -85,11 +85,11 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
 void ReferenceTrajectoryGenerator::Run()
 {
 
-     // Get Inputs
-     std::cout << "Time to RECEIVE in RTG" << std::endl;
-     bool state_recv = GetInputPort(0)->Receive<com_state_t>(x_hat_in_); // Receive State Estimate
-     std::cout << "IN RUN: " << x_hat_in_.sequence_num << " state: " << state_recv << std::endl;
-     bool setpoint_recv = GetInputPort(1)->Receive<trajectory_setpoint_t>(setpoint_in_); // Receive Setpoint
+    // Get Inputs
+    //std::cout << "Time to RECEIVE in RTG" << std::endl;
+    bool state_recv = GetInputPort(0)->Receive<com_state_t>(x_hat_in_); // Receive State Estimate
+    //std::cout << "IN RUN: " << x_hat_in_.sequence_num << " state: " << state_recv << std::endl;
+    bool setpoint_recv = GetInputPort(1)->Receive<trajectory_setpoint_t>(setpoint_in_); // Receive Setpoint
 
     // TODO: Add a metric for how far behind this node can get before erroring out.
     if(!state_recv || !setpoint_recv)
@@ -97,6 +97,7 @@ void ReferenceTrajectoryGenerator::Run()
         std::cout << "[ReferenceTrajectoryGenerator]: Receive Buffer Empty!" << std::endl; 
         return;
     }
+    //std::cout << "RTG: " << x_hat_in_.sequence_num;
     //std::cout << "[ReferenceTrajectoryGenerator]: " << "State: " << state_recv << " Setpoint: " << setpoint_recv << std::endl;
 
     // Get Timestamp
@@ -104,7 +105,7 @@ void ReferenceTrajectoryGenerator::Run()
     uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.x, 13);
 
-    std::cout << "X2: " << x_hat_ << std::endl;
+    //std::cout << "X2: " << x_hat_ << std::endl;
     //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.data[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
@@ -140,7 +141,7 @@ void ReferenceTrajectoryGenerator::Run()
         X_ref_(1,i+1) = X_ref_(1,i) + setpoint_in_.y_dot * T_s_;
         X_ref_(8,i+1) = X_ref_(8,i) + setpoint_in_.yaw_dot * T_s_;
     }
-    std::cout << X_ref_ << std::endl;
+    //std::cout << X_ref_ << std::endl;
 
     // Update Publish Trajectory Buffer
     reference_out_.timestamp = time_now;

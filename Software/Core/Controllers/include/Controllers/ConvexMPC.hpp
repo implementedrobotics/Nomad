@@ -32,7 +32,9 @@
 
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages.hpp>
+#include <Controllers/Messages/com_state_t.hpp>
+#include <Controllers/Messages/ref_trajectory_t.hpp>
+#include <Controllers/Messages/trajectory_setpoint_t.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
 #include <Systems/RigidBody.hpp>
@@ -96,13 +98,15 @@ protected:
     double T_s_;
 
     // Input (State Estimate)
-    Messages::Generic::VectorArray x_hat_in_;
+    //Messages::Generic::VectorArray x_hat_in_;
+    com_state_t x_hat_in_;
 
     // Input (Reference Trajectory)
-    Messages::Controllers::Locomotion::ReferenceTrajectory reference_in_;
+    ref_trajectory_t reference_in_;
+   // Messages::Controllers::Locomotion::ReferenceTrajectory reference_in_;
 
     // Output (Optimal Forces)
-    Messages::Generic::VectorArray force_output_;
+    //Messages::Generic::VectorArray force_output_;
 
 private:
     int sequence_num_;
