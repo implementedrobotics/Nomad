@@ -29,6 +29,7 @@
 // C++ Includes
 #include <deque>
 #include <memory>
+#include <mutex>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -102,6 +103,9 @@ protected:
     // Using ZeroCM for thread sync and message passing
     // Context
     std::shared_ptr<zcm::ZCM> context_;
+
+    // Thread mutex
+    std::mutex mutex_;
 
 };
 

@@ -88,10 +88,10 @@ void ReferenceTrajectoryGenerator::Run()
 {
 
      // Get Inputs
-     std::cout << "Time to RECEIVE in RTG" << std::endl;
+     //std::cout << "Time to RECEIVE in RTG" << std::endl;
      msg_t input;
      bool state_recv = GetInputPort(0)->Receive<msg_t>(input); // Receive State Estimate
-     std::cout << "IN RUN: " << input.str << std::endl;
+     //std::cout << "IN RUN: " << input.str << " state: " << state_recv << std::endl;
 //     bool setpoint_recv = GetInputPort(1)->Receive((void *)&setpoint_in_, sizeof(setpoint_in_)); // Receive Setpoint
 
 //     // TODO: Add a metric for how far behind this node can get before erroring out.

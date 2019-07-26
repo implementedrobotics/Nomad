@@ -56,8 +56,7 @@ void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
     printf("Received message on channel \"%s\":\n", chan.c_str());
     printf("  Message   = %s\n", msg->str.c_str());
 
-    // TODO: Check against a maximum queue size, blah blah
-    // TODO: Mutex For Read
+    std::unique_lock<std::mutex> lck (mutex_);
     if(msg_buffer_.size() >= queue_size_)
     {
         // Kill Old Message
@@ -65,14 +64,14 @@ void PortImpl<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
     }
     msg_buffer_.push_back(*msg);
 
-    std::cout << msg_buffer_.size() << std::endl;
+    //std::cout << msg_buffer_.size() << std::endl;
 }
 
 // Send data on port
 template <class T>
 bool Port::Send(T &tx_msg)
 {
-    std::cout << "Channel: " << channel_ << std::endl;
+    //std::cout << "Channel: " << channel_ << std::endl;
 
     // Publish
     int rc = context_->publish(channel_, &tx_msg);
@@ -85,11 +84,12 @@ bool Port::Send(T &tx_msg)
 template <class T>
 bool Port::Receive(T &rx_msg)
 {
-    // TODO: Critical Thread Section Here
-    std::cout << static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() << std::endl;
+    
+    //std::cout << static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() << std::endl;
     if(static_cast<PortImpl<T> *>(this)->GetMessageQueue().size() == 0)
         return false;
-    
+
+    std::unique_lock<std::mutex> lck (mutex_);
     rx_msg = static_cast<PortImpl<T> *>(this)->GetMessageQueue().back();
     return true;
 }
