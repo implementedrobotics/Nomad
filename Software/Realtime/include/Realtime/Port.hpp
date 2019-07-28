@@ -49,6 +49,20 @@ public:
         SERIAL
     };
 
+    // Data Type Enum
+    enum DataType {
+        BYTE,
+        INT8,
+        INT16,
+        INT32,
+        INT64,
+        FLOAT,
+        DOUBLE
+    }
+
+    void SetPortType(); // Creates new handler, assigns to void*
+    void SetPortDimensions(); // Resize message in handler
+
     // Transport
     // For INPROC/IPC transport URL should depend on block/noblock?  Not technically necessary to set.
     void SetTransport(const TransportType transport, const std::string &transport_url, const std::string &channel) { 
@@ -91,6 +105,15 @@ protected:
     // Size of the queue bufferr
     int queue_size_;
 
+    // Port Dimension
+    int dimension_;
+
+    // Port Type
+    DataType data_type_;
+
+    // Port Labels
+    std::vector<std::string> port_labels_;
+    
     // Transport Type
     TransportType transport_type_;
 
@@ -107,7 +130,43 @@ protected:
     // Thread mutex
     std::mutex mutex_;
 
+    // Pointer to Handler
+    void *handler_;
+
 };
+
+
+
+template <class T>
+class PortHandler
+{
+friend class Port;
+
+public:
+    // Base class for RealTimeTaskNode Port
+    // name = Port Name
+    // ctx = ZCM Context
+    // transport = ZCM Message Transport Location String
+    // period = Update period (Does not matter for Input Ports)
+    PortHandler();
+    ~PortHandler();
+
+    // Message Handling Callback
+    void HandleMessage(const zcm::ReceiveBuffer *rbuf,
+                       const std::string &chan,
+                       const T *msg);
+
+protected:
+
+    // Get Message Buffer
+    inline std::deque<T>& GetMessageQueue() { return msg_buffer_; }
+
+    // Message Buffer
+    std::deque<T> msg_buffer_;
+
+private:
+};
+
 
 // TODO: Better name for this class?
 template <class T>
