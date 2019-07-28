@@ -60,27 +60,27 @@ int main(int argc, char *argv[])
     teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     ref_generator_node.Start();
 
-    // Delay
-    usleep(100000);
+    // // Delay
+    // usleep(100000);
 
-    // Convex Model Predicive Controller for Locomotion
-    Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
-    convex_mpc_node.SetStackSize(100000);
-    convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
-    convex_mpc_node.SetTaskFrequency(2); // 50 HZ
-    convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::INPROC, "inproc", "nomad.forces");
+    // // Convex Model Predicive Controller for Locomotion
+    // Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
+    // convex_mpc_node.SetStackSize(100000);
+    // convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
+    // convex_mpc_node.SetTaskFrequency(2); // 50 HZ
+    // convex_mpc_node.SetCoreAffinity(2);
+    // convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::INPROC, "inproc", "nomad.forces");
 
-    // Map State Estimator Output to Trajectory Reference Input
-    Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT), 
-    estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+    // // Map State Estimator Output to Trajectory Reference Input
+    // Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT), 
+    // estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
 
-    // Map Reference Trajectory Output to Trajectory Reference Input of MPC
-    Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY), 
-    ref_generator_node.GetOutputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE));
-    convex_mpc_node.Start();
+    // // Map Reference Trajectory Output to Trajectory Reference Input of MPC
+    // Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY), 
+    // ref_generator_node.GetOutputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE));
+    // convex_mpc_node.Start();
 
-    usleep(100000);
+    // usleep(100000);
     
     // Gait Scheduler
     // Controllers::Locomotion::GaitScheduler gait_scheduler_node("Gait_Scheduler_Task");

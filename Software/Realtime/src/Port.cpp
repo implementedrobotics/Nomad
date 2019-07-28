@@ -34,8 +34,32 @@
 #include <chrono>
 #include <map>
 
+#include <Realtime/Messages/double_vec_t.hpp>
+
 namespace Realtime
 {
+
+Port::Port(const std::string &name, Direction direction, DataType data_type, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0)
+{
+    queue_size_ = 20;
+    transport_type_ = TransportType::INPROC;
+    transport_url_ = "inproc"; // TODO: Noblock?
+
+    // If Input Port Create Handlers
+
+    // Copy to void*
+
+    if (data_type == DataType::DOUBLE)
+    {
+        PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
+        handler_ = (void*) handler;
+    }
+}
+
+// TODO: Clear Handler Memory Etc,
+Port::~Port()
+{
+}
 
 // TODO: I do not love this...
 bool Port::Map(Port *input, Port *output)
@@ -45,7 +69,37 @@ bool Port::Map(Port *input, Port *output)
     input->transport_type_ = output->transport_type_;
 }
 
-bool Port::Bind() 
+bool Port::Bind()
+{
+    // Reset and Clear Reference
+    context_.reset();
+
+    // Setup Contexts
+    if (transport_type_ == TransportType::INPROC)
+    {
+        context_ = PortManager::Instance()->GetInprocContext();
+    }
+    else if (transport_type_ == TransportType::IPC)
+    {
+        context_ = std::make_shared<zcm::ZCM>("ipc");
+    }
+    else if (transport_type_ == TransportType::UDP)
+    {
+        context_ = std::make_shared<zcm::ZCM>(transport_url_);
+    }
+    else if (transport_type_ == TransportType::SERIAL)
+    {
+        context_ = std::make_shared<zcm::ZCM>(transport_url_);
+    }
+    else
+    {
+        std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
+    }
+
+    return true;
+}
+
+bool Port::Connect()
 {
     // Reset and Clear Reference
     context_.reset();
@@ -72,65 +126,25 @@ bool Port::Bind()
         std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
     }
 
-    return true;
-}
-
-bool Port::Send(void *buffer, const unsigned int length)
-{
-    // //zmq::message_t message(length + HEADER_SIZE);
-
-    // // Update Sequence Count
-    // packet_.sequence_number = sequence_num_;
-
-    // // Get Timestamp
-    // // TODO: "GetUptime" Static function in a time class
-    // packet_.timestamp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-    // // Copy to packet
-    // memcpy((void *)packet_.data, buffer, length);
-
-    // bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, 0);
-    // sequence_num_++;
-
-    // // TODO: Zero Copy
-    // //memcpy(message.data(), (void *)&packet_, length + HEAflagsDER_SIZE);
-
-    // std::cout << "Send: " << this << " "  << sequence_num_ << std::endl;
-    //return status;
-
-    //return Send(message, flags);
-
-    return true;
-}
-
-bool Port::Receive(void *buffer, const unsigned int length)
-{
-
-    // //bool status = socket_->send((void*)&packet_, length + HEADER_SIZE, flags);
-    // int bytes = socket_->recv((void*)&packet_, length + HEADER_SIZE, 0);
-    // std::cout << "Received Bytes: " << bytes << std::endl;
-    // //zmq::message_t rx_msg;
-    // //bool ret_status = Receive(rx_msg, flags); // Receive Buffer
-    // if(bytes) 
-    // {
-    //     // Copy to packet
-    //     //memcpy((void *)&packet_, rx_msg.data(), rx_msg.size());
+    // Now Subscribe
+    // TODO: Save subs somewhere for unsubscribe
+    // TODO: Switch Types
+    if(data_type_ == DataType::DOUBLE)
+    {
+        auto subs = context_->subscribe(channel_, &PortHandler<double_vec_t>::HandleMessage, static_cast<PortHandler<double_vec_t> *>(handler_));
+    }
+    else
+    {
+        std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
+    }
     
-    //     // TODO: Check Timestamps and sequence for errors and latency
-    //     // TODO: Should be able to just copy pointer as it will stay valid until another send.
-    //     // Copy to output
-    //     memcpy(buffer, (void *)packet_.data, length);
-
-    //     std::cout << "Receive: " << packet_.sequence_number << std::endl;
-    // }
-
-    // return bytes > 0;
     return true;
 }
 
 
+///////////////////////
 // Port Manager Source
-
+///////////////////////
 // Global static pointer used to ensure a single instance of the class.
 PortManager *PortManager::manager_instance_ = NULL;
 
@@ -138,7 +152,6 @@ PortManager::PortManager()
 {
     // ZCM Context
     inproc_context_ = std::make_shared<zcm::ZCM>("inproc");
-    //inproc_context_ = new zcm::ZCM("inproc");
 }
 
 PortManager *PortManager::Instance()

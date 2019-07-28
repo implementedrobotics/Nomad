@@ -394,16 +394,6 @@ bool RealTimeTaskManager::AddTask(RealTimeTaskNode *task)
         }
     }
 
-    // TODO: Why does this not work with pointers properly?
-    //std::vector<RealTimeTaskNode* >::iterator it;
-
-    //std::find(task_map_.begin(), task_map_.end(), task);
-    //if(it != task_map_.end())
-    //{
-    //   printf("FOUND: %p\n", *it);
-    //   std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " already exists." << std::endl;
-    //   return false;
-    //}
     task_map_.push_back(task);
 
     std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " successfully added." << std::endl;
@@ -424,18 +414,6 @@ bool RealTimeTaskManager::EndTask(RealTimeTaskNode *task)
             return true;
         }
     }
-
-    // std::vector<RealTimeTaskNode *>::iterator it;
-    // std::find(task_map_.begin(), task_map_.end(), task);
-    // if (it != task_map_.end())
-    // {
-    //     task->Stop();
-    //     task_map_.erase(it);
-
-    //     // TODO: Should we clean up memory here?
-    //     std::cout << "[RealTimeTaskManager]: Task " << task->task_name_ << " successfully removed" << std::endl;
-    //     return true;
-    // }
 
     std::cout << "[RealTimeTaskManager]: No Task " << task->task_name_ << " currently running" << std::endl;
     return false;

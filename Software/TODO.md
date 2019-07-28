@@ -1,4 +1,7 @@
 # TODO:
+1. Move Port Class to own library -> Communications
+2. Remove Older Message Types
+3. Use Smart/Shared Ptrs Where we can.  Free up memory where we are not.
 2. Add Logging/Plotting Interface to visualize trajectories [https://makersportal.com/blog/2018/8/14/real-time-graphing-in-python]
 3. Leg Controller Task Node
 4. RealTime Plotting Task Node

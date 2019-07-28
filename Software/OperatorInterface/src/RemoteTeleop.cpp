@@ -35,7 +35,7 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages/trajectory_setpoint_t.hpp>
+
 
 namespace OperatorInterface
 {
@@ -51,11 +51,16 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
                                sequence_num_(0)
 {
     
-    // Create Ports
+    // Create Messages
+    output_setpoint_.length = 4;
+    output_setpoint_.data.resize(output_setpoint_.length);
 
+    // Create Ports
     // Setpoint OUTPUT Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    output_port_map_[OutputPort::SETPOINT] = new Realtime::PortImpl<trajectory_setpoint_t>("SETPOINT", rt_period_);
+    Realtime::Port *port = new Realtime::Port ("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, rt_period);
+    output_port_map_[OutputPort::SETPOINT] = port;    
+
 
     // TODO: Multiple Inputs with relative control priorities. i.e. Autonomous Mapping vs. Remote Controller vs. "Safety" Controller
     // Remote INPUT Port
@@ -69,24 +74,14 @@ void RemoteTeleop::Run()
     // Input (Remote)
     //Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
 
-    // Output (Reference Setpoint)
-    //Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
-    trajectory_setpoint_t setpoint;
-    
-    // Get Timestamp
-    // TODO: "GetUptime" Static function in a time class
-    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-    setpoint.timestamp = time_now;
-    setpoint.sequence_num = sequence_num_;
-    setpoint.x_dot = 1.0;
-    setpoint.y_dot = 0.0;
-    setpoint.yaw_dot = 0.0;
-    setpoint.z_com = 0.5;
+    output_setpoint_.data[0] = 1.0;  // x_dot
+    output_setpoint_.data[1] = 0.0;    // y_dot
+    output_setpoint_.data[2] = 0.0;  // yaw_dot
+    output_setpoint_.data[3] = 0.5;    // z_comt
 
     // Publish Setpoint
-    bool send_status = GetOutputPort(0)->Send<trajectory_setpoint_t>(setpoint);
-    //std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
+    bool send_status = GetOutputPort(0)->Send(output_setpoint_);
+    std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
 
     sequence_num_++;
 }

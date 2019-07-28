@@ -31,9 +31,8 @@
 #include <iostream>
 #include <string>
 
-// Third Party Inclues
-#include <Controllers/Messages.hpp>
-#include <Controllers/Messages/com_state_t.hpp>
+// Third Party Includes
+#include <Controllers/Messages/double_vec_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -84,7 +83,7 @@ protected:
     //Messages::Generic::VectorArray output_state_;
 
     // (Output) State Estimate
-    com_state_t output_state_;
+    double_vec_t output_state_;
     
 
 private:

@@ -40,7 +40,7 @@ class Port
 {
 
 public:
-
+    
     // Transport Type Enum
     enum TransportType {
         INPROC=0,
@@ -51,17 +51,26 @@ public:
 
     // Data Type Enum
     enum DataType {
-        BYTE,
+        BYTE=0,
         INT8,
         INT16,
         INT32,
         INT64,
         FLOAT,
         DOUBLE
-    }
+    };
 
-    void SetPortType(); // Creates new handler, assigns to void*
-    void SetPortDimensions(); // Resize message in handler
+    // Port Type Enum
+    enum Direction {
+        INPUT=0,
+        OUTPUT
+    };
+
+    Port(const std::string &name, Direction direction, DataType data_type, int period);
+    ~Port();
+
+    Port::DataType GetPortType();
+    int GetPortDimension();
 
     // Transport
     // For INPROC/IPC transport URL should depend on block/noblock?  Not technically necessary to set.
@@ -70,25 +79,18 @@ public:
         transport_url_ = transport_url;
         channel_ = channel; }
 
-    // Map Portsconst
+    // Map Ports
     static bool Map(Port *input, Port *output);
 
     // Connect Port
-    template <class T>
     bool Connect();
 
     // Bind Port
     bool Bind();
-
-    // Send data on port raw
-    bool Send(void *buffer, const unsigned int length);
     
     // Send message type data on port
     template <class T>
     bool Send(T &msg);
-    
-    // Receive data on port raw
-    bool Receive(void *buffer, const unsigned int length);
 
     // Receive message type data on port
     template <class T>
@@ -111,6 +113,9 @@ protected:
     // Port Type
     DataType data_type_;
 
+    // Port Direction
+    Direction direction_;
+
     // Port Labels
     std::vector<std::string> port_labels_;
     
@@ -127,15 +132,12 @@ protected:
     // Context
     std::shared_ptr<zcm::ZCM> context_;
 
-    // Thread mutex
-    std::mutex mutex_;
+    // Sequence Number:
+    uint64_t sequence_num_;
 
     // Pointer to Handler
     void *handler_;
-
 };
-
-
 
 template <class T>
 class PortHandler
@@ -148,7 +150,7 @@ public:
     // ctx = ZCM Context
     // transport = ZCM Message Transport Location String
     // period = Update period (Does not matter for Input Ports)
-    PortHandler();
+    PortHandler(int queue_size = 20);
     ~PortHandler();
 
     // Message Handling Callback
@@ -161,43 +163,20 @@ protected:
     // Get Message Buffer
     inline std::deque<T>& GetMessageQueue() { return msg_buffer_; }
 
+    // Read Available Messages
+    // TODO: Read Backward In Time
+    const inline bool Read(T& rx_msg);
+    
     // Message Buffer
     std::deque<T> msg_buffer_;
 
-private:
+    // Thread mutex
+    std::mutex mutex_;
+
+    // Queue Size to Buffer
+    int queue_size_;
+
 };
-
-
-// TODO: Better name for this class?
-template <class T>
-class PortImpl : public Port
-{
-friend class Port;
-public:
-    // Base class for RealTimeTaskNode Port
-    // name = Port Name
-    // ctx = ZCM Context
-    // transport = ZCM Message Transport Location String
-    // period = Update period (Does not matter for Input Ports)
-    PortImpl(const std::string &name, int period);
-    ~PortImpl();
-
-    // Message Handling Callback
-    void HandleMessage(const zcm::ReceiveBuffer *rbuf,
-                       const std::string &chan,
-                       const T *msg);
-
-protected:
-
-    // Get Message Buffer
-    inline std::deque<T>& GetMessageQueue() { return msg_buffer_; }
-
-    // Message Buffer
-    std::deque<T> msg_buffer_;
-
-private:
-};
-
 
 class PortManager
 {
