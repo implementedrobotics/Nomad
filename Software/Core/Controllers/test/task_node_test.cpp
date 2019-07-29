@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskFrequency(10); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
     estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad-state");
     estimator_node.Start();
 
     // Delay
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
     ref_generator_node.SetTaskFrequency(2); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
     ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.reference");
+
     
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
@@ -78,6 +80,7 @@ int main(int argc, char *argv[])
     // Map Reference Trajectory Output to Trajectory Reference Input of MPC
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY), 
     ref_generator_node.GetOutputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE));
+
     convex_mpc_node.Start();
 
     usleep(100000);
