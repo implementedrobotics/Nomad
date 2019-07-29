@@ -7,7 +7,7 @@ set(ZCM_SOURCES ${PROJECT_SOURCE_DIR}/Communications/test/zcm_hello_world.cpp)
 set(ZCM_TEST_LIBS zcm pthread)
 
 
-add_executable(zcm_hello_world ${PROJECT_SOURCE_DIR}/Communications/test/zcm_hello_world.cpp ${PROJECT_SOURCE_DIR}/Communications/include/Communications/Messages/msg_t.c)
+add_executable(zcm_hello_world ${PROJECT_SOURCE_DIR}/Communications/test/zcm_hello_world.cpp)
 target_link_libraries(zcm_hello_world ${ZCM_TEST_LIBS} )
 
 
