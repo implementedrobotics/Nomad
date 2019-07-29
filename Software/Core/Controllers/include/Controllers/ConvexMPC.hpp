@@ -32,7 +32,7 @@
 
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages/double_vec_t.hpp>
+#include <Realtime/Messages/double_vec_t.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
 #include <Systems/RigidBody.hpp>

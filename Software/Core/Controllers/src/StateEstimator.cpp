@@ -36,18 +36,16 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages/double_vec_t.hpp>
+#include <Realtime/Messages/double_vec_t.hpp>
 
 
 namespace Controllers
 {
-
 namespace Estimators
 {
 
-    // TODO: Static Variable in "Physics" Class somewhere
+// TODO: Static Variable in "Physics" Class somewhere
 double kGravity = 9.81;
-//using namespace RealTimeControl;
 
 StateEstimator::StateEstimator(const std::string &name,
                                const long rt_period,

@@ -32,7 +32,7 @@
 #include <string>
 
 // Third Party Includes
-#include <Controllers/Messages/double_vec_t.hpp>
+#include <Realtime/Messages/double_vec_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
