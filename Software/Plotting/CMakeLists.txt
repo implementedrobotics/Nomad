@@ -1,11 +1,11 @@
 
 cmake_minimum_required (VERSION 3.10)
 
-set(PLOTTING_SOURCES ${PROJECT_SOURCE_DIR}/Plotting/src/Plotting.cpp)
+set(PLOTTING_SOURCES ${PROJECT_SOURCE_DIR}/Plotting/src/PlotterTaskNode.cpp)
 
-set(PLOTTING_LIBS Realtime pthread rt zmq)
+set(PLOTTING_LIBS Realtime pthread rt zcm)
 
-include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
+include_directories("${PROJECT_SOURCE_DIR}/Plotting/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
 
 add_library(Plotting STATIC ${PLOTTING_SOURCES})

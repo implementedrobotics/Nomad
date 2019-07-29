@@ -83,7 +83,17 @@ int main(int argc, char *argv[])
     convex_mpc_node.Start();
 
     usleep(100000);
-    
+
+
+    // Plotter Task Node
+    Plotting::PlotterTaskNode scope("State");
+    scope.SetStackSize(100000);
+    scope.SetTaskPriority(Realtime::Priority::MEDIUM);
+    scope.SetTaskFrequency(2); // 50 HZ
+    scope.SetCoreAffinity(-1);
+    scope.Start();
+
+
     // Gait Scheduler
     // Controllers::Locomotion::GaitScheduler gait_scheduler_node("Gait_Scheduler_Task");
     // gait_scheduler_node.SetStackSize(100000);

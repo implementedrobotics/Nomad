@@ -15,7 +15,7 @@ add_subdirectory(Core/Controllers)
 add_subdirectory(Core/OptimalControl)
 add_subdirectory(Core/Systems)
 add_subdirectory(Core/Nomad)
-add_subdirectory(Core/Plotting)
+add_subdirectory(Core/Plotting) # TODO: Move these to Library Up a Level
 
 # Communications Library
 add_subdirectory(Communications)
@@ -25,6 +25,9 @@ add_subdirectory(OperatorInterface)
 
 # Realtime Interface
 add_subdirectory(Realtime)
+
+# Plotting Interface
+add_subdirectory(Plotting)
 
 # Simulation(Optional)
 add_subdirectory(Simulation/Gazebo)

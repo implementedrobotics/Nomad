@@ -69,7 +69,7 @@ public:
 
     // TODO: Set plot params on the port
     // i.e. Plot style, Plot Names, Port Axis Names, etc.
-    virtual void RenderPlot(); // Plot the acquired data
+    void RenderPlot(); // Plot the acquired data
 
     void ConnectInput(Realtime::Port *port);
 

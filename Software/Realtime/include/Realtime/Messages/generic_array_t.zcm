@@ -1,0 +1,8 @@
+struct generic_vec_t // Generic Byte Array Message
+{
+    int64_t timestamp; // Timestamp
+    int64_t sequence_num;  // Sequence Number
+    int8_t data_type;    // Array Type
+    int32_t length; // Length of Array
+    byte data[length]; // Byte Data
+}
