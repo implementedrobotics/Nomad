@@ -36,7 +36,7 @@
 #include <Eigen/Dense>
 
 // Project Includes
-#include <Controllers/Messages.hpp>
+#include <Realtime/Messages/double_vec_t.hpp>
 #include <Realtime/RealTimeTask.hpp>
 
 
@@ -61,23 +61,17 @@ public:
         MAX_PORTS
     };
 
-    // Base Class Plotter Task Node
+    // Base Class Convex Model Predictive Controller Locomotion Task Node
     // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    PlotterTaskNode(const std::string &name = "Plotter_Task_Node",
-                   const long rt_period = 10000,
-                   const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
+    // N = Trajectory Steps
+    // T = Trajectory Time Window
+    PlotterTaskNode(const std::string &name);
 
     // TODO: Set plot params on the port
     // i.e. Plot style, Plot Names, Port Axis Names, etc.
     virtual void RenderPlot(); // Plot the acquired data
 
-    void SetPortDimension(const unsigned int port_id, const unsigned int port_dim);
+    void ConnectInput(Realtime::Port *port);
 
 
 protected:
@@ -92,11 +86,12 @@ protected:
     // Input Port DImensions
     std::vector<int> port_dims_;
 
+    // Input Port Types
+    std::vector<Realtime::Port::DataType> port_data_types_;
+
+    // Cached
     // TODO: Axis Properties Class (Color, style, Name, Blah)
     
-
-private:
-    int sequence_num_;
 };
 } // namespace Plotting
 
