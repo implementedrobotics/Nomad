@@ -1,9 +1,0 @@
-struct trajectory_setpoint_t
-{
-    int64_t timestamp;    // Timestamp
-    int64_t sequence_num; // Sequence Number
-    double x_dot;         // Desired Forward Velocity
-    double y_dot;         // Desired Lateral Velocity
-    double yaw_dot;       // Desired Yaw Velocity
-    double z_com;         // Desired CoM Height
-}

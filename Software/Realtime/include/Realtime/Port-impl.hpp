@@ -48,8 +48,8 @@ void PortHandler<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
                                    const std::string &chan,
                                    const T *msg)
 {
-    printf("Received message on channel \"%s\":\n", chan.c_str());
-    printf("  Message   = %ld\n", msg->sequence_num);
+    //printf("Received message on channel \"%s\":\n", chan.c_str());
+    //printf("  Message   = %ld\n", msg->sequence_num);
 
     std::unique_lock<std::mutex> lck(mutex_);
     if (msg_buffer_.size() >= queue_size_)
@@ -59,7 +59,7 @@ void PortHandler<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
     }
     msg_buffer_.push_back(*msg);
 
-    std::cout << msg_buffer_.size() << std::endl;
+    //std::cout << msg_buffer_.size() << std::endl;
 }
 template <class T>
 const inline bool PortHandler<T>::Read(T &rx_msg)
@@ -76,7 +76,7 @@ const inline bool PortHandler<T>::Read(T &rx_msg)
 template <class T>
 bool Port::Send(T &tx_msg)
 {
-    std::cout << "Sending Channel: " << channel_ << std::endl;
+    //std::cout << "Sending Channel: " << channel_ << std::endl;
 
     // Append Sequence Number and Timestamp
     // Get Timestamp

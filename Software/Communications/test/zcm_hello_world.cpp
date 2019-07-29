@@ -20,7 +20,6 @@ class Handler
         {
             printf("Received message on channel \"%s\":\n", chan.c_str());
             printf("  Message   = %s\n", msg->str.c_str());
-            //pthread_self();
             std::cout << "PID: " << pthread_self() << std::endl;
         }
 };

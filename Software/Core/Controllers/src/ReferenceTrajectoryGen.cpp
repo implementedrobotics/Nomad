@@ -50,7 +50,6 @@ namespace Locomotion
 
 ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T) : 
                                Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
-                               sequence_num_(0),
                                num_states_(13),
                                T_(T),
                                N_(N)
@@ -63,11 +62,11 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
     X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
 
     // Create Messages
-    x_hat_in_.length = num_states_;
-    x_hat_in_.data.resize(num_states_);
+    //x_hat_in_.length = num_states_;
+    //x_hat_in_.data.resize(num_states_);
 
-    setpoint_in_.length = 4;
-    setpoint_in_.data.resize( setpoint_in_.length);
+    //setpoint_in_.length = 4;
+   // setpoint_in_.data.resize( setpoint_in_.length);
 
     reference_out_.length = X_ref_.size();
     reference_out_.data.resize(reference_out_.length);
@@ -100,8 +99,8 @@ void ReferenceTrajectoryGenerator::Run()
         std::cout << "[ReferenceTrajectoryGenerator]: Receive Buffer Empty!" << std::endl; 
         return;
     }
-    std::cout << "RTG: " << x_hat_in_.sequence_num;
-    std::cout << "[ReferenceTrajectoryGenerator]: " << "State: " << state_recv << " Setpoint: " << setpoint_recv << std::endl;
+    //std::cout << "RTG: " << x_hat_in_.sequence_num;
+    //std::cout << "[ReferenceTrajectoryGenerator]: " << "State: " << state_recv << " Setpoint: " << setpoint_recv << std::endl;
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
@@ -155,10 +154,6 @@ void ReferenceTrajectoryGenerator::Run()
 
     // Publish Trajectory
     bool send_status = GetOutputPort(0)->Send(reference_out_);
-
-    //std::cout << "[ReferenceTrajectoryGenerator]: Send Status: " << send_status <<std::endl;
-    // Update our Sequence Counter
-    sequence_num_++;
 }
 
 void ReferenceTrajectoryGenerator::Setup()

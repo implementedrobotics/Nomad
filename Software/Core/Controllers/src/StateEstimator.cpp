@@ -55,7 +55,6 @@ StateEstimator::StateEstimator(const std::string &name,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
                                Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                               sequence_num_(0),
                                num_states_(13)
 {  
     // Create Messages
@@ -88,13 +87,12 @@ void StateEstimator::Run()
     output_state_.data[11] = 0.0; // Yaw Rate
     output_state_.data[12] = kGravity; // Gravity
 
-    std::cout << "State Estimator Send: " << std::endl;
+    //std::cout << "State Estimator Send: " << std::endl;
     
     // Publish State
     bool send_status = GetOutputPort(0)->Send(output_state_);
     
-    std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
-    sequence_num_++;
+    //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
 }
 
 void StateEstimator::Setup()

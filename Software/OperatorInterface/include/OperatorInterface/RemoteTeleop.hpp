@@ -77,8 +77,6 @@ protected:
     // (Output) State Estimate
     double_vec_t output_setpoint_;
 
-private:
-    int sequence_num_;
 };
 } // namespace Teleop
 } // namespace OperatorInterface

@@ -96,8 +96,6 @@ protected:
     // Output (Reference Trajectory)
     double_vec_t reference_out_;
 
-private:
-    int sequence_num_;
 };
 } // namespace Locomotion
 } // namespace Controllers

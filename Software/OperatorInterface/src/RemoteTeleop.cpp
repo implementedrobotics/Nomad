@@ -47,8 +47,7 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
                                unsigned int rt_priority,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
-                               Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                               sequence_num_(0)
+                               Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
 {
     
     // Create Messages
@@ -81,15 +80,14 @@ void RemoteTeleop::Run()
 
     // Publish Setpoint
     bool send_status = GetOutputPort(0)->Send(output_setpoint_);
-    std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
+    //std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
 
-    sequence_num_++;
 }
 
 void RemoteTeleop::Setup()
 {
     GetOutputPort(0)->Bind();
-    std::cout << "[RemoteTeleop]: " << "Remote Teleop Task Running!" << std::endl;
+    //std::cout << "[RemoteTeleop]: " << "Remote Teleop Task Running!" << std::endl;
 }
 
 } // namespace Teleop

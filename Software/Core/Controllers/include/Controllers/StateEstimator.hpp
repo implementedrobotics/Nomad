@@ -84,10 +84,6 @@ protected:
 
     // (Output) State Estimate
     double_vec_t output_state_;
-    
-
-private:
-    int sequence_num_;
 };
 } // namespace Estimators
 } // namespace Controllers
