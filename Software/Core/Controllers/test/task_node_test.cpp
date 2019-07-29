@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskFrequency(10); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
     estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, "nomad-state");
     estimator_node.Start();
 
     // Delay
