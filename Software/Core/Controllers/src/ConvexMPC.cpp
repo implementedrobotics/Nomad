@@ -43,7 +43,6 @@ namespace Locomotion
 //using namespace RealTimeControl;
 ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double T) : 
                                Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
-                               sequence_num_(0),
                                num_states_(13),
                                num_inputs_(12),
                                T_(T),
@@ -70,51 +69,39 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
     
     ocp_->SetWeights(Q, R);
 
-    // Allocate Message Structures
-    x_hat_in_.data = new double[num_states_];
-    x_hat_in_.size = sizeof(double) * num_states_;
+    // Create Messages
 
     // Create Ports
-    zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
-
     // State Estimate Input Port
-    // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period_);
-    input_port_map_[InputPort::STATE_HAT] = port;
+    input_port_map_[InputPort::STATE_HAT] = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
 
     // Referenence Input Port
-    port = new Realtime::Port("REFERENCE", ctx, "reference", rt_period_);
-    input_port_map_[InputPort::REFERENCE_TRAJECTORY] = port;
+    input_port_map_[InputPort::REFERENCE_TRAJECTORY] = new Realtime::Port ("REFERENCE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
 
     // Optimal Force Solution Output Port
-    port = new Realtime::Port("FORCES", ctx, "forces", rt_period_);
-    output_port_map_[OutputPort::FORCES] = port;
+    output_port_map_[OutputPort::FORCES] = new Realtime::Port ("FORCES", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
 
 }
 void ConvexMPC::Run()
 {  
     // Get Inputs
-    //std::cout << "Time to RECEIVE in RTG" << std::endl;
+    // std::cout << "Time to RECEIVE in CONVEXMPC" << std::endl;
     // Receive State Estimate and Unpack
-    bool state_recv = GetInputPort(0)->Receive((void *)x_hat_in_.data, x_hat_in_.size); // Receive State Estimate
+    bool state_recv = GetInputPort(0)->Receive(x_hat_in_); // Receive State Estimate
 
     // Receive Trajectory Reference and Unpack
-    bool setpoint_recv =  GetInputPort(1)->Receive((void *)&reference_in_, sizeof(reference_in_)); // Receive Setpoint
+    bool setpoint_recv =  GetInputPort(1)->Receive(reference_in_); // Receive Setpoint
     if(!state_recv || !setpoint_recv)
     {
         std::cout << "[ConvexMPC]: Receive Buffer Empty!" << std::endl; 
         return;
     }
+    // std::cout << "CMPC: " << x_hat_in_.sequence_num;
 
-    // Get Timestamp
-    // TODO: "GetUptime" Static function in a time class
-    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data, 13);
-    // Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> X_ref_ = Eigen::Map<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>>(reference_in_.X_ref,13,24);
-    Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.X_ref,13,10);
-    //std::cout <<  X_ref_ << std::endl;
-    std::cout <<  x_hat_ << std::endl;
+    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data.data(), num_states_);
+    Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.data.data(),num_states_,N_);
+    // std::cout <<  X_ref_ << std::endl;
+    // std::cout <<  x_hat_ << std::endl;
 
     // Update our Dynamics Current State
     Eigen::VectorXd initial_state(2);
@@ -146,9 +133,8 @@ void ConvexMPC::Run()
     }
 
     // Output Optimal Forces
-    //GetOutputPort(0)->Send((void *)&force_output_, sizeof(force_output_));
+    // GetOutputPort(0)->Send((void *)&force_output_, sizeof(force_output_));
     // GetOutputPort(0)->Send(rx_msg);
-    sequence_num_++;
 }
 void ConvexMPC::Setup()
 {
@@ -157,7 +143,7 @@ void ConvexMPC::Setup()
     GetInputPort(1)->Connect(); // Reference Trajectory
 
     // Bind Output Ports
-    GetOutputPort(0)->Bind(); // Optimal Force Output
+    //GetOutputPort(0)->Bind(); // Optimal Force Output
 
     std::cout << "[ConvexMPC]: "
               << "ConvexMPC Task Node Running!" << std::endl;

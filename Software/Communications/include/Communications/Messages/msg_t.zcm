@@ -1,0 +1,4 @@
+struct msg_t
+{
+    string str;
+}

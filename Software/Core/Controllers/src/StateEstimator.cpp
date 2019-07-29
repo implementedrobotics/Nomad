@@ -32,22 +32,20 @@
 #include <sstream>
 
 // Third-Party Includes
+#include <zcm/zcm-cpp.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages.hpp>
-
+#include <Realtime/Messages/double_vec_t.hpp>
 
 
 namespace Controllers
 {
-
 namespace Estimators
 {
 
-    // TODO: Static Variable in "Physics" Class somewhere
+// TODO: Static Variable in "Physics" Class somewhere
 double kGravity = 9.81;
-//using namespace RealTimeControl;
 
 StateEstimator::StateEstimator(const std::string &name,
                                const long rt_period,
@@ -55,34 +53,24 @@ StateEstimator::StateEstimator(const std::string &name,
                                const int rt_core_id,
                                const unsigned int stack_size) : 
                                Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                               sequence_num_(0),
                                num_states_(13)
-{
-    // Create Message
-    output_state_.data = new double[num_states_];
-    output_state_.size = sizeof(double) * num_states_;
-    // Create Ports
-    zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
+{  
+    // Create Messages
+    output_state_.length = num_states_;
+    output_state_.data.resize(num_states_);
 
+    // Create Ports
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port("STATE_HAT", ctx, "state", rt_period);
-    output_port_map_[OutputPort::STATE_HAT] = port;
-    
+    Realtime::Port *port = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, rt_period);
+    output_port_map_[OutputPort::STATE_HAT] = port;    
 }
 
 void StateEstimator::Run()
 {
     // Estimate State
-    //Messages::Controllers::Estimators::CoMState<13> output_state;
-    //Messages::Controllers::Estimators::CoMState output_state;
-    //Messages::Generic::VectorArray output_state;
-    // Get Timestamp
-    // TODO: "GetUptime" Static function in a time class
-    //uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-    //output_state.timestamp = time_now;
-    //output_state.sequence_number = sequence_num_;
+    // Update State
     output_state_.data[0] = 1.0; // X Position
     output_state_.data[1] = 2.0; // Y Position
     output_state_.data[2] = 3.0; // Z Position
@@ -97,13 +85,12 @@ void StateEstimator::Run()
     output_state_.data[11] = 0.0; // Yaw Rate
     output_state_.data[12] = kGravity; // Gravity
 
-    //std::cout << "State Size: " << sizeof(output_state_) << std::endl;
-
     //std::cout << "State Estimator Send: " << std::endl;
+    
     // Publish State
-    bool send_status = GetOutputPort(0)->Send((void*)output_state_.data, output_state_.size);
+    bool send_status = GetOutputPort(0)->Send(output_state_);
+    
     //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
-    sequence_num_++;
 }
 
 void StateEstimator::Setup()

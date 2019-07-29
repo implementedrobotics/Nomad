@@ -31,7 +31,9 @@
 #include <iostream>
 #include <string>
 
+// Project Includes
 #include <Realtime/RealTimeTask.hpp>
+#include <Realtime/Messages/double_vec_t.hpp>
 
 // TODO: Evaluate the need for the class... Could be handled all in the Trajectory Generator.  But if latency permits this is a good intermediate layer to handle translation of network/gamepad calls etc.
 // Also this a good place to put test trajectory setpoints since we don't have a remote control UI yet.
@@ -72,8 +74,9 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
-private:
-    int sequence_num_;
+    // (Output) State Estimate
+    double_vec_t output_setpoint_;
+
 };
 } // namespace Teleop
 } // namespace OperatorInterface

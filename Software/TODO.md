@@ -1,4 +1,6 @@
 # TODO:
+
+1. Use Smart/Shared Ptrs Where we can.  Free up memory where we are not.
 2. Add Logging/Plotting Interface to visualize trajectories [https://makersportal.com/blog/2018/8/14/real-time-graphing-in-python]
 3. Leg Controller Task Node
 4. RealTime Plotting Task Node
@@ -13,4 +15,5 @@
 13. Start Ubuntu Server VM Image w/ PREEMPT RT and Test
 14. ConvexMPC Wrapper (6D)
 15. Forces to Torques w/ Jacobian
+16. Move Port Class to own library -> Communications
 

@@ -26,6 +26,23 @@ We will use this for message passing both Inter Thread/Process as well is betwee
 sudo apt-get install libzmq3-dev
 ```
 
+Install [ZeroCM](http://zerocm.github.io/zcm/):
+
+```
+tar xvzf ZeroCM-zcm-b1d4d83.tar.gz
+cd ZeroCM-zcm-b1d4d83
+cd scripts
+./install-deps.sh
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+export JAVA_HOME
+PATH=$PATH:/$JAVA_HOME
+export PATH
+./waf configure --use-java --use-python --use-zmq --use-dev --use-inproc --use-ipc --use-udpm --use-serial
+./waf build
+sudo ./waf install
+sudo ldconfig
+```
+
 Install [qpOASES 3.2.1](https://projects.coin-or.org/qpOASES/wiki/QpoasesDownload):
 ```
 unzip qpOASES-3.2.1.zip

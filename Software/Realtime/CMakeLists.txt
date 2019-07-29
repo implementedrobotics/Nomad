@@ -1,9 +1,10 @@
 
 cmake_minimum_required (VERSION 3.10)
 
-set(REALTIME_SOURCES ${PROJECT_SOURCE_DIR}/Realtime/src/RealTimeTask.cpp)
+set(REALTIME_SOURCES ${PROJECT_SOURCE_DIR}/Realtime/src/RealTimeTask.cpp
+${PROJECT_SOURCE_DIR}/Realtime/src/Port.cpp)
 
-set(REALTIME_LIBS pthread rt zmq)
+set(REALTIME_LIBS pthread rt zcm)
 
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
 

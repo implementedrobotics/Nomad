@@ -31,8 +31,8 @@
 #include <iostream>
 #include <string>
 
-// Third Party Inclues
-#include <Controllers/Messages.hpp>
+// Third Party Includes
+#include <Realtime/Messages/double_vec_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -80,12 +80,10 @@ protected:
     unsigned int num_states_;
 
     // (Output) State Estimate
-    Messages::Generic::VectorArray output_state_;
+    //Messages::Generic::VectorArray output_state_;
 
-    
-
-private:
-    int sequence_num_;
+    // (Output) State Estimate
+    double_vec_t output_state_;
 };
 } // namespace Estimators
 } // namespace Controllers

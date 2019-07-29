@@ -32,7 +32,7 @@
 
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages.hpp>
+#include <Realtime/Messages/double_vec_t.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
 #include <Systems/RigidBody.hpp>
@@ -96,16 +96,14 @@ protected:
     double T_s_;
 
     // Input (State Estimate)
-    Messages::Generic::VectorArray x_hat_in_;
+    double_vec_t x_hat_in_;
 
     // Input (Reference Trajectory)
-    Messages::Controllers::Locomotion::ReferenceTrajectory reference_in_;
+    double_vec_t reference_in_;
 
     // Output (Optimal Forces)
-    Messages::Generic::VectorArray force_output_;
+    double_vec_t force_output_;
 
-private:
-    int sequence_num_;
 };
 } // namespace Locomotion
 } // namespace Controllers
