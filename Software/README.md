@@ -11,6 +11,7 @@ The following instructions are for setup of a development environment for buildi
 
 Install Python Dependencies:
 ```
+sudo apt-get install python-pip
 sudo apt-get install python-tk # GUI for plotting
 pip install matplotlib # Plottling Library
 
@@ -33,11 +34,11 @@ tar xvzf ZeroCM-zcm-b1d4d83.tar.gz
 cd ZeroCM-zcm-b1d4d83
 cd scripts
 ./install-deps.sh
-JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-<ARCH>/
 export JAVA_HOME
 PATH=$PATH:/$JAVA_HOME
 export PATH
-./waf configure --use-java --use-python --use-zmq --use-dev --use-inproc --use-ipc --use-udpm --use-serial
+./waf configure --use-java --use-python --use-zmq --use-dev --use-inproc --use-ipc --use-udpm --use-serial --use-elf
 ./waf build
 sudo ./waf install
 sudo ldconfig
