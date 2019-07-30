@@ -9,6 +9,11 @@ NOMAD is a 12-DOF quadruped walking robot using Linear and Nonlinear Optimizatio
 
 The following instructions are for setup of a development environment for building executable code for Ubuntu 18.04.
 
+Build Dependencies
+```
+sudo apt-get install cmake build-essential
+```
+
 Install Python Dependencies:
 ```
 sudo apt-get install python-pip
