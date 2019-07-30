@@ -11,7 +11,7 @@ The following instructions are for setup of a development environment for buildi
 
 Build Dependencies
 ```
-sudo apt-get install cmake build-essential
+sudo apt-get install build-essential cmake pkg-config git
 ```
 
 Install Python Dependencies:
