@@ -122,6 +122,9 @@ make -j4
 
 Install DART Devel Libraries
 ```
+# Setup PPAs
+sudo apt-add-repository ppa:dartsim/ppa
+sudo apt-get update  # not necessary since Bionic
 sudo apt install libdart6-all-dev
 ```
 
