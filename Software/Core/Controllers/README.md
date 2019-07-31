@@ -11,6 +11,10 @@ To be able to set realtime priorities as non root user you will need:
 sudo setcap cap_sys_nice+ep <EXECUTABLE BINARY>
 ```
 
+On some systems(L4T/Jetson) you may also be required to set:
+```
+sudo sysctl -w kernel.sched_rt_runtime_us=-1
+```
 This is required for instance on setting SCHED_FIFO.
 
 Also to note:
