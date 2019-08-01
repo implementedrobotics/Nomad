@@ -80,7 +80,7 @@ void RemoteTeleop::Run()
 
     // Publish Setpoint
     bool send_status = GetOutputPort(0)->Send(output_setpoint_);
-    //std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
+    std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
 
 }
 

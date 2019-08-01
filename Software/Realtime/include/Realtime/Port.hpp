@@ -69,8 +69,10 @@ public:
     Port(const std::string &name, Direction direction, DataType data_type, int period);
     ~Port();
 
-    Port::DataType GetPortType();
-    int GetPortDimension();
+    Port::DataType GetDataType();
+    int GetDimension();
+
+    const std::string& GetName() const { return name_;}
 
     // Transport
     // For INPROC/IPC transport URL should depend on block/noblock?  Not technically necessary to set.

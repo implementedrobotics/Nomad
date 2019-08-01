@@ -41,20 +41,60 @@
 namespace Plotting
 {
 
-PlotterTaskNode::PlotterTaskNode(const std::string &name) : 
-                               Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN)
+PlotterTaskNode::PlotterTaskNode(const std::string &name) : Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN)
 {
 
+    input_port_map_.reserve(InputPort::MAX_PORTS);
+    for (int i = 0; i < InputPort::MAX_PORTS; i++)
+    {
+        input_port_map_[i] = nullptr;
+    }
 }
 
 void PlotterTaskNode::Run()
 {
+    // Get Inputs
+    for (int i = 0; i < InputPort::MAX_PORTS; i++)
+    {
+        Realtime::Port *input = GetInputPort(i);
+        if(input == nullptr)
+        {
+            continue;
+        }
 
+        if (input->Receive(port_message_))
+        {
+            Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
+            std::cout << "PlotNode: " << i <<  msg_vec << std::endl;
+        }
+        else
+        {
+            std::cout << "[PlotterTaskNode]: Receive Buffer Empty: " << i << std::endl;
+            continue;
+        }
+    }
 }
 
 void PlotterTaskNode::Setup()
 {
+    // Connect Mapped Ports:
+    for (int i = 0; i < InputPort::MAX_PORTS; i++)
+    {
+        Realtime::Port *input = GetInputPort(i);
+        if(input == nullptr)
+            continue;
 
+        input->Connect();
+    }
+    
 }
 
+void PlotterTaskNode::ConnectInput(InputPort port_id, Realtime::Port *output_port)
+{
+    // TODO: Make sure port is not already taken, etc.  If so error.
+    Realtime::Port *in_port = new Realtime::Port(output_port->GetName(), Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
+    Realtime::Port::Map(in_port, output_port);
+
+    input_port_map_[port_id] = in_port;
+}
 } // namespace Plotting

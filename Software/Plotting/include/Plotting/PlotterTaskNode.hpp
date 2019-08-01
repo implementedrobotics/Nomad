@@ -71,7 +71,8 @@ public:
     // i.e. Plot style, Plot Names, Port Axis Names, etc.
     void RenderPlot(); // Plot the acquired data
 
-    void ConnectInput(Realtime::Port *port);
+    // Connect Input to Port Output
+    void ConnectInput(InputPort port_id, Realtime::Port *port);
 
 
 protected:
@@ -83,11 +84,10 @@ protected:
 
     std::vector<Eigen::VectorXd> plot_data_[MAX_PORTS];
 
-    // Input Port DImensions
-    std::vector<int> port_dims_;
+    // Messages
+    double_vec_t port_message_;
 
-    // Input Port Types
-    std::vector<Realtime::Port::DataType> port_data_types_;
+    // TODO: Additional Types
 
     // Cached
     // TODO: Axis Properties Class (Color, style, Name, Blah)

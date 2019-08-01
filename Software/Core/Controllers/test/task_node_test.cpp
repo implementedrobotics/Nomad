@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
     ref_generator_node.SetCoreAffinity(-1);
     ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.reference");
 
-    
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
     estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
@@ -84,13 +83,14 @@ int main(int argc, char *argv[])
 
     usleep(100000);
 
-
     // Plotter Task Node
     Plotting::PlotterTaskNode scope("State");
     scope.SetStackSize(100000);
     scope.SetTaskPriority(Realtime::Priority::MEDIUM);
     scope.SetTaskFrequency(2); // 50 HZ
     scope.SetCoreAffinity(-1);
+    scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+    scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     scope.Start();
 
 
