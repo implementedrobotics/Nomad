@@ -8,10 +8,18 @@
 TODO:
 Jetson Xavier AGX RT Setup Here:
 
+# Disable GUI Boot:
+sudo systemctl set-default multi-user.target
+# Enable GUI Boot:
+sudo systemctl set-default graphical.target
+
 Sort these later:
 https://github.com/kozyilmaz/nvidia-jetson-rt/blob/master/docs/README.03-realtime.md
 https://devtalk.nvidia.com/default/topic/1050012/jetson-nano/preempt-rt-patches-for-jetson-nano/
 https://developer.ridgerun.com/wiki/index.php?title=Xavier/JetPack_4.1/Flashing_Board/Flash_Kernel
+
+Services:
+https://www.freedesktop.org/software/systemd/man/systemd.service.html
 
 For Cross Compile:
 sudo apt-get install zlib1g:i386
