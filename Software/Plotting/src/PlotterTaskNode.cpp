@@ -66,6 +66,8 @@ void PlotterTaskNode::Run()
         {
             Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
             std::cout << "PlotNode: " << i <<  msg_vec << std::endl;
+            plot_data_[i].push_back(msg_vec);
+            time_data_[i].push_back(port_message_.timestamp);
         }
         else
         {
@@ -92,9 +94,24 @@ void PlotterTaskNode::Setup()
 void PlotterTaskNode::ConnectInput(InputPort port_id, Realtime::Port *output_port)
 {
     // TODO: Make sure port is not already taken, etc.  If so error.
-    Realtime::Port *in_port = new Realtime::Port(output_port->GetName(), Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
+    Realtime::Port *in_port = new Realtime::Port(output_port->GetName(), Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, -1, rt_period_);
     Realtime::Port::Map(in_port, output_port);
 
     input_port_map_[port_id] = in_port;
+
+    // Reserve
+    plot_data_[port_id].reserve(in_port->GetDimension());
+
+}
+
+void PlotterTaskNode::AddPlotVariable(InputPort port_id, int signal_idx)
+{
+    // TODO: Names, Styles, Blah, Blah
+    plot_vars_[port_id].push_back(signal_idx);
+
+}
+void PlotterTaskNode::RenderPlot()
+{
+    // TODO: Loop Plot vars etc.
 }
 } // namespace Plotting

@@ -39,21 +39,28 @@
 namespace Realtime
 {
 
-Port::Port(const std::string &name, Direction direction, DataType data_type, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0)
+Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension)
 {
     queue_size_ = 20;
     transport_type_ = TransportType::INPROC;
     transport_url_ = "inproc"; // TODO: Noblock?
 
     // If Input Port Create Handlers
-
-    // Copy to void*
-
-    if (data_type == DataType::DOUBLE)
+    if (direction == Direction::INPUT)
     {
-        PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
-        handler_ = (void*) handler;
+        if (data_type == DataType::DOUBLE)
+        {
+            PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
+            handler_ = (void *)handler;
+        }
     }
+    else // Setup Outputs
+    {
+    }
+
+    // Reserve Dimension Names
+    if (dimension > 0)
+        signal_labels_.reserve(dimension);
 }
 
 // TODO: Clear Handler Memory Etc,
@@ -61,6 +68,10 @@ Port::~Port()
 {
 }
 
+void Port::SetSignalLabel(const int signal_idx, const std::string &label)
+{
+    signal_labels_[signal_idx] = label;
+}
 // TODO: I do not love this...
 bool Port::Map(Port *input, Port *output)
 {
@@ -69,6 +80,7 @@ bool Port::Map(Port *input, Port *output)
     input->transport_type_ = output->transport_type_;
     input->dimension_ = output->dimension_;
     input->data_type_ = output->data_type_;
+    input->signal_labels_ = output->signal_labels_;
 }
 
 bool Port::Bind()
@@ -107,19 +119,19 @@ bool Port::Connect()
     context_.reset();
 
     // Setup Contexts
-    if(transport_type_ == TransportType::INPROC)
+    if (transport_type_ == TransportType::INPROC)
     {
         context_ = PortManager::Instance()->GetInprocContext();
     }
-    else if(transport_type_ == TransportType::IPC)
+    else if (transport_type_ == TransportType::IPC)
     {
         context_ = std::make_shared<zcm::ZCM>("ipc");
     }
-    else if(transport_type_ == TransportType::UDP)
+    else if (transport_type_ == TransportType::UDP)
     {
         context_ = std::make_shared<zcm::ZCM>(transport_url_);
     }
-    else if(transport_type_ == TransportType::SERIAL)
+    else if (transport_type_ == TransportType::SERIAL)
     {
         context_ = std::make_shared<zcm::ZCM>(transport_url_);
     }
@@ -131,7 +143,7 @@ bool Port::Connect()
     // Now Subscribe
     // TODO: Save subs somewhere for unsubscribe
     // TODO: Switch Types
-    if(data_type_ == DataType::DOUBLE)
+    if (data_type_ == DataType::DOUBLE)
     {
         auto subs = context_->subscribe(channel_, &PortHandler<double_vec_t>::HandleMessage, static_cast<PortHandler<double_vec_t> *>(handler_));
     }
@@ -139,10 +151,9 @@ bool Port::Connect()
     {
         std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
     }
-    
+
     return true;
 }
-
 
 ///////////////////////
 // Port Manager Source

@@ -57,7 +57,11 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
     // Create Ports
     // Setpoint OUTPUT Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port ("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, rt_period);
+    Realtime::Port *port = new Realtime::Port ("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
+    port->SetSignalLabel(Idx::X_DOT, "X_DOT");
+    port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
+    port->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
+    port->SetSignalLabel(Idx::Z_COM, "Z_COM");
     output_port_map_[OutputPort::SETPOINT] = port;    
 
 
@@ -70,17 +74,16 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
 
 void RemoteTeleop::Run()
 {
-    // Input (Remote)
-    //Messages::Controllers::Locomotion::TrajectorySetpoint setpoint;
+    // Get Input (Remote)
 
-    output_setpoint_.data[0] = 1.0;  // x_dot
-    output_setpoint_.data[1] = 0.0;    // y_dot
-    output_setpoint_.data[2] = 0.0;  // yaw_dot
-    output_setpoint_.data[3] = 0.5;    // z_comt
+    output_setpoint_.data[Idx::X_DOT] = 1.0;  // x_dot
+    output_setpoint_.data[Idx::Y_DOT] = 0.0;    // y_dot
+    output_setpoint_.data[Idx::YAW_DOT] = 0.0;  // yaw_dot
+    output_setpoint_.data[Idx::Z_COM] = 0.5;    // z_comt
 
     // Publish Setpoint
     bool send_status = GetOutputPort(0)->Send(output_setpoint_);
-    std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
+    //std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
 
 }
 

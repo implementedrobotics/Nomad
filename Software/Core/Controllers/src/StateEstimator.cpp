@@ -62,7 +62,26 @@ StateEstimator::StateEstimator(const std::string &name,
     // Create Ports
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, rt_period);
+    Realtime::Port *port = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
+
+    port->SetSignalLabel(Idx::X, "X");
+    port->SetSignalLabel(Idx::Y, "Y");
+    port->SetSignalLabel(Idx::Z, "Z");
+
+    port->SetSignalLabel(Idx::X_DOT, "X_DOT");
+    port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
+    port->SetSignalLabel(Idx::Z_DOT, "Z_DOT");
+
+    port->SetSignalLabel(Idx::PHI, "Roll");
+    port->SetSignalLabel(Idx::THETA, "Pitch");
+    port->SetSignalLabel(Idx::PSI, "Yaw");
+
+    port->SetSignalLabel(Idx::W_X, "Angular Roll Rate");
+    port->SetSignalLabel(Idx::W_Y, "Angular Pitch Rate");
+    port->SetSignalLabel(Idx::W_Z, "Angular Yaw Rate");
+
+    port->SetSignalLabel(Idx::GRAVITY, "Gravity");
+
     output_port_map_[OutputPort::STATE_HAT] = port;    
 }
 
@@ -71,19 +90,19 @@ void StateEstimator::Run()
     // Estimate State
 
     // Update State
-    output_state_.data[0] = 1.0; // X Position
-    output_state_.data[1] = 2.0; // Y Position
-    output_state_.data[2] = 3.0; // Z Position
-    output_state_.data[3] = 4.0; // X Velocity
-    output_state_.data[4] = 5.0; // Y Velocity
-    output_state_.data[5] = 6.0; // Z Velocity
-    output_state_.data[6] = 7.0; // Roll Orientation
-    output_state_.data[7] = 0.0; // Pitch Orientation
-    output_state_.data[8] = 2.0; // Yaw Orientation
-    output_state_.data[9] = 0.0; // Roll Rate
-    output_state_.data[10] = 0.0; // Pitch Rate
-    output_state_.data[11] = 0.0; // Yaw Rate
-    output_state_.data[12] = kGravity; // Gravity
+    output_state_.data[Idx::X] = 1.0; // X Position
+    output_state_.data[Idx::Y] = 2.0; // Y Position
+    output_state_.data[Idx::Z] = 3.0; // Z Position
+    output_state_.data[Idx::X_DOT] = 4.0; // X Velocity
+    output_state_.data[Idx::Y_DOT] = 5.0; // Y Velocity
+    output_state_.data[Idx::Z_DOT] = 6.0; // Z Velocity
+    output_state_.data[Idx::PHI] = 7.0; // Roll Orientation
+    output_state_.data[Idx::THETA] = 0.0; // Pitch Orientation
+    output_state_.data[Idx::PSI] = 2.0; // Yaw Orientation
+    output_state_.data[Idx::W_X] = 0.0; // Roll Rate
+    output_state_.data[Idx::W_Y] = 0.0; // Pitch Rate
+    output_state_.data[Idx::W_Z] = 0.0; // Yaw Rate
+    output_state_.data[Idx::GRAVITY] = kGravity; // Gravity
 
     //std::cout << "State Estimator Send: " << std::endl;
     
@@ -96,7 +115,7 @@ void StateEstimator::Run()
 void StateEstimator::Setup()
 {
     GetOutputPort(0)->Bind();
-    std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
+    //std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
 }
 
 } // namespace Estimators

@@ -55,6 +55,14 @@ public:
         REMOTE = 0,    // Remote
     };
 
+    enum Idx
+    {
+        X_DOT = 0,
+        Y_DOT = 1,
+        YAW_DOT = 2,
+        Z_COM = 3
+    };
+
     // Base Class Remote Teleop Task Node
     // name = Task Name
     // stack_size = Task Thread Stack Size

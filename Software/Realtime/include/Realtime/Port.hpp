@@ -66,11 +66,11 @@ public:
         OUTPUT
     };
 
-    Port(const std::string &name, Direction direction, DataType data_type, int period);
+    Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period);
     ~Port();
 
     Port::DataType GetDataType();
-    int GetDimension();
+    int GetDimension() { return dimension_; }
 
     const std::string& GetName() const { return name_;}
 
@@ -80,6 +80,10 @@ public:
         transport_type_ = transport;
         transport_url_ = transport_url;
         channel_ = channel; }
+
+
+    // Signal Labels
+    void SetSignalLabel(const int signal_idx, const std::string& label);
 
     // Map Ports
     static bool Map(Port *input, Port *output);
@@ -119,7 +123,7 @@ protected:
     Direction direction_;
 
     // Port Labels
-    std::vector<std::string> port_labels_;
+    std::vector<std::string> signal_labels_;
     
     // Transport Type
     TransportType transport_type_;

@@ -57,6 +57,24 @@ public:
         VISUAL_ODOM = 2 // Visual Odometry Sensor Input
     };
 
+    enum Idx
+    {
+        X = 0,     // X Position
+        Y = 1,     // Y Position
+        Z = 2,     // Z Position
+        X_DOT = 3, // X Velocity
+        Y_DOT = 4, // Y Velocity
+        Z_DOT = 5, // Z Velocity
+        PHI = 6,   // Roll
+        THETA = 7, // Pitch
+        PSI = 8,   // Yaw
+        W_X = 9,   // Angular Vel (Roll)
+        W_Y = 10,  // Angular Vel (Pitch)
+        W_Z = 11,  // Angular Vel (Yaw)
+        GRAVITY = 12 // Augmented Gravity
+    };
+
+
     // Base Class State Estimator Task Node
     // name = Task Name
     // stack_size = Task Thread Stack Size

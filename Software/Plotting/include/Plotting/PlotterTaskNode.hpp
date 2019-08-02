@@ -74,6 +74,7 @@ public:
     // Connect Input to Port Output
     void ConnectInput(InputPort port_id, Realtime::Port *port);
 
+    void AddPlotVariable(InputPort port_id, int signal_idx);
 
 protected:
     // Overriden Run Function
@@ -82,7 +83,15 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
+    // Plot Variable List
+    std::vector<int> plot_vars_[MAX_PORTS];
+
+    // Plot Data List (Doubles Only For Now)
     std::vector<Eigen::VectorXd> plot_data_[MAX_PORTS];
+
+    // Hold time points
+    std::vector<int64_t> time_data_[MAX_PORTS];
+
 
     // Messages
     double_vec_t port_message_;

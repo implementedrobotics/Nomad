@@ -71,15 +71,16 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
 
     // Create Messages
 
+    // TODO: Move to "CONNECT"
     // Create Ports
     // State Estimate Input Port
-    input_port_map_[InputPort::STATE_HAT] = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
+    input_port_map_[InputPort::STATE_HAT] = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
 
     // Referenence Input Port
-    input_port_map_[InputPort::REFERENCE_TRAJECTORY] = new Realtime::Port ("REFERENCE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
+    input_port_map_[InputPort::REFERENCE_TRAJECTORY] = new Realtime::Port ("REFERENCE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
 
     // Optimal Force Solution Output Port
-    output_port_map_[OutputPort::FORCES] = new Realtime::Port ("FORCES", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, rt_period_);
+    output_port_map_[OutputPort::FORCES] = new Realtime::Port ("FORCES", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_inputs_, rt_period_);
 
 }
 void ConvexMPC::Run()
