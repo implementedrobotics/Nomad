@@ -109,10 +109,20 @@ int main(int argc, char *argv[])
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
-    while (1)
+    int j = 0;
+    while (j <  5)
     {
         //printf("[TASK_NODE_TEST]: IDLE TASK\n");
         usleep(1000000);
+        j++;
         //estimator_node.Stop();
     }
+
+    scope.Stop();
+    ref_generator_node.Stop();
+    convex_mpc_node.Stop();
+    estimator_node.Stop();
+    teleop_node.Stop();
+    scope.RenderPlot();
+    std::cout << "OUT!" << std::endl;
 }

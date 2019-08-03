@@ -37,6 +37,11 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
+#include <Plotting/matplotlibcpp.h>
+
+
+// Plot Namespace:
+namespace plt = matplotlibcpp;
 
 namespace Plotting
 {
@@ -112,6 +117,19 @@ void PlotterTaskNode::AddPlotVariable(InputPort port_id, int signal_idx)
 }
 void PlotterTaskNode::RenderPlot()
 {
+    std::vector<double> graph;
     // TODO: Loop Plot vars etc.
+    for(int i = 0; i < plot_data_[0].size(); i++)
+    {
+        std::vector<Eigen::VectorXd> vec_list = plot_data_[0];
+        for(int j = 0; j < vec_list.size(); j++)
+        {
+            graph.push_back(vec_list[j][0]);
+        }
+    }
+    plt::style("seaborn");
+    plt::plot(graph);
+    plt::show();
+
 }
 } // namespace Plotting

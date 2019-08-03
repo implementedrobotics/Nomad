@@ -58,10 +58,10 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
     // Setpoint OUTPUT Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
     Realtime::Port *port = new Realtime::Port ("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
-    port->SetSignalLabel(Idx::X_DOT, "X_DOT");
-    port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
-    port->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
-    port->SetSignalLabel(Idx::Z_COM, "Z_COM");
+    //port->SetSignalLabel(Idx::X_DOT, "X_DOT");
+    //port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
+    //port->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
+    //port->SetSignalLabel(Idx::Z_COM, "Z_COM");
     output_port_map_[OutputPort::SETPOINT] = port;    
 
 

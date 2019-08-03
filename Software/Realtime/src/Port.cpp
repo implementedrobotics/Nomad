@@ -60,7 +60,8 @@ Port::Port(const std::string &name, Direction direction, DataType data_type, int
 
     // Reserve Dimension Names
     if (dimension > 0)
-        signal_labels_.reserve(dimension);
+    //std::cout<<"RESERT: " << dimension << std::endl;
+    signal_labels_.reserve(dimension);
 }
 
 // TODO: Clear Handler Memory Etc,
@@ -70,6 +71,7 @@ Port::~Port()
 
 void Port::SetSignalLabel(const int signal_idx, const std::string &label)
 {
+    //std::cout << "SIZE: " << signal_labels_.size();
     signal_labels_[signal_idx] = label;
 }
 // TODO: I do not love this...
