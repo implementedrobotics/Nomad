@@ -30,6 +30,7 @@
 #include <deque>
 #include <memory>
 #include <mutex>
+#include <map>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -123,7 +124,7 @@ protected:
     Direction direction_;
 
     // Port Labels
-    std::vector<std::string> signal_labels_;
+    std::map<int, std::string> signal_labels_;
     
     // Transport Type
     TransportType transport_type_;

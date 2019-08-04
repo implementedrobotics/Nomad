@@ -74,6 +74,8 @@ public:
     // Connect Input to Port Output
     void ConnectInput(InputPort port_id, Realtime::Port *port);
 
+    // Add a signal variable to plot
+    // TODO: Which subplot is this going on, etc.
     void AddPlotVariable(InputPort port_id, int signal_idx);
 
 protected:
@@ -90,12 +92,18 @@ protected:
     std::vector<Eigen::VectorXd> plot_data_[MAX_PORTS];
 
     // Hold time points
-    std::vector<int64_t> time_data_[MAX_PORTS];
-
+    std::vector<double> time_data_[MAX_PORTS];
 
     // Messages
     double_vec_t port_message_;
 
+    // Buffer Size
+    uint64_t sample_window_;
+
+    // Add Subplots/Scopes
+
+    // TODO: Type:
+    // Realtime/Window/Trigger Event
     // TODO: Additional Types
 
     // Cached

@@ -64,23 +64,23 @@ StateEstimator::StateEstimator(const std::string &name,
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
     Realtime::Port *port = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
 
-    // port->SetSignalLabel(Idx::X, "X");
-    // port->SetSignalLabel(Idx::Y, "Y");
-    // port->SetSignalLabel(Idx::Z, "Z");
+    port->SetSignalLabel(Idx::X, "X");
+    port->SetSignalLabel(Idx::Y, "Y");
+    port->SetSignalLabel(Idx::Z, "Z");
 
-    // port->SetSignalLabel(Idx::X_DOT, "X_DOT");
-    // port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
-    // port->SetSignalLabel(Idx::Z_DOT, "Z_DOT");
+    port->SetSignalLabel(Idx::X_DOT, "X_DOT");
+    port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
+    port->SetSignalLabel(Idx::Z_DOT, "Z_DOT");
 
-    // port->SetSignalLabel(Idx::PHI, "Roll");
-    // port->SetSignalLabel(Idx::THETA, "Pitch");
-    // port->SetSignalLabel(Idx::PSI, "Yaw");
+    port->SetSignalLabel(Idx::PHI, "Roll");
+    port->SetSignalLabel(Idx::THETA, "Pitch");
+    port->SetSignalLabel(Idx::PSI, "Yaw");
 
-    // port->SetSignalLabel(Idx::W_X, "Angular Roll Rate");
-    // port->SetSignalLabel(Idx::W_Y, "Angular Pitch Rate");
-    // port->SetSignalLabel(Idx::W_Z, "Angular Yaw Rate");
+    port->SetSignalLabel(Idx::W_X, "Angular Roll Rate");
+    port->SetSignalLabel(Idx::W_Y, "Angular Pitch Rate");
+    port->SetSignalLabel(Idx::W_Z, "Angular Yaw Rate");
 
-    // port->SetSignalLabel(Idx::GRAVITY, "Gravity");
+    port->SetSignalLabel(Idx::GRAVITY, "Gravity");
 
     output_port_map_[OutputPort::STATE_HAT] = port;    
 }
@@ -107,14 +107,14 @@ void StateEstimator::Run()
     //std::cout << "State Estimator Send: " << std::endl;
     
     // Publish State
-    bool send_status = GetOutputPort(0)->Send(output_state_);
+    bool send_status = GetOutputPort(OutputPort::STATE_HAT)->Send(output_state_);
     
     //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
 }
 
 void StateEstimator::Setup()
 {
-    GetOutputPort(0)->Bind();
+    GetOutputPort(OutputPort::STATE_HAT)->Bind();
     //std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
 }
 

@@ -72,7 +72,7 @@ void PlotterTaskNode::Run()
             Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
             std::cout << "PlotNode: " << i <<  msg_vec << std::endl;
             plot_data_[i].push_back(msg_vec);
-            time_data_[i].push_back(port_message_.timestamp);
+            time_data_[i].push_back(port_message_.sequence_num);
         }
         else
         {

@@ -90,9 +90,9 @@ void ReferenceTrajectoryGenerator::Run()
 
     // Get Inputs
     //std::cout << "Time to RECEIVE in RTG" << std::endl;
-    bool state_recv = GetInputPort(0)->Receive(x_hat_in_); // Receive State Estimate
+    bool state_recv = GetInputPort(InputPort::STATE_HAT)->Receive(x_hat_in_); // Receive State Estimate
     //std::cout << "IN RUN: " << x_hat_in_.sequence_num << " state: " << state_recv << std::endl;
-    bool setpoint_recv = GetInputPort(1)->Receive(setpoint_in_); // Receive Setpoint
+    bool setpoint_recv = GetInputPort(InputPort::SETPOINT)->Receive(setpoint_in_); // Receive Setpoint
 
     // TODO: Add a metric for how far behind this node can get before erroring out.
     if(!state_recv || !setpoint_recv)
@@ -154,20 +154,20 @@ void ReferenceTrajectoryGenerator::Run()
     memcpy(reference_out_.data.data(), X_ref_.data(), sizeof(double) * X_ref_.size());
 
     // Publish Trajectory
-    bool send_status = GetOutputPort(0)->Send(reference_out_);
+    bool send_status = GetOutputPort(OutputPort::REFERENCE)->Send(reference_out_);
 }
 
 void ReferenceTrajectoryGenerator::Setup()
 {
 
     // State Estimate INPUT
-    GetInputPort(0)->Connect();
+    GetInputPort(InputPort::STATE_HAT)->Connect();
 
     // Setpoint INPUT
-    GetInputPort(1)->Connect();
+    GetInputPort(InputPort::SETPOINT)->Connect();
 
     // Reference OUTPUT
-    GetOutputPort(0)->Bind();
+    GetOutputPort(OutputPort::REFERENCE)->Bind();
     std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
 }
 

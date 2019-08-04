@@ -44,7 +44,7 @@ namespace Locomotion
 ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double T) : 
                                Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
                                num_states_(13),
-                               num_inputs_(12),
+                               num_inputs_(1),
                                T_(T),
                                N_(N)
 {
@@ -70,6 +70,8 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
     ocp_->SetWeights(Q, R);
 
     // Create Messages
+    force_output_.length = num_inputs_;
+    force_output_.data.resize(num_inputs_);
 
     // TODO: Move to "CONNECT"
     // Create Ports
@@ -88,10 +90,10 @@ void ConvexMPC::Run()
     // Get Inputs
     // std::cout << "Time to RECEIVE in CONVEXMPC" << std::endl;
     // Receive State Estimate and Unpack
-    bool state_recv = GetInputPort(0)->Receive(x_hat_in_); // Receive State Estimate
+    bool state_recv = GetInputPort(InputPort::STATE_HAT)->Receive(x_hat_in_); // Receive State Estimate
 
     // Receive Trajectory Reference and Unpack
-    bool setpoint_recv =  GetInputPort(1)->Receive(reference_in_); // Receive Setpoint
+    bool setpoint_recv =  GetInputPort(InputPort::REFERENCE_TRAJECTORY)->Receive(reference_in_); // Receive Setpoint
     if(!state_recv || !setpoint_recv)
     {
         std::cout << "[ConvexMPC]: Receive Buffer Empty!" << std::endl; 
@@ -128,23 +130,24 @@ void ConvexMPC::Run()
 
     for(int i = 0; i < N_-1; i++)
     {
-        //std::cout << "U: " << ocp_->U() << std::endl;
+        std::cout << "U: " << ocp_->U() << std::endl;
         block_.Step(ocp_->U()(0,i));
-        //std::cout << "X: " << block_.GetState()[0] << std::endl;
+        std::cout << "X: " << block_.GetState()[0] << std::endl;
     }
 
+    force_output_.data[0] = ocp_->U()(0,0);
+
     // Output Optimal Forces
-    // GetOutputPort(0)->Send((void *)&force_output_, sizeof(force_output_));
-    // GetOutputPort(0)->Send(rx_msg);
+    bool send_status = GetOutputPort(OutputPort::FORCES)->Send(force_output_);
 }
 void ConvexMPC::Setup()
 {
     // Connect Input Ports
-    GetInputPort(0)->Connect(); // State Estimate
-    GetInputPort(1)->Connect(); // Reference Trajectory
+    GetInputPort(InputPort::STATE_HAT)->Connect(); // State Estimate
+    GetInputPort(InputPort::REFERENCE_TRAJECTORY)->Connect(); // Reference Trajectory
 
     // Bind Output Ports
-    //GetOutputPort(0)->Bind(); // Optimal Force Output
+    GetOutputPort(OutputPort::FORCES)->Bind(); // Optimal Force Output
 
     std::cout << "[ConvexMPC]: "
               << "ConvexMPC Task Node Running!" << std::endl;
