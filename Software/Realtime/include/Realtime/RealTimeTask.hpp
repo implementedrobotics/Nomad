@@ -32,6 +32,7 @@
 // C++ Includes
 #include <iostream>
 #include <string>
+#include <memory>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -95,10 +96,10 @@ public:
     void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
     // Get Output Port
-    Port* GetOutputPort(const int port_id) const;
+    std::shared_ptr<Port> GetOutputPort(const int port_id) const;
 
     // Get Input Port
-    Port* GetInputPort(const int port_id) const;
+    std::shared_ptr<Port> GetInputPort(const int port_id) const;
 
     // Set Transport Configuration for Port
     void SetPortOutput(const int port_id, const Port::TransportType transport, const std::string &transport_url, const std::string &channel);
@@ -112,10 +113,10 @@ protected:
     virtual void Setup() = 0;
 
     // Input Port Map
-    std::vector<Port *> input_port_map_;
+    std::vector<std::shared_ptr<Port>> input_port_map_;
 
     // Output Port Map
-    std::vector<Port *> output_port_map_;
+    std::vector<std::shared_ptr<Port>> output_port_map_;
 
     // Task Name
     std::string task_name_;

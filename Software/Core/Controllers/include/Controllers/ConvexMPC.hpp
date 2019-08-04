@@ -29,6 +29,7 @@
 // C++ System Files
 #include <iostream>
 #include <string>
+#include <memory>
 
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
@@ -72,7 +73,7 @@ protected:
     virtual void Setup();
 
     // Optimal Control Problem
-    OptimalControl::LinearOptimalControl::LinearCondensedOCP *ocp_;
+    std::unique_ptr<OptimalControl::LinearOptimalControl::LinearCondensedOCP> ocp_;
 
     // TODO:
     // Dynamic System Block

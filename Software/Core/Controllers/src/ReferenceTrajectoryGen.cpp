@@ -74,15 +74,12 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
     // Create Ports
     // Reference Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port ("REFERENCE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
-    output_port_map_[OutputPort::REFERENCE] = port;    
+    output_port_map_[OutputPort::REFERENCE] = std::make_shared<Realtime::Port>("REFERENCE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);    
 
     // TODO: Move to "CONNECT"
-    port = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
-    input_port_map_[InputPort::STATE_HAT] = port;
+    input_port_map_[InputPort::STATE_HAT] = std::make_shared<Realtime::Port>("STATE_HAT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
 
-    port = new Realtime::Port ("SETPOINT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period_);
-    input_port_map_[InputPort::SETPOINT] = port;
+    input_port_map_[InputPort::SETPOINT] = std::make_shared<Realtime::Port>("SETPOINT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period_);
 }
 
 void ReferenceTrajectoryGenerator::Run()

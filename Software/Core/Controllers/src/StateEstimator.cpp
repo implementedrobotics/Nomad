@@ -30,6 +30,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <memory>
 
 // Third-Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -62,7 +63,7 @@ StateEstimator::StateEstimator(const std::string &name,
     // Create Ports
     // State Estimate Output Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port ("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
+    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
 
     port->SetSignalLabel(Idx::X, "X");
     port->SetSignalLabel(Idx::Y, "Y");

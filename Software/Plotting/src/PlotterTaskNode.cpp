@@ -61,7 +61,7 @@ void PlotterTaskNode::Run()
     // Get Inputs
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
-        Realtime::Port *input = GetInputPort(i);
+        std::shared_ptr<Realtime::Port> input = GetInputPort(i);
         if(input == nullptr)
         {
             continue;
@@ -87,7 +87,7 @@ void PlotterTaskNode::Setup()
     // Connect Mapped Ports:
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
-        Realtime::Port *input = GetInputPort(i);
+        std::shared_ptr<Realtime::Port> input = GetInputPort(i);
         if(input == nullptr)
             continue;
 
@@ -96,17 +96,15 @@ void PlotterTaskNode::Setup()
     
 }
 
-void PlotterTaskNode::ConnectInput(InputPort port_id, Realtime::Port *output_port)
+void PlotterTaskNode::ConnectInput(InputPort port_id, std::shared_ptr<Realtime::Port> output_port)
 {
     // TODO: Make sure port is not already taken, etc.  If so error.
-    Realtime::Port *in_port = new Realtime::Port(output_port->GetName(), Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, -1, rt_period_);
-    Realtime::Port::Map(in_port, output_port);
-
-    input_port_map_[port_id] = in_port;
+    std::shared_ptr<Realtime::Port> in_port = std::make_shared<Realtime::Port>(output_port->GetName(), Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, -1, rt_period_);
+    Realtime::Port::Map(in_port, output_port); // Map It
+    input_port_map_[port_id] = in_port; // Cache It
 
     // Reserve
     plot_data_[port_id].reserve(in_port->GetDimension());
-
 }
 
 void PlotterTaskNode::AddPlotVariable(InputPort port_id, int signal_idx)

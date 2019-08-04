@@ -72,7 +72,7 @@ public:
     void RenderPlot(); // Plot the acquired data
 
     // Connect Input to Port Output
-    void ConnectInput(InputPort port_id, Realtime::Port *port);
+    void ConnectInput(InputPort port_id, std::shared_ptr<Realtime::Port> port);
 
     // Add a signal variable to plot
     // TODO: Which subplot is this going on, etc.

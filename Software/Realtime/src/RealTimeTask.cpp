@@ -340,14 +340,14 @@ void RealTimeTaskNode::SetTaskFrequency(const unsigned int frequency_hz)
 }
 
 // Get Output Port
-Port *RealTimeTaskNode::GetOutputPort(const int port_id) const
+std::shared_ptr<Port> RealTimeTaskNode::GetOutputPort(const int port_id) const
 {
     assert(port_id >= 0 && port_id < MAX_PORTS);
     return output_port_map_[port_id];
 }
 
 // Get Input Port
-Port *RealTimeTaskNode::GetInputPort(const int port_id) const
+std::shared_ptr<Port> RealTimeTaskNode::GetInputPort(const int port_id) const
 {
     assert(port_id >= 0 && port_id < MAX_PORTS);
     return input_port_map_[port_id];

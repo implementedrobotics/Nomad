@@ -87,7 +87,7 @@ public:
     void SetSignalLabel(const int signal_idx, const std::string& label);
 
     // Map Ports
-    static bool Map(Port *input, Port *output);
+    static bool Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output);
 
     // Connect Port
     bool Connect();

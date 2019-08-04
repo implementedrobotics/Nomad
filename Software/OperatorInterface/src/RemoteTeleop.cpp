@@ -57,17 +57,17 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
     // Create Ports
     // Setpoint OUTPUT Port
     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    Realtime::Port *port = new Realtime::Port ("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
+    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
     port->SetSignalLabel(Idx::X_DOT, "X_DOT");
     port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
     port->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
     port->SetSignalLabel(Idx::Z_COM, "Z_COM");
-    output_port_map_[OutputPort::SETPOINT] = port;    
-
+    
+    output_port_map_[OutputPort::SETPOINT] = port;
 
     // TODO: Multiple Inputs with relative control priorities. i.e. Autonomous Mapping vs. Remote Controller vs. "Safety" Controller
     // Remote INPUT Port
-    //port = new Realtime::Port("REMOTE", ctx, "remote", rt_period);
+    //port = std::make_shared<Realtime::Port>("REMOTE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
     //input_port_map_[OutputPort::SETPOINT] = port;
    
 }

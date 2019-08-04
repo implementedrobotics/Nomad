@@ -1,6 +1,5 @@
 # TODO:
 
-1. Use Smart/Shared Ptrs Where we can.  Free up memory where we are not.
 2. Add Logging/Plotting Interface to visualize trajectories [https://makersportal.com/blog/2018/8/14/real-time-graphing-in-python]
 3. Leg Controller Task Node
 5. Gait Scheduler Phasing EQ mod(2*pi*T+phase_shift/gait_period), 2*pi)/2*pi = (0 to 1)

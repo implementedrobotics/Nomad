@@ -56,12 +56,19 @@ Port::Port(const std::string &name, Direction direction, DataType data_type, int
     }
     else // Setup Outputs
     {
-    }   
+    }
 }
 
 // TODO: Clear Handler Memory Etc,
 Port::~Port()
 {
+    if (data_type_ == DataType::DOUBLE)
+    {
+        PortHandler<double_vec_t> *handler = static_cast<PortHandler<double_vec_t> *>(handler);
+        if (handler)
+            delete handler;
+    }
+    handler_ = 0;
 }
 
 void Port::SetSignalLabel(const int signal_idx, const std::string &label)
@@ -69,7 +76,7 @@ void Port::SetSignalLabel(const int signal_idx, const std::string &label)
     signal_labels_.insert(std::make_pair(signal_idx, label));
 }
 // TODO: I do not love this...
-bool Port::Map(Port *input, Port *output)
+bool Port::Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output)
 {
     input->transport_url_ = output->transport_url_;
     input->channel_ = output->channel_;
