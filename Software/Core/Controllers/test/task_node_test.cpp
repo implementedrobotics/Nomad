@@ -6,6 +6,8 @@
 #include <Controllers/ReferenceTrajectoryGen.hpp>
 #include <OperatorInterface/RemoteTeleop.hpp>
 #include <Plotting/PlotterTaskNode.hpp>
+#include <Systems/NomadPlant.hpp>
+
 #include <unistd.h>
 
 int main(int argc, char *argv[])
@@ -104,6 +106,16 @@ int main(int argc, char *argv[])
     // gait_scheduler_node.SetCoreAffinity(2);
     // gait_scheduler_node.SetPortOutput(Controllers::Locomotion::GaitScheduler::OutputPort::CONTACT_STATE, "nomad/gait_contacts");
     // gait_scheduler_node.Start();
+
+    // Plant Node
+    Systems::Nomad::NomadPlant nomad("Nomad_Plant");
+    nomad.SetStackSize(100000);
+    nomad.SetTaskPriority(Realtime::Priority::MEDIUM);
+    nomad.SetTaskFrequency(10); // 1000 HZ
+    nomad.SetCoreAffinity(1);
+    //nomad.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+    nomad.Start();
+
 
     // Start Inproc Context Process Thread
     Realtime::PortManager::Instance()->GetInprocContext()->start();
