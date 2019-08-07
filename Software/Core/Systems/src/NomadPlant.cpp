@@ -47,14 +47,53 @@ namespace Nomad
 NomadPlant::NomadPlant(const std::string &name) : 
                                Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN)
 {
+
+    // TODO: Should be SET from outside
+    // Create Rigid Body
+    block_ = RigidBlock1D(2.0, Eigen::Vector3d(1.0, 0.5, 0.25));
+
+    // TODO: Move to "CONNECT"
+    // Create Ports
+    // State Estimate Input Port
+    input_port_map_[InputPort::FORCES] = std::make_shared<Realtime::Port>("FORCES", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 1, rt_period_);
+
+    // Optimal Force Solution Output Port
+    //output_port_map_[OutputPort::FORCES] = std::make_shared<Realtime::Port>("FORCES", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_inputs_, rt_period_);
+
 }
 
 void NomadPlant::Run()
 {
+     // Get Inputs
+    // std::cout << "Time to RECEIVE in CONVEXMPC" << std::endl;
+    // Receive State Estimate and Unpack
+    bool force_recv = GetInputPort(InputPort::FORCES)->Receive(forces_in); // Receive State Estimate
+
+    if (!force_recv)
+    {
+        std::cout << "[NomadPlant]: Receive Buffer Empty!" << std::endl;
+        return;
+    }
+    // std::cout << "CMPC: " << x_hat_in_.sequence_num;
+    Eigen::VectorXd U = Eigen::Map<Eigen::VectorXd>(forces_in.data.data(), 1);
+    block_.Step(U);
+
+    std::cout << "U: " << U << std::endl;
+
+    // TODO: Output back state
+
 }
 
 void NomadPlant::Setup()
 {
+    // Connect Input Ports
+    GetInputPort(InputPort::FORCES)->Connect(); // Forces
+
+    // Bind Output Ports
+    //GetOutputPort(OutputPort::FORCES)->Bind(); // Optimal Force Output
+
+    std::cout << "[NomadPlant]: "
+              << "NomadPlant Task Node Running!" << std::endl;
 }
 
 } // namespace Nomad

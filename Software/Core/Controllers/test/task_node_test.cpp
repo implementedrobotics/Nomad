@@ -114,6 +114,8 @@ int main(int argc, char *argv[])
     nomad.SetTaskFrequency(10); // 1000 HZ
     nomad.SetCoreAffinity(1);
     //nomad.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+    Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES), 
+    convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
     nomad.Start();
 
 
