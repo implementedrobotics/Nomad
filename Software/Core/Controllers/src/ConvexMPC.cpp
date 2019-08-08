@@ -94,7 +94,7 @@ void ConvexMPC::Run()
     bool setpoint_recv = GetInputPort(InputPort::REFERENCE_TRAJECTORY)->Receive(reference_in_); // Receive Setpoint
     if (!state_recv || !setpoint_recv)
     {
-        std::cout << "[ConvexMPC]: Receive Buffer Empty!" << std::endl;
+        //std::cout << "[ConvexMPC]: Receive Buffer Empty!" << std::endl;
         return;
     }
     // std::cout << "CMPC: " << x_hat_in_.sequence_num;
@@ -107,7 +107,7 @@ void ConvexMPC::Run()
     // Update our Dynamics Current State
     Eigen::VectorXd initial_state(2);
     initial_state[0] = x_hat_[0];
-    initial_state[1] = x_hat_[1];
+    initial_state[1] = x_hat_[3];
 
     block_.SetState(initial_state);
 
@@ -126,12 +126,12 @@ void ConvexMPC::Run()
     // Solve
     ocp_->Solve();
 
-    for (int i = 0; i < N_ - 1; i++)
-    {
-        std::cout << "U: " << ocp_->U() << std::endl;
-        block_.Step(ocp_->U()(0, i));
-        std::cout << "X: " << block_.GetState()[0] << std::endl;
-    }
+    // for (int i = 0; i < N_ - 1; i++)
+    // {
+    //     //std::cout << "U: " << ocp_->U() << std::endl;
+    //     block_.Step(ocp_->U()(0, i));
+    //     //std::cout << "X: " << block_.GetState()[0] << std::endl;
+    // }
 
     force_output_.data[0] = ocp_->U()(0, 0);
 

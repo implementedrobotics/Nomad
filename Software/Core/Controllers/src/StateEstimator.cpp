@@ -83,40 +83,59 @@ StateEstimator::StateEstimator(const std::string &name,
 
     port->SetSignalLabel(Idx::GRAVITY, "Gravity");
 
+
+    // State Estimate Input Port
+    input_port_map_[InputPort::IMU] = std::make_shared<Realtime::Port>("IMU", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
+
+    // State Estimate Output Port
     output_port_map_[OutputPort::STATE_HAT] = port;    
 }
 
 void StateEstimator::Run()
 {
     // Estimate State
+    bool imu_recv = GetInputPort(InputPort::IMU)->Receive(x_hat_in_); // Receive Setpoint
+    if (!imu_recv)
+    {
+        std::cout << "[StateEstimator]: Receive Buffer Empty!" << std::endl;
+        return;
+    }
+
+
+    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data.data(), num_states_);
+
 
     // Update State
-    output_state_.data[Idx::X] = 1.0; // X Position
-    output_state_.data[Idx::Y] = 2.0; // Y Position
-    output_state_.data[Idx::Z] = 3.0; // Z Position
-    output_state_.data[Idx::X_DOT] = 4.0; // X Velocity
-    output_state_.data[Idx::Y_DOT] = 5.0; // Y Velocity
-    output_state_.data[Idx::Z_DOT] = 6.0; // Z Velocity
-    output_state_.data[Idx::PHI] = 7.0; // Roll Orientation
-    output_state_.data[Idx::THETA] = 0.0; // Pitch Orientation
-    output_state_.data[Idx::PSI] = 2.0; // Yaw Orientation
-    output_state_.data[Idx::W_X] = 0.0; // Roll Rate
-    output_state_.data[Idx::W_Y] = 0.0; // Pitch Rate
-    output_state_.data[Idx::W_Z] = 0.0; // Yaw Rate
-    output_state_.data[Idx::GRAVITY] = kGravity; // Gravity
+    output_state_.data[Idx::X] = x_hat_[0]; // X Position
+    output_state_.data[Idx::Y] = x_hat_[1]; // Y Position
+    output_state_.data[Idx::Z] = x_hat_[2]; // Z Position
+    output_state_.data[Idx::X_DOT] = x_hat_[3]; // X Velocity
+    output_state_.data[Idx::Y_DOT] = x_hat_[4]; // Y Velocity
+    output_state_.data[Idx::Z_DOT] = x_hat_[5]; // Z Velocity
+    output_state_.data[Idx::PHI] = x_hat_[6]; // Roll Orientation
+    output_state_.data[Idx::THETA] = x_hat_[7]; // Pitch Orientation
+    output_state_.data[Idx::PSI] = x_hat_[8]; // Yaw Orientation
+    output_state_.data[Idx::W_X] = x_hat_[9]; // Roll Rate
+    output_state_.data[Idx::W_Y] = x_hat_[10]; // Pitch Rate
+    output_state_.data[Idx::W_Z] = x_hat_[11]; // Yaw Rate
+    output_state_.data[Idx::GRAVITY] = x_hat_[12]; // Gravity
 
     //std::cout << "State Estimator Send: " << std::endl;
     
     // Publish State
     bool send_status = GetOutputPort(OutputPort::STATE_HAT)->Send(output_state_);
     
-    //std::cout << "[StateEstimator]: Publishing: " << " " << " Send: " << send_status << std::endl;
+    //std::cout << "[StateEstimator]: Publishing: " << output_state_.data[Idx::X] << " Send: " << send_status << std::endl;
 }
 
 void StateEstimator::Setup()
 {
+
+    // Connect Input Ports
+    bool connect = GetInputPort(InputPort::IMU)->Connect();            // State Estimate
+
     GetOutputPort(OutputPort::STATE_HAT)->Bind();
-    //std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!" << std::endl;
+    std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!: " << connect << std::endl;
 }
 
 } // namespace Estimators

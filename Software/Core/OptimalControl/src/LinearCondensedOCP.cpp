@@ -50,8 +50,8 @@ LinearCondensedOCP::LinearCondensedOCP(const unsigned int N,
     C_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_cons_, num_vars_);
 
     // Default to Unbounded
-    lb_ = Eigen::VectorXd::Constant(num_vars_, -50);
-    ub_ = Eigen::VectorXd::Constant(num_vars_, 50);
+    lb_ = Eigen::VectorXd::Constant(num_vars_, -qpOASES::INFTY);
+    ub_ = Eigen::VectorXd::Constant(num_vars_, qpOASES::INFTY);
 
     // Default to Unbounded
     lbC_ = Eigen::VectorXd::Constant(num_cons_, -qpOASES::INFTY);

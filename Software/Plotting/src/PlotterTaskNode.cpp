@@ -70,13 +70,13 @@ void PlotterTaskNode::Run()
         if (input->Receive(port_message_))
         {
             Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
-            std::cout << "PlotNode: " << i <<  msg_vec << std::endl;
+            //std::cout << "PlotNode: " << i << " " <<  msg_vec << std::endl;
             plot_data_[i].push_back(msg_vec);
             time_data_[i].push_back(port_message_.sequence_num);
         }
         else
         {
-            std::cout << "[PlotterTaskNode]: Receive Buffer Empty: " << i << std::endl;
+            //std::cout << "[PlotterTaskNode]: Receive Buffer Empty: " << i << std::endl;
             continue;
         }
     }
@@ -116,17 +116,17 @@ void PlotterTaskNode::AddPlotVariable(InputPort port_id, int signal_idx)
 void PlotterTaskNode::RenderPlot()
 {
     std::vector<double> graph;
+    std::vector<double> graph2;
     // TODO: Loop Plot vars etc.
     for(int i = 0; i < plot_data_[0].size(); i++)
     {
-        std::vector<Eigen::VectorXd> vec_list = plot_data_[0];
-        for(int j = 0; j < vec_list.size(); j++)
-        {
-            graph.push_back(vec_list[j][0]);
-        }
+        Eigen::VectorXd vec =  plot_data_[0][i];
+         graph.push_back(vec[0]);
+         //graph2.push_back(vec[3]);
     }
     plt::style("seaborn");
     plt::plot(graph);
+    //plt::plot(graph2);
     plt::show();
 
 }

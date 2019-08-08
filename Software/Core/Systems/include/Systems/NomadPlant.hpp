@@ -57,6 +57,24 @@ public:
         FORCES = 0, // Input Forces
     };
 
+    // TODO: Move to a State class
+    enum Idx
+    {
+        X = 0,     // X Position
+        Y = 1,     // Y Position
+        Z = 2,     // Z Position
+        X_DOT = 3, // X Velocity
+        Y_DOT = 4, // Y Velocity
+        Z_DOT = 5, // Z Velocity
+        PHI = 6,   // Roll
+        THETA = 7, // Pitch
+        PSI = 8,   // Yaw
+        W_X = 9,   // Angular Vel (Roll)
+        W_Y = 10,  // Angular Vel (Pitch)
+        W_Z = 11,  // Angular Vel (Yaw)
+        GRAVITY = 12 // Augmented Gravity
+    };
+    
     // Base Class Reference Nomad Plant Task Node
     // name = Task Name
     NomadPlant(const std::string &name);
@@ -68,14 +86,21 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
-    // Input (State Estimate)
-    double_vec_t forces_in;
+
+    // Number of states
+    unsigned int num_states_;
 
     // TODO:
     // Dynamic System Block
     RigidBlock1D block_;
 
 
+    // Input (State Estimate)
+    double_vec_t forces_in;
+
+    // TODO: Should be information for the state estimator to compute.  For now just a "loopback"
+    // (Output) State Estimate
+    double_vec_t output_state_;
 };
 } // namespace Nomad
 } // namespace Systems

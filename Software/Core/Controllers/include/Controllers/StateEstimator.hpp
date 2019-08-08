@@ -32,6 +32,7 @@
 #include <string>
 
 // Third Party Includes
+#include <Eigen/Dense>
 #include <Realtime/Messages/double_vec_t.hpp>
 
 // Project Includes
@@ -57,6 +58,7 @@ public:
         VISUAL_ODOM = 2 // Visual Odometry Sensor Input
     };
 
+    // TODO: Move to a State class
     enum Idx
     {
         X = 0,     // X Position
@@ -97,8 +99,8 @@ protected:
     // Number of states
     unsigned int num_states_;
 
-    // (Output) State Estimate
-    //Messages::Generic::VectorArray output_state_;
+    // Input (State Estimate)
+    double_vec_t x_hat_in_;
 
     // (Output) State Estimate
     double_vec_t output_state_;

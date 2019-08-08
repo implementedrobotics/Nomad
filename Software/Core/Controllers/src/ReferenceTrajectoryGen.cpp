@@ -84,7 +84,6 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
 
 void ReferenceTrajectoryGenerator::Run()
 {
-
     // Get Inputs
     //std::cout << "Time to RECEIVE in RTG" << std::endl;
     bool state_recv = GetInputPort(InputPort::STATE_HAT)->Receive(x_hat_in_); // Receive State Estimate
@@ -145,7 +144,7 @@ void ReferenceTrajectoryGenerator::Run()
         X_ref_(1,i+1) = X_ref_(1,i) + y_dot * T_s_;
         X_ref_(8,i+1) = X_ref_(8,i) + yaw_dot * T_s_;
     }
-    //std::cout << X_ref_ << std::endl;
+    //std::cout << "XREF: " << X_ref_ << std::endl;
 
     // Update Publish Trajectory Buffer
     memcpy(reference_out_.data.data(), X_ref_.data(), sizeof(double) * X_ref_.size());
