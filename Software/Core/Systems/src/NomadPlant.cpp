@@ -44,13 +44,13 @@ namespace Systems
 namespace Nomad
 {
 
-NomadPlant::NomadPlant(const std::string &name) : 
-                               Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN), num_states_(13)
+NomadPlant::NomadPlant(const std::string &name, const double T_s) : 
+                               Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN), num_states_(13), T_s_(T_s)
 {
 
     // TODO: Should be SET from outside
     // Create Rigid Body
-    block_ = RigidBlock1D(2.0, Eigen::Vector3d(1.0, 0.5, 0.25));
+    block_ = RigidBlock1D(20.0, Eigen::Vector3d(1.0, 0.5, 0.25), T_s);
 
     // TODO: Move to "CONNECT"
     // Create Ports
@@ -96,7 +96,7 @@ void NomadPlant::Run()
     if (force_recv)
     {
         Eigen::VectorXd U = Eigen::Map<Eigen::VectorXd>(forces_in.data.data(), 1);
-        //std::cout << "U: " << U << std::endl;
+       // std::cout << "U: " << U << std::endl;
         block_.Step(U);
     }
     else

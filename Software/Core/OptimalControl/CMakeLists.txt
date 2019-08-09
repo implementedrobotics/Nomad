@@ -10,6 +10,10 @@ ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/LinearCondensedOCP.cpp
 # Set Required Libraries
 set(OPTIMAL_CONTROL_LIBS pthread rt qpOASES)
 
+# Crashes on large multiplies otherwise
+add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
+
+
 # Setup output
 add_library(OptimalControl STATIC ${OPTIMAL_CONTROL_SOURCES})
 target_link_libraries(OptimalControl ${OPTIMAL_CONTROL_LIBS})

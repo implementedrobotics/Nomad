@@ -112,7 +112,7 @@ void ReferenceTrajectoryGenerator::Run()
     //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.data[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
-    X_ref_(0,0) = x_hat_in_.data[0]; // X Position
+    X_ref_(0,0) = 7.5;//x_hat_in_.data[0]; // X Position
     X_ref_(1,0) = x_hat_in_.data[1]; // Y Position
     X_ref_.row(2).setConstant(z_com); // Z Position
 
@@ -140,7 +140,7 @@ void ReferenceTrajectoryGenerator::Run()
 
     for(int i = 0;i < N_-1; i++)
     {
-        X_ref_(0,i+1) = X_ref_(0,i) + x_dot * T_s_;
+        X_ref_(0,i+1) = 7.5;//X_ref_(0,i) + x_dot * T_s_;
         X_ref_(1,i+1) = X_ref_(1,i) + y_dot * T_s_;
         X_ref_(8,i+1) = X_ref_(8,i) + yaw_dot * T_s_;
     }

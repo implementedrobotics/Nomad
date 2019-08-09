@@ -55,8 +55,8 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
 
     // TODO: Should be SET from outside
     // Create Rigid Body
-    block_ = RigidBlock1D(2.0, Eigen::Vector3d(1.0, 0.5, 0.25));
-
+    block_ = RigidBlock1D(20.0, Eigen::Vector3d(1.0, 0.5, 0.25), T_s_);
+    //std::cout << "BLOCK: " << T_s_ << std::endl;
     // State Weights
     Eigen::VectorXd Q(2);
     Q[0] = 100.0;
@@ -85,6 +85,7 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
 }
 void ConvexMPC::Run()
 {
+    static int i = 0;
     // Get Inputs
     // std::cout << "Time to RECEIVE in CONVEXMPC" << std::endl;
     // Receive State Estimate and Unpack
@@ -99,6 +100,9 @@ void ConvexMPC::Run()
     }
     // std::cout << "CMPC: " << x_hat_in_.sequence_num;
 
+   // std::cout << "SIZE: " << reference_in_.length << std::endl;
+   // std::cout << "SIZE: " << num_states_*N_ << std::endl;
+
     Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data.data(), num_states_);
     Eigen::MatrixXd X_ref_ = Eigen::Map<Eigen::MatrixXd>(reference_in_.data.data(), num_states_, N_);
     // std::cout <<  X_ref_ << std::endl;
@@ -109,6 +113,8 @@ void ConvexMPC::Run()
     initial_state[0] = x_hat_[0];
     initial_state[1] = x_hat_[3];
 
+    //std::cout << i++ <<std::endl;
+    //std::cout << initial_state << std::endl;
     block_.SetState(initial_state);
 
     // Pass to Optimal Control Problem
@@ -117,21 +123,24 @@ void ConvexMPC::Run()
     Eigen::MatrixXd ref_test(2, N_);
     ref_test.row(0) = X_ref_.row(0);
     ref_test.row(1) = X_ref_.row(3);
-    //std::cout << "Refactor: " << std::endl;
+   // std::cout << "Refactor: " << std::endl;
     //std::cout <<  initial_state << std::endl;
-    //std::cout <<  ref_test << std::endl;
+   // std::cout <<  ref_test << std::endl;
 
     ocp_->SetReference(ref_test);
+    
 
     // Solve
     ocp_->Solve();
 
+    //std::cout <<  "SOLVED: " << std::endl;
+
     // for (int i = 0; i < N_ - 1; i++)
     // {
-    //     //std::cout << "U: " << ocp_->U() << std::endl;
-    //     block_.Step(ocp_->U()(0, i));
-    //     //std::cout << "X: " << block_.GetState()[0] << std::endl;
-    // }
+        // std::cout << "U: " << ocp_->U() << std::endl;
+      //   block_.Step(ocp_->U()(0, i));
+       //  std::cout << "X: " << block_.GetState() << std::endl;
+   //s  }
 
     force_output_.data[0] = ocp_->U()(0, 0);
 

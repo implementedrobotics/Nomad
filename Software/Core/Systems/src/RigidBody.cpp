@@ -53,6 +53,7 @@ RigidBlock1D::RigidBlock1D(const double &mass,
     width_ = box_shape[1];
     height_ = box_shape[2];
 
+    std::cout << "TS: " << T_s << "AND: " << T_s_ << std::endl;
     // Setup initial states
     SetState(Eigen::VectorXd::Zero(num_states_));
 

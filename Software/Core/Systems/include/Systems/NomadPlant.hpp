@@ -74,10 +74,10 @@ public:
         W_Z = 11,  // Angular Vel (Yaw)
         GRAVITY = 12 // Augmented Gravity
     };
-    
+
     // Base Class Reference Nomad Plant Task Node
     // name = Task Name
-    NomadPlant(const std::string &name);
+    NomadPlant(const std::string &name, const double T_s);
 
 protected:
     // Overriden Run Function
@@ -86,6 +86,7 @@ protected:
     // Pre-Run Setup Routine.  Setup any one time initialization here.
     virtual void Setup();
 
+    double T_s_;
 
     // Number of states
     unsigned int num_states_;

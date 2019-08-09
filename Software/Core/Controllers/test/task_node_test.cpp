@@ -13,11 +13,12 @@
 int main(int argc, char *argv[])
 {
 
-    int freq1 = 10;
-    int freq2 = 20;
+    int freq1 = 100;
+    int freq2 = 100;
     std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
-    const int N = 10;
-    const double T = 1.0;
+    const int N = 32;
+    const double T = 1.5;
+    const double T_s = T / N;
 
     // Create Manager Class Instance Singleton.  Must make sure this is done before any thread tries to access.  And thus tries to allocate memory inside the thread heap.
     Realtime::RealTimeTaskManager::Instance();
@@ -99,6 +100,17 @@ int main(int argc, char *argv[])
     scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
     scope.Start();
 
+    Plotting::PlotterTaskNode scope2("State2");
+    scope2.SetStackSize(100000);
+    scope2.SetTaskPriority(Realtime::Priority::MEDIUM);
+    scope2.SetTaskFrequency(freq1); // 50 HZ
+    scope2.SetCoreAffinity(-1);
+    scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
+    //scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+    //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
+    scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
+    scope2.Start();
+
 
     // Gait Scheduler
     // Controllers::Locomotion::GaitScheduler gait_scheduler_node("Gait_Scheduler_Task");
@@ -110,7 +122,8 @@ int main(int argc, char *argv[])
     // gait_scheduler_node.Start();
 
     // Plant Node
-    Systems::Nomad::NomadPlant nomad("Nomad_Plant");
+
+    Systems::Nomad::NomadPlant nomad("Nomad_Plant", T_s);
     nomad.SetStackSize(100000);
     nomad.SetTaskPriority(Realtime::Priority::MEDIUM);
     nomad.SetTaskFrequency(freq2); // 1000 HZ
@@ -132,18 +145,20 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
     int j = 0;
-    while (j <  10)
+    while (j <  3)
     {
         //printf("[TASK_NODE_TEST]: IDLE TASK\n");
-        usleep(1000000);
+        usleep(1e6);
         j++;
         //estimator_node.Stop();
     }
 
     scope.Stop();
+    scope2.Stop();
     ref_generator_node.Stop();
     convex_mpc_node.Stop();
     estimator_node.Stop();
     teleop_node.Stop();
     scope.RenderPlot();
+    scope2.RenderPlot();
 }

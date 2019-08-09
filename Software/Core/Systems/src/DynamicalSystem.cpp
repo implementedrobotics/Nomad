@@ -30,7 +30,7 @@ DynamicalSystem::DynamicalSystem(const int& num_states, const int& num_inputs, c
 }
 
 
-LinearDynamicalSystem::LinearDynamicalSystem(const int& num_states, const int& num_inputs, const double& T_s /* = 1e-1*/) : DynamicalSystem(num_states, T_s)
+LinearDynamicalSystem::LinearDynamicalSystem(const int& num_states, const int& num_inputs, const double& T_s /* = 1e-1*/) : DynamicalSystem(num_states, num_inputs,  T_s)
 {
     A_ = Eigen::MatrixXd(num_states, num_states);
     A_d_ = Eigen::MatrixXd(num_states, num_states);

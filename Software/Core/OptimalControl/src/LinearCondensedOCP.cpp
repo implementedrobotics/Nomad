@@ -50,8 +50,8 @@ LinearCondensedOCP::LinearCondensedOCP(const unsigned int N,
     C_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_cons_, num_vars_);
 
     // Default to Unbounded
-    lb_ = Eigen::VectorXd::Constant(num_vars_, -qpOASES::INFTY);
-    ub_ = Eigen::VectorXd::Constant(num_vars_, qpOASES::INFTY);
+    lb_ = Eigen::VectorXd::Constant(num_vars_, -50);
+    ub_ = Eigen::VectorXd::Constant(num_vars_, 50);
 
     // Default to Unbounded
     lbC_ = Eigen::VectorXd::Constant(num_cons_, -qpOASES::INFTY);
@@ -82,23 +82,20 @@ void LinearCondensedOCP::Condense()
         B_N_.FillDiagonal(A_N_(i, 0) * B_[i], (-i - 1));
     }
 
-    //std::cout << "Condensed A: " << std::endl;
-    //std::cout << A_N_ << std::endl;
-
     //std::cout << "Condensed B: " << std::endl;
     //std::cout << B_N_ << std::endl;
 }
 
 void LinearCondensedOCP::Solve()
 {
-    /* std::cout << "Solve:" << std::endl;
-    std::cout << B_N_.MatrixXd().transpose().rows() << std::endl;
-    std::cout << B_N_.MatrixXd().transpose().cols() << std::endl;
-    std::cout << Q_.rows() << std::endl;
-    std::cout << Q_.cols() << std::endl;
-    std::cout << B_N_.MatrixXd().rows() << std::endl;
-    std::cout << R_.rows() << std::endl;
-    std::cout << R_.cols() << std::endl;*/
+    // std::cout << "Solve:" << std::endl;
+    // std::cout << B_N_.MatrixXd().transpose().rows() << std::endl;
+    // std::cout << B_N_.MatrixXd().transpose().cols() << std::endl;
+    // std::cout << Q_.rows() << std::endl;
+    // std::cout << Q_.cols() << std::endl;
+    // std::cout << B_N_.MatrixXd().rows() << std::endl;
+    // std::cout << R_.rows() << std::endl;
+    // std::cout << R_.cols() << std::endl;
 
     // Get starting timepoint
     auto start = std::chrono::high_resolution_clock::now();
@@ -106,15 +103,18 @@ void LinearCondensedOCP::Solve()
     // Reshape and Flatten to 1D
     Eigen::Map<const Eigen::VectorXd> X_ref(X_ref_.data(), X_ref_.size());
 
+
     // Make some temp variables.  Not sure why this is necessary but having some segfaults without.
     Eigen::MatrixXd A_N = A_N_.MatrixXd();
+
     Eigen::MatrixXd B_N = B_N_.MatrixXd();
     Eigen::MatrixXd B_N_T = B_N.transpose();
 
     Eigen::MatrixXd m = B_N_T * Q_ * B_N;
     Eigen::MatrixXd n = (A_N * x_0_);
-    H_ = 2 * (m + R_);
-    g_ = 2 * B_N_T * Q_ * ((n)-X_ref);
+
+    H_ = 2 * (B_N_T * Q_ * B_N + R_);
+    g_ = 2 * B_N_T * Q_ * ((A_N * x_0_)-X_ref);
     
     solver_iterations_ = max_iterations_;
     if (is_hot)

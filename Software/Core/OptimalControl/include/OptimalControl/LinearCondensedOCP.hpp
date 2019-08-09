@@ -65,6 +65,7 @@ public:
         //     A_[i] = A;
         //     B_[i] = B;
         // }
+
         A_ = std::vector<Eigen::MatrixXd>(N_, A);
         B_ = std::vector<Eigen::MatrixXd>(N_, B);
 
