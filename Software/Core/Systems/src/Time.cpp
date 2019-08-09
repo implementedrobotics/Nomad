@@ -1,7 +1,7 @@
 /*
- * RigidBody.cpp
+ * Time.cpp
  *
- *  Created on: July 18, 2019
+ *  Created on: August 9, 2019
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,63 +22,39 @@
  */
 
 // Primary Include
-#include <Systems/RigidBody.hpp>
+#include <Systems/Time.hpp>
 
 // C System Includes
 
 // C++ System Includes
 #include <iostream>
 #include <string>
+#include <chrono>
 
 // Third Party Includes
-#include <Eigen/Dense>
 
 // Project Include Files
-#include <OptimalControl/ControlsLibrary.hpp>
 
-RigidBlock1D::RigidBlock1D() : LinearDynamicalSystem(2, 1, 1e-1),
-                               mass_(1)
+namespace Systems
 {
-    length_ = 1;
-    width_ = 1;
-    height_ = 1;
-}
-RigidBlock1D::RigidBlock1D(const double &mass,
-                           const Eigen::Vector3d &box_shape,
-                           const double &T_s /* = 1e-1*/) : LinearDynamicalSystem(2, 1, T_s),
-                                                            mass_(mass)
-{
-    //std::cout << "Num States: " << num_states << std::endl;
-    length_ = box_shape[0];
-    width_ = box_shape[1];
-    height_ = box_shape[2];
+    Time::Time()
+    {
+        start_ = std::chrono::high_resolution_clock::now();
+    }
+    Time::~Time()
+    {
+        end_ = std::chrono::high_resolution_clock::now();
+        duration_ = end_ -  start_;
 
-    //std::cout << "TS: " << T_s << "AND: " << T_s_ << std::endl;
-    // Setup initial states
-    SetState(Eigen::VectorXd::Zero(num_states_));
+        std::cout << "Timer Took: " << duration_.count() << "us" << std::endl;
+    }
+    uint64_t Time::GetTime()
+    {
+        static auto start_time = std::chrono::high_resolution_clock::now(); 
 
-    // Setup System Matrices
-    A_ << 0, 1,
-        0, 0;
+        auto time_now = std::chrono::high_resolution_clock::now(); 
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+        return duration.count();
+    }
 
-    // Setup Input Matrix
-    B_ << 0,
-        1.0 / mass_;
-
-    // Cache Discrete Time Variant
-    ControlsLibrary::ContinuousToDiscrete(A_, B_, T_s_, A_d_, B_d_);
-}
-
-void RigidBlock1D::Step(const Eigen::VectorXd &u)
-{
-    x_ = A_d_ * x_ + B_d_ * u;
-}
-
-void RigidBlock1D::Step(double u)
-{
-    x_ = A_d_ * x_ + B_d_ * u;
-}
-
-void RigidBlock1D::Update()
-{
 }

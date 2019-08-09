@@ -7,17 +7,19 @@
 #include <OperatorInterface/RemoteTeleop.hpp>
 #include <Plotting/PlotterTaskNode.hpp>
 #include <Systems/NomadPlant.hpp>
+#include <Systems/Time.hpp>
 
 #include <unistd.h>
 
 int main(int argc, char *argv[])
 {
 
+    
     int freq1 = 100;
     int freq2 = 100;
     std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
-    const int N = 32;
-    const double T = 1.5;
+    const int N = 10;
+    const double T = 1.0;
     const double T_s = T / N;
 
     // Create Manager Class Instance Singleton.  Must make sure this is done before any thread tries to access.  And thus tries to allocate memory inside the thread heap.
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
     teleop_node.Start();
 
     // Delay
-    usleep(100000);
+    //usleep(100000);
 
     // State Estimator
     Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
@@ -46,7 +48,7 @@ int main(int argc, char *argv[])
 
 
     // Delay
-    usleep(100000);
+    //usleep(100000);
 
     //Reference Trajectory Generator
     Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
@@ -66,7 +68,7 @@ int main(int argc, char *argv[])
     ref_generator_node.Start();
 
     // Delay
-    usleep(100000);
+    //usleep(100000);
 
     // Convex Model Predicive Controller for Locomotion
     Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 
     convex_mpc_node.Start();
 
-    usleep(100000);
+    //usleep(100000);
 
     // Plotter Task Node
     Plotting::PlotterTaskNode scope("State");
@@ -138,19 +140,21 @@ int main(int argc, char *argv[])
     nomad.Start();
 
     estimator_node.Start();
-    // Start Inproc Context Process Thread
-    Realtime::PortManager::Instance()->GetInprocContext()->start();
+    
 
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
+    // Start Inproc Context Process Thread
+    Realtime::PortManager::Instance()->GetInprocContext()->start();
+
+    //std::cout << "BLAH: " << Systems::Time::GetTime() / 1e6<< std::endl;
+
     int j = 0;
-    while (j <  3)
+    while (j <  5)
     {
-        //printf("[TASK_NODE_TEST]: IDLE TASK\n");
         usleep(1e6);
         j++;
-        //estimator_node.Stop();
     }
 
     scope.Stop();
@@ -159,6 +163,7 @@ int main(int argc, char *argv[])
     convex_mpc_node.Stop();
     estimator_node.Stop();
     teleop_node.Stop();
+
     scope.RenderPlot();
     scope2.RenderPlot();
 }

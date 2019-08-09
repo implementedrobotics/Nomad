@@ -2,6 +2,7 @@
 set(SYSTEMS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Systems/src/DynamicalSystem.cpp
 ${PROJECT_SOURCE_DIR}/Core/Systems/src/RigidBody.cpp
 ${PROJECT_SOURCE_DIR}/Core/Systems/src/NomadPlant.cpp
+${PROJECT_SOURCE_DIR}/Core/Systems/src/Time.cpp
 )
 
 set(SYSTEMS_LIBS Realtime pthread rt)

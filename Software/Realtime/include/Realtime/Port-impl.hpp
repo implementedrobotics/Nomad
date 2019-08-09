@@ -29,6 +29,7 @@
 #include <iostream>
 #include <chrono>
 
+
 namespace Realtime
 {
 
@@ -81,7 +82,8 @@ bool Port::Send(T &tx_msg)
     // Append Sequence Number and Timestamp
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
-    uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    //uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    uint64_t time_now = Systems::Time::GetTime();
 
     // Move this back to the PORT portion
     tx_msg.timestamp = time_now;

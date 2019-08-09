@@ -72,7 +72,8 @@ void PlotterTaskNode::Run()
             Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
             //std::cout << "PlotNode: " << i << " " <<  msg_vec << std::endl;
             plot_data_[i].push_back(msg_vec);
-            time_data_[i].push_back(port_message_.sequence_num);
+            //double stamp = (double)port_message_.timestamp / 10.0;
+            time_data_[i].push_back(port_message_.timestamp/1e6);
         }
         else
         {
@@ -117,6 +118,7 @@ void PlotterTaskNode::RenderPlot()
 {
     std::vector<double> graph;
     std::vector<double> graph2;
+    std::vector<double> time;
     // TODO: Loop Plot vars etc.
     for(int i = 0; i < plot_data_[0].size(); i++)
     {
@@ -125,7 +127,7 @@ void PlotterTaskNode::RenderPlot()
          //graph2.push_back(vec[3]);
     }
     plt::style("seaborn");
-    plt::plot(graph);
+    plt::plot(time_data_[0], graph);
     //plt::plot(graph2);
     plt::show();
 
