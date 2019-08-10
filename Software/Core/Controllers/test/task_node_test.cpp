@@ -22,11 +22,11 @@ int main(int argc, char *argv[])
 
 
     
-    int freq1 = 10;
-    int freq2 = 10;
+    int freq1 = 20;
+    int freq2 = 20;
     std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
-    const int N = 10;
-    const double T = 1.0;
+    const int N = 16;
+    const double T = 1.5;
     const double T_s = T / N;
 
     // Create Manager Class Instance Singleton.  Must make sure this is done before any thread tries to access.  And thus tries to allocate memory inside the thread heap.
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     Plotting::PlotterTaskNode scope("State");
     scope.SetStackSize(100000);
     scope.SetTaskPriority(Realtime::Priority::MEDIUM);
-    scope.SetTaskFrequency(freq1); // 50 HZ
+    scope.SetTaskFrequency(100); // 50 HZ
     scope.SetCoreAffinity(-1);
     //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
     scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     Plotting::PlotterTaskNode scope2("State2");
     scope2.SetStackSize(100000);
     scope2.SetTaskPriority(Realtime::Priority::MEDIUM);
-    scope2.SetTaskFrequency(freq1); // 50 HZ
+    scope2.SetTaskFrequency(100); // 50 HZ
     scope2.SetCoreAffinity(-1);
     scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
     //scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
@@ -132,10 +132,10 @@ int main(int argc, char *argv[])
 
     // Plant Node
 
-    Systems::Nomad::NomadPlant nomad("Nomad_Plant", T_s);
+    Systems::Nomad::NomadPlant nomad("Nomad_Plant", 0.01);
     nomad.SetStackSize(100000);
-    nomad.SetTaskPriority(Realtime::Priority::MEDIUM);
-    nomad.SetTaskFrequency(freq2); // 1000 HZ
+    nomad.SetTaskPriority(Realtime::Priority::HIGH);
+    nomad.SetTaskFrequency(100); // 1000 HZ
     nomad.SetCoreAffinity(1);
     nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.imu");
 
@@ -157,15 +157,15 @@ int main(int argc, char *argv[])
     // Start Inproc Context Process Thread
     Realtime::PortManager::Instance()->GetInprocContext()->start();
 
-    //std::cout << "BLAH: " << Systems::Time::GetTime() / 1e6<< std::endl;
+    std::cout << "BLAH: " << Systems::Time::GetTime() / 1e6<< std::endl;
 
     int j = 0;
-    while (j <  4)
+    while (j <  5)
     {
         usleep(1e6);
         j++;
     }
-   // nomad.Stop();
+    nomad.Stop();
     scope.Stop();
     scope2.Stop();
     ref_generator_node.Stop();
@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
     estimator_node.Stop();
     teleop_node.Stop();
 
-    scope.RenderPlot();
+    scope.DumpCSV("test.csv");
+    scope2.DumpCSV("test2.csv");
     //scope2.RenderPlot();
 }

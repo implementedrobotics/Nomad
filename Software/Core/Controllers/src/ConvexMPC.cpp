@@ -55,7 +55,7 @@ ConvexMPC::ConvexMPC(const std::string &name, const unsigned int N, const double
 
     // TODO: Should be SET from outside
     // Create Rigid Body
-    block_ = RigidBlock1D(20.0, Eigen::Vector3d(1.0, 0.5, 0.25), T_s_);
+    block_ = RigidBlock1D(1.0, Eigen::Vector3d(1.0, 0.5, 0.25), T_s_);
     //std::cout << "BLOCK: " << T_s_ << std::endl;
     // State Weights
     Eigen::VectorXd Q(2);

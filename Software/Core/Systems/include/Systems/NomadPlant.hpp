@@ -100,9 +100,12 @@ protected:
     // Dynamic System Block
     RigidBlock1D block_;
     dart::dynamics::SkeletonPtr rigid_skel;
+    dart::dynamics::BodyNodePtr rigid_body;
     dart::simulation::WorldPtr world;
 
 
+    double current_force;
+    
     // Input (State Estimate)
     double_vec_t forces_in;
 

@@ -28,6 +28,7 @@
 
 // C++ System Includes
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <chrono>
@@ -134,6 +135,21 @@ void PlotterTaskNode::RenderPlot()
     plt::plot(graph);
     //plt::plot(graph2);
     plt::show();
+
+}
+
+void PlotterTaskNode::DumpCSV(const std::string& filename)
+{
+    std::ofstream outputFile;
+    outputFile.open(filename, std::ofstream::out | std::ofstream::trunc);
+
+    for(int i = 0; i < plot_data_[0].size(); i++)
+    {
+        Eigen::VectorXd vec =  plot_data_[0][i];
+        outputFile << time_data_[0][i] << "," << vec[0] << std::endl;
+    }
+    
+    outputFile.close();
 
 }
 } // namespace Plotting
