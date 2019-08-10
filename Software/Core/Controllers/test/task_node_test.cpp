@@ -131,16 +131,16 @@ int main(int argc, char *argv[])
     nomad.SetTaskFrequency(freq2); // 1000 HZ
     nomad.SetCoreAffinity(1);
     nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.imu");
+
     Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES), 
     convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
 
     Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU), 
     nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
 
-    nomad.Start();
-
     estimator_node.Start();
-    
+
+    nomad.Start();
 
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();

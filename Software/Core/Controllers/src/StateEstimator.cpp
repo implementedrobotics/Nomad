@@ -104,7 +104,7 @@ void StateEstimator::Run()
 
 
     Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data.data(), num_states_);
-
+    //std::cout << "[StateEstimator]: Received: " << x_hat_in_.sequence_num <<  std::endl;
 
     // Update State
     output_state_.data[Idx::X] = x_hat_[0]; // X Position

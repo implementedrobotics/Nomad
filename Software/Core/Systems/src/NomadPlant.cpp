@@ -113,6 +113,9 @@ void NomadPlant::Run()
    // std::cout << "NOMAD PLANT X: " << output_state_.data[Idx::X] << std::endl;
    // std::cout << "NOMAD PLANT X DOT: " << output_state_.data[Idx::X_DOT] << std::endl;
 
+   // std::cout << "NOMAD PLANT X DOT: " << output_state_.data[Idx::X_DOT] << std::endl;
+
+
     // Output Optimal Forces
     bool send_status = GetOutputPort(OutputPort::STATE)->Send(output_state_);
 }

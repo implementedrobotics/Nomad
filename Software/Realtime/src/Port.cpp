@@ -41,7 +41,7 @@ namespace Realtime
 
 Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension)
 {
-    queue_size_ = 20;
+    queue_size_ = 1;
     transport_type_ = TransportType::INPROC;
     transport_url_ = "inproc"; // TODO: Noblock?
 
@@ -111,6 +111,12 @@ bool Port::Bind()
     else
     {
         std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
+        return false;
+    }
+
+    if(transport_type_ != TransportType::INPROC)
+    {
+        context_->start();
     }
 
     return true;

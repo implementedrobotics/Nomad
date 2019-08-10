@@ -70,6 +70,7 @@ const inline bool PortHandler<T>::Read(T &rx_msg)
         return false;
         
     rx_msg = msg_buffer_.back();
+    msg_buffer_.pop_back();
     return true;
 }
 
