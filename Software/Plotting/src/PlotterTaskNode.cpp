@@ -119,15 +119,19 @@ void PlotterTaskNode::RenderPlot()
     std::vector<double> graph;
     std::vector<double> graph2;
     std::vector<double> time;
+    //std::cout << "SIZE: " << plot_data_[0].size();
+
     // TODO: Loop Plot vars etc.
     for(int i = 0; i < plot_data_[0].size(); i++)
     {
         Eigen::VectorXd vec =  plot_data_[0][i];
-         graph.push_back(vec[0]);
+        graph.push_back(vec[0]);
          //graph2.push_back(vec[3]);
+        //std::cout << "SIZE: " <<vec << std::endl;
     }
+
     plt::style("seaborn");
-    plt::plot(time_data_[0], graph);
+    plt::plot(graph);
     //plt::plot(graph2);
     plt::show();
 

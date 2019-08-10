@@ -93,7 +93,7 @@ void ReferenceTrajectoryGenerator::Run()
     // TODO: Add a metric for how far behind this node can get before erroring out.
     if(!state_recv || !setpoint_recv)
     {
-        std::cout << "[ReferenceTrajectoryGenerator]: Receive Buffer Empty!" << std::endl; 
+        //std::cout << "[ReferenceTrajectoryGenerator]: Receive Buffer Empty!" << std::endl; 
         return;
     }
     //std::cout << "RTG: " << x_hat_in_.sequence_num;

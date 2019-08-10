@@ -49,6 +49,34 @@ NomadPlant::NomadPlant(const std::string &name, const double T_s) :
 {
 
     // TODO: Should be SET from outside
+    rigid_skel = dart::dynamics::Skeleton::create("body");
+    rigid_skel->createJointAndBodyNodePair<dart::dynamics::FreeJoint>(nullptr).second;
+
+    // // Set the shape
+    // double boxWidth = 1.0;
+    // double boxDepth = 1.0;
+    // double boxHeight = 0.5;
+
+
+    // dart::dynamics::ShapePtr box_shape(new dart::dynamics::BoxShape(Eigen::Vector3d(boxWidth, boxDepth, boxHeight)));
+
+    // //auto box_shape = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(boxWidth, boxDepth, boxHeight));
+
+    // rigid_body->createShapeNodeWith<dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box_shape);
+
+    // rigid_body->setMass(1.0);
+    // //
+    // // Create an empty Skeleton with the name "pendulum"
+    // //dart::dynamics::SkeletonPtr pendulum = dart::dynamics::Skeleton::create("pendulum");
+
+
+    // // Create a world and add the pendulum to the world
+    // world = dart::simulation::WorldPtr(new dart::simulation::World);
+    // world->addSkeleton(rigid_skel);
+    // world->setTimeStep(T_s_);
+    // world->setGravity(Eigen::Vector3d(0,0,0));
+    
+
     // Create Rigid Body
     block_ = RigidBlock1D(20.0, Eigen::Vector3d(1.0, 0.5, 0.25), T_s);
 
@@ -98,6 +126,14 @@ void NomadPlant::Run()
         Eigen::VectorXd U = Eigen::Map<Eigen::VectorXd>(forces_in.data.data(), 1);
        // std::cout << "U: " << U << std::endl;
         block_.Step(U);
+        //rigid_skel->getBodyNode(0)->addExtForce(Eigen::Vector3d::UnitX() * U[0], rigid_skel->getBodyNode(0)->getCOM(), false, true);
+       // std::cout << world->getTime() << " : ";
+       // std::cout << "X: " << rigid_skel->getPosition(3) << "\tY: " << rigid_skel->getPosition(4) << "\tZ: " << rigid_skel->getPosition(5) << std::endl;
+       // std::cout << "X_DOT: " << rigid_skel->getVelocity(3) << "\tY_DOT: " << rigid_skel->getVelocity(4) << "\tZ_DOT: " << rigid_skel->getVelocity(5) << std::endl;
+       // std::cout << std::endl;
+
+        //world->step(true);
+
     }
     else
     {
@@ -106,9 +142,12 @@ void NomadPlant::Run()
     
     //std::cout << "NOMAD PLANT X: " << block_.GetState() << std::endl;
 
+   // output_state_.data[Idx::X] = rigid_skel->getPosition(3);
+   // output_state_.data[Idx::X_DOT] = rigid_skel->getVelocity(3);
+
+
     output_state_.data[Idx::X] = block_.GetState()[0];
     output_state_.data[Idx::X_DOT] = block_.GetState()[1];
-
 
    // std::cout << "NOMAD PLANT X: " << output_state_.data[Idx::X] << std::endl;
    // std::cout << "NOMAD PLANT X DOT: " << output_state_.data[Idx::X_DOT] << std::endl;

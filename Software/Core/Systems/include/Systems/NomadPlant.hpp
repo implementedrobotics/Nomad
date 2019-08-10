@@ -34,6 +34,11 @@
 
 // Third Party Includes
 #include <Realtime/Messages/double_vec_t.hpp>
+#include <dart/dynamics/Skeleton.hpp>
+#include <dart/dynamics/FreeJoint.hpp>
+#include <dart/dynamics/BoxShape.hpp>
+#include <dart/simulation/World.hpp>
+
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -94,6 +99,8 @@ protected:
     // TODO:
     // Dynamic System Block
     RigidBlock1D block_;
+    dart::dynamics::SkeletonPtr rigid_skel;
+    dart::simulation::WorldPtr world;
 
 
     // Input (State Estimate)

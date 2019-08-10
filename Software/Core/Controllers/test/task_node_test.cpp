@@ -14,9 +14,16 @@
 int main(int argc, char *argv[])
 {
 
+//    if (mlockall(MCL_CURRENT | MCL_FUTURE) == -1)
+//    {
+//       printf("mlockall failed: %m\n");
+//        exit(-2);
+//    }
+
+
     
-    int freq1 = 100;
-    int freq2 = 100;
+    int freq1 = 10;
+    int freq2 = 10;
     std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
     const int N = 10;
     const double T = 1.0;
@@ -138,9 +145,11 @@ int main(int argc, char *argv[])
     Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU), 
     nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
 
+    nomad.Start();
+
     estimator_node.Start();
 
-    nomad.Start();
+
 
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
@@ -151,12 +160,12 @@ int main(int argc, char *argv[])
     //std::cout << "BLAH: " << Systems::Time::GetTime() / 1e6<< std::endl;
 
     int j = 0;
-    while (j <  5)
+    while (j <  4)
     {
         usleep(1e6);
         j++;
     }
-
+   // nomad.Stop();
     scope.Stop();
     scope2.Stop();
     ref_generator_node.Stop();
@@ -165,5 +174,5 @@ int main(int argc, char *argv[])
     teleop_node.Stop();
 
     scope.RenderPlot();
-    scope2.RenderPlot();
+    //scope2.RenderPlot();
 }

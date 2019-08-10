@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
 
 
-    rigid_body->setMass(2.0);
+    rigid_body->setMass(1.0);
     //
     // Create an empty Skeleton with the name "pendulum"
     //dart::dynamics::SkeletonPtr pendulum = dart::dynamics::Skeleton::create("pendulum");
@@ -40,18 +40,19 @@ int main(int argc, char *argv[])
     // Create a world and add the pendulum to the world
     dart::simulation::WorldPtr world(new dart::simulation::World);
     world->addSkeleton(rigid_skel);
-    std::cout << "Gravity: " << world->getGravity() << std::endl;
+    world->setTimeStep(0.1);
+    world->setGravity(Eigen::Vector3d(0,0,0));
     constexpr double END_TIME = 1.0;
     
-    while (world->getTime() < END_TIME) {
-
-        rigid_skel->getBodyNode(0)->clearExternalForces();
-        rigid_skel->getBodyNode(0)->addExtForce(Eigen::Vector3d::UnitZ() * 2.0*9.81, rigid_skel->getBodyNode(0)->getCOM(), false, true);
+    while (world->getTime() < END_TIME) 
+    {
+        rigid_skel->getBodyNode(0)->addExtForce(Eigen::Vector3d::UnitX() * 50, rigid_skel->getBodyNode(0)->getCOM(), false, true);
         std::cout << world->getTime() << " : ";
         std::cout << "X: " << rigid_skel->getPosition(3) << "\tY: " << rigid_skel->getPosition(4) << "\tZ: " << rigid_skel->getPosition(5) << std::endl;
+        std::cout << "X_DOT: " << rigid_skel->getVelocity(3) << "\tY_DOT: " << rigid_skel->getVelocity(4) << "\tZ_DOT: " << rigid_skel->getVelocity(5) << std::endl;
         std::cout << std::endl;
 
-        world->step(false);
+        world->step(true);
     }
 
 }
