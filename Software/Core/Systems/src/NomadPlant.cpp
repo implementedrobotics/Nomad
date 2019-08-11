@@ -69,7 +69,7 @@ NomadPlant::NomadPlant(const std::string &name, const double T_s) : Realtime::Re
     // Create a world and add the pendulum to the world
     world = dart::simulation::WorldPtr(new dart::simulation::World);
     world->addSkeleton(rigid_skel);
-    world->setTimeStep(0.0115);
+    world->setTimeStep(T_s_);
     world->setGravity(Eigen::Vector3d(0, 0, 0));
 
     current_force = 0;
@@ -135,6 +135,7 @@ void NomadPlant::Run()
     rigid_skel->getBodyNode(0)->addExtForce(Eigen::Vector3d::UnitX() * current_force, rigid_skel->getBodyNode(0)->getCOM(), false, true);
     std::cout << "TIME: " << Systems::Time::GetTime() / 1e6<< std::endl;
     std::cout << world->getTime() << " : ";
+    std::cout << "U: " << current_force << std::endl;
     std::cout << "X: " << rigid_skel->getPosition(3) << "\tY: " << rigid_skel->getPosition(4) << "\tZ: " << rigid_skel->getPosition(5) << std::endl;
     std::cout << "X_DOT: " << rigid_skel->getVelocity(3) << "\tY_DOT: " << rigid_skel->getVelocity(4) << "\tZ_DOT: " << rigid_skel->getVelocity(5) << std::endl;
     std::cout << std::endl;

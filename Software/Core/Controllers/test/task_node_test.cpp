@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
     
     int freq1 = 20;
-    int freq2 = 20;
+    int freq2 = 100;
     std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
     const int N = 16;
     const double T = 1.5;
@@ -104,10 +104,7 @@ int main(int argc, char *argv[])
     scope.SetTaskFrequency(100); // 50 HZ
     scope.SetCoreAffinity(-1);
     //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
-    scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
-    //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
-    scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
-    scope.Start();
+
 
     Plotting::PlotterTaskNode scope2("State2");
     scope2.SetStackSize(100000);
@@ -146,6 +143,13 @@ int main(int argc, char *argv[])
     nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
 
     nomad.Start();
+
+
+    scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
+    //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
+    scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
+    scope.Start();
+
 
     estimator_node.Start();
 

@@ -138,13 +138,13 @@ target_link_libraries(nomad_world ${GAZEBO_LIBRARIES})
 Make sure this directory is in the gazebo plugin path:
 
 ```
-export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:<INSERT PLUGIN LOCATION DIR>
+export GAZEBO_PLUGIN_PATH=<INSERT PLUGIN LOCATION DIR>:${GAZEBO_PLUGIN_PATH}
 ```
 
 If this is persistent make sure to put this in your profile(using bash):
 
 ```
-echo export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:<INSERT PLUGIN LOCATION DIR> >> ~/.bashrc
+echo export GAZEBO_PLUGIN_PATH=<INSERT PLUGIN LOCATION DIR>:${GAZEBO_PLUGIN_PATH} >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -163,10 +163,29 @@ vim nomad.world
 </sdf>
 ```
 
+Make sure this directory is in the gazebo plugin path:
+
+```
+export GAZEBO_RESOURCE_PATH=<INSERT WORLD LOCATION DIR>:${GAZEBO_RESOURCE_PATH}
+```
+
+If this is persistent make sure to put this in your profile(using bash):
+
+```
+echo export GAZEBO_RESOURCE_PATH=<INSERT WORLD LOCATION DIR>:${GAZEBO_RESOURCE_PATH} >> ~/.bashrc
+source ~/.bashrc
+```
+
 Now start the gazebo server:
 
 ```
 gzserver <INSERT PLUGIN LOCATION DIR>/nomad.world --verbose
+```
+
+Or if paths are set correctly:
+
+```
+gzserver nomad.world --verbose
 ```
 
 You should see "Hello Nomad" printed in the terminal.
