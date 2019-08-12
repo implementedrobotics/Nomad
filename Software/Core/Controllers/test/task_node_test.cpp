@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     teleop_node.SetTaskFrequency(freq1); // 50 HZ
     teleop_node.SetCoreAffinity(-1);
-    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
+    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.setpoint");
     teleop_node.Start();
 
     // Delay
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     estimator_node.SetTaskFrequency(freq2); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.state");
 
 
     // Delay
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     ref_generator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     ref_generator_node.SetTaskFrequency(freq1); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
-    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.reference");
+    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.reference");
 
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT), 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(freq1); // 50 HZ
     convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::INPROC, "inproc", "nomad.forces");
+    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.forces");
 
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT), 
@@ -129,23 +129,23 @@ int main(int argc, char *argv[])
 
     // Plant Node
 
-    Systems::Nomad::NomadPlant nomad("Nomad_Plant", 0.01);
-    nomad.SetStackSize(100000);
-    nomad.SetTaskPriority(Realtime::Priority::HIGH);
-    nomad.SetTaskFrequency(100); // 1000 HZ
-    nomad.SetCoreAffinity(1);
-    nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.imu");
+   Systems::Nomad::NomadPlant nomad("Nomad_Plant", 0.01);
+   nomad.SetStackSize(100000);
+   nomad.SetTaskPriority(Realtime::Priority::HIGH);
+   nomad.SetTaskFrequency(100); // 1000 HZ
+   nomad.SetCoreAffinity(1);
+   nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
 
-    Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES), 
-    convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
+    //Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES), 
+   // convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
 
     Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU), 
     nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
 
-    nomad.Start();
+    //nomad.Start();
 
 
-    scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
+    scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
     scope.Start();
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
         usleep(1e6);
         j++;
     }
-    nomad.Stop();
+    //nomad.Stop();
     scope.Stop();
     scope2.Stop();
     ref_generator_node.Stop();

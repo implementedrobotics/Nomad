@@ -28,7 +28,13 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <ignition/math/Vector3.hh>
+
 #include <Communications/Messages/double_vec_t.hpp>
+// C++ Includes
+#include <string>
+
+// Third Party Includes
+#include <zcm/zcm-cpp.hpp>
 
 
 // Make model plugin that takes a force from external process
@@ -40,12 +46,33 @@ namespace gazebo
         // Called when plugin is loaded
         void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
         {
+            current_force_ = 0;
+            sequence_num_ = 0;
+            printf("Hello Nomad Model!\n");
             // Pointer to model this plugin is attached to
             this->model = _parent;
 
             // Callback for update event.  Called every physics simulation.
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
                 std::bind(&NomadModel::OnUpdate, this));
+
+            // TODO: Pass IP Address as a parameter, in the .model file?
+            context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+
+            printf("Hello Nomad Model Connecting!\n");
+            auto subs = context_->subscribe("nomad.forces", &NomadModel::OnMsg, this);
+            context_->start();
+
+            printf("Started Nomad Model!\n");
+
+            // TODO: Publish state back
+
+
+            pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+    
+
+
+
         }
 
         // Called by the world update start event
@@ -53,7 +80,37 @@ namespace gazebo
         {
             // Apply a small linear velocity to the model.
             //this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
-            this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(50, 0, 0));
+            this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(current_force_, 0, 0));
+            //printf("Force: :%f\n", current_force_);
+
+            double_vec_t tx_msg;
+            tx_msg.length = 13;
+            tx_msg.data.resize(13);
+
+            // TODO: Publish State
+            uint64_t time_now = sequence_num_++;
+
+            // Move this back to the PORT portion
+            tx_msg.timestamp = time_now;
+            tx_msg.sequence_num = sequence_num_++;
+            tx_msg.data[0] = this->model->GetLink("base_link")->WorldCoGPose().Pos()[0];
+            tx_msg.data[3] = this->model->GetLink("base_link")->WorldCoGLinearVel()[0];
+
+            //printf("PUBLISH: %f/%f\n",tx_msg.data[0],tx_msg.data[1]);
+            // Publish
+            int rc = pub_context_->publish("nomad.imu", &tx_msg);
+
+
+
+        }
+        void OnMsg(const zcm::ReceiveBuffer* rbuf,
+                           const std::string& chan,
+                           const double_vec_t *msg)
+        {
+            printf("Received message on channel \"%s\":\n", chan.c_str());
+            printf("Num: %lu\tU: %f", msg->sequence_num, msg->data[0]);
+
+            current_force_ = msg->data[0];
         }
 
     private:
@@ -62,6 +119,15 @@ namespace gazebo
 
         // Pointer to the update event connection
         event::ConnectionPtr updateConnection;
+
+        std::unique_ptr<zcm::ZCM> context_;
+
+        std::unique_ptr<zcm::ZCM> pub_context_;
+
+    
+        uint64_t sequence_num_;
+        double current_force_;
+
   };
 
   // Register Plugin

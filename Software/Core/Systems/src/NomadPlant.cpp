@@ -156,7 +156,7 @@ void NomadPlant::Run()
     // std::cout << "NOMAD PLANT X DOT: " << output_state_.data[Idx::X_DOT] << std::endl;
 
     // Output Optimal Forces
-    bool send_status = GetOutputPort(OutputPort::STATE)->Send(output_state_);
+    //bool send_status = GetOutputPort(OutputPort::STATE)->Send(output_state_);
 }
 
 void NomadPlant::Setup()
@@ -165,7 +165,7 @@ void NomadPlant::Setup()
     GetInputPort(InputPort::FORCES)->Connect(); // Forces
 
     // Bind Output Ports
-    GetOutputPort(OutputPort::STATE)->Bind(); // Optimal Force Output
+    //GetOutputPort(OutputPort::STATE)->Bind(); // Optimal Force Output
 
     std::cout << "[NomadPlant]: "
               << "NomadPlant Task Node Running!" << std::endl;
