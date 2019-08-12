@@ -29,7 +29,7 @@ add_subdirectory(Realtime)
 # Plotting Interface
 add_subdirectory(Plotting)
 
-IF(BUILD_SIMULATION)
+#IF(BUILD_SIMULATION)
 # Simulation(Optional)
 add_subdirectory(Simulation/Gazebo)
-ENDIF()
+#ENDIF()

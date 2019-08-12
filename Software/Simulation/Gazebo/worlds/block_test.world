@@ -1,19 +1,34 @@
-<?xml version="1.0"?> 
+<?xml version="1.0"?>
 <sdf version="1.6">
-  <world name="default">
+    <world name="default">
+        <!-- World Parameters -->
+        <gravity>0 0 0</gravity>
+        <!-- Physics Parameters -->
+        <physics type="ode">
+            <max_step_size>0.001</max_step_size>
+            <real_time_factor>1</real_time_factor>
+            <real_time_update_rate>1000</real_time_update_rate>
+            <ode>
+                <solver>
+                    <type>world</type>
+                </solver>
+            </ode>
+        </physics>
 
+        <!-- Ground Plane -->
+        <!-- <include>
+            <uri>model://ground_plane</uri>
+        </include> -->
 
-    <!-- Ground Plane -->
-    <include>
-      <uri>model://ground_plane</uri>
-    </include>
+        <!-- Sun Light -->
+        <include>
+            <uri>model://sun</uri>
+        </include>
 
-    <include>
-      <uri>model://sun</uri>
-    </include>
-    <include>
-	    <uri>model://rigidblock</uri>
-	    <plugin name="nomad_model" filename="libnomad_model.so"/>
-    </include>
-  </world>
+        <!-- The custom model/plugin -->
+        <include>
+            <uri>model://rigidblock</uri>
+            <plugin name="nomad_model" filename="libnomad_model.so"/>
+        </include>
+    </world>
 </sdf>

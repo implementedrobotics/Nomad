@@ -110,15 +110,9 @@ bool Port::Bind()
     }
     else
     {
-        std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
+        std::cout << "[PORT:BIND]: ERROR: Invalid Transport Type!" << std::endl;
         return false;
     }
-
-    if(transport_type_ != TransportType::INPROC)
-    {
-        context_->start();
-    }
-
     return true;
 }
 
@@ -159,7 +153,14 @@ bool Port::Connect()
     else
     {
         std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
+        return false;
     }
+
+    if(transport_type_ != TransportType::INPROC)
+    {
+        context_->start();
+    }
+
 
     return true;
 }

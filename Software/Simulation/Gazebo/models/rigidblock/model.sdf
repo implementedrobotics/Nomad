@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <sdf version ='1.6'>
   <model name ='rigid_block'>
-    <pose>0 0 3 0 0 0</pose>
+    <pose>0 0 0 0 0 0</pose>
     <link name ='base_link'>
       <collision name ='collision'>
         <geometry>

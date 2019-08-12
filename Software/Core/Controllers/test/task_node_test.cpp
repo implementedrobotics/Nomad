@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
     // Start Inproc Context Process Thread
-    Realtime::PortManager::Instance()->GetInprocContext()->start();
+    //Realtime::PortManager::Instance()->GetInprocContext()->start();
 
     std::cout << "BLAH: " << Systems::Time::GetTime() / 1e6<< std::endl;
 
