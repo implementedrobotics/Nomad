@@ -7,7 +7,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/Plotting/plotty/include")
 
 set(NOMAD_SOURCES ${PROJECT_SOURCE_DIR}/Core/Nomad/src/Nomad.cpp)
-set(NOMAD_LIBS Systems OptimalControl qpOASES plotty)
+set(NOMAD_LIBS Systems OptimalControl qpOASES)
 
 add_executable(nomad_core ${NOMAD_SOURCES})
 target_link_libraries(nomad_core ${NOMAD_LIBS} )

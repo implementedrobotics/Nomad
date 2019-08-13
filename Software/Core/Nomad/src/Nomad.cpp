@@ -22,7 +22,6 @@
  */
 
 #include <Nomad/Nomad.hpp>
-#include <plotty/matplotlibcpp.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
 #include <OptimalControl/LinearCondensedOCP.hpp>
 #include <Systems/RigidBody.hpp>
@@ -118,16 +117,16 @@ int main()
     }
 
  //std::cout << ocp.X() << std::endl;
-    plotty::subplot(3, 1, 1);
-    plotty::labelPlot("U", u_plot);
-    plotty::legend();
-    plotty::subplot(3, 1, 2);
-    plotty::labelPlot("pos", plot_me.row(0));
-    plotty::labelPlot("ref", ref_plot.row(0));
-    plotty::legend();
-    plotty::subplot(3, 1, 3);
-    plotty::labelPlot("vel", plot_me.row(1));
-    plotty::legend();
-    plotty::show();
+    // plt::subplot(3, 1, 1);
+    // plt::labelPlot("U", u_plot);
+    // plt::legend();
+    // plt::subplot(3, 1, 2);
+    // plt::labelPlot("pos", plot_me.row(0));
+    // plt::labelPlot("ref", ref_plot.row(0));
+    // plt::legend();
+    // plt::subplot(3, 1, 3);
+    // plt::labelPlot("vel", plot_me.row(1));
+    // plt::legend();
+    // plt::show();
     
 }

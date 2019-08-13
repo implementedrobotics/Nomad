@@ -107,8 +107,8 @@ namespace gazebo
                            const std::string& chan,
                            const double_vec_t *msg)
         {
-            printf("Received message on channel \"%s\":\n", chan.c_str());
-            printf("Num: %lu\tU: %f", msg->sequence_num, msg->data[0]);
+            //printf("Received message on channel \"%s\":\n", chan.c_str());
+            //printf("Num: %lu\tU: %f", msg->sequence_num, msg->data[0]);
 
             current_force_ = msg->data[0];
         }
