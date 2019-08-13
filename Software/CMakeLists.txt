@@ -15,7 +15,6 @@ add_subdirectory(Core/Controllers)
 add_subdirectory(Core/OptimalControl)
 add_subdirectory(Core/Systems)
 add_subdirectory(Core/Nomad)
-add_subdirectory(Core/Plotting) # TODO: Move these to Library Up a Level
 
 # Communications Library
 add_subdirectory(Communications)
