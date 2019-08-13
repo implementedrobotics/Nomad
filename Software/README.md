@@ -275,10 +275,6 @@ cd build/
 cmake ..
 ```
 
-### Todos
-
- - Write MORE Tests
-
 License
 ----
 
