@@ -191,15 +191,6 @@ gzserver nomad.world --verbose
 You should see "Hello Nomad" printed in the terminal.
 
 
-### Todos
-
- - Setup Nomad World Plugin
-    * Setup Physics Engine Setting
-    * Setup Resets, etc
-
- - Setup Nomad Model Plugin
-    * Need a simple Rigid Body to test Optimal Control Forces, etc.
-
 License
 ----
 
