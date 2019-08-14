@@ -9,6 +9,8 @@
 #include <Systems/NomadPlant.hpp>
 #include <Systems/Time.hpp>
 
+#include <memory>
+
 #include <unistd.h>
 #include <sys/mman.h>
 
@@ -32,11 +34,16 @@ int main(int argc, char *argv[])
     const double T = 1.5;
     const double T_s = T / N;
 
+    const std::string gazebo_url = "udpm://239.255.76.67:7667?ttl=0";
+
     // Create Manager Class Instance Singleton.
     // Must make sure this is done before any thread tries to access.
     // And thus tries to allocate memory inside the thread heap.
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
+
+    std::shared_ptr<Realtime::Port> GAZEBO_IMU = std::make_shared<Realtime::Port>("GAZEBO_IMU", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 2, 10);
+    GAZEBO_IMU->SetTransport(Realtime::Port::TransportType::UDP, gazebo_url, "nomad.imu");
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
@@ -56,8 +63,6 @@ int main(int argc, char *argv[])
     estimator_node.SetCoreAffinity(1);
     estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT,
                                  Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
-
-    estimator_node.Start();
 
     //Reference Trajectory Generator
     Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
@@ -84,7 +89,7 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(freq1); // 50 HZ
     convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.forces");
+    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::UDP, gazebo_url, "nomad.forces");
 
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT),
@@ -126,24 +131,22 @@ int main(int argc, char *argv[])
     // gait_scheduler_node.Start();
 
     // Plant Node
-    Systems::Nomad::NomadPlant nomad("Nomad_Plant", 1.0/freq2);
-    nomad.SetStackSize(8192 * 1024); // 8 MB
-    nomad.SetTaskPriority(Realtime::Priority::HIGH);
-    nomad.SetTaskFrequency(freq2); // 1000 HZ
-    nomad.SetCoreAffinity(3);
-    nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
+    // Systems::Nomad::NomadPlant nomad("Nomad_Plant", 1.0/freq2);
+    // nomad.SetStackSize(8192 * 1024); // 8 MB
+    // nomad.SetTaskPriority(Realtime::Priority::HIGH);
+    // nomad.SetTaskFrequency(freq2); // 1000 HZ
+    // nomad.SetCoreAffinity(3);
+    // nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
 
     //Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES),
     // convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
 
     Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU),
-                        nomad.GetOutputPort(Systems::Nomad::NomadPlant::STATE));
+                        GAZEBO_IMU);
 
     //nomad.Start();
 
-
-
-
+    estimator_node.Start();
 
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
@@ -154,7 +157,12 @@ int main(int argc, char *argv[])
     // Run for 10 Seconds
     int j = 0;
     while (j < 5)
-    {
+    {    // Systems::Nomad::NomadPlant nomad("Nomad_Plant", 1.0/freq2);
+    // nomad.SetStackSize(8192 * 1024); // 8 MB
+    // nomad.SetTaskPriority(Realtime::Priority::HIGH);
+    // nomad.SetTaskFrequency(freq2); // 1000 HZ
+    // nomad.SetCoreAffinity(3);
+    // nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
         usleep(1e6);
         j++;
     }
