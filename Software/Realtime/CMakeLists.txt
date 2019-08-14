@@ -6,6 +6,7 @@ ${PROJECT_SOURCE_DIR}/Realtime/src/Port.cpp)
 
 set(REALTIME_LIBS Systems pthread rt zcm)
 
+include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
 

@@ -36,7 +36,7 @@
 #include <Eigen/Dense>
 
 // Project Includes
-#include <Realtime/Messages/double_vec_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 #include <Realtime/RealTimeTask.hpp>
 
 

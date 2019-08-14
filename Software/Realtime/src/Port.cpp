@@ -34,7 +34,7 @@
 #include <chrono>
 #include <map>
 
-#include <Realtime/Messages/double_vec_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 
 namespace Realtime
 {

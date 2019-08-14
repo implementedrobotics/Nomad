@@ -33,7 +33,7 @@
 
 // Third Party Includes
 #include <Eigen/Dense>
-#include <Realtime/Messages/double_vec_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>

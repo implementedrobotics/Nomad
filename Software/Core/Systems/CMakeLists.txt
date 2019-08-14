@@ -13,6 +13,7 @@ set(SYSTEMS_LIBS Realtime pthread rt)
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
+include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 add_library(Systems STATIC ${SYSTEMS_SOURCES})
 
 

@@ -33,7 +33,7 @@
 #include <memory>
 
 // Third Party Includes
-#include <Realtime/Messages/double_vec_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 #include <dart/dynamics/Skeleton.hpp>
 #include <dart/dynamics/FreeJoint.hpp>
 #include <dart/dynamics/BoxShape.hpp>

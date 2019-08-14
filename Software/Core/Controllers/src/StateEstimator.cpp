@@ -37,7 +37,7 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Realtime/Messages/double_vec_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 #include <Systems/Time.hpp>
 
 

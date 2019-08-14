@@ -10,6 +10,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 
 include_directories("${PROJECT_SOURCE_DIR}/Plotting/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
+include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
 
 add_library(Plotting STATIC ${PLOTTING_SOURCES})

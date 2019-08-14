@@ -3,12 +3,13 @@
 #include <unistd.h>
 #include <string>
 #include <zcm/zcm-cpp.hpp>
-#include <Communications/Messages/msg_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 #include <sys/types.h>
 #include <iostream>
 #include <pthread.h>
 using namespace std;
 
+uint64_t sequence = 0;
 class Handler
 {
     public:
@@ -16,11 +17,10 @@ class Handler
 
         void handleMessage(const zcm::ReceiveBuffer* rbuf,
                            const string& chan,
-                           const msg_t *msg)
+                           const double_vec_t *msg)
         {
             printf("Received message on channel \"%s\":\n", chan.c_str());
-            printf("  Message   = %s\n", msg->str.c_str());
-            std::cout << "PID: " << pthread_self() << std::endl;
+            printf("  Message Num = %lu\n", msg->sequence_num);
         }
 };
 
@@ -33,8 +33,10 @@ void *pub_func(void *arg) {
     zcm::ZCM zcm_context {"ipc"};
     std::cout << "PUB PID: " << pthread_self() << std::endl;
     //std::cout << "PUB PID: " << gettid() << std::endl;
-    msg_t my_data {};
-    my_data.str = (char*)"HELLO, WORLD!\n";
+    double_vec_t my_data;
+    my_data.sequence_num = sequence++;
+    my_data.length = 1;
+    my_data.data.resize(my_data.length);
 
     //zcm_context.start();
 

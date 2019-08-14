@@ -33,7 +33,7 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Realtime/Messages/double_vec_t.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
 
 // TODO: Evaluate the need for the class... Could be handled all in the Trajectory Generator.  But if latency permits this is a good intermediate layer to handle translation of network/gamepad calls etc.
 // Also this a good place to put test trajectory setpoints since we don't have a remote control UI yet.

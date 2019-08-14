@@ -11,6 +11,7 @@ set(CONTROLLERS_LIBS OptimalControl Systems pthread rt zcm)
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
+include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
 
