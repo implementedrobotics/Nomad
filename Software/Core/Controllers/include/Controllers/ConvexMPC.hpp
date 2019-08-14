@@ -58,6 +58,13 @@ public:
         REFERENCE_TRAJECTORY = 1 // Reference Trajectory
     };
 
+        // TODO: Move to a State class
+    enum Idx
+    {
+        U = 0   // Force
+    };
+
+
     // Base Class Convex Model Predictive Controller Locomotion Task Node
     // name = Task Name
     // N = Trajectory Steps

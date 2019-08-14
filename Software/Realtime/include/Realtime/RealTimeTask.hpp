@@ -81,7 +81,7 @@ public:
     void SetTaskName(const std::string &name) { task_name_ = name; }
 
     // Set Stack Size
-    void SetStackSize(const unsigned int stack_size) { stack_size_ = stack_size; }
+    void SetStackSize(const size_t stack_size) { stack_size_ = stack_size; }
 
     // Set Task Priority
     void SetTaskPriority(const unsigned int priority) { rt_priority_ = priority; }
@@ -122,7 +122,7 @@ protected:
     std::string task_name_;
 
     // Stack Size
-    unsigned int stack_size_;
+    size_t stack_size_;
 
     // Task Priority (0 to 99)
     unsigned int rt_priority_;

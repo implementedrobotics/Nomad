@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+
 int main(int argc, char *argv[])
 {
 
@@ -22,47 +23,50 @@ int main(int argc, char *argv[])
     //     exit(-2);
     // }
 
+    // Task Periods.
     int freq1 = 50;
-    int freq2 = 500;
-    std::cout << EIGEN_WORLD_VERSION << EIGEN_MAJOR_VERSION << EIGEN_MINOR_VERSION << std::endl;
+    int freq2 = 100;
+
+    // Horizons
     const int N = 16;
     const double T = 1.5;
     const double T_s = T / N;
 
-    // Create Manager Class Instance Singleton.  Must make sure this is done before any thread tries to access.  And thus tries to allocate memory inside the thread heap.
+    // Create Manager Class Instance Singleton.
+    // Must make sure this is done before any thread tries to access.
+    // And thus tries to allocate memory inside the thread heap.
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
-    teleop_node.SetStackSize(100000);
+    teleop_node.SetStackSize(1024 * 1024); // 1MB
     teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     teleop_node.SetTaskFrequency(freq1); // 50 HZ
-    teleop_node.SetCoreAffinity(-1);
-    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
+    //teleop_node.SetCoreAffinity(-1);
+    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
+                              Realtime::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
     teleop_node.Start();
-
-    // Delay
-    //usleep(100000);
 
     // State Estimator
     Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
-    estimator_node.SetStackSize(100000);
+    estimator_node.SetStackSize(1024 * 1024); // 1MB
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     estimator_node.SetTaskFrequency(freq2); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT, Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT,
+                                 Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
 
-    // Delay
-    //usleep(100000);
+    estimator_node.Start();
 
     //Reference Trajectory Generator
     Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
-    ref_generator_node.SetStackSize(100000);
+    ref_generator_node.SetStackSize(1024 * 1024); // 1MB
     ref_generator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     ref_generator_node.SetTaskFrequency(freq1); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
-    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE, Realtime::Port::TransportType::INPROC, "inproc", "nomad.reference");
+    ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE,
+                                     Realtime::Port::TransportType::INPROC, "inproc", "nomad.reference");
 
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
@@ -73,12 +77,10 @@ int main(int argc, char *argv[])
                         teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     ref_generator_node.Start();
 
-    // Delay
-    //usleep(100000);
 
     // Convex Model Predicive Controller for Locomotion
     Controllers::Locomotion::ConvexMPC convex_mpc_node("Convex_MPC_Task", N, T);
-    convex_mpc_node.SetStackSize(100000);
+    convex_mpc_node.SetStackSize(8192 * 1024); // 8MB
     convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(freq1); // 50 HZ
     convex_mpc_node.SetCoreAffinity(2);
@@ -94,25 +96,24 @@ int main(int argc, char *argv[])
 
     convex_mpc_node.Start();
 
-    //usleep(100000);
-
     // Plotter Task Node
-    Plotting::PlotterTaskNode scope("State");
-    scope.SetStackSize(100000);
+    Plotting::PlotterTaskNode scope("Forces");
+    scope.SetStackSize(8192 * 1024);
     scope.SetTaskPriority(Realtime::Priority::MEDIUM);
-    scope.SetTaskFrequency(100); // 50 HZ
+    scope.SetTaskFrequency(freq1); // 50 HZ
     scope.SetCoreAffinity(-1);
     scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
+    scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Locomotion::ConvexMPC::U);
+    scope.Start();
 
-    Plotting::PlotterTaskNode scope2("State2");
-    scope2.SetStackSize(100000);
+    Plotting::PlotterTaskNode scope2("State");
+    scope2.SetStackSize(8192 * 1024);
     scope2.SetTaskPriority(Realtime::Priority::MEDIUM);
-    scope2.SetTaskFrequency(100); // 50 HZ
+    scope2.SetTaskFrequency(freq1); // 50 HZ
     scope2.SetCoreAffinity(-1);
-    //scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
-    //scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
-    //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
+    scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
+    scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X_DOT);
     scope2.Start();
 
     // Gait Scheduler
@@ -125,12 +126,11 @@ int main(int argc, char *argv[])
     // gait_scheduler_node.Start();
 
     // Plant Node
-
-    Systems::Nomad::NomadPlant nomad("Nomad_Plant", 0.01);
-    nomad.SetStackSize(100000);
+    Systems::Nomad::NomadPlant nomad("Nomad_Plant", 1.0/freq2);
+    nomad.SetStackSize(8192 * 1024); // 8 MB
     nomad.SetTaskPriority(Realtime::Priority::HIGH);
-    nomad.SetTaskFrequency(100); // 1000 HZ
-    nomad.SetCoreAffinity(1);
+    nomad.SetTaskFrequency(freq2); // 1000 HZ
+    nomad.SetCoreAffinity(3);
     nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
 
     //Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES),
@@ -141,12 +141,9 @@ int main(int argc, char *argv[])
 
     //nomad.Start();
 
-    //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
-    //scope.ConnectInput(Plotting::PlotterTaskNode::PORT_2, teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
-    scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
-    scope.Start();
 
-    estimator_node.Start();
+
+
 
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
@@ -169,8 +166,9 @@ int main(int argc, char *argv[])
     estimator_node.Stop();
     teleop_node.Stop();
 
-    scope.DumpCSV("test.csv");
-    scope2.DumpCSV("test2.csv");
+    //scope.DumpCSV("test.csv");
+    //scope2.DumpCSV("test2.csv");
+    scope.RenderPlot();
+    scope2.RenderPlot();
     std::cout << "END OF MAIN" << std::endl;
-    //scope2.RenderPlot();
 }

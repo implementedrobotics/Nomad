@@ -40,7 +40,6 @@
 #include <Realtime/RealTimeTask.hpp>
 #include <Plotting/matplotlibcpp.h>
 
-
 // Plot Namespace:
 namespace plt = matplotlibcpp;
 
@@ -63,7 +62,7 @@ void PlotterTaskNode::Run()
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
         std::shared_ptr<Realtime::Port> input = GetInputPort(i);
-        if(input == nullptr)
+        if (input == nullptr)
         {
             continue;
         }
@@ -71,10 +70,8 @@ void PlotterTaskNode::Run()
         if (input->Receive(port_message_))
         {
             Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
-            //std::cout << "PlotNode: " << i << " " <<  msg_vec << std::endl;
             plot_data_[i].push_back(msg_vec);
-            //double stamp = (double)port_message_.timestamp / 10.0;
-            time_data_[i].push_back(port_message_.timestamp/1e6);
+            time_data_[i].push_back(port_message_.timestamp / 1e6);
         }
         else
         {
@@ -90,12 +87,11 @@ void PlotterTaskNode::Setup()
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
         std::shared_ptr<Realtime::Port> input = GetInputPort(i);
-        if(input == nullptr)
+        if (input == nullptr)
             continue;
 
         input->Connect();
     }
-    
 }
 
 void PlotterTaskNode::ConnectInput(InputPort port_id, std::shared_ptr<Realtime::Port> output_port)
@@ -103,7 +99,7 @@ void PlotterTaskNode::ConnectInput(InputPort port_id, std::shared_ptr<Realtime::
     // TODO: Make sure port is not already taken, etc.  If so error.
     std::shared_ptr<Realtime::Port> in_port = std::make_shared<Realtime::Port>(output_port->GetName(), Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, -1, rt_period_);
     Realtime::Port::Map(in_port, output_port); // Map It
-    input_port_map_[port_id] = in_port; // Cache It
+    input_port_map_[port_id] = in_port;        // Cache It
 
     // Reserve
     plot_data_[port_id].reserve(in_port->GetDimension());
@@ -113,43 +109,47 @@ void PlotterTaskNode::AddPlotVariable(InputPort port_id, int signal_idx)
 {
     // TODO: Names, Styles, Blah, Blah
     plot_vars_[port_id].push_back(signal_idx);
-
 }
 void PlotterTaskNode::RenderPlot()
 {
-    std::vector<double> graph;
-    std::vector<double> graph2;
-    std::vector<double> time;
-    //std::cout << "SIZE: " << plot_data_[0].size();
+    std::vector<std::vector<double>> graph;
 
-    // TODO: Loop Plot vars etc.
-    for(int i = 0; i < plot_data_[0].size(); i++)
+    // Loop all ports:
+    for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
-        Eigen::VectorXd vec =  plot_data_[0][i];
-        graph.push_back(vec[0]);
-         //graph2.push_back(vec[3]);
-        //std::cout << "SIZE: " <<vec << std::endl;
+        for (int k = 0; k < plot_vars_[i].size(); k++)
+        {
+            std::vector<double> data;
+            for (int j = 0; j < plot_data_[i].size(); j++)
+            {
+                int plot_var = plot_vars_[i][k];
+                Eigen::VectorXd vec = plot_data_[i][j];
+                data.push_back(vec[plot_var]);
+            }
+            graph.push_back(data);
+        }
     }
 
     plt::style("seaborn");
-    plt::plot(graph);
-    //plt::plot(graph2);
+    for (int i = 0; i < graph.size(); i++)
+    {
+        plt::plot(time_data_[0], graph[i]);
+    }
     plt::show();
-
 }
 
-void PlotterTaskNode::DumpCSV(const std::string& filename)
+void PlotterTaskNode::DumpCSV(const std::string &filename)
 {
     std::ofstream outputFile;
     outputFile.open(filename, std::ofstream::out | std::ofstream::trunc);
 
-    for(int i = 0; i < plot_data_[0].size(); i++)
+    // TODO: Revisit This
+    for (int i = 0; i < plot_data_[0].size(); i++)
     {
-        Eigen::VectorXd vec =  plot_data_[0][i];
+        Eigen::VectorXd vec = plot_data_[0][i];
         outputFile << time_data_[0][i] << "," << vec[0] << std::endl;
     }
-    
-    outputFile.close();
 
+    outputFile.close();
 }
 } // namespace Plotting

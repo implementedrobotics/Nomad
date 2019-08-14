@@ -34,10 +34,8 @@
 #include <chrono>
 #include <map>
 
-// TODO: Setup CPU Sets properly for affinity if set
-// TODO: Add in ZMQ Messaging+Context Passing and Test
 
-
+// Timing comparison
 # define tscmp(a, b, CMP)                             \
   (((a)->tv_sec == (b)->tv_sec) ?                         \
    ((a)->tv_nsec CMP (b)->tv_nsec) :                          \
@@ -97,6 +95,13 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
               << "Starting Task: " << task->task_name_ << std::endl;
 
     task->process_id_ = getpid();
+
+    pthread_attr_t attr;
+    size_t stacksize;
+    pthread_attr_init(&attr);
+    pthread_attr_getstacksize(&attr, &stacksize);
+    std::cout << "STACK SIZE: " << stacksize << " bytes" << std::endl;
+
 
     // TODO: Do we want to have support for adding to multiple CPUs here?
     // TODO: Task manager keeps up with which task are pinned to which CPUs.  Could make sure high priority task maybe get pinned to unused cores?
@@ -203,7 +208,7 @@ int RealTimeTaskNode::Start(void *task_param)
     }
 
     // Set Stack Size
-    thread_status_ = pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN);
+    thread_status_ = pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN + stack_size_);
     if (thread_status_)
     {
         std::cout << "[RealTimeTaskNode]: "
