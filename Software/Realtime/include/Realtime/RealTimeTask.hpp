@@ -38,7 +38,7 @@
 #include <zcm/zcm-cpp.hpp>
 
 // Project Includes
-#include <Realtime/Port.hpp>
+#include <Communications/Port.hpp>
 
 namespace Realtime
 {
