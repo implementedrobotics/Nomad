@@ -75,7 +75,6 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
 void RemoteTeleop::Run()
 {
     // Get Input (Remote)
-
     output_setpoint_.data[Idx::X_DOT] = 1.0;  // x_dot
     output_setpoint_.data[Idx::Y_DOT] = 0.0;    // y_dot
     output_setpoint_.data[Idx::YAW_DOT] = 0.0;  // yaw_dot
@@ -83,14 +82,11 @@ void RemoteTeleop::Run()
 
     // Publish Setpoint
     bool send_status = GetOutputPort(OutputPort::SETPOINT)->Send(output_setpoint_);
-    //std::cout << "[RemoteTeleop]: Publishing: " << " status: " << send_status << std::endl;
-
 }
 
 void RemoteTeleop::Setup()
 {
     GetOutputPort(OutputPort::SETPOINT)->Bind();
-    //std::cout << "[RemoteTeleop]: " << "Remote Teleop Task Running!" << std::endl;
 }
 
 } // namespace Teleop

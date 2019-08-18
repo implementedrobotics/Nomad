@@ -161,7 +161,6 @@ bool Port::Connect()
         context_->start();
     }
 
-
     return true;
 }
 

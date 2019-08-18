@@ -62,12 +62,6 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
     X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>(num_states_, N_);
 
     // Create Messages
-    //x_hat_in_.length = num_states_;
-    //x_hat_in_.data.resize(num_states_);
-
-    //setpoint_in_.length = 4;
-   // setpoint_in_.data.resize( setpoint_in_.length);
-
     reference_out_.length = X_ref_.size();
     reference_out_.data.resize(reference_out_.length);
 
@@ -85,9 +79,7 @@ ReferenceTrajectoryGenerator::ReferenceTrajectoryGenerator(const std::string &na
 void ReferenceTrajectoryGenerator::Run()
 {
     // Get Inputs
-    //std::cout << "Time to RECEIVE in RTG" << std::endl;
     bool state_recv = GetInputPort(InputPort::STATE_HAT)->Receive(x_hat_in_); // Receive State Estimate
-    //std::cout << "IN RUN: " << x_hat_in_.sequence_num << " state: " << state_recv << std::endl;
     bool setpoint_recv = GetInputPort(InputPort::SETPOINT)->Receive(setpoint_in_); // Receive Setpoint
 
     // TODO: Add a metric for how far behind this node can get before erroring out.
@@ -96,8 +88,6 @@ void ReferenceTrajectoryGenerator::Run()
         //std::cout << "[ReferenceTrajectoryGenerator]: Receive Buffer Empty!" << std::endl; 
         return;
     }
-    //std::cout << "RTG: " << x_hat_in_.sequence_num;
-    //std::cout << "[ReferenceTrajectoryGenerator]: " << "State: " << state_recv << " Setpoint: " << setpoint_recv << std::endl;
 
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class
@@ -108,8 +98,6 @@ void ReferenceTrajectoryGenerator::Run()
     double y_dot = setpoint_in_.data[1];
     double yaw_dot = setpoint_in_.data[2];
     double z_com = setpoint_in_.data[3];
-    //std::cout << "X2: " << x_hat_ << std::endl;
-    //std::cout << "[ReferenceTrajectoryGenerator]: Received State: " << x_hat_in_.data[3] << " : " << sequence_num_ << std::endl;
 
     // Compute Trajectory
     X_ref_(0,0) = 7.5;//x_hat_in_.data[0]; // X Position
@@ -164,7 +152,6 @@ void ReferenceTrajectoryGenerator::Setup()
 
     // Reference OUTPUT
     GetOutputPort(OutputPort::REFERENCE)->Bind();
-    std::cout << "[ReferenceTrajectoryGenerator]: " << "Reference Trajectory Publisher Running!" << std::endl;
 }
 
 } // namespace Locomotion
