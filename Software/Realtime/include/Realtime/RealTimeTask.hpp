@@ -33,6 +33,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <atomic>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
@@ -77,6 +78,11 @@ public:
     // Task Stop
     void Stop();
 
+    bool IsCancelled() const
+    {
+        return thread_cancel_event_;
+    }
+
     // Set Task Name
     void SetTaskName(const std::string &name) { task_name_ = name; }
 
@@ -113,10 +119,10 @@ protected:
     virtual void Setup() = 0;
 
     // Input Port Map
-    std::vector<std::shared_ptr<Port>> input_port_map_;
+    std::shared_ptr<Port> input_port_map_[MAX_PORTS];
 
     // Output Port Map
-    std::vector<std::shared_ptr<Port>> output_port_map_;
+    std::shared_ptr<Port> output_port_map_[MAX_PORTS];
 
     // Task Name
     std::string task_name_;
@@ -144,6 +150,9 @@ protected:
 
     // Task Parameter
     void *task_param_;
+
+    // Cancellation Signal
+    std::atomic_bool thread_cancel_event_;
 
 private:
 

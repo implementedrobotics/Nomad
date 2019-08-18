@@ -110,9 +110,6 @@ void LinearCondensedOCP::Solve()
     Eigen::MatrixXd B_N = B_N_.MatrixXd();
     Eigen::MatrixXd B_N_T = B_N.transpose();
 
-    Eigen::MatrixXd m = B_N_T * Q_ * B_N;
-    Eigen::MatrixXd n = (A_N * x_0_);
-
     H_ = 2 * (B_N_T * Q_ * B_N + R_);
     g_ = 2 * B_N_T * Q_ * ((A_N * x_0_)-X_ref);
     
@@ -134,7 +131,6 @@ void LinearCondensedOCP::Solve()
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
     std::cout << "Solver Time: " << duration.count() << " microseconds" << std::endl;
-
 }
 
 } // namespace LinearOptimalControl

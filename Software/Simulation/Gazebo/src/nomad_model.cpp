@@ -101,7 +101,7 @@ namespace gazebo
             int rc = pub_context_->publish("nomad.imu", &tx_msg);
 
 
-
+s
         }
         void OnMsg(const zcm::ReceiveBuffer* rbuf,
                            const std::string& chan,

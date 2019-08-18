@@ -57,6 +57,7 @@ StateEstimator::StateEstimator(const std::string &name,
                                Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                num_states_(13)
 {  
+
     // Create Messages
     output_state_.length = num_states_;
     output_state_.data.resize(num_states_);

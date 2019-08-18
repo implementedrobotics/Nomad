@@ -62,13 +62,13 @@ Port::Port(const std::string &name, Direction direction, DataType data_type, int
 // TODO: Clear Handler Memory Etc,
 Port::~Port()
 {
-    if (data_type_ == DataType::DOUBLE)
-    {
-        PortHandler<double_vec_t> *handler = static_cast<PortHandler<double_vec_t> *>(handler);
-        if (handler)
-            delete handler;
-    }
-    handler_ = 0;
+    // if (data_type_ == DataType::DOUBLE)
+    // {
+    //     PortHandler<double_vec_t> *handler = static_cast<PortHandler<double_vec_t> *>(handler);
+    //     if (handler)
+    //         delete handler;
+    // }
+    // handler_ = 0;
 }
 
 void Port::SetSignalLabel(const int signal_idx, const std::string &label)

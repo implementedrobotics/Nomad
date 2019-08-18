@@ -72,14 +72,12 @@ RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
                                                                     rt_core_id_(rt_core_id),
                                                                     stack_size_(stack_size),
                                                                     thread_status_(-1),
-                                                                    process_id_(-1)
+                                                                    process_id_(-1),
+                                                                    thread_cancel_event_(false)
 {
+
     // Add to task manager
     RealTimeTaskManager::Instance()->AddTask(this);
-
-    // Reserve Ports
-    input_port_map_.reserve(MAX_PORTS);
-    output_port_map_.reserve(MAX_PORTS);
 }
 
 RealTimeTaskNode::~RealTimeTaskNode()
@@ -172,6 +170,10 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
     // TODO:  Check Control deadlines as well.  If run over we can throw exception here
     while (1)
     {
+        if(task->IsCancelled())
+        {
+            break;
+        }
         auto start = std::chrono::high_resolution_clock::now();
         task->Run();
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -187,7 +189,7 @@ void *RealTimeTaskNode::RunTask(void *task_instance)
               << "Ending Task: " << task->task_name_ << std::endl;
 
     // Stop the task
-    task->Stop();
+    pthread_exit(NULL);
 }
 
 int RealTimeTaskNode::Start(void *task_param)
@@ -265,9 +267,8 @@ int RealTimeTaskNode::Start(void *task_param)
 
 void RealTimeTaskNode::Stop()
 {
-    // TODO: Check for thread running, etc.
-    // TODO: Setup signal to inform run task to stop/exit cleanly.  For now we just kill it
-    pthread_cancel(thread_id_);
+    // TODO: Wait here for full stop?
+    thread_cancel_event_ = true;
 }
 long int RealTimeTaskNode::TaskDelay(long int microseconds)
 {

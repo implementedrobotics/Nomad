@@ -48,8 +48,6 @@ namespace Plotting
 
 PlotterTaskNode::PlotterTaskNode(const std::string &name) : Realtime::RealTimeTaskNode(name, 20000, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN)
 {
-
-    input_port_map_.reserve(InputPort::MAX_PORTS);
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
         input_port_map_[i] = nullptr;
@@ -70,8 +68,8 @@ void PlotterTaskNode::Run()
         if (input->Receive(port_message_))
         {
             Eigen::VectorXd msg_vec = Eigen::Map<Eigen::VectorXd>(port_message_.data.data(), port_message_.length);
-            plot_data_[i].push_back(msg_vec);
-            time_data_[i].push_back(port_message_.timestamp / 1e6);
+            plot_data_[i].emplace_back(msg_vec);
+            time_data_[i].emplace_back(port_message_.timestamp / 1e6);
         }
         else
         {
@@ -102,7 +100,7 @@ void PlotterTaskNode::ConnectInput(InputPort port_id, std::shared_ptr<Realtime::
     input_port_map_[port_id] = in_port;        // Cache It
 
     // Reserve
-    plot_data_[port_id].reserve(in_port->GetDimension());
+    plot_data_[port_id].reserve(10000);
 }
 
 void PlotterTaskNode::AddPlotVariable(InputPort port_id, int signal_idx)
@@ -124,9 +122,9 @@ void PlotterTaskNode::RenderPlot()
             {
                 int plot_var = plot_vars_[i][k];
                 Eigen::VectorXd vec = plot_data_[i][j];
-                data.push_back(vec[plot_var]);
+                data.emplace_back(vec[plot_var]);
             }
-            graph.push_back(data);
+            graph.emplace_back(data);
         }
     }
 

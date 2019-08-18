@@ -11,7 +11,7 @@ ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/LinearCondensedOCP.cpp
 set(OPTIMAL_CONTROL_LIBS pthread rt qpOASES)
 
 # Crashes on large multiplies otherwise
-add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
+#add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 
 
 # Setup output
