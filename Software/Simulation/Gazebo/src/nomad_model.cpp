@@ -66,13 +66,7 @@ namespace gazebo
             printf("Started Nomad Model!\n");
 
             // TODO: Publish state back
-
-
             pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
-    
-
-
-
         }
 
         // Called by the world update start event
@@ -99,10 +93,8 @@ namespace gazebo
             //printf("PUBLISH: %f/%f\n",tx_msg.data[0],tx_msg.data[1]);
             // Publish
             int rc = pub_context_->publish("nomad.imu", &tx_msg);
-
-
-s
         }
+
         void OnMsg(const zcm::ReceiveBuffer* rbuf,
                            const std::string& chan,
                            const double_vec_t *msg)
@@ -123,11 +115,9 @@ s
         std::unique_ptr<zcm::ZCM> context_;
 
         std::unique_ptr<zcm::ZCM> pub_context_;
-
     
         uint64_t sequence_num_;
         double current_force_;
-
   };
 
   // Register Plugin
