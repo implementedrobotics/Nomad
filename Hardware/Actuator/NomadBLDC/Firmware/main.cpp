@@ -81,7 +81,7 @@ DigitalOut drv_cs(PA_4);
 //DigitalOut drv_en_gate(PA_11);
 DRV832x drv(&drv_spi, &drv_cs);
 
-PositionSensorAM5147 spi(16384, 0.0, NPP);
+PositionSensorAM5147 spi(4096, 0.0, NPP);
 
 volatile int count = 0;
 volatile int state = REST_MODE;
