@@ -224,8 +224,32 @@ void commutate(ControllerStruct *controller, ObserverStruct *observer, GPIOStruc
 
 void torque_control(ControllerStruct *controller)
 {
-    //float torque_ref = controller->kp * (controller->p_des - controller->theta_mech) + controller->t_ff + controller->kd * (controller->v_des - controller->dtheta_mech);
+    float torque_ref = controller->kp * (controller->p_des - controller->theta_mech) + controller->t_ff + controller->kd * (controller->v_des - controller->dtheta_mech);
     //float torque_ref = -.1*(controller->p_des - controller->theta_mech);
-    controller->i_q_ref = 12.0;//torque_ref / KT_OUT;
+    controller->i_q_ref = torque_ref / KT_OUT;
     controller->i_d_ref = 0.0f;
+}
+
+void commutate_volts(ControllerStruct *controller, ObserverStruct *observer, GPIOStruct *gpio, float theta)
+{
+
+    controller->v_d = 0.0;
+    controller->v_q = 1.;
+    abc(controller->theta_elec, controller->v_d, controller->v_q, &controller->v_u, &controller->v_v, &controller->v_w); //inverse dq0 transform on voltages
+    svm(controller->v_bus, controller->v_u, controller->v_v, controller->v_w, &controller->dtc_u, &controller->dtc_v, &controller->dtc_w);                     //space vector modulation
+
+    if (PHASE_ORDER)
+    {                                                        // Check which phase order to use,
+        TIM1->CCR3 = (PWM_ARR) * (1.0f - controller->dtc_u); // Write duty cycles
+        TIM1->CCR2 = (PWM_ARR) * (1.0f - controller->dtc_v);
+        TIM1->CCR1 = (PWM_ARR) * (1.0f - controller->dtc_w);
+    }
+    else
+    {
+        TIM1->CCR3 = (PWM_ARR) * (1.0f - controller->dtc_u);
+        TIM1->CCR1 = (PWM_ARR) * (1.0f - controller->dtc_v);
+        TIM1->CCR2 = (PWM_ARR) * (1.0f - controller->dtc_w);
+    }
+
+    controller->theta_elec = theta;
 }

@@ -276,4 +276,6 @@ void calibrate(PositionSensor *ps, GPIOStruct *gpio, ControllerStruct *controlle
     delete[] lut;
     delete[] raw_f;
     delete[] raw_b;
+    delete[] error;
+    delete[] error_filt;
 }

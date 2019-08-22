@@ -211,8 +211,7 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 
         ///Sample current always ///
         ADC1->CR2 |= 0x40000000; // Begin sample and conversion
-        ADC2->CR2 |= 0x40000000; // Begin sample and conversion
-        ADC3->CR2 |= 0x40000000; // Begin sample and conversion
+
         //volatile int delay;
         //for (delay = 0; delay < 55; delay++);
 
@@ -271,9 +270,9 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
                     controller.kd = 0;
                     controller.t_ff = 0;
                 }
-                controller.kp = 0.0;
+                controller.kp = 0.008;
                 controller.p_des = 0.0;
-
+                
                 torque_control(&controller);
                 commutate(&controller, &observer, &gpio, controller.theta_elec); // Run current loop
 
@@ -535,6 +534,7 @@ int main()
 
     pc.attach(&serial_interrupt); // attach serial interrupt
 
+    printf("NPP: %d\n\r", NPP);
     state_change = 1;
 
     int counter = 0;
@@ -550,8 +550,11 @@ int main()
             //printf("%.3f  %.3f  %.3f\n\r", (float)observer.temperature, (float)observer.temperature2, observer.resistance);
             printf("%.3f  %.3f  %.3f\n\r", (float)controller.i_q_ref, (float)controller.i_d_ref, controller.t_ff);
             printf("%.3f  %.3f  %.3f %.3f %.3f\n\r", controller.v_d, controller.v_q, controller.i_d_filt, controller.i_q_filt, controller.dtheta_elec);
-            printf("%.3f\n\r", controller.dtheta_mech);
-            printf("Bus: %.3f\n\r", controller.v_bus);
+            //printf("%.3f\n\r", controller.dtheta_mech);
+            printf("%.3f @ %.3f\n\r", controller.p_des - controller.theta_mech, controller.i_q_filt);
+            //printf("Mech Theta: %.3f\n\r", controller.theta_mech);
+            //printf("Elec Offset: %.3f\n\r", spi.GetElecOffset());
+            //printf("U: %.3f  V: %.3f  W: %.3f\n\r", controller.v_u,controller.v_v,controller.v_w);
             wait(.002);
         }
     }
