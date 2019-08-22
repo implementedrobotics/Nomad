@@ -224,8 +224,8 @@ void commutate(ControllerStruct *controller, ObserverStruct *observer, GPIOStruc
 
 void torque_control(ControllerStruct *controller)
 {
-    float torque_ref = controller->kp * (controller->p_des - controller->theta_mech) + controller->t_ff + controller->kd * (controller->v_des - controller->dtheta_mech);
+    //float torque_ref = controller->kp * (controller->p_des - controller->theta_mech) + controller->t_ff + controller->kd * (controller->v_des - controller->dtheta_mech);
     //float torque_ref = -.1*(controller->p_des - controller->theta_mech);
-    controller->i_q_ref = torque_ref / KT_OUT;
+    controller->i_q_ref = 12.0;//torque_ref / KT_OUT;
     controller->i_d_ref = 0.0f;
 }
