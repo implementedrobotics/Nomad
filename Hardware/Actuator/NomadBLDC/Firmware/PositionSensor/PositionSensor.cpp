@@ -30,7 +30,7 @@ void PositionSensorAM5147::Sample(float dt){
     raw = spi->write(readAngleCmd);
     raw &= 0x3FFF;   
     //raw = spi->write(0);
-    raw = raw>>2;                                                             //Extract last 14 bits
+    //raw = raw>>2;                                                             //Extract last 14 bits
     GPIOA->ODR |= (1 << 15); // Pull High
     int off_1 = offset_lut[raw>>7];
     int off_2 = offset_lut[((raw>>7)+1)%128];
