@@ -5,7 +5,7 @@
 //#define K_D .05f                    // Loop gain,  Volts/Amp
 //#define K_Q .05f                    // Loop gain,  Volts/Amp
 //#define K_SCALE 0.0002051f             // K_loop/Loop BW (Hz) 0.0042
-#define K_SCALE 0.00043139f             // K_loop/Loop BW (Hz) 0.0042 (TMOTOR)
+#define K_SCALE 0.0002157f             // K_loop/Loop BW (Hz) 0.0042 (TMOTOR)
 
 //#define KI_D 0.0654f                // PI zero, in radians per sample
 //#define KI_Q 0.0654f                // PI zero, in radians per sample
