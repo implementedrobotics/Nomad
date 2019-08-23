@@ -4,7 +4,7 @@
 
 The following instructions are for setup of a development environment for building firmware code on Ubuntu 18.04.
 
-##Install GCC ARM Compiler:
+## Install GCC ARM Compiler:
 
 ```
 sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
@@ -12,7 +12,7 @@ sudo apt-get update
 sudo apt-get install gcc-arm-none-eabi
 ```
 
-##Install STLink Flash Utility:
+## Install STLink Flash Utility:
 
 ```
 sudo apt-get install git build-essential libusb-1.0.0-dev cmake
@@ -27,7 +27,7 @@ source $HOME/.bashrc
 
 Feel free to adjust the directories above to your preference.
 
-##Install NOMAD BLDC Firmware Source
+## Install NOMAD BLDC Firmware Source
 
 Assuming you have not already cloned the repository:
 
