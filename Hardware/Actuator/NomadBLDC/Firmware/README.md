@@ -28,6 +28,17 @@ To use the STLINK flash utility without root you must add a new group for ```stl
 sudo addgroup stlink
 sudo adduser <USERNAME> stlink
 ```
+You will need to logout or reboot for the group modification to take effect.
+
+Now verify that your programmer is found:
+```
+st-info --probe
+```
+
+Should report:
+```
+Found 1 stlink programmers
+```
 
 ## Install NOMAD BLDC Firmware Source
 
@@ -54,16 +65,6 @@ TODO: We need a "make flash".
 ## Flash the NOMAD BLDC Binary
 
 Connect your STLINK programmer to the NOMAD BLDC 8-Pin Programming Connector and your PC.
-
-If this is your first time verify that your programmer is found:
-```
-st-info --probe
-```
-
-Should report:
-```
-Found 1 stlink programmers
-```
 
 Now flash the build firmware:
 ```
