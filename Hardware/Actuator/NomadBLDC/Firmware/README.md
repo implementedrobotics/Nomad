@@ -21,30 +21,14 @@ git clone git@github.com:texane/stlink.git
 cd stlink
 make release
 cd build/Release && sudo make install
-echo "export PATH=\$PATH:$HOME/stlink/build/Release/_install/usr/local/bin" >> $HOME/.bashrc
-source $HOME/.bashrc
-```
-Copy STLink shared libs:
-```
-cd $HOME/stlink/build/Release
-sudo cp libstlink.* /usr/lib
 ```
 
-Setup groups:
+To use the STLINK flash utility without root you must add a new group for ```stlink```:
 
-Make sure rules are triggered
-```
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-```
-
-Add group stlink, and add your user to the stlink group:
 ```
 sudo addgroup stlink
 sudo adduser <USERNAME> stlink
 ```
-
-Feel free to adjust the directories above to your preference.
 
 ## Install NOMAD BLDC Firmware Source
 
