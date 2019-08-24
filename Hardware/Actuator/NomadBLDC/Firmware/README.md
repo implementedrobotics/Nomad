@@ -60,13 +60,19 @@ If installation is successful you should now be able to do without error:
 ```
 make
 ```
-TODO: We need a "make flash".
 
 ## Flash the NOMAD BLDC Binary
 
 Connect your STLINK programmer to the NOMAD BLDC 8-Pin Programming Connector and your PC.
 
 Now flash the build firmware:
+
+```
+make flash
+```
+
+Alternatively you can manually flash with:
+
 ```
 cd $HOME/Nomad/Hardware/Actuator/NomadBLDC/Firmware/BUILD
 st-flash write NomadBLDC.bin 0x8000000
