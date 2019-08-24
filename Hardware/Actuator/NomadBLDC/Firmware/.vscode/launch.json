@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/BUILD/NomadBLDC.elf",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
             "environment": [],
             "externalConsole": false,
@@ -16,7 +16,7 @@
             "filterStderr": true,
             "filterStdout": false,
             "serverStarted": "target halted due to debug-request, current mode: Thread",
-            "preLaunchTask": "make",
+            "preLaunchTask": "build",
             "setupCommands": [
                 { "text": "-target-select remote localhost:3333", "description": "connect to target", "ignoreFailures": false },
                 { "text": "-file-exec-and-symbols ${workspaceRoot}/BUILD/NomadBLDC.elf", "description": "load file", "ignoreFailures": false},

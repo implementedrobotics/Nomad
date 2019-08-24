@@ -560,6 +560,9 @@ $(PROJECT).hex: $(PROJECT).elf
 	$(ELF2BIN) -O ihex $< $@
 
 
+flash:
+	$(SF) write $(PROJECT).bin 0x8000000
+	
 # Rules
 ###############################################################################
 # Dependencies
@@ -571,5 +574,3 @@ endif
 # Dependencies
 ###############################################################################
 
-flash:
-	$(SF) write $(PROJECT).bin 0x8000000
