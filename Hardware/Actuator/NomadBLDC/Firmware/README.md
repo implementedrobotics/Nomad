@@ -7,7 +7,6 @@ The following instructions are for setup of a development environment for buildi
 ## Install GCC ARM Compiler:
 
 ```
-sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
 sudo apt-get update
 sudo apt-get install gcc-arm-none-eabi
 ```
