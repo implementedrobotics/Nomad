@@ -280,7 +280,7 @@ CPP     = arm-none-eabi-g++
 LD      = arm-none-eabi-gcc
 ELF2BIN = arm-none-eabi-objcopy
 PREPROC = arm-none-eabi-cpp -E -P -Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,_malloc_r -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
-
+SF=st-flash
 
 C_FLAGS += -std=gnu11
 C_FLAGS += -include
@@ -570,3 +570,6 @@ endif
 
 # Dependencies
 ###############################################################################
+
+flash:
+	$(SF) write $(PROJECT).bin 0x8000000
