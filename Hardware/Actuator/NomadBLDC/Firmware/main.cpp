@@ -35,14 +35,22 @@
 #define SETUP_MODE 4
 #define ENCODER_MODE 5
 
-#define VERSION_NUM "0.1"
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
 
 // float __float_reg[64]; // Floats stored in flash
 // int __int_reg[256];    // Ints stored in flash.  Includes position sensor calibration lookup table
 
+extern "C"
+{
+	#include "Core/motor_controller_interface.h"
+}
+
 #include "mbed.h"
 #include "rtos.h"
 #include "Core/PositionSensorNew.h"
+#include "Core/MotorController.h"
+
 // #include "structs.h"
 // #include "foc.h"
 // #include "calibration.h"
@@ -64,23 +72,21 @@
 // ControllerStruct controller;
 // ObserverStruct observer;
 // COMStruct com;
-// Serial pc(PA_2, PA_3);
+Serial pc(PA_2, PA_3);
 
 // CAN can(PB_8, PB_9, 1000000); // CAN Rx pin name, CAN Tx pin name
 // CANMessage rxMsg;
 // CANMessage txMsg;
 
-// SPI drv_spi(PA_7, PA_6, PA_5);
-// DigitalOut drv_cs(PA_4);
-// //DigitalOut drv_en_gate(PA_11);
-// DRV832x drv(&drv_spi, &drv_cs);
 
-PositionSensorAM5147 spi(16384, 21); // TODO: Set from "Motor Object"
+
+PositionSensorAM5147 rotor_sensor(1.0f/40000.0f); // TODO: Set from "Motor Object"
 
 volatile int count = 0;
 volatile int state = REST_MODE;
 volatile int state_change;
 
+Thread control_task(osPriorityRealtime, 2048);
 // void onMsgReceived()
 // {
 //     //msgAvailable = true;
@@ -139,7 +145,7 @@ void enter_menu_state(void)
 }
 
 // void enter_setup_state(void)
-// {
+// {control_thread_ready_
 //     printf("\n\r\n\r Configuration Options \n\r\n\n");
 //     wait_us(10);
 //     printf(" %-4s %-31s %-5s %-6s %-5s\n\r\n\r", "prefix", "parameter", "min", "max", "current value");
@@ -204,7 +210,8 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 
         ///Sample current always ///
         ADC1->CR2 |= 0x40000000; // Begin sample and conversion
-
+        //osSignalSet(control_task.gettid(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+        control_task.signal_set(CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
     //     //volatile int delay;
     //     //for (delay = 0; delay < 55; delay++);
 
@@ -425,35 +432,14 @@ void serial_interrupt(void)
 
 int main()
 {
+
+    
     // controller.v_bus = V_BUS;
     // controller.mode = 0;
-    // Init_All_HW(&gpio); // Setup PWM, ADC, GPIO
+    Init_All_HW(&gpio); // Setup PWM, ADC, GPIO
     // wait(.1);
 
-    // gpio.enable->write(1);
-    // wait_us(100);
-    // drv.calibrate();
-    // wait_us(100);
-    // drv.write_DCR(0x0, 0x0, 0x0, PWM_MODE_3X, 0x0, 0x0, 0x0, 0x0, 0x1);
-    // wait_us(100);
-    // drv.write_CSACR(0x0, 0x1, 0x0, CSA_GAIN_40, 0x0, 0x0, 0x0, 0x0, SEN_LVL_1_0);
-    // wait_us(100);
-    // drv.write_OCPCR(TRETRY_4MS, DEADTIME_200NS, OCP_RETRY, OCP_DEG_8US, VDS_LVL_1_88);
 
-    // int val = drv.read_register(DCR);
-
-    // //drv.enable_gd();
-    // zero_current(&controller.adc1_offset, &controller.adc2_offset); // Measure current sensor zero-offset
-    // drv.disable_gd();
-
-    // wait(.1);
-    // /*
-    // gpio.enable->write(1);
-    // TIM1->CCR3 = 0x708*(1.0f);                        // Write duty cycles
-    // TIM1->CCR2 = 0x708*(1.0f);
-    // TIM1->CCR1 = 0x708*(1.0f);
-    // gpio.enable->write(0);
-    // */
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
     // TIM1->CR1 ^= TIM_CR1_UDIS;
@@ -507,14 +493,11 @@ int main()
     // spi.WriteLUT(lut); // Set potision sensor nonlinearity lookup table
     // init_controller_params(&controller);
 
-    // pc.baud(230400); // set serial baud rate
-    // //wait(10);
-    // //printf(" DCR:  %d\n\r", val);
-    // pc.printf("\n\r\n\r Nomad BLDC\n\r\n\r");
-    // wait(.01);
-    // printf("\n\r Debug Info:\n\r");
-    // printf(" Firmware Version: %s\n\r", VERSION_NUM);
-    // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
+    pc.baud(921600); // set serial baud rate
+    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d\n\r\n\r", VERSION_MAJOR, VERSION_MINOR);
+    wait(.01);
+    printf("\n\r Debug Info:\n\r");
+    //printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
     // printf(" CAN ID:  %d\n\r", CAN_ID);
@@ -552,5 +535,14 @@ int main()
     //         printf("U: %.3f  V: %.3f  W: %.3f\n\r", controller.v_u,controller.v_v,controller.v_w);
     //         wait(.002);
     //     }
+    // }
+    control_task.start(motor_controller_thread_entry);
+
+    // while(1)
+    // {
+    //     osDelay(100);
+    //     //osSignalSet(control_task.gettid(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+    //     control_task.signal_set(CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+    //     //printf("Signal Send\r\n");
     // }
 }

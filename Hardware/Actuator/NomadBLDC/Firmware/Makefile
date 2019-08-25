@@ -62,6 +62,7 @@ OBJECTS += FlashWriter/FlashWriter.o
 OBJECTS += FlashWriter/stm32f4xx_flash.o
 OBJECTS += PositionSensor/PositionSensor.o
 OBJECTS += Core/PositionSensorNew.o
+OBJECTS += Core/MotorController.o
 OBJECTS += PreferenceWriter/PreferenceWriter.o
 OBJECTS += hw_setup.o
 OBJECTS += main.o

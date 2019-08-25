@@ -58,6 +58,12 @@ PositionSensorAM5147::PositionSensorAM5147(float sample_time, uint32_t cpr, uint
     spi_handle_->frequency(25000000); // 25MHZ
 
     velocity_samples_ = new float[filter_size_];
+
+    // For some reason have to do this once, I presume to setup the GPIO pin
+    // We use direct pin access in the sample loop for less latency/overhead
+    DigitalOut cs(PA_15);
+    cs.write(1);
+
 }
 
 /* Setters */
@@ -106,7 +112,7 @@ float PositionSensorAM5147::GetMechanicalPositionTrue() const
     return position_mechanical_ + config_.offset_mech;
 }
 
-float PositionSensorAM5147::GetRawPosition() const
+int32_t PositionSensorAM5147::GetRawPosition() const
 {
     return position_raw_;
 }
@@ -129,7 +135,10 @@ void PositionSensorAM5147::ZeroPosition()
     config_.offset_mech = GetMechanicalPosition();
     dirty_ = true;
 }
-
+void PositionSensorAM5147::Update()
+{
+    Update(sample_time_);
+}
 void PositionSensorAM5147::Update(float Ts)
 {
     static float prev_position_norm = 0;

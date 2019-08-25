@@ -54,13 +54,14 @@ public:
     
     void ZeroPosition();                     // Zero Mechanical Position Offset
 
+    int32_t GetRawPosition() const;            // Get Sensor Raw Position (counts)
     float GetElectricalPosition() const;     // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
     float GetMechanicalPosition() const;     // Get Sensor Mechanical Position w/ Offset, (radians)
     float GetMechanicalPositionTrue() const; // Get Sensor Real Mechanical Position without Offset, (radians)
-    float GetRawPosition() const;            // Get Sensor Raw Position (counts)
     float GetElectricalVelocity() const;     // Get Sensor Electrical Velocity (radians/sec)
     float GetMechanicalVelocity() const;     // Get Sensor Mechanical Velocity (radians/sec)
 
+    void Update();              // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
     void Update(float Ts);              // Update Position Sensor State w/ Sample Time (for velocity estimation)
 
     bool WriteConfig(); // Write Configuration to Flash Memory
