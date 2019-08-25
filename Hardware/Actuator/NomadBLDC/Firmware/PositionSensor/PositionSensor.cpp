@@ -5,7 +5,7 @@
 //#include "offset_lut.h"
 //#include <math.h>
 
-PositionSensorAM5147::PositionSensorAM5147(int CPR, float offset, int ppairs){
+PositionSensorAM5147OLD::PositionSensorAM5147OLD(int CPR, float offset, int ppairs){
     //_CPR = CPR;
     _CPR = CPR;
     _ppairs = ppairs;
@@ -25,7 +25,7 @@ PositionSensorAM5147::PositionSensorAM5147(int CPR, float offset, int ppairs){
     raw = 0;
     }
     
-void PositionSensorAM5147::Sample(float dt){
+void PositionSensorAM5147OLD::Sample(float dt){
     GPIOA->ODR &= ~(1 << 15); // Pull Low (Should be able to use a GPIO "pin" for this)
     raw = spi->write(readAngleCmd);
     raw &= 0x3FFF;   
@@ -79,50 +79,50 @@ void PositionSensorAM5147::Sample(float dt){
     ElecVelocityFilt = 0.99f*ElecVelocityFilt + 0.01f*ElecVelocity;
     }
 
-int PositionSensorAM5147::GetRawPosition(){
+int PositionSensorAM5147OLD::GetRawPosition(){
     return raw;
     }
 
-float PositionSensorAM5147::GetMechPositionFixed(){
+float PositionSensorAM5147OLD::GetMechPositionFixed(){
     return MechPosition+MechOffset;
     }
     
-float PositionSensorAM5147::GetMechPosition(){
+float PositionSensorAM5147OLD::GetMechPosition(){
     return MechPosition;
     }
 
-float PositionSensorAM5147::GetElecPosition(){
+float PositionSensorAM5147OLD::GetElecPosition(){
     return ElecPosition;
     }
 
-float PositionSensorAM5147::GetElecVelocity(){
+float PositionSensorAM5147OLD::GetElecVelocity(){
     return ElecVelocity;
     }
 
-float PositionSensorAM5147::GetMechVelocity(){
+float PositionSensorAM5147OLD::GetMechVelocity(){
     return MechVelocity;
     }
 
-void PositionSensorAM5147::ZeroPosition(){
+void PositionSensorAM5147OLD::ZeroPosition(){
     rotations = 0;
     MechOffset = 0;
     Sample(.00025f);
     MechOffset = GetMechPosition();
     }
     
-void PositionSensorAM5147::SetElecOffset(float offset){
+void PositionSensorAM5147OLD::SetElecOffset(float offset){
     ElecOffset = offset;
     }
-void PositionSensorAM5147::SetMechOffset(float offset){
+void PositionSensorAM5147OLD::SetMechOffset(float offset){
     MechOffset = offset;
     }
 
-int PositionSensorAM5147::GetCPR(){
+int PositionSensorAM5147OLD::GetCPR(){
     return _CPR;
     }
 
 
-void PositionSensorAM5147::WriteLUT(int new_lut[128]){
+void PositionSensorAM5147OLD::WriteLUT(int new_lut[128]){
     memcpy(offset_lut, new_lut, sizeof(offset_lut));
     }
     

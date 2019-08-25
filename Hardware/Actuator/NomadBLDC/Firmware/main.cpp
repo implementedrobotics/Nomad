@@ -374,7 +374,7 @@ void serial_interrupt(void)
                     break;
                 }
 
-                if (!prefs.ready())
+                if (!prefs.ready())PositionSensorAM5147
                     prefs.open();
                 prefs.flush(); // Write new prefs to flash
                 prefs.close();

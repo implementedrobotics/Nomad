@@ -41,9 +41,9 @@ private:
     int offset_lut[128];
 };
 
-class PositionSensorAM5147: public PositionSensor{
+class PositionSensorAM5147OLD: public PositionSensor{
 public:
-    PositionSensorAM5147(int CPR, float offset, int ppairs);
+    PositionSensorAM5147OLD(int CPR, float offset, int ppairs);
     virtual void Sample(float dt);
     virtual float GetMechPosition();
     virtual float GetMechPositionFixed();
