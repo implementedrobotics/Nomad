@@ -41,6 +41,7 @@ float __float_reg[64]; // Floats stored in flash
 int __int_reg[256];    // Ints stored in flash.  Includes position sensor calibration lookup table
 
 #include "mbed.h"
+#include "rtos.h"
 #include "PositionSensor.h"
 #include "structs.h"
 #include "foc.h"
@@ -374,7 +375,7 @@ void serial_interrupt(void)
                     break;
                 }
 
-                if (!prefs.ready())PositionSensorAM5147
+                if (!prefs.ready())
                     prefs.open();
                 prefs.flush(); // Write new prefs to flash
                 prefs.close();

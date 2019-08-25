@@ -235,6 +235,29 @@ OBJECTS += mbed-dev/targets/TARGET_STM/stm_spi_api.o
 OBJECTS += mbed-dev/targets/TARGET_STM/trng_api.o
 OBJECTS += mbed-dev/targets/TARGET_STM/us_ticker_16b.o
 OBJECTS += mbed-dev/targets/TARGET_STM/us_ticker_32b.o
+OBJECTS += mbed-rtos/rtos/Mutex.o
+OBJECTS += mbed-rtos/rtos/RtosTimer.o
+OBJECTS += mbed-rtos/rtos/Semaphore.o
+OBJECTS += mbed-rtos/rtos/Thread.o
+OBJECTS += mbed-rtos/rtos/rtos_idle.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/HAL_CM.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/RTX_Conf_CM.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/TARGET_RTOS_M4_M7/TOOLCHAIN_GCC/HAL_CM4.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/TARGET_RTOS_M4_M7/TOOLCHAIN_GCC/SVC_Table.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_CMSIS.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Event.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_List.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Mailbox.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_MemBox.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Memory.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Mutex.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_OsEventObserver.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Robin.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Semaphore.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_System.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Task.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Time.o
+OBJECTS += mbed-rtos/rtx/TARGET_CORTEX_M/rt_Timer.o
 
 
 INCLUDE_PATHS += -I../
@@ -265,6 +288,10 @@ INCLUDE_PATHS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F44
 INCLUDE_PATHS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F446xE/TARGET_NUCLEO_F446RE
 INCLUDE_PATHS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F446xE/device
 INCLUDE_PATHS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/device
+INCLUDE_PATHS += -I../mbed-rtos
+INCLUDE_PATHS += -I../mbed-rtos/rtos
+INCLUDE_PATHS += -I../mbed-rtos/rtx/TARGET_CORTEX_M
+INCLUDE_PATHS += -I../mbed-rtos/targets/TARGET_STM
 
 LIBRARY_PATHS :=
 LIBRARIES :=
@@ -281,6 +308,7 @@ LD      = arm-none-eabi-gcc
 ELF2BIN = arm-none-eabi-objcopy
 PREPROC = arm-none-eabi-cpp -E -P -Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,_malloc_r -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 SF=st-flash
+
 
 C_FLAGS += -std=gnu11
 C_FLAGS += -include
@@ -305,9 +333,9 @@ C_FLAGS += -DTARGET_CORTEX_M
 C_FLAGS += -DTARGET_LIKE_CORTEX_M4
 C_FLAGS += -DDEVICE_ANALOGOUT=1
 C_FLAGS += -DTARGET_M4
-C_FLAGS += -DMBED_BUILD_TIMESTAMP=1566330187.84
-C_FLAGS += -DDEVICE_PWMOUT=1
+C_FLAGS += -DMBED_BUILD_TIMESTAMP=1566737920.37
 C_FLAGS += -DDEVICE_SPI_ASYNCH=1
+C_FLAGS += -DDEVICE_PWMOUT=1
 C_FLAGS += -DDEVICE_INTERRUPTIN=1
 C_FLAGS += -DTARGET_CORTEX
 C_FLAGS += -DDEVICE_I2C=1
@@ -384,9 +412,9 @@ CXX_FLAGS += -DTARGET_CORTEX_M
 CXX_FLAGS += -DTARGET_LIKE_CORTEX_M4
 CXX_FLAGS += -DDEVICE_ANALOGOUT=1
 CXX_FLAGS += -DTARGET_M4
-CXX_FLAGS += -DMBED_BUILD_TIMESTAMP=1566330187.84
-CXX_FLAGS += -DDEVICE_PWMOUT=1
+CXX_FLAGS += -DMBED_BUILD_TIMESTAMP=1566737920.37
 CXX_FLAGS += -DDEVICE_SPI_ASYNCH=1
+CXX_FLAGS += -DDEVICE_PWMOUT=1
 CXX_FLAGS += -DDEVICE_INTERRUPTIN=1
 CXX_FLAGS += -DTARGET_CORTEX
 CXX_FLAGS += -DDEVICE_I2C=1
@@ -476,6 +504,10 @@ ASM_FLAGS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F446xE
 ASM_FLAGS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F446xE/TARGET_NUCLEO_F446RE
 ASM_FLAGS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/TARGET_STM32F446xE/device
 ASM_FLAGS += -I../mbed-dev/targets/TARGET_STM/TARGET_STM32F4/device
+ASM_FLAGS += -I../mbed-rtos
+ASM_FLAGS += -I../mbed-rtos/rtos
+ASM_FLAGS += -I../mbed-rtos/rtx/TARGET_CORTEX_M
+ASM_FLAGS += -I../mbed-rtos/targets/TARGET_STM
 ASM_FLAGS += -include
 ASM_FLAGS += ../mbed_config.h
 ASM_FLAGS += -x
@@ -559,10 +591,10 @@ $(PROJECT).bin: $(PROJECT).elf
 $(PROJECT).hex: $(PROJECT).elf
 	$(ELF2BIN) -O ihex $< $@
 
-
 flash:
 	$(SF) write $(PROJECT).bin 0x8000000
-	
+
+
 # Rules
 ###############################################################################
 # Dependencies
@@ -573,4 +605,3 @@ endif
 
 # Dependencies
 ###############################################################################
-
