@@ -1,5 +1,5 @@
 /*
- * PositionSensor.hpp
+ * PositionSensor.h
  *
  *  Created on: August 24, 2019
  *      Author: Quincy Jones
@@ -25,6 +25,13 @@
 #ifndef CORE_POSITION_SENSOR_H_
 #define CORE_POSITION_SENSOR_H_
 
+// C System Files
+
+// C++ System Files
+
+// Project Includes
+#include "mbed.h"
+
 class PositionSensorAM5147 {
 
 public:
@@ -33,27 +40,28 @@ public:
     struct Config_t {
         float offset_elec;        // Electrical Position Offset (Radians)
         float offset_mech;        // Mechanical Position Offset (Radians)
-        uint32_t cpr;             // Sensor Counts Per Revolution
+        int32_t cpr;             // Sensor Counts Per Revolution
         int32_t offset_lut[128];  // Offset Lookup Table
     };
 
-    PositionSensorAM5147(uint32_t cpr = 16384, int pole_pairs); 
+    PositionSensorAM5147(float sample_time, uint32_t cpr = 16384, uint32_t pole_pairs = 21); // Constructor with some initial defaults.
     
-    void SetCPR(uint32_t cpr);               // Set Sensor Counts Per Revolution
+    void SetCPR(int32_t cpr);               // Set Sensor Counts Per Revolution
     void SetElectricalOffset(float offset);  // Set Sensor Electrical Position Offset, Distance to A Axis (radians)
     void SetMechanicalOffset(float offset);  // Set Sensor Mechanical Position Offset, Output "zero" point (radians)
     void SetOffsetLUT(int32_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
+    void SetPolePairs(uint32_t pole_pairs);  // Set Pole Pair Count for Electrical Position Calculations
+    
     void ZeroPosition();                     // Zero Mechanical Position Offset
 
     float GetElectricalPosition() const;     // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
     float GetMechanicalPosition() const;     // Get Sensor Mechanical Position w/ Offset, (radians)
     float GetMechanicalPositionTrue() const; // Get Sensor Real Mechanical Position without Offset, (radians)
     float GetRawPosition() const;            // Get Sensor Raw Position (counts)
-
     float GetElectricalVelocity() const;     // Get Sensor Electrical Velocity (radians/sec)
     float GetMechanicalVelocity() const;     // Get Sensor Mechanical Velocity (radians/sec)
 
-    void Update(float Ts);              // Sample and Update Position Sensor State
+    void Update(float Ts);              // Update Position Sensor State w/ Sample Time (for velocity estimation)
 
     bool WriteConfig(); // Write Configuration to Flash Memory
     bool ReadConfig();  // Read Configuration from Flash Memory
@@ -62,18 +70,25 @@ private:
 
     float position_electrical_;     // Sensor Electrical Position (radians)
     float position_mechanical_;     // Sensor Mechanical Position (radians)
-    float position_normalized_;     // Sensor Mechanical Position Modulo/Normalized (radians)
+    float position_normalized_;     // Sensor Mechanical Position Modulo/Normalized [0-2*PI] (radians)
     float velocity_electrical_;          // Sensor Electrical Velocity (radians/sec)
     float velocity_electrical_filtered_; // Sensor Filtered Electrical Velocity (radians/sec)
     float velocity_mechanical_;          // Sensor Mechanical Velocity (radians/sec)
-
+    float *velocity_samples_;        // Array to hold velocity samples for filtering/estimation
     int32_t position_raw_;      // Sensor Raw Position (counts)
     int32_t num_rotations_;     // Keep Track of Sensor Rotations
     uint32_t pole_pairs_;       // Pole Pairs in Motor to Compute Electrical Positions
     
+    int32_t filter_size_;       // Velocity Filter Window Size
     Config_t config_; // Position Sensor Configuration Parameters
 
-    SPI *spi_handle_;
+    SPI *spi_handle_; // SPI Handle for Communication to Sensor
+
+    float sample_time_; // Update Sample Time (=Current Control Update Rate)
+
+    bool dirty_; // Have unsaved changed to config
+
+
 };
 
 #endif // CORE_POSITION_SENSOR_H_
