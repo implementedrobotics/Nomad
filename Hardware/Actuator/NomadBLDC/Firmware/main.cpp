@@ -433,13 +433,6 @@ void serial_interrupt(void)
 int main()
 {
 
-    
-    // controller.v_bus = V_BUS;
-    // controller.mode = 0;
-    Init_All_HW(&gpio); // Setup PWM, ADC, GPIO
-    // wait(.1);
-
-
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
     // TIM1->CR1 ^= TIM_CR1_UDIS;

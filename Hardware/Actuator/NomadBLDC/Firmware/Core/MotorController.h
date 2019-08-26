@@ -57,6 +57,7 @@
 // Project Includes
 #include "mbed.h"
 #include "rtos.h"
+#include "FastPWM.h"
 #include "../DRV8323/DRV.h"
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
@@ -83,11 +84,15 @@ public:
         float current_limit;  // Max Current Limit
     };
 
-    MotorController(); // TODO: Pass in motor
+    MotorController(); // TODO: Pass in motor object
 
-    void Init();         // Init Controller
+    void Init();            // Init Controller
     void StartControlFSM(); // Begin Control Loop
+    void StartPWM();        // Setup PWM Timers/Registers
+    void StartADCs();       // Start ADC Inputs
+    void EnablePWM(bool enable); // Enable/Disable PWM Timers
 
+    void ZeroCurrentSensors();   // Zero Current Sensor Offsets (TODO: Next PCB Revision connect DC_CAL pin to DRV832)
     //     void SetCPR(int32_t cpr);               // Set Sensor Counts Per Revolution
     //     void SetElectricalOffset(float offset);  // Set Sensor Electrical Position Offset, Distance to A Axis (radians)
     //     void SetMechanicalOffset(float offset);  // Set Sensor Mechanical Position Offset, Output "zero" point (radians)
@@ -112,21 +117,14 @@ public:
 private:
     void DoMotorControl();          // Motor Control Loop
 
+    Config_t config_; // Position Sensor Configuration Parameters
+
     float voltage_bus_;                // Bus Voltage (Volts)
     float controller_update_period_;   // Controller Update Period (Seconds)
-    //     float position_electrical_;     // Sensor Electrical Position (radians)
-    //     float position_mechanical_;     // Sensor Mechanical Position (radians)
-    //     float position_normalized_;     // Sensor Mechanical Position Modulo/Normalized [0-2*PI] (radians)
-    //     float velocity_electrical_;          // Sensor Electrical Velocity (radians/sec)
-    //     float velocity_electrical_filtered_; // Sensor Filtered Electrical Velocity (radians/sec)
-    //     float velocity_mechanical_;          // Sensor Mechanical Velocity (radians/sec)
-    //     float *velocity_samples_;        // Array to hold velocity samples for filtering/estimation
-    //     int32_t position_raw_;      // Sensor Raw Position (counts)
-    //     int32_t num_rotations_;     // Keep Track of Sensor Rotations
-    //     uint32_t pole_pairs_;       // Pole Pairs in Motor to Compute Electrical Positions
-
-    //     int32_t filter_size_;       // Velocity Filter Window Size
-    Config_t config_; // Position Sensor Configuration Parameters
+    float adc1_raw_;
+    float adc2_raw_;
+    float adc1_offset_;
+    float adc2_offset_;
 
     osThreadId control_thread_id_;  // Controller Thread ID
 	bool control_thread_ready_;     // Controller thread ready/active
@@ -139,7 +137,9 @@ private:
     DigitalOut *gate_enable_; // Enable Pin for Gate Driver
 
     // Make Static?
-    DigitalOut *PWM_u_; // Enable Pin for Gate Driver
+    FastPWM *PWM_u_; // PWM Output Pin
+    FastPWM *PWM_v_; // PWM Output Pin
+    FastPWM *PWM_w_; // PWM Output Pin
 
     bool dirty_; // Have unsaved changed to config
 };
