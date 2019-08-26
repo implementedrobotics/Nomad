@@ -59,11 +59,17 @@ void motor_controller_thread_entry()
     motor = new Motor(CONTROL_LOOP_PERIOD, 100, 21);
 
     // Init Motor Controller
-    motor_controller = new MotorController(CONTROL_LOOP_PERIOD);
+    motor_controller = new MotorController(motor, CONTROL_LOOP_PERIOD);
     motor_controller->Init();
 
     // Begin Control Loop
     motor_controller->StartControlFSM();
+}
+
+// Controller Mode Interface
+void set_control_mode(int mode)
+{
+    motor_controller->SetControlMode((control_mode_type_t)mode);
 }
 
 void current_measurement_cb()
@@ -93,6 +99,7 @@ void current_measurement_cb()
     motor_controller->voltage_bus_ = 0.95f * motor_controller->voltage_bus_ + 0.05f * ((float)adc3_raw) * voltage_scale;
 
     // Make sure control thread is ready
+    
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
         osSignalSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
@@ -117,10 +124,8 @@ bool zero_current_sensors()
         g_adc2_offset += ADC2->DR;
         g_adc1_offset += ADC1->DR;
 
-        // TODO: Function for setting duty cycles
-        TIM1->CCR3 = (PWM_COUNTER_PERIOD_TICKS >> 1) * (1.0f); // Write duty cycles
-        TIM1->CCR2 = (PWM_COUNTER_PERIOD_TICKS >> 1) * (1.0f);
-        TIM1->CCR1 = (PWM_COUNTER_PERIOD_TICKS >> 1) * (1.0f);
+        // Set Idle/"Zero" PWM
+        motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
     }
 
     g_adc1_offset = g_adc1_offset / num_samples;
@@ -140,7 +145,7 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
     TIM1->SR = 0x0; // reset the status register
 }
 
-MotorController::MotorController(float sample_time) : controller_update_period_(sample_time)
+MotorController::MotorController(Motor *motor, float sample_time) : controller_update_period_(sample_time), motor_(motor)
 {
     //current_meas_freq_ = CURRENT_LOOP_FREQ;
 
@@ -161,9 +166,9 @@ void MotorController::Init()
     // Compute Maximum Allowed Current
     float margin = 0.90f;
     float max_input = margin * 0.3f * SENSE_CONDUCTANCE;
-    float max_swing = margin * 1.6f * SENSE_CONDUCTANCE * (1.0f/CURRENT_SENSE_GAIN);
+    float max_swing = margin * 1.6f * SENSE_CONDUCTANCE * (1.0f / CURRENT_SENSE_GAIN);
     current_max_ = fminf(max_input, max_swing);
-    
+
     // Setup Gate Driver
     spi_handle_ = new SPI(PA_7, PA_6, PA_5);
     cs_ = new DigitalOut(PA_4);
@@ -202,33 +207,80 @@ void MotorController::Init()
     // 	DoMotorCalibration();
     // }
 
+    // Default Mode Idle:
+    control_mode_ = IDLE_MODE;
     control_initialized_ = true;
     printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
 }
 
 void MotorController::StartControlFSM()
 {
+    printf("STARTING FSM\r\n");
+    static control_mode_type_t current_control_mode = IDLE_MODE;
     for (;;)
     {
-        printf("STARTING FSM\r\n");
-        // TODO: Implement FSM
-        EnablePWM(true);
-        DoMotorControl();
-        osDelay(1000);
+        // Check Current Mode
+        switch (control_mode_)
+        {
+        case (IDLE_MODE):
+            if (current_control_mode != control_mode_)
+            {
+                current_control_mode = control_mode_;
+                EnablePWM(false);
+            }
+            //printf("IDLE Mode!\r\n");
+            osDelay(1);
+            break;
+        case (ERROR_MODE):
+            if (current_control_mode != control_mode_)
+            {
+                current_control_mode = control_mode_;
+                EnablePWM(false);
+            }
+            printf("Error Mode!\r\n");
+            osDelay(1);
+            break;
+        case (FOC_CURRENT_MODE):
+        case (FOC_VOLTAGE_MODE):
+        case (FOC_TORQUE_MODE):
+            if (current_control_mode != control_mode_)
+            {
+                current_control_mode = control_mode_;
+                EnablePWM(true);
+            }
+            if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+            {
+                // TODO: Should have a check for number of missed deadlines, then bail
+                printf("ERROR: Motor Controller Timeout!\r\n");
+                control_mode_ =  ERROR_MODE;
+            }
+            DoMotorControl();
+            break;
+        default:
+            if (current_control_mode != control_mode_)
+            {
+                current_control_mode = control_mode_;
+                EnablePWM(false);
+            }
+            printf("Unhandled Control Mode: %d!\r\n", control_mode_);
+            osDelay(1);
+            break;
+        }
     }
 }
 void MotorController::DoMotorControl()
 {
-    control_enabled_ = true;
-    while (control_enabled_) // Do Forever
-    {
-        if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
-        {
+    //control_enabled_ = true;
+    //while (control_enabled_) // Do Forever
+    //{
+        // TODO: Error Checking
+        //if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+        //{
             // TODO: Error here for timing
-            printf("ERROR: Motor Controller Timeout!\r\n");
-            break;
-        }
-    }
+            //printf("ERROR: Motor Controller Timeout!\r\n");
+            //break;
+        //}
+    //}
 }
 
 void MotorController::StartPWM()
@@ -239,7 +291,7 @@ void MotorController::StartPWM()
     RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;  // Enable TIM1 clock
 
     // TODO: Move to main, elsewhere
-    GPIOC->MODER |= (1 << 10); // set pin 5 to be general purpose output for LED
+    //GPIOC->MODER |= (1 << 10); // set pin 5 to be general purpose output for LED
 
     // Setup PWM Pins
     PWM_u_ = new FastPWM(PIN_U);
@@ -255,9 +307,9 @@ void MotorController::StartPWM()
     TIM1->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
     TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
     //TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
-    TIM1->CR1 |= TIM_CR1_ARPE;  // Auto Reload Timer
-    TIM1->RCR |= 0x001;         // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
-    TIM1->EGR |= TIM_EGR_UG;    // Generate an update event to reload the Prescaler/Repetition Counter immediately
+    TIM1->CR1 |= TIM_CR1_ARPE; // Auto Reload Timer
+    TIM1->RCR |= 0x001;        // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
+    TIM1->EGR |= TIM_EGR_UG;   // Generate an update event to reload the Prescaler/Repetition Counter immediately
 
     // PWM Setup
     TIM1->PSC = 0x0;                      // Set Prescaler to none.  Timer will count in sync with APB Block
@@ -312,4 +364,62 @@ void MotorController::EnablePWM(bool enable)
 
     // TODO: Here for when project ported from MBED to CUBEMX
     //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
+}
+
+void MotorController::SetDuty(float duty_U, float duty_V, float duty_W)
+{
+    // TODO: We should just reverse the "encoder direcion to simplify this"
+    if (motor_->config_.phase_order)
+    {                                                                        // Check which phase order to use,
+        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U); // Write duty cycles
+        TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
+        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+    }
+    else
+    {
+        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U);
+        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
+        TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+    }
+}
+
+// Transform Functions
+void MotorController::dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c)
+{
+    // Inverse DQ0 Transform
+    ///Phase current amplitude = length of dq vector///
+    ///i.e. iq = 1, id = 0, peak phase current of 1///
+
+    *a = d * arm_cos_f32(theta) - q * arm_sin_f32(theta);
+    *b = d * arm_cos_f32(theta - (2.0f * M_PI / 3.0f)) - q * arm_sin_f32(theta - (2.0f * M_PI / 3.0f));
+    *c = d * arm_cos_f32(theta + (2.0f * M_PI / 3.0f)) - q * arm_sin_f32(theta + (2.0f * M_PI / 3.0f));
+}
+void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
+{
+    float cos_theta = arm_cos_f32(theta);
+    float sin_theta = arm_sin_f32(theta);
+
+    *alpha = d * cos_theta - q * sin_theta;
+    *beta = q * cos_theta + d * sin_theta;
+}
+void MotorController::ParkTransform(float theta, float alpha, float beta, float *d, float *q)
+{
+    float cos_theta = arm_cos_f32(theta);
+    float sin_theta = arm_sin_f32(theta);
+
+    *d = alpha * cos_theta + beta * sin_theta;
+    *q = beta * cos_theta - alpha * sin_theta;
+}
+void MotorController::ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c)
+{
+    *a = alpha;
+    *b = 0.5f * (-alpha + 1.73205080757f * beta);
+    *c = 0.5f * (-alpha - 1.73205080757f * beta);
+}
+void MotorController::ClarkeTransform(float I_a, float I_b, float *alpha, float *beta)
+{
+    // Ialpha = Ia
+    // Ibeta = 1/sqrt(3)(Ia + 2Ib)
+    *alpha = I_a;
+    *beta = 0.57735026919f * (I_a + 2.0f * I_b);
 }

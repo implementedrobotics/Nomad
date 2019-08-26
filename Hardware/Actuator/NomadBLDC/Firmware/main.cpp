@@ -29,11 +29,11 @@
  */
 
 
-#define REST_MODE 0
-#define CALIBRATION_MODE 1
-#define MOTOR_MODE 2
-#define SETUP_MODE 4
-#define ENCODER_MODE 5
+// #define REST_MODE 0
+// #define CALIBRATION_MODE 1
+// #define MOTOR_MODE 2
+// #define SETUP_MODE 4
+// #define ENCODER_MODE 5
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
@@ -48,7 +48,6 @@ extern "C"
 
 #include "mbed.h"
 #include "rtos.h"
-#include "Core/PositionSensor.h"
 #include "Core/MotorController.h"
 
 // #include "structs.h"
@@ -75,7 +74,7 @@ Serial pc(PA_2, PA_3);
 // CANMessage txMsg;
 
 volatile int count = 0;
-volatile int state = REST_MODE;
+//volatile int state = REST_MODE;
 volatile int state_change;
 
 Thread control_task(osPriorityRealtime, 2048);
@@ -115,6 +114,7 @@ Thread control_task(osPriorityRealtime, 2048);
 void enter_menu_state(void)
 {
     //drv.disable_gd();
+    set_control_mode(IDLE_MODE);
     printf("\n\r\n\r\n\r");
     printf(" Commands New:\n\r");
     wait_us(10);
@@ -132,7 +132,6 @@ void enter_menu_state(void)
     wait_us(10);
     printf(" esc - Exit to Menu\n\r");
     wait_us(10);
-    state_change = 0;
     //gpio.led->write(0);
 }
 
@@ -330,7 +329,6 @@ void serial_interrupt(void)
 
 int main()
 {
-
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
 

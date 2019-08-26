@@ -1,7 +1,7 @@
 /*
- * PositionSensor.cpp
+ * Motor.cpp
  *
- *  Created on: August 24, 2019
+ *  Created on: August 26, 2019
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
