@@ -23,7 +23,7 @@
  */
 
 // Primary Include
-#include "PositionSensorNew.h"
+#include "PositionSensor.h"
 
 // C System Files
 
@@ -33,7 +33,7 @@
 #include "mbed.h"
 #include "../../math_ops.h"
 
-PositionSensorAM5147::PositionSensorAM5147(float sample_time, uint32_t cpr, uint32_t pole_pairs) : position_electrical_(0),
+PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t cpr, uint32_t pole_pairs) : position_electrical_(0),
                                                                                                    position_mechanical_(0),
                                                                                                    position_normalized_(0),
                                                                                                    velocity_electrical_(0),
@@ -67,67 +67,67 @@ PositionSensorAM5147::PositionSensorAM5147(float sample_time, uint32_t cpr, uint
 }
 
 /* Setters */
-void PositionSensorAM5147::SetCPR(int32_t cpr)
+void PositionSensorAS5x47::SetCPR(int32_t cpr)
 {
     config_.cpr = cpr;
     dirty_ = true;
 }
 
-void PositionSensorAM5147::SetElectricalOffset(float offset)
+void PositionSensorAS5x47::SetElectricalOffset(float offset)
 {
     config_.offset_elec = offset;
     dirty_ = true;
 }
 
-void PositionSensorAM5147::SetMechanicalOffset(float offset)
+void PositionSensorAS5x47::SetMechanicalOffset(float offset)
 {
     config_.offset_mech = offset;
     dirty_ = true;
 }
 
-void PositionSensorAM5147::SetOffsetLUT(int32_t lookup_table[128])
+void PositionSensorAS5x47::SetOffsetLUT(int32_t lookup_table[128])
 {
     memcpy(&config_.offset_lut, &lookup_table, sizeof(config_.offset_lut));
     dirty_ = true;
 }
 
-void PositionSensorAM5147::SetPolePairs(uint32_t pole_pairs)
+void PositionSensorAS5x47::SetPolePairs(uint32_t pole_pairs)
 {
     pole_pairs_ = pole_pairs;
 }
 
 /* Getters */
-float PositionSensorAM5147::GetElectricalPosition() const
+float PositionSensorAS5x47::GetElectricalPosition() const
 {
     return position_electrical_;
 }
 
-float PositionSensorAM5147::GetMechanicalPosition() const
+float PositionSensorAS5x47::GetMechanicalPosition() const
 {
     return position_mechanical_;
 }
 
-float PositionSensorAM5147::GetMechanicalPositionTrue() const
+float PositionSensorAS5x47::GetMechanicalPositionTrue() const
 {
     return position_mechanical_ + config_.offset_mech;
 }
 
-int32_t PositionSensorAM5147::GetRawPosition() const
+int32_t PositionSensorAS5x47::GetRawPosition() const
 {
     return position_raw_;
 }
 
-float PositionSensorAM5147::GetElectricalVelocity() const
+float PositionSensorAS5x47::GetElectricalVelocity() const
 {
     return velocity_electrical_;
 }
 
-float PositionSensorAM5147::GetMechanicalVelocity() const
+float PositionSensorAS5x47::GetMechanicalVelocity() const
 {
     return velocity_mechanical_;
 }
 
-void PositionSensorAM5147::ZeroPosition()
+void PositionSensorAS5x47::ZeroPosition()
 {
     num_rotations_ = 0;
     config_.offset_mech = 0.0f;
@@ -135,11 +135,11 @@ void PositionSensorAM5147::ZeroPosition()
     config_.offset_mech = GetMechanicalPosition();
     dirty_ = true;
 }
-void PositionSensorAM5147::Update()
+void PositionSensorAS5x47::Update()
 {
     Update(sample_time_);
 }
-void PositionSensorAM5147::Update(float Ts)
+void PositionSensorAS5x47::Update(float Ts)
 {
     static float prev_position_norm = 0;
     static int32_t prev_counts = 0;

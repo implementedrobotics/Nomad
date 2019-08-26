@@ -32,7 +32,7 @@
 // Project Includes
 #include "mbed.h"
 
-class PositionSensorAM5147 {
+class PositionSensorAS5x47 {
 
 public:
 
@@ -44,7 +44,7 @@ public:
         int32_t offset_lut[128];  // Offset Lookup Table
     };
 
-    PositionSensorAM5147(float sample_time, uint32_t cpr = 16384, uint32_t pole_pairs = 21); // Constructor with some initial defaults.
+    PositionSensorAS5x47(float sample_time, uint32_t cpr = 16384, uint32_t pole_pairs = 21); // Constructor with some initial defaults.
     
     void SetCPR(int32_t cpr);               // Set Sensor Counts Per Revolution
     void SetElectricalOffset(float offset);  // Set Sensor Electrical Position Offset, Distance to A Axis (radians)

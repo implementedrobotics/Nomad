@@ -1,5 +1,5 @@
 /*
- * Motor.hpp
+ * Motor.h
  *
  *  Created on: August 24, 2019
  *      Author: Quincy Jones

@@ -48,7 +48,7 @@ extern "C"
 
 #include "mbed.h"
 #include "rtos.h"
-#include "Core/PositionSensorNew.h"
+#include "Core/PositionSensor.h"
 #include "Core/MotorController.h"
 
 // #include "structs.h"
@@ -56,7 +56,6 @@ extern "C"
 // #include "calibration.h"
 // #include "hw_setup.h"
 // #include "math_ops.h"
-// #include "current_controller_config.h"
 // #include "hw_config.h"
 // #include "motor_config.h"
 // #include "stm32f4xx_flash.h"
@@ -68,19 +67,14 @@ extern "C"
 
 // PreferenceWriter prefs(6);
 
-// GPIOStruct gpio;
-// ControllerStruct controller;
 // ObserverStruct observer;
-// COMStruct com;
 Serial pc(PA_2, PA_3);
 
 // CAN can(PB_8, PB_9, 1000000); // CAN Rx pin name, CAN Tx pin name
 // CANMessage rxMsg;
 // CANMessage txMsg;
 
-
-
-PositionSensorAM5147 rotor_sensor(1.0f/40000.0f); // TODO: Set from "Motor Object"
+PositionSensorAS5x47 rotor_sensor(1.0f/40000.0f); // TODO: Set from "Motor Object"
 
 volatile int count = 0;
 volatile int state = REST_MODE;
@@ -199,100 +193,6 @@ void print_encoder(void)
 {
     //printf(" Mechanical Angle:  %f    Electrical Angle:  %f    Raw:  %d\n\r", spi.GetMechPosition(), spi.GetElecPosition(), spi.GetRawPosition());
     wait(.001);
-}
-
-/// Current Sampling Interrupt ///
-/// This runs at 40 kHz, regardless of of the mode the controller is in ///
-extern "C" void TIM1_UP_TIM10_IRQHandler(void)
-{
-    if (TIM1->SR & TIM_SR_UIF)
-    {
-
-        ///Sample current always ///
-        ADC1->CR2 |= 0x40000000; // Begin sample and conversion
-        //osSignalSet(control_task.gettid(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-        control_task.signal_set(CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-    //     //volatile int delay;
-    //     //for (delay = 0; delay < 55; delay++);
-
-    //     spi.Sample(DT);                 // sample position sensor
-    //     controller.adc2_raw = ADC2->DR; // Read ADC Data Registers
-    //     controller.adc1_raw = ADC1->DR;
-    //     controller.adc3_raw = ADC3->DR;
-    //     controller.theta_elec = spi.GetElecPosition();
-    //     controller.theta_mech = (1.0f / GR) * spi.GetMechPosition();
-    //     controller.dtheta_mech = (1.0f / GR) * spi.GetMechVelocity();
-    //     controller.dtheta_elec = spi.GetElecVelocity();
-    //     controller.v_bus = 0.95f * controller.v_bus + 0.05f * ((float)controller.adc3_raw) * V_SCALE;
-    //     ///
-
-    //     /// Check state machine state, and run the appropriate function ///
-    //     switch (state)
-    //     {
-    //     case REST_MODE: // Do nothing
-    //         if (state_change)
-    //         {
-    //             enter_menu_state();
-    //         }
-    //         break;
-
-    //     case CALIBRATION_MODE: // Run encoder calibration procedure
-    //         if (state_change)
-    //         {
-    //             calibrate();
-    //         }
-    //         break;
-
-    //     case MOTOR_MODE: // Run torque control
-    //         if (state_change)
-    //         {
-    //             enter_torque_mode();
-    //             count = 0;
-    //         }
-    //         else
-    //         {
-    //             /*
-    //             if(controller.v_bus>28.0f){         //Turn of gate drive if bus voltage is too high, to prevent FETsplosion if the bus is cut during regen
-    //                 gpio.
-    //                 ->write(0);
-    //                 controller.ovp_flag = 1;
-    //                 state = REST_MODE;
-    //                 state_change = 1;
-    //                 printf("OVP Triggered!\n\r");
-    //                 }
-    //                 */
-
-    //             if ((controller.timeout > CAN_TIMEOUT) && (CAN_TIMEOUT > 0))
-    //             {
-    //                 controller.i_d_ref = 0;
-    //                 controller.i_q_ref = 0;
-    //                 controller.kp = 0;
-    //                 controller.kd = 0;
-    //                 controller.t_ff = 0;
-    //             }
-    //             controller.kp = 0.00;
-    //             controller.p_des = 0.0;
-    //             controller.v_des = 0.0;
-    //             controller.kd = 0.0;
-    //             torque_control(&controller);
-    //             commutate(&controller, &observer, &gpio, controller.theta_elec); // Run current loop
-
-    //             controller.timeout++;
-    //             count++;
-    //         }
-    //         break;
-    //     case SETUP_MODE:
-    //         if (state_change)
-    //         {
-    //             enter_setup_state();
-    //         }
-    //         break;
-    //     case ENCODER_MODE:
-    //         print_encoder();
-    //         break;
-    //     }
-    }
-    TIM1->SR = 0x0; // reset the status register
 }
 
 char cmd_val[8] = {0};
@@ -435,8 +335,6 @@ int main()
 
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
-    // TIM1->CR1 ^= TIM_CR1_UDIS;
-    // //TIM1->CR1 |= TIM_CR1_UDIS; //enable interrupt
 
     // wait(.1);
     // NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // commutation > communication
@@ -530,7 +428,6 @@ int main()
     //     }
     // }
     control_task.start(motor_controller_thread_entry);
-
     // while(1)
     // {
     //     osDelay(100);

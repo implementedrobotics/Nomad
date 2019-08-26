@@ -35,8 +35,8 @@
 
 // Hardware Pins
 #define PIN_U PA_10 // PWM Ouput PIN U
-#define PIN_V PA_9
-#define PIN_W PA_8
+#define PIN_V PA_9  // PWM Ouput PIN V
+#define PIN_W PA_8  // PWM Ouput PIN W
 #define ENABLE_PIN PA_11 // DRV8323 Enable Pin
 
 // Duty Cycle Min/Max
@@ -44,7 +44,7 @@
 #define DTC_MIN 0.0f  // Min phase duty cycle
 
 // TODO: User configuratable.  Default to 40khz
-#define PWM_COUNTER_PERIOD_TICKS 0x8CA // timer autoreload value
+#define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
 
 //#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
 //#define CURRENT_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
@@ -76,9 +76,9 @@ public:
     // Motor Controller Parameters
     struct Config_t
     {
-        float k_d;            // Current Controller Loop Gain (D Axis)
-        float k_q;            // Current Controller Loop Gain (Q Axis)
-        float k_i_d;          // Current Controller Integrator Gain (D Axis)
+        float k_d;            // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Loop Gain (D Axis)
+        float k_q;            // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Loop Gain (Q Axis)
+        float k_i_d;          // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Integrator Gain (D Axis)
         float k_i_q;          // Current Controller Integrator Gain (Q Axis)
         float overmodulation; // Overmodulation Amount
         float current_limit;  // Max Current Limit
@@ -93,55 +93,39 @@ public:
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
 
     void ZeroCurrentSensors();   // Zero Current Sensor Offsets (TODO: Next PCB Revision connect DC_CAL pin to DRV832)
-    //     void SetCPR(int32_t cpr);               // Set Sensor Counts Per Revolution
-    //     void SetElectricalOffset(float offset);  // Set Sensor Electrical Position Offset, Distance to A Axis (radians)
-    //     void SetMechanicalOffset(float offset);  // Set Sensor Mechanical Position Offset, Output "zero" point (radians)
-    //     void SetOffsetLUT(int32_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
-    //     void SetPolePairs(uint32_t pole_pairs);  // Set Pole Pair Count for Electrical Position Calculations
 
-    //     void ZeroPosition();                     // Zero Mechanical Position Offset
-
-    //     int32_t GetRawPosition() const;            // Get Sensor Raw Position (counts)
-    //     float GetElectricalPosition() const;     // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
-    //     float GetMechanicalPosition() const;     // Get Sensor Mechanical Position w/ Offset, (radians)
-    //     float GetMechanicalPositionTrue() const; // Get Sensor Real Mechanical Position without Offset, (radians)
-    //     float GetElectricalVelocity() const;     // Get Sensor Electrical Velocity (radians/sec)
-    //     float GetMechanicalVelocity() const;     // Get Sensor Mechanical Velocity (radians/sec)
-
-    //     void Update();              // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
-    //     void Update(float Ts);              // Update Position Sensor State w/ Sample Time (for velocity estimation)
+    osThreadId GetThreadID() { return control_thread_id_; }
+    bool IsInitialized() { return control_initialized_; }
+	bool ControlThreadReady() { return control_thread_ready_; }
 
     bool WriteConfig(); // Write Configuration to Flash Memory
     bool ReadConfig();  // Read Configuration from Flash Memory
 
 private:
-    void DoMotorControl();          // Motor Control Loop
 
-    Config_t config_; // Position Sensor Configuration Parameters
+    void DoMotorControl();              // Motor Control Loop
 
-    float voltage_bus_;                // Bus Voltage (Volts)
-    float controller_update_period_;   // Controller Update Period (Seconds)
-    float adc1_raw_;
-    float adc2_raw_;
-    float adc1_offset_;
-    float adc2_offset_;
+    Config_t config_;                   // Position Sensor Configuration Parameters
 
-    osThreadId control_thread_id_;  // Controller Thread ID
-	bool control_thread_ready_;     // Controller thread ready/active
-	bool control_initialized_;      // Controller thread initialized
-	volatile bool control_enabled_;          // Controller thread enabled
+    float voltage_bus_;                 // Bus Voltage (Volts)
+    float controller_update_period_;    // Controller Update Period (Seconds)
 
-    DRV832x *gate_driver_;    // Gate Driver Device for DRV8323
-    SPI *spi_handle_;         // SPI Handle for Communication to Gate Driver
-    DigitalOut *cs_;          // Chip Select Pin
-    DigitalOut *gate_enable_; // Enable Pin for Gate Driver
+    osThreadId control_thread_id_;      // Controller Thread ID
+	bool control_thread_ready_;         // Controller thread ready/active
+	bool control_initialized_;          // Controller thread initialized
+	volatile bool control_enabled_;     // Controller thread enabled
+
+    DRV832x *gate_driver_;              // Gate Driver Device for DRV8323
+    SPI *spi_handle_;                   // SPI Handle for Communication to Gate Driver
+    DigitalOut *cs_;                    // Chip Select Pin
+    DigitalOut *gate_enable_;           // Enable Pin for Gate Driver
 
     // Make Static?
-    FastPWM *PWM_u_; // PWM Output Pin
-    FastPWM *PWM_v_; // PWM Output Pin
-    FastPWM *PWM_w_; // PWM Output Pin
+    FastPWM *PWM_u_;                    // PWM Output Pin
+    FastPWM *PWM_v_;                    // PWM Output Pin
+    FastPWM *PWM_w_;                    // PWM Output Pin
 
-    bool dirty_; // Have unsaved changed to config
+    bool dirty_;                        // Have unsaved changed to config
 };
 
 #endif // CORE_MOTOR_CONTROLLER_H_
