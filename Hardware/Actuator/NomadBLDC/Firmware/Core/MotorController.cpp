@@ -33,9 +33,14 @@
 #include "mbed.h"
 #include "rtos.h"
 #include "FastPWM.h"
+#include "Motor.h"
 #include "../../math_ops.h"
 
-//MotorDevice *motor = 0;
+// TODO: User Configurable Parameter
+#define CONTROL_LOOP_FREQ 40000.0f
+#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
+
+Motor *motor = 0;
 MotorController *motor_controller = 0;
 
 // Globals
@@ -50,9 +55,11 @@ void motor_controller_thread_entry()
 {
     printf("Motor RT Controller Task Up.\n\r");
 
-    // Init Motor and Position Sensor
+    // Init Motor and Implicitly Position Sensor
+    motor = new Motor(CONTROL_LOOP_PERIOD, 100, 21);
+
     // Init Motor Controller
-    motor_controller = new MotorController();
+    motor_controller = new MotorController(CONTROL_LOOP_PERIOD);
     motor_controller->Init();
 
     // Begin Control Loop
@@ -62,9 +69,29 @@ void motor_controller_thread_entry()
 void current_measurement_cb()
 {
     // Measure Currents/Bus Voltage
+    int32_t adc2_raw = ADC2->DR; // Current Sense Measurement 1
+    int32_t adc1_raw = ADC1->DR; // Current Sense Measurement 2
+    int32_t adc3_raw = ADC3->DR; // Voltage Bus Measurement.  TODO: Move this to a different/slower timer
+
+    // TODO: Not sure this is necessasry?
+    if (motor->config_.phase_order) // Check Phase Ordering
+    {
+        motor->state_.I_b = current_scale * (float)(adc2_raw - g_adc2_offset);
+        motor->state_.I_c = current_scale * (float)(adc1_raw - g_adc1_offset);
+    }
+    else
+    {
+        motor->state_.I_b = current_scale * (float)(adc1_raw - g_adc1_offset);
+        motor->state_.I_c = current_scale * (float)(adc2_raw - g_adc2_offset);
+    }
+    // Kirchoffs Current Law to compute 3rd unmeasured current.
+    motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
+
+    // Always Update Motor State
+    motor->Update();
     // TODO: Filter v_bus current measurements
-    //controller.v_bus = 0.95f * controller.v_bus + 0.05f * ((float)controller.adc3_raw) * V_SCALE;
-    
+    motor_controller->voltage_bus_ = 0.95f * motor_controller->voltage_bus_ + 0.05f * ((float)adc3_raw) * voltage_scale;
+
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
@@ -72,14 +99,13 @@ void current_measurement_cb()
     }
 }
 
-
 bool zero_current_sensors()
 {
     g_adc1_offset = 0;
     g_adc2_offset = 0;
 
     int32_t num_samples = 1024;
-    for(int32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
+    for (int32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
     {
         osEvent test;
         if ((test = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT)).status != osEventSignal)
@@ -88,21 +114,20 @@ bool zero_current_sensors()
             printf("ERROR: Zero Current FAILED!\r\n");
             return false;
         }
-        g_adc1_offset += ADC1->DR;
         g_adc2_offset += ADC2->DR;
+        g_adc1_offset += ADC1->DR;
 
         // TODO: Function for setting duty cycles
         TIM1->CCR3 = (PWM_COUNTER_PERIOD_TICKS >> 1) * (1.0f); // Write duty cycles
         TIM1->CCR2 = (PWM_COUNTER_PERIOD_TICKS >> 1) * (1.0f);
         TIM1->CCR1 = (PWM_COUNTER_PERIOD_TICKS >> 1) * (1.0f);
     }
-   
+
     g_adc1_offset = g_adc1_offset / num_samples;
     g_adc2_offset = g_adc2_offset / num_samples;
-    
+
     return true;
 }
-
 
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
@@ -115,13 +140,9 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
     TIM1->SR = 0x0; // reset the status register
 }
 
-MotorController::MotorController()
+MotorController::MotorController(float sample_time) : controller_update_period_(sample_time)
 {
-    //current_meas_period_ = CURRENT_LOOP_PERIOD;
     //current_meas_freq_ = CURRENT_LOOP_FREQ;
-
-    // Update Conductance
-    //current_sense_conductance = 1.0f / SENSE_RESISTANCE;
 
     control_thread_id_ = 0;
     control_thread_ready_ = false;
@@ -137,6 +158,12 @@ void MotorController::Init()
     control_thread_id_ = osThreadGetId();
     control_thread_ready_ = true;
 
+    // Compute Maximum Allowed Current
+    float margin = 0.90f;
+    float max_input = margin * 0.3f * SENSE_CONDUCTANCE;
+    float max_swing = margin * 1.6f * SENSE_CONDUCTANCE * (1.0f/CURRENT_SENSE_GAIN);
+    current_max_ = fminf(max_input, max_swing);
+    
     // Setup Gate Driver
     spi_handle_ = new SPI(PA_7, PA_6, PA_5);
     cs_ = new DigitalOut(PA_4);
@@ -162,7 +189,9 @@ void MotorController::Init()
     osDelay(150); // Delay for a bit to let things stabilize
 
     //gate_driver_->enable_gd();
+    EnablePWM(true);
     zero_current_sensors(); // Measure current sensor zero-offset
+    EnablePWM(false);
     gate_driver_->disable_gd();
 
     // Do Motor Calibration
@@ -174,7 +203,6 @@ void MotorController::Init()
     // }
 
     control_initialized_ = true;
-
     printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
 }
 
@@ -182,8 +210,9 @@ void MotorController::StartControlFSM()
 {
     for (;;)
     {
-        // Update Motor Currents
-        //rotor_sensor.Update();
+        printf("STARTING FSM\r\n");
+        // TODO: Implement FSM
+        EnablePWM(true);
         DoMotorControl();
         osDelay(1000);
     }
@@ -220,9 +249,12 @@ void MotorController::StartPWM()
     // Enable Interrupt Service Routines:
     NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn); //Enable TIM1/10 IRQ
 
+    // Set Priority
+    NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // Commutation is highest priority interrupt
+
     TIM1->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
     TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
-    TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
+    //TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
     TIM1->CR1 |= TIM_CR1_ARPE;  // Auto Reload Timer
     TIM1->RCR |= 0x001;         // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
     TIM1->EGR |= TIM_EGR_UG;    // Generate an update event to reload the Prescaler/Repetition Counter immediately
@@ -232,10 +264,12 @@ void MotorController::StartPWM()
     TIM1->ARR = PWM_COUNTER_PERIOD_TICKS; // Set Auto Reload Timer Value.  TODO: User Configurable.  For now 40khz.
     TIM1->CCER |= ~(TIM_CCER_CC1NP);      // Interupt when low side is on.
     TIM1->CR1 |= TIM_CR1_CEN;             // Enable TIM1
-    TIM1->CR1 ^= TIM_CR1_UDIS;
+
+    // Start Disabled
+    EnablePWM(false);
 
     // This makes sure PWM is stopped if we have debug point/crash
-    //__HAL_DBGMCU_FREEZE_TIM1();
+    __HAL_DBGMCU_FREEZE_TIM1();
 }
 void MotorController::StartADCs()
 {
@@ -266,12 +300,15 @@ void MotorController::EnablePWM(bool enable)
 {
     if (enable)
     {
+        TIM1->CR1 ^= TIM_CR1_UDIS;
         TIM1->BDTR |= (TIM_BDTR_MOE);
     }
     else // Disable PWM Timer Unconditionally
     {
+        TIM1->CR1 |= TIM_CR1_UDIS;
         TIM1->BDTR &= ~(TIM_BDTR_MOE);
     }
+    osDelay(100);
 
     // TODO: Here for when project ported from MBED to CUBEMX
     //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);

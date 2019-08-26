@@ -71,6 +71,8 @@ typedef enum {
 
 class MotorController
 {
+// TODO: Modes, Voltage/Speed, Current, Torque/Impedance Etc.
+// TODO: Setpoint references, etc.
 
 public:
     // Motor Controller Parameters
@@ -84,22 +86,26 @@ public:
         float current_limit;  // Max Current Limit
     };
 
-    MotorController(); // TODO: Pass in motor object
+    MotorController(float sample_time); // TODO: Pass in motor object
 
     void Init();            // Init Controller
     void StartControlFSM(); // Begin Control Loop
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
+
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
 
     void ZeroCurrentSensors();   // Zero Current Sensor Offsets (TODO: Next PCB Revision connect DC_CAL pin to DRV832)
 
-    osThreadId GetThreadID() { return control_thread_id_; }
-    bool IsInitialized() { return control_initialized_; }
-	bool ControlThreadReady() { return control_thread_ready_; }
+    inline osThreadId GetThreadID() { return control_thread_id_; }
+    inline bool IsInitialized() { return control_initialized_; }
+	inline bool ControlThreadReady() { return control_thread_ready_; }
 
     bool WriteConfig(); // Write Configuration to Flash Memory
     bool ReadConfig();  // Read Configuration from Flash Memory
+
+    // Public for now...  TODO: Need something better here
+    float voltage_bus_;                 // Bus Voltage (Volts)
 
 private:
 
@@ -107,9 +113,8 @@ private:
 
     Config_t config_;                   // Position Sensor Configuration Parameters
 
-    float voltage_bus_;                 // Bus Voltage (Volts)
     float controller_update_period_;    // Controller Update Period (Seconds)
-
+    float current_max_;                 // Maximum allowed current before clamped by sense resistor
     osThreadId control_thread_id_;      // Controller Thread ID
 	bool control_thread_ready_;         // Controller thread ready/active
 	bool control_initialized_;          // Controller thread initialized

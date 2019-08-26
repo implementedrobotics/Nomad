@@ -74,8 +74,6 @@ Serial pc(PA_2, PA_3);
 // CANMessage rxMsg;
 // CANMessage txMsg;
 
-PositionSensorAS5x47 rotor_sensor(1.0f/40000.0f); // TODO: Set from "Motor Object"
-
 volatile int count = 0;
 volatile int state = REST_MODE;
 volatile int state_change;
@@ -336,9 +334,6 @@ int main()
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
 
-    // wait(.1);
-    // NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // commutation > communication
-
     // NVIC_SetPriority(CAN1_RX0_IRQn, 3);
     // can.filter(CAN_ID << 21, 0xFFE00004, CANStandard, 0);
 
@@ -388,7 +383,7 @@ int main()
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d\n\r\n\r", VERSION_MAJOR, VERSION_MINOR);
     wait(.01);
     printf("\n\r Debug Info:\n\r");
-    //printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
+    // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
     // printf(" CAN ID:  %d\n\r", CAN_ID);
@@ -402,7 +397,6 @@ int main()
 
     // pc.attach(&serial_interrupt); // attach serial interrupt
 
-    // printf("NPP: %d\n\r", NPP);
     // state_change = 1;
 
     // int counter = 0;
@@ -428,11 +422,4 @@ int main()
     //     }
     // }
     control_task.start(motor_controller_thread_entry);
-    // while(1)
-    // {
-    //     osDelay(100);
-    //     //osSignalSet(control_task.gettid(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-    //     control_task.signal_set(CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-    //     //printf("Signal Send\r\n");
-    // }
 }

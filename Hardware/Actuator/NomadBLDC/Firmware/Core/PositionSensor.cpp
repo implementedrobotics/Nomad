@@ -33,7 +33,7 @@
 #include "mbed.h"
 #include "../../math_ops.h"
 
-PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t cpr, uint32_t pole_pairs) : position_electrical_(0),
+PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),
                                                                                                    position_mechanical_(0),
                                                                                                    position_normalized_(0),
                                                                                                    velocity_electrical_(0),
@@ -63,7 +63,6 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t cpr, uint
     // We use direct pin access in the sample loop for less latency/overhead
     DigitalOut cs(PA_15);
     cs.write(1);
-
 }
 
 /* Setters */
@@ -96,36 +95,6 @@ void PositionSensorAS5x47::SetPolePairs(uint32_t pole_pairs)
     pole_pairs_ = pole_pairs;
 }
 
-/* Getters */
-float PositionSensorAS5x47::GetElectricalPosition() const
-{
-    return position_electrical_;
-}
-
-float PositionSensorAS5x47::GetMechanicalPosition() const
-{
-    return position_mechanical_;
-}
-
-float PositionSensorAS5x47::GetMechanicalPositionTrue() const
-{
-    return position_mechanical_ + config_.offset_mech;
-}
-
-int32_t PositionSensorAS5x47::GetRawPosition() const
-{
-    return position_raw_;
-}
-
-float PositionSensorAS5x47::GetElectricalVelocity() const
-{
-    return velocity_electrical_;
-}
-
-float PositionSensorAS5x47::GetMechanicalVelocity() const
-{
-    return velocity_mechanical_;
-}
 
 void PositionSensorAS5x47::ZeroPosition()
 {
