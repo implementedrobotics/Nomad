@@ -97,7 +97,7 @@ class MotorController
     // TODO: Setpoint references, etc.
 public:
     // Motor Controller Parameters
-    struct Config_t
+    struct __attribute__((__packed__))  Config_t
     {
         float k_d;               // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Loop Gain (D Axis)
         float k_q;               // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Loop Gain (Q Axis)

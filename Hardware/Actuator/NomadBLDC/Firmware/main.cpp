@@ -28,13 +28,6 @@
  * 
  */
 
-
-// #define REST_MODE 0
-// #define CALIBRATION_MODE 1
-// #define MOTOR_MODE 2
-// #define SETUP_MODE 4
-// #define ENCODER_MODE 5
-
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
 
@@ -46,9 +39,13 @@ extern "C"
 	#include "Core/motor_controller_interface.h"
 }
 
+
+#define LED_PIN PC_5
+
 #include "mbed.h"
 #include "rtos.h"
 #include "Core/MotorController.h"
+#include "Core/LEDService.h"
 
 // #include "structs.h"
 // #include "foc.h"
@@ -329,6 +326,8 @@ void serial_interrupt(void)
 
 int main()
 {
+    // Setup LED
+    LEDService::Instance().Init(LED_PIN);
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
 

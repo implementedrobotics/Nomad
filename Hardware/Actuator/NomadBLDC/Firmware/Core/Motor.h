@@ -40,7 +40,7 @@ friend class MotorController;
 
 public:
     // Motor State
-    struct State_t
+    struct __attribute__((__packed__))  State_t
     {
         float I_a;            // Phase A Currents
         float I_b;            // Phase B Currents
@@ -53,7 +53,7 @@ public:
     };
 
     // Motor Parameters
-    struct Config_t
+    struct __attribute__((__packed__)) Config_t
     {
         uint32_t num_pole_pairs;  // Pole Pairs of Motor (PAIRS)
         float phase_resistance;   // Phase Resistance (Ohms)

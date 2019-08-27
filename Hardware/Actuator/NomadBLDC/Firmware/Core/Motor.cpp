@@ -52,7 +52,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     SetKV(K_v);
 
     // Setup Position Sensor
-    rotor_sensor_ = new PositionSensorAS5x47(sample_time_, config_.num_pole_pairs); // TODO: Set from "Motor Object"
+    rotor_sensor_ = new PositionSensorAS5x47(sample_time_, config_.num_pole_pairs);
 }
 
 void Motor::Update()
