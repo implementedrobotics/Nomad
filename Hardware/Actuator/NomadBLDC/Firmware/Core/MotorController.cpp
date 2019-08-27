@@ -127,10 +127,8 @@ bool zero_current_sensors()
         // Set Idle/"Zero" PWM
         motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
     }
-
     g_adc1_offset = g_adc1_offset / num_samples;
     g_adc2_offset = g_adc2_offset / num_samples;
-
     return true;
 }
 
@@ -148,7 +146,6 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 MotorController::MotorController(Motor *motor, float sample_time) : controller_update_period_(sample_time), motor_(motor)
 {
     //current_meas_freq_ = CURRENT_LOOP_FREQ;
-
     control_thread_id_ = 0;
     control_thread_ready_ = false;
     control_initialized_ = false;
@@ -216,6 +213,7 @@ void MotorController::Init()
 void MotorController::StartControlFSM()
 {
     printf("STARTING FSM\r\n");
+    // TODO: Check for DRV Errors Here -> ERROR MODE
     static control_mode_type_t current_control_mode = IDLE_MODE;
     for (;;)
     {
@@ -226,6 +224,7 @@ void MotorController::StartControlFSM()
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
+                gate_driver_->disable_gd();
                 EnablePWM(false);
             }
             //printf("IDLE Mode!\r\n");
@@ -235,6 +234,7 @@ void MotorController::StartControlFSM()
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
+                gate_driver_->disable_gd();
                 EnablePWM(false);
             }
             printf("Error Mode!\r\n");
@@ -246,6 +246,7 @@ void MotorController::StartControlFSM()
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
+                gate_driver_->enable_gd();
                 EnablePWM(true);
             }
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
@@ -260,6 +261,7 @@ void MotorController::StartControlFSM()
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
+                gate_driver_->disable_gd();
                 EnablePWM(false);
             }
             printf("Unhandled Control Mode: %d!\r\n", control_mode_);

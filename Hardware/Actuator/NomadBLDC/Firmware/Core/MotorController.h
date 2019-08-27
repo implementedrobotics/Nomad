@@ -70,8 +70,8 @@ static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTA
 typedef enum
 {
     CURRENT_MEASUREMENT_COMPLETE_SIGNAL = 0x1,
-    MOTOR_ERROR_SIGNAL =0x2,
-    CHANGE_MODE_SIGNAL =0x3,
+    MOTOR_ERROR_SIGNAL = 0x2,
+    CHANGE_MODE_SIGNAL = 0x3,
 } thread_signal_type_t;
 
 typedef enum
@@ -83,6 +83,14 @@ typedef enum
     FOC_VOLTAGE_MODE = 4,
     FOC_TORQUE_MODE = 5
 } control_mode_type_t;
+
+typedef enum
+{
+    FOC_TIMING_ERROR = 0,
+    OVERVOLTAGE_ERROR = 1,
+    UNDERVOLTAGE_ERROR = 2,
+    OVERTEMPERATURE_ERROR = 3
+} error_type_t;
 
 class MotorController
 {
