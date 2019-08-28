@@ -46,6 +46,10 @@
 // TODO: User configuratable.  Default to 40khz
 #define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
 
+// TODO: User Configurable Parameter
+#define CONTROL_LOOP_FREQ 40000.0f
+#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
+
 //#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
 //#define CURRENT_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
 //#define CURRENT_LOOP_PERIOD (1.0f/(float)CURRENT_LOOP_FREQ)
@@ -99,9 +103,9 @@ public:
     // Motor Controller Parameters
     struct __attribute__((__packed__))  Config_t
     {
-        float k_d;               // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Loop Gain (D Axis)
-        float k_q;               // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Loop Gain (Q Axis)
-        float k_i_d;             // Current ControlCURRENT_MEASUREMENT_TIMEOUTler Integrator Gain (D Axis)
+        float k_d;               // Current Controller Loop Gain (D Axis)
+        float k_q;               // Current Controller Loop Gain (Q Axis)
+        float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
         float overmodulation;    // Overmodulation Amount
         float current_limit;     // Max Current Limit
@@ -126,6 +130,8 @@ public:
     void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c);
     void ClarkeTransform(float I_a, float I_b, float *alpha, float *beta);
 
+    void SVM(float u, float v, float w, float *dtc_u, float *dtc_v, float *dtc_w);
+
     inline osThreadId GetThreadID() { return control_thread_id_; }
     inline bool IsInitialized() { return control_initialized_; }
     inline bool ControlThreadReady() { return control_thread_ready_; }
@@ -140,7 +146,7 @@ public:
 private:
 
     void DoMotorControl(); // Motor Control Loop
-
+    
     Config_t config_; // Position Sensor Configuration Parameters
 
     float controller_update_period_;            // Controller Update Period (Seconds)

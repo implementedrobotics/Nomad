@@ -179,6 +179,45 @@ void DRV832x::disable_gd(void)
 
 void DRV832x::calibrate(void)
 {
-    uint16_t val = 0x1 << (4 + 0x1) << (3 + 0x1) << 2;
-    write_register(CSACR, val);
+    // Calibrate one amplifier at a time.  Could we do all at once?
+
+    // CSA Amplifier A
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_A_NO_LOAD); // Disconnect and Calibrate
+    wait_us(500);
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_A_LOAD); // Reconnect
+    wait_us(500);
+
+    // CSA Amplifier B
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_B_NO_LOAD); // Disconnect and Calibrate
+    wait_us(500);
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_B_LOAD); // Reconnect
+    wait_us(500);
+
+    // CSA Amplifier C
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_C_NO_LOAD); // Disconnect and Calibrate
+    wait_us(500);
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_C_LOAD); // Reconnect
+    wait_us(500);
+}
+void DRV832x::set_dc_cal_mode(uint16_t amp_id, uint16_t mode)
+{
+    uint16_t data = read_register(CSACR); // Read Data
+
+    if (amp_id == CSA_AMP_ID_A) // Clear the bits
+    {
+        data &= (~CSA_CAL_A_BITS);
+    }
+    else if (amp_id == CSA_AMP_ID_B)
+    {
+        data &= (~CSA_CAL_B_BITS);
+    }
+    else if (amp_id == CSA_AMP_ID_C)
+    {
+        data &= (~CSA_CAL_C_BITS);
+    }
+    data |= mode; // Set the bits
+
+    write_register(CSACR, data); // Write SPI Data
+
+
 }

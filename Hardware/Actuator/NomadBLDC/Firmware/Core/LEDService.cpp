@@ -77,6 +77,7 @@ void LEDService::Blink(uint32_t on_period, uint32_t off_period)
 void LEDService::Init(PinName led_pin)
 {
     led_pin_ = new DigitalOut(led_pin);
+    led_pin_->write(0); // Start in off condition
     initialized_ = true;
 }
 

@@ -328,6 +328,7 @@ int main()
 {
     // Setup LED
     LEDService::Instance().Init(LED_PIN);
+    LEDService::Instance().On();
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
 
@@ -376,9 +377,9 @@ int main()
     // spi.WriteLUT(lut); // Set potision sensor nonlinearity lookup table
     // init_controller_params(&controller);
 
-    pc.baud(921600); // set serial baud rate
+    pc.baud(230400); // set serial baud rate
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d\n\r\n\r", VERSION_MAJOR, VERSION_MINOR);
-    wait(.01);
+    wait(2.0);
     printf("\n\r Debug Info:\n\r");
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);

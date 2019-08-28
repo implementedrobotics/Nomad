@@ -34,6 +34,7 @@
 #include "rtos.h"
 #include "PositionSensor.h"
 
+class MotorController;
 class Motor
 {
 friend class MotorController;
@@ -63,12 +64,14 @@ public:
         float flux_linkage;       // Rotor Flux Linkage (Webers)
         float K_t;                // Torque Constant (N*m/A)
         int32_t phase_order;      // Winding Phase Order
+        bool calibrated;          // Calibrated
     };
 
     Motor(float sample_time, float K_v = 100, uint32_t pole_pairs = 21);
 
     void SetPolePairs(uint32_t pole_pairs);  // Set Motor Pole Count
     void SetKV(float K_v);  // Set Motor KV Rating
+    bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
 
     void Update();          // Update Motor State
 
@@ -80,6 +83,9 @@ public:
     
 private:
     
+    // Measure Routines
+    bool MeasureMotorResistance(MotorController *controller, float test_current, float max_voltage);
+    bool MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high);
 
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
     bool dirty_; // Has unsaved changes to config

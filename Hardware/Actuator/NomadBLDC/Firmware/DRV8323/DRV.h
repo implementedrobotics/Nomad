@@ -141,6 +141,21 @@
 #define CSA_GAIN_10         0x1
 #define CSA_GAIN_20         0x2
 #define CSA_GAIN_40         0x3
+#define CSA_CAL_A_BITS           (1 << 4)
+#define CSA_CAL_B_BITS           (1 << 3)
+#define CSA_CAL_C_BITS           (1 << 2)
+
+#define CSA_CAL_A_NO_LOAD   (1 << 4)  
+#define CSA_CAL_A_LOAD      (0 << 4)  
+#define CSA_CAL_B_NO_LOAD   (1 << 3)  
+#define CSA_CAL_B_LOAD      (0 << 3)  
+#define CSA_CAL_C_NO_LOAD   (1 << 2)  
+#define CSA_CAL_C_LOAD      (0 << 2)
+
+#define CSA_AMP_ID_A        1
+#define CSA_AMP_ID_B        2
+#define CSA_AMP_ID_C        3  
+
 #define DIS_SEN_EN          0x0     /// Overcurrent Fault
 #define DIS_SEN_DIS         0x1
 #define SEN_LVL_0_25        0x0     /// Sense OCP voltage level
@@ -169,6 +184,7 @@ class DRV832x {
         SPI *_spi;
         DigitalOut *_cs;
         uint16_t spi_write(uint16_t val);
+        void set_dc_cal_mode(uint16_t amp_id, uint16_t mode);
 };
 
 #endif

@@ -36,9 +36,6 @@
 #include "Motor.h"
 #include "../../math_ops.h"
 
-// TODO: User Configurable Parameter
-#define CONTROL_LOOP_FREQ 40000.0f
-#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
 
 Motor *motor = 0;
 MotorController *motor_controller = 0;
@@ -99,20 +96,23 @@ void current_measurement_cb()
     motor_controller->voltage_bus_ = 0.95f * motor_controller->voltage_bus_ + 0.05f * ((float)adc3_raw) * voltage_scale;
 
     // Make sure control thread is ready
-    
+
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
+       // printf("SIGNAL SEND!\r\n");
         osSignalSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
     }
 }
 
-bool zero_current_sensors()
+bool zero_current_sensors(uint32_t num_samples)
 {
+    // Zero Offsets
     g_adc1_offset = 0;
     g_adc2_offset = 0;
 
-    int32_t num_samples = 1024;
-    for (int32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
+    // Set Idle/"Zero" PWM
+    motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
+    for (uint32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
     {
         osEvent test;
         if ((test = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT)).status != osEventSignal)
@@ -123,15 +123,36 @@ bool zero_current_sensors()
         }
         g_adc2_offset += ADC2->DR;
         g_adc1_offset += ADC1->DR;
-
-        // Set Idle/"Zero" PWM
-        motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
     }
     g_adc1_offset = g_adc1_offset / num_samples;
     g_adc2_offset = g_adc2_offset / num_samples;
+    printf("ADC OFFSET: %d and %d\r\n", g_adc1_offset, g_adc2_offset);
     return true;
 }
 
+bool calibrate_motor()
+{
+    printf("Motor Calibrate Begin.\n\r");
+
+    // Make sure we have no PWM period
+	motor_controller->SetDuty(0.5f,0.5f,0.5f);
+
+    // Turn on PWM outputs
+	motor_controller->EnablePWM(true);
+
+    motor->Calibrate(motor_controller);
+
+    // Shutdown the phases
+	motor_controller->SetDuty(0.5f,0.5f,0.5f);
+
+	// Turn off PWM outputs
+	motor_controller->EnablePWM(false); // enable pwm outputs
+
+	//osDelay(100);
+    
+    printf("Motor Control Calibrate End.\n\r");
+    return true;
+}
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
@@ -191,12 +212,17 @@ void MotorController::Init()
     osDelay(150); // Delay for a bit to let things stabilize
 
     //gate_driver_->enable_gd();
-    EnablePWM(true);
-    zero_current_sensors(); // Measure current sensor zero-offset
-    EnablePWM(false);
-    gate_driver_->disable_gd();
+    EnablePWM(true);            // Start PWM
+    SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
+    zero_current_sensors(1024); // Measure current sensor zero-offset
+    EnablePWM(false);           // Stop PWM
 
+
+    // TODO: This should only happen when commanded.  Just Testing
     // Do Motor Calibration
+    calibrate_motor();
+
+    // TODO: Compute Loop Gains With measured motor parameters
 
     // Check for Calibration of Motor (Could be loaded)
     // if(!motor_->is_calibrated_)
@@ -205,6 +231,7 @@ void MotorController::Init()
     // }
 
     // Default Mode Idle:
+    gate_driver_->disable_gd(); // Disable Gate Driver.  TODO: A Bit Reduntant
     control_mode_ = IDLE_MODE;
     control_initialized_ = true;
     printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
@@ -253,7 +280,7 @@ void MotorController::StartControlFSM()
             {
                 // TODO: Should have a check for number of missed deadlines, then bail
                 printf("ERROR: Motor Controller Timeout!\r\n");
-                control_mode_ =  ERROR_MODE;
+                control_mode_ = ERROR_MODE;
             }
             DoMotorControl();
             break;
@@ -275,13 +302,13 @@ void MotorController::DoMotorControl()
     //control_enabled_ = true;
     //while (control_enabled_) // Do Forever
     //{
-        // TODO: Error Checking
-        //if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
-        //{
-            // TODO: Error here for timing
-            //printf("ERROR: Motor Controller Timeout!\r\n");
-            //break;
-        //}
+    // TODO: Error Checking
+    //if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+    //{
+    // TODO: Error here for timing
+    //printf("ERROR: Motor Controller Timeout!\r\n");
+    //break;
+    //}
     //}
 }
 
@@ -355,12 +382,12 @@ void MotorController::EnablePWM(bool enable)
     if (enable)
     {
         TIM1->CR1 ^= TIM_CR1_UDIS;
-        TIM1->BDTR |= (TIM_BDTR_MOE);
+        //TIM1->BDTR |= (TIM_BDTR_MOE);
     }
     else // Disable PWM Timer Unconditionally
     {
         TIM1->CR1 |= TIM_CR1_UDIS;
-        TIM1->BDTR &= ~(TIM_BDTR_MOE);
+        //TIM1->BDTR &= ~(TIM_BDTR_MOE);
     }
     osDelay(100);
 
@@ -424,4 +451,15 @@ void MotorController::ClarkeTransform(float I_a, float I_b, float *alpha, float 
     // Ibeta = 1/sqrt(3)(Ia + 2Ib)
     *alpha = I_a;
     *beta = 0.57735026919f * (I_a + 2.0f * I_b);
+}
+
+void MotorController::SVM(float u, float v, float w, float *dtc_u, float *dtc_v, float *dtc_w)
+{
+    // Space Vector Modulation
+    // u,v,w amplitude = Bus Voltage for Full Modulation Depth
+    float v_offset = (fminf3(u, v, w) + fmaxf3(u, v, w)) * 0.5f;
+
+    *dtc_u = fminf(fmaxf(((u - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_v = fminf(fmaxf(((v - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_w = fminf(fmaxf(((w - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
 }

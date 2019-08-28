@@ -52,6 +52,7 @@ class LEDService
     };
 
 public:
+
     LEDService();
     void Init(PinName led_pin);
     void On();
@@ -61,6 +62,7 @@ public:
     static LEDService &Instance();
 
 private:
+
     DigitalOut *led_pin_; // Output pin
 
     uint32_t on_period_; // ms
