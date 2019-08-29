@@ -71,6 +71,7 @@ bool FlashInterface::Write(uint32_t index, uint8_t *buffer, size_t length)
     if (!ready_ || mode_ != FlashInterface::WRITE) // Need to be Ready and in Write Mode
         return false;
 
+    
     uint32_t write_addr = base_ + index; // Set Write Buffer Offset
     for (uint32_t i = 0; i < length; i++) // Loop buffer and write out in bytes
     {

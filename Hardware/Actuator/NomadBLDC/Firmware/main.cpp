@@ -38,6 +38,7 @@
 #include "Core/MotorController.h"
 #include "Core/LEDService.h"
 #include "Core/UserMenu.h"
+#include "Core/FlashInterface.h"
 
 extern "C"
 {
@@ -330,6 +331,17 @@ int main()
 
     UserMenu *user_menu = new UserMenu(&serial, main_menu);
     user_menu->Show();
+
+    uint32_t buf[2] = {1234567, 987654321};
+    uint32_t r_buf[2];
+    FlashInterface::Instance().Open(6, FlashInterface::WRITE);
+    FlashInterface::Instance().Write(0, (uint8_t *)buf, sizeof(buf));
+    FlashInterface::Instance().Close();
+
+
+    FlashInterface::Instance().Open(6, FlashInterface::READ);
+    FlashInterface::Instance().Read(0, (uint8_t *)r_buf, sizeof(r_buf));
+    FlashInterface::Instance().Close();
 
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer

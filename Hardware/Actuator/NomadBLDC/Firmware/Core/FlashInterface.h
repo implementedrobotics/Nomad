@@ -37,7 +37,7 @@
 #define ADDR_FLASH_SECTOR_6 ((uint32_t)0x08040000) /* Base @ of Sector 6, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_7 ((uint32_t)0x08060000) /* Base @ of Sector 7, 128 Kbytes */
 
-static uint32_t __SECTOR_ADDRS[] = {
+static const uint32_t __SECTOR_ADDRS[] = {
     ADDR_FLASH_SECTOR_0,
     ADDR_FLASH_SECTOR_1,
     ADDR_FLASH_SECTOR_2,
@@ -47,7 +47,7 @@ static uint32_t __SECTOR_ADDRS[] = {
     ADDR_FLASH_SECTOR_6,
     ADDR_FLASH_SECTOR_7};
 
-static uint32_t __SECTORS[] = {
+static const uint32_t __SECTORS[] = {
     FLASH_Sector_0,
     FLASH_Sector_1,
     FLASH_Sector_2,
@@ -67,17 +67,17 @@ static uint32_t __SECTORS[] = {
 
 class FlashInterface
 {
+public:
     typedef enum
     {
         READ = 0,
         WRITE = 1
     } mode_type_t;
 
-public:
     FlashInterface();
     ~FlashInterface();
 
-    bool Open(uint32_t sector, mode_type_t mode);   // Open the flash sector for read/write
+    bool Open(uint32_t sector, mode_type_t mode = FlashInterface::READ);   // Open the flash sector for read/write
     bool Write(uint32_t index, uint8_t* buffer, size_t length); // Flash Write
     bool Read(uint32_t index, void *buffer, size_t length); // Flash Read
     bool Close();
