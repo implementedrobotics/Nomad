@@ -65,9 +65,11 @@ public:
     void Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
     void Update(float Ts); // Update Position Sensor State w/ Sample Time (for velocity estimation)
 
-    bool WriteConfig(); // Write Configuration to Flash Memory
-    bool ReadConfig();  // Read Configuration from Flash Memory
+    bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
+    bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
+    Config_t config_;     // Position Sensor Configuration Parameters
+    
 private:
     float position_electrical_;          // Sensor Electrical Position (radians)
     float position_mechanical_;          // Sensor Mechanical Position (radians)
@@ -81,12 +83,10 @@ private:
     uint32_t pole_pairs_;                // Pole Pairs in Motor to Compute Electrical Positions
 
     int32_t filter_size_; // Velocity Filter Window Size
-    Config_t config_;     // Position Sensor Configuration Parameters
-
+    
     SPI *spi_handle_; // SPI Handle for Communication to Sensor
 
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
-
     bool dirty_; // Have unsaved changes to config
 };
 

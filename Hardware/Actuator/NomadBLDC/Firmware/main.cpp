@@ -319,7 +319,8 @@ int main()
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
     MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu);
     MainMenu *information_mode = new MainMenu("Show Configuration", 'i', main_menu);
-    MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu);
+    MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
+    MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
 
     MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
 
@@ -332,16 +333,16 @@ int main()
     UserMenu *user_menu = new UserMenu(&serial, main_menu);
     user_menu->Show();
 
-    uint32_t buf[2] = {1234567, 987654321};
-    uint32_t r_buf[2];
-    FlashInterface::Instance().Open(6, FlashInterface::WRITE);
-    FlashInterface::Instance().Write(0, (uint8_t *)buf, sizeof(buf));
-    FlashInterface::Instance().Close();
+    // uint32_t buf[2] = {1234567, 987654321};
+    // uint32_t r_buf[2];
+    // FlashInterface::Instance().Open(6, FlashInterface::WRITE);
+    // FlashInterface::Instance().Write(0, (uint8_t *)buf, sizeof(buf));
+    // FlashInterface::Instance().Close();
 
 
-    FlashInterface::Instance().Open(6, FlashInterface::READ);
-    FlashInterface::Instance().Read(0, (uint8_t *)r_buf, sizeof(r_buf));
-    FlashInterface::Instance().Close();
+    // FlashInterface::Instance().Open(6, FlashInterface::READ);
+    // FlashInterface::Instance().Read(0, (uint8_t *)r_buf, sizeof(r_buf));
+    // FlashInterface::Instance().Close();
 
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer

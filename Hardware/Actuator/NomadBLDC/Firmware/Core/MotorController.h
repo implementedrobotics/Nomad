@@ -110,6 +110,7 @@ public:
         float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
         float overmodulation;    // Overmodulation Amount
+        float velocity_limit;    // Limit on maximum velocity
         float current_limit;     // Max Current Limit
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
     };
@@ -139,18 +140,19 @@ public:
     inline bool ControlThreadReady() { return control_thread_ready_; }
 
     inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
-    bool WriteConfig(); // Write Configuration to Flash Memory
-    bool ReadConfig();  // Read Configuration from Flash Memory
+    bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
+    bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
     // Public for now...  TODO: Need something better here
     float voltage_bus_; // Bus Voltage (Volts)
     volatile control_mode_type_t control_mode_; // Controller Mode
 
+    Config_t config_; // Position Sensor Configuration Parameters
 private:
 
     void DoMotorControl(); // Motor Control Loop
     
-    Config_t config_; // Position Sensor Configuration Parameters
+
 
     float controller_update_period_;            // Controller Update Period (Seconds)
     float current_max_;                         // Maximum allowed current before clamped by sense resistor

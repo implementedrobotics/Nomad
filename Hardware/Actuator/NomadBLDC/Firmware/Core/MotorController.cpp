@@ -35,8 +35,8 @@
 #include "FastPWM.h"
 #include "Motor.h"
 #include "UserMenu.h"
+#include "FlashInterface.h"
 #include "../../math_ops.h"
-
 
 Motor *motor = 0;
 MotorController *motor_controller = 0;
@@ -50,6 +50,18 @@ extern "C"
 {
 #include "motor_controller_interface.h"
 }
+
+// Flash Save Struct.  TODO: Move to own file
+struct __attribute__((__packed__)) Save_format_t
+{
+    uint32_t version;
+    Motor::Config_t motor_config;
+    uint8_t motor_reserved[128]; // Reservered;
+    PositionSensorAS5x47::Config_t position_sensor_config;
+    uint8_t position_reserved[128]; // Reservered;
+    MotorController::Config_t controller_config;
+    uint8_t controller_reserved[128]; // Reservered;
+};
 
 void motor_controller_thread_entry()
 {
@@ -102,7 +114,7 @@ void current_measurement_cb()
 
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
-       // printf("SIGNAL SEND!\r\n");
+        // printf("SIGNAL SEND!\r\n");
         osSignalSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
     }
 }
@@ -138,14 +150,14 @@ bool calibrate_motor()
     printf("Motor Calibrate Begin.\n\r");
 
     // Make sure we have no PWM period
-	motor_controller->SetDuty(0.5f,0.5f,0.5f);
+    motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
     osDelay(100);
 
     motor->Calibrate(motor_controller); // Run Motor Calibration
 
     // Shutdown the phases
-	motor_controller->SetDuty(0.5f,0.5f,0.5f);
-	osDelay(100);
+    motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
+    osDelay(100);
 
     printf("Motor Control Calibrate End.\n\r");
     return true;
@@ -161,7 +173,42 @@ void measure_motor_parameters()
     //set_control_mode(IDLE_MODE);        // Back to IDLE Mode
     //printf("GOING TO IDLE\r\n");
 }
+void save_configuration()
+{
+    printf("\r\nSaving Configuration...\r\n");
 
+    Save_format_t save;
+    save.version = 1;   // Set Version
+    save.motor_config = motor->config_;
+    save.position_sensor_config = motor->PositionSensor()->config_;
+    save.controller_config = motor_controller->config_;
+
+    FlashInterface::Instance().Open(6, FlashInterface::WRITE);
+    FlashInterface::Instance().Write(0, (uint8_t *)&save, sizeof(save));
+    FlashInterface::Instance().Close();
+
+    printf("\r\nSaved.  Press ESC to return to menu.\r\n");
+}
+void load_configuration()
+{
+    printf("\r\nLoading Configuration...\r\n");
+    Save_format_t load;
+
+    FlashInterface::Instance().Open(6, FlashInterface::READ);
+    FlashInterface::Instance().Read(0, (uint8_t *)&load, sizeof(load));
+    FlashInterface::Instance().Close();
+
+    motor->config_ = load.motor_config;
+    motor->PositionSensor()->config_ = load.position_sensor_config;
+    motor_controller->config_ = load.controller_config;
+
+    //printf("READ Version: %d\r\n", load.version);
+    printf("\r\nLoaded.  Press ESC to return to menu.\r\n");
+}
+void reboot_system()
+{
+    HAL_NVIC_SystemReset();
+}
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
@@ -225,7 +272,6 @@ void MotorController::Init()
     SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
     zero_current_sensors(1024); // Measure current sensor zero-offset
     EnablePWM(false);           // Stop PWM
-
 
     // TODO: This should only happen when commanded.  Just Testing
     // Do Motor Calibration

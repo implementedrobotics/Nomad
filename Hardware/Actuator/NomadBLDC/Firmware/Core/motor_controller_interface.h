@@ -35,8 +35,12 @@ void motor_controller_thread_entry();
 // Callbacks
 void current_measurement_cb();
 
+// UI Callbacks
 void measure_motor_parameters();
-
+void save_configuration();
+void load_configuration();
+void restore_configuration();
+void reboot_system();
 //
 void set_control_mode(int mode);
 

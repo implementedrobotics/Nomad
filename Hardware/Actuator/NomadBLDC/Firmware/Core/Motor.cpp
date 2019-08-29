@@ -48,6 +48,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.phase_inductance_d = 0.0f;
     config_.phase_inductance_q = 0.0f;
     config_.phase_order = 0;
+    config_.calibrated = false;
 
     // Update KV Calulations
     SetKV(K_v);
