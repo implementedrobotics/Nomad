@@ -69,6 +69,8 @@
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
 static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTANCE * 1.0f / CURRENT_SENSE_GAIN;
 
+extern Motor *motor;
+extern MotorController *motor_controller;
 
 // Signals
 typedef enum
@@ -142,6 +144,7 @@ public:
 
     // Public for now...  TODO: Need something better here
     float voltage_bus_; // Bus Voltage (Volts)
+    volatile control_mode_type_t control_mode_; // Controller Mode
 
 private:
 
@@ -155,7 +158,7 @@ private:
     bool control_thread_ready_;                 // Controller thread ready/active
     bool control_initialized_;                  // Controller thread initialized
     volatile bool control_enabled_;             // Controller thread enabled
-    volatile control_mode_type_t control_mode_; // Controller Mode
+
     osThreadId control_thread_id_;              // Controller Thread ID
 
 

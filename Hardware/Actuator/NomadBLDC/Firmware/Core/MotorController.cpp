@@ -1,5 +1,5 @@
 /*
- * MotorConroller.cpp
+ * MotorController.cpp
  *
  *  Created on: August 25, 2019
  *      Author: Quincy Jones
@@ -34,12 +34,14 @@
 #include "rtos.h"
 #include "FastPWM.h"
 #include "Motor.h"
+#include "UserMenu.h"
 #include "../../math_ops.h"
 
 
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
+osThreadId currentSignalTID = 0;
 // Globals
 static int32_t g_adc1_offset;
 static int32_t g_adc2_offset;
@@ -48,6 +50,7 @@ extern "C"
 {
 #include "motor_controller_interface.h"
 }
+
 void motor_controller_thread_entry()
 {
     printf("Motor RT Controller Task Up.\n\r");
@@ -101,6 +104,8 @@ void current_measurement_cb()
     {
        // printf("SIGNAL SEND!\r\n");
         osSignalSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+        //osSignalSet(currentSignalTID, CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+        
     }
 }
 
@@ -153,6 +158,18 @@ bool calibrate_motor()
     printf("Motor Control Calibrate End.\n\r");
     return true;
 }
+
+// Menu Callbacks
+void measure_motor_parameters()
+{
+    //currentSignalTID = osThreadId();
+    //printf("Setting Signal\r\n");
+    set_control_mode(CALIBRATION_MODE); // Put in calibration mode
+    //motor->Calibrate(motor_controller);
+    //set_control_mode(IDLE_MODE);        // Back to IDLE Mode
+    printf("GOING TO IDLE\r\n");
+}
+
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
@@ -231,7 +248,7 @@ void MotorController::Init()
     // }
 
     // Default Mode Idle:
-    gate_driver_->disable_gd(); // Disable Gate Driver.  TODO: A Bit Reduntant
+    //gate_driver_->disable_gd(); // Disable Gate Driver.  TODO: A Bit Reduntant
     control_mode_ = IDLE_MODE;
     control_initialized_ = true;
     printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
@@ -265,6 +282,19 @@ void MotorController::StartControlFSM()
                 EnablePWM(false);
             }
             printf("Error Mode!\r\n");
+            osDelay(1);
+            break;
+        case (CALIBRATION_MODE):
+            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+            {
+                current_control_mode = control_mode_;
+                gate_driver_->enable_gd();
+                EnablePWM(true);
+
+                motor->Calibrate(motor_controller);
+                control_mode_ = IDLE_MODE;
+            }
+            //printf("Calib Mode!\r\n");
             osDelay(1);
             break;
         case (FOC_CURRENT_MODE):

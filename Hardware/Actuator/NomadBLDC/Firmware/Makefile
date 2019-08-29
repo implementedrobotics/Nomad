@@ -65,6 +65,7 @@ OBJECTS += Core/PositionSensor.o
 OBJECTS += Core/MotorController.o
 OBJECTS += Core/Motor.o
 OBJECTS += Core/LEDService.o
+OBJECTS += Core/UserMenu.o
 OBJECTS += PreferenceWriter/PreferenceWriter.o
 OBJECTS += hw_setup.o
 OBJECTS += main.o

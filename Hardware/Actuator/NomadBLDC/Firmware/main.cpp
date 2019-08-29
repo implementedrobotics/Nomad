@@ -31,21 +31,18 @@
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
 
-// float __float_reg[64]; // Floats stored in flash
-// int __int_reg[256];    // Ints stored in flash.  Includes position sensor calibration lookup table
-
-extern "C"
-{
-	#include "Core/motor_controller_interface.h"
-}
-
-
 #define LED_PIN PC_5
 
 #include "mbed.h"
 #include "rtos.h"
 #include "Core/MotorController.h"
 #include "Core/LEDService.h"
+#include "Core/UserMenu.h"
+
+extern "C"
+{
+	#include "Core/motor_controller_interface.h"
+}
 
 // #include "structs.h"
 // #include "foc.h"
@@ -61,10 +58,8 @@ extern "C"
 // #include "CAN_com.h"
 // #include "DRV.h"
 
-// PreferenceWriter prefs(6);
-
 // ObserverStruct observer;
-Serial pc(PA_2, PA_3);
+
 
 // CAN can(PB_8, PB_9, 1000000); // CAN Rx pin name, CAN Tx pin name
 // CANMessage rxMsg;
@@ -74,7 +69,12 @@ volatile int count = 0;
 //volatile int state = REST_MODE;
 volatile int state_change;
 
+// Serial Handler
+Serial serial(PA_2, PA_3);
+
+// Control Thread
 Thread control_task(osPriorityRealtime, 2048);
+
 // void onMsgReceived()
 // {
 //     //msgAvailable = true;
@@ -108,32 +108,9 @@ Thread control_task(osPriorityRealtime, 2048);
 //     }
 // }
 
-void enter_menu_state(void)
-{
-    //drv.disable_gd();
-    set_control_mode(IDLE_MODE);
-    printf("\n\r\n\r\n\r");
-    printf(" Commands New:\n\r");
-    wait_us(10);
-    printf(" m - Motor Mode\n\r");
-    wait_us(10);
-    printf(" c - Calibrate Encoder\n\r");
-    wait_us(10);
-    printf(" s - Setup\n\r");
-    wait_us(10);
-    printf(" e - Display Encoder\n\r");
-    wait_us(10);
-    printf(" z - Set Zero Position\n\r");
-    wait_us(10);
-    printf(" r - Run Motor\n\r");
-    wait_us(10);
-    printf(" esc - Exit to Menu\n\r");
-    wait_us(10);
-    //gpio.led->write(0);
-}
 
 // void enter_setup_state(void)
-// {control_thread_ready_
+// {
 //     printf("\n\r\n\r Configuration Options \n\r\n\n");
 //     wait_us(10);
 //     printf(" %-4s %-31s %-5s %-6s %-5s\n\r\n\r", "prefix", "parameter", "min", "max", "current value");
@@ -195,8 +172,8 @@ char char_count = 0;
 
 /// Manage state machine with commands from serial terminal or configurator gui ///
 /// Called when data received over serial ///
-void serial_interrupt(void)
-{
+//void serial_interrupt(void)
+//{
     // while (pc.readable())
     // {
     //     char c = pc.getc();
@@ -322,18 +299,43 @@ void serial_interrupt(void)
     //     //     }
     //     // }
     // }
-}
+//}
 
 int main()
 {
     // Setup LED
     LEDService::Instance().Init(LED_PIN);
     LEDService::Instance().On();
+
+    serial.baud(921600); // set serial baud rateSerial
+    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d\n\r\n\r", VERSION_MAJOR, VERSION_MINOR);
+
+    // Create Menus
+    
+    MainMenu *main_menu = new MainMenu("Main Menu", 0x27, 0);
+
+    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu);
+    MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
+    MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
+    MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu);
+    MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu);
+
+    MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
+
+    NVIC_SetPriority(USART1_IRQn, 3);
+    //MainMenu *zero_position = new MainMenu(" z - Set Zero Position", 'z', main_menu);
+    //MainMenu *run_mode = new MainMenu(" r - Run Motor", 'r', main_menu);
+    //sub_menu = new MainMenu(" esc - Exit Menu", 0x27, main_menu);
+
+
+    UserMenu *user_menu = new UserMenu(&serial, main_menu);
+    user_menu->Show();
+
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
 
     // NVIC_SetPriority(CAN1_RX0_IRQn, 3);
-    // can.filter(CAN_ID << 21, 0xFFE00004, CANStandard, 0);
+    //can.filter(CAN_ID << 21, 0xFFE00004, CANFormat::CANStandard, 0);
 
     // txMsg.id = CAN_MASTER;
     // txMsg.len = 6;
@@ -377,10 +379,7 @@ int main()
     // spi.WriteLUT(lut); // Set potision sensor nonlinearity lookup table
     // init_controller_params(&controller);
 
-    pc.baud(230400); // set serial baud rate
-    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d\n\r\n\r", VERSION_MAJOR, VERSION_MINOR);
-    wait(2.0);
-    printf("\n\r Debug Info:\n\r");
+
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
@@ -395,9 +394,6 @@ int main()
 
     // pc.attach(&serial_interrupt); // attach serial interrupt
 
-    // state_change = 1;
-
-    // int counter = 0;
     // while (1)
     // {
     //     drv.print_faults();
@@ -419,5 +415,8 @@ int main()
     //         wait(.002);
     //     }
     // }
+
+
+
     control_task.start(motor_controller_thread_entry);
 }

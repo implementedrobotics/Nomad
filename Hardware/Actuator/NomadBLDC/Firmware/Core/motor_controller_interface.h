@@ -35,6 +35,8 @@ void motor_controller_thread_entry();
 // Callbacks
 void current_measurement_cb();
 
+void measure_motor_parameters();
+
 //
 void set_control_mode(int mode);
 
