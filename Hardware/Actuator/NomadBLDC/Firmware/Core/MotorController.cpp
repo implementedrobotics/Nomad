@@ -50,10 +50,11 @@ extern "C"
 {
 #include "motor_controller_interface.h"
 }
-
+#define FLASH_SAVE_SIGNATURE 0x78D5FC00
 // Flash Save Struct.  TODO: Move to own file
 struct __attribute__((__packed__)) Save_format_t
 {
+    uint32_t signature;
     uint32_t version;
     Motor::Config_t motor_config;
     uint8_t motor_reserved[128]; // Reservered;
@@ -178,6 +179,7 @@ void save_configuration()
     printf("\r\nSaving Configuration...\r\n");
 
     Save_format_t save;
+    save.signature = FLASH_SAVE_SIGNATURE;
     save.version = 1;   // Set Version
     save.motor_config = motor->config_;
     save.position_sensor_config = motor->PositionSensor()->config_;
@@ -198,12 +200,18 @@ void load_configuration()
     FlashInterface::Instance().Read(0, (uint8_t *)&load, sizeof(load));
     FlashInterface::Instance().Close();
 
+    if(load.signature != FLASH_SAVE_SIGNATURE)
+    {
+        printf("\r\nERROR: No Configuration Found!.  Press ESC to return to menu.\r\n\r\n");
+        return;
+    }
+
     motor->config_ = load.motor_config;
     motor->PositionSensor()->config_ = load.position_sensor_config;
     motor_controller->config_ = load.controller_config;
 
     //printf("READ Version: %d\r\n", load.version);
-    printf("\r\nLoaded.  Press ESC to return to menu.\r\n");
+    printf("\r\nLoaded.\r\n");
 }
 void reboot_system()
 {
@@ -273,20 +281,10 @@ void MotorController::Init()
     zero_current_sensors(1024); // Measure current sensor zero-offset
     EnablePWM(false);           // Stop PWM
 
-    // TODO: This should only happen when commanded.  Just Testing
-    // Do Motor Calibration
-    //calibrate_motor();
-
-    // TODO: Compute Loop Gains With measured motor parameters
-
-    // Check for Calibration of Motor (Could be loaded)
-    // if(!motor_->is_calibrated_)
-    // {
-    // 	DoMotorCalibration();
-    // }
+    // Load Configuration
+    load_configuration();
 
     // Default Mode Idle:
-    //gate_driver_->disable_gd(); // Disable Gate Driver.  TODO: A Bit Reduntant
     control_mode_ = IDLE_MODE;
     control_initialized_ = true;
     //printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
