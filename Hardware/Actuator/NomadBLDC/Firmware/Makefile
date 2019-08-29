@@ -882,6 +882,9 @@ $(PROJECT).hex: $(PROJECT).elf
 flash:
 	$(SF) write $(PROJECT).bin 0x8000000
 
+erase:
+	$(SF) erase
+
 
 # Rules
 ###############################################################################
