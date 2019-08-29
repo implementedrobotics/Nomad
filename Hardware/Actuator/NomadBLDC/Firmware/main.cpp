@@ -28,8 +28,8 @@
  * 
  */
 
-#define VERSION_MAJOR 0
-#define VERSION_MINOR 1
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 0
 
 #define LED_PIN PC_5
 
@@ -308,21 +308,21 @@ int main()
     LEDService::Instance().On();
 
     serial.baud(921600); // set serial baud rateSerial
-    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d\n\r\n\r", VERSION_MAJOR, VERSION_MINOR);
+    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
 
     // Create Menus
-    
     MainMenu *main_menu = new MainMenu("Main Menu", 0x27, 0);
 
     MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu);
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
     MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu);
+    MainMenu *information_mode = new MainMenu("Show Configuration", 'i', main_menu);
     MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu);
 
     MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
 
-    NVIC_SetPriority(USART1_IRQn, 3);
+    NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
     //MainMenu *zero_position = new MainMenu(" z - Set Zero Position", 'z', main_menu);
     //MainMenu *run_mode = new MainMenu(" r - Run Motor", 'r', main_menu);
     //sub_menu = new MainMenu(" esc - Exit Menu", 0x27, main_menu);

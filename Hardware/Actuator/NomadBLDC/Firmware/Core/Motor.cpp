@@ -71,51 +71,52 @@ void Motor::Update()
 }
 bool Motor::Calibrate(MotorController *controller)
 {
-    printf("Motor Control Calibrate Begin.\n\r");
-    
-	controller->SetDuty(0.5f,0.5f,0.5f); // Make sure we have no PWM period
 
+    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+
+    // TODO: Check Error Here
     // Measure Resistance
     MeasureMotorResistance(controller, 15.0f, 3.0f);
 
+    // AND Here
     // Measure Inductance
     MeasureMotorInductance(controller, -2.0f, 2.0f);
 
-    controller->SetDuty(0.5f,0.5f,0.5f); // Make sure we have no PWM period
+    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
-    
-	config_.calibrated = true; // Update Flag
+    config_.calibrated = true; // Update Flag
     dirty_ = true;
 
-    printf("Motor Control Calibrate End.\n\r");
     return true;
 }
 
-
 bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high)
 {
-	printf("Measure Motor Inductance:\n\r");
+    printf("Measure Motor Inductance:\n\r");
 
-	float test_voltages[2] = {voltage_low, voltage_high};
-	float Ialphas[2] = {0.0f};
+    float test_voltages[2] = {voltage_low, voltage_high};
+    float Ialphas[2] = {0.0f};
     float U = 0, V = 0, W = 0;
     float dtc_U = 0, dtc_V = 0, dtc_W = 0;
 
-	static const int num_cycles = 1.5f / sample_time_; // Test runs for 3s;
+    static const int num_cycles = 1.5f / sample_time_; // Test runs for 3s;
 
-	// Shutdown Phases
-	controller->SetDuty(0.5f, 0.5f, 0.5f);
+    // Shutdown Phases
+    controller->SetDuty(0.5f, 0.5f, 0.5f);
 
-	for (int t = 0; t < num_cycles; ++t) {
-		for (int i = 0; i < 2; ++i) {
-			osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
-			if (evt.status != osEventSignal) {
-				// motor->error = ERROR_PHASE_INDUCTANCE_MEASUREMENT_TIMEOUT;
+    for (int t = 0; t < num_cycles; ++t)
+    {
+        for (int i = 0; i < 2; ++i)
+        {
+            osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
+            if (evt.status != osEventSignal)
+            {
+                // motor->error = ERROR_PHASE_INDUCTANCE_MEASUREMENT_TIMEOUT;
                 printf("ERROR: Phase Inductance Measurement Timeout\n\r");
-				return false;
-			}
-            if(i==1) // When you step you are reading the previous step.  TODO: Make this Better!
-			    Ialphas[0] += state_.I_a;
+                return false;
+            }
+            if (i == 1) // When you step you are reading the previous step.  TODO: Make this Better!
+                Ialphas[0] += state_.I_a;
             else
                 Ialphas[1] += state_.I_a;
 
@@ -124,86 +125,87 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
             controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
             controller->SetDuty(dtc_U, dtc_V, dtc_W);
             //SetVoltageTimings(test_voltages[i], 0.0f);
-		 }	
-	}
+        }
+    }
 
-	// Shutdown phases
-	controller->SetDuty(0.5f, 0.5f, 0.5f);
-    printf("I Alpha: %f/%f\n\r", Ialphas[0], Ialphas[1]);
-	float v_L = 0.5f * (voltage_high - voltage_low);
-	// Note: A more correct formula would also take into account that there is a finite timestep.
-	// However, the discretisation in the current control loop inverts the same discrepancy
-	float dI_by_dt = (Ialphas[1] - Ialphas[0]) / (sample_time_ * (float)num_cycles);
-	float L = v_L / dI_by_dt;
+    // Shutdown phases
+    controller->SetDuty(0.5f, 0.5f, 0.5f);
+    //printf("I Alpha: %f/%f\n\r", Ialphas[0], Ialphas[1]);
+    float v_L = 0.5f * (voltage_high - voltage_low);
+
+    // Note: A more correct formula would also take into account that there is a finite timestep.
+    // However, the discretisation in the current control loop inverts the same discrepancy
+    float dI_by_dt = (Ialphas[1] - Ialphas[0]) / (sample_time_ * (float)num_cycles);
+    float L = v_L / dI_by_dt;
+
+    // TODO arbitrary values set for now
+    if (L < 1e-6f || L > 500e-6f)
+    {
+        //motor->error = ERROR_PHASE_INDUCTANCE_OUT_OF_RANGE;
+        printf("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
+        return false;
+    }
 
     // PMSM D/Q Inductance are the same.
-	config_.phase_inductance_d = L;
+    config_.phase_inductance_d = L;
     config_.phase_inductance_q = L;
-    printf("Measured Inductance: %f Henries\r\n", config_.phase_inductance_d);
+    printf("Phase Inductance: %f Henries\r\n", config_.phase_inductance_d);
 
-
-	// TODO arbitrary values set for now
-	if (L < 1e-6f || L > 500e-6f) {
-		//motor->error = ERROR_PHASE_INDUCTANCE_OUT_OF_RANGE;
-		printf("ERROR INDUCTANCE!!!!!: %f\n\r", L);
-		return false;
-	}
-
-	return true;
+    return true;
 }
 
 bool Motor::MeasureMotorResistance(MotorController *controller, float test_current, float max_voltage)
 {
-	static const float kI = 10.0f;                          // [(V/s)/A]
-	static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
-	float test_voltage = 0.0f;
+    static const float kI = 10.0f;                          // [(V/s)/A]
+    static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
+    float test_voltage = 0.0f;
     float U = 0, V = 0, W = 0;
     float dtc_U = 0, dtc_V = 0, dtc_W = 0;
     //int sum = 0;
-	printf("Measure Motor Resistance:\n\r");
+    printf("Measure Motor Resistance:\n\r");
 
-	for (int i = 0; i < num_test_cycles; ++i) {
-		osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
-		if (evt.status != osEventSignal) {
-			// motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
+    for (int i = 0; i < num_test_cycles; ++i)
+    {
+        osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
+        if (evt.status != osEventSignal)
+        {
+            // motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
             printf("ERROR: Phase Resistance Measurement Timeout\n\r");
-			return false;
-		}
+            return false;
+        }
 
+        float Ialpha = state_.I_a;
+        test_voltage += (kI * sample_time_) * (test_current - Ialpha);
 
+        if (test_voltage > max_voltage)
+            test_voltage = max_voltage; // Clamp Current
+        if (test_voltage < -max_voltage)
+            test_voltage = -max_voltage; // Clamp Current
 
-		float Ialpha = state_.I_a;
-        // if(sum++ % 900 == 100) {
-		// 	printf("Measuring Resistance: %f/%f\n\r", Ialpha, test_voltage);
-		// }
-		test_voltage += (kI * sample_time_) * (test_current - Ialpha);
-
-		if (test_voltage > max_voltage) test_voltage = max_voltage;   // Clamp Current
-		if (test_voltage < -max_voltage) test_voltage = -max_voltage; // Clamp Current
-
-		// Test voltage along phase A
-		controller->dqInverseTransform(0.0f, test_voltage, 0.0f, &U, &V, &W);
+        // Test voltage along phase A
+        controller->dqInverseTransform(0.0f, test_voltage, 0.0f, &U, &V, &W);
         controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
         controller->SetDuty(dtc_U, dtc_V, dtc_W);
         //controller->ParkInverseTransform(0.0f, test_voltage, 0.0f,  &v_alpha, &v_beta); // No need for a transform A axis = Alpha axis
-        //controller->ClarkeInverseTransform(v_alpha, v_beta, 
-		//SetVoltageTimings(test_voltage, 0.0f);
-	}
+        //controller->ClarkeInverseTransform(v_alpha, v_beta,
+        //SetVoltageTimings(test_voltage, 0.0f);
+    }
 
-	float R = test_voltage / test_current;
-	if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f) {
-		// motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
-		printf("ERROR RESISTANCE!!!!!: %f to %f\n\r", test_voltage, R);
-		return false;
-	}
+    float R = test_voltage / test_current;
+    if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f)
+    {
+        // motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
+        printf("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
+        return false;
+    }
     config_.phase_resistance = R;
-    printf("Measured Resistance: %f ohms\r\n", config_.phase_resistance);
+    printf("Phase Resistance: %f ohms\r\n", config_.phase_resistance);
 
-	// Shutdown the phases
-	controller->SetDuty(0.5f, 0.5f, 0.5f);
+    // Shutdown the phases
+    controller->SetDuty(0.5f, 0.5f, 0.5f);
 
-	osDelay(200);
-	return true;
+    osDelay(200);
+    return true;
 }
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {

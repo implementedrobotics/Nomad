@@ -57,7 +57,7 @@ void MenuItem::AddSubMenu(MenuItem *menu)
 
 void MenuItem::Show()
 {
-    printf("\n\r\n\r\n\r");
+    printf("\n\r");
     printf(" %s\r\n", name_.c_str()); // Menu Name
     for(uint32_t i = 0; i < sub_menus_.size(); i++)
     {
@@ -88,8 +88,6 @@ void MainMenu::Execute()
     {
         cb_ptr_(); // Callback
     }
-
-    printf("EXECUTING\r\n");
 }
 
 void MainMenu::Close()

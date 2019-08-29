@@ -53,7 +53,7 @@ extern "C"
 
 void motor_controller_thread_entry()
 {
-    printf("Motor RT Controller Task Up.\n\r");
+    //printf("Motor RT Controller Task Up.\n\r");
 
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(CONTROL_LOOP_PERIOD, 100, 21);
@@ -104,8 +104,6 @@ void current_measurement_cb()
     {
        // printf("SIGNAL SEND!\r\n");
         osSignalSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-        //osSignalSet(currentSignalTID, CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-        
     }
 }
 
@@ -131,7 +129,7 @@ bool zero_current_sensors(uint32_t num_samples)
     }
     g_adc1_offset = g_adc1_offset / num_samples;
     g_adc2_offset = g_adc2_offset / num_samples;
-    printf("ADC OFFSET: %d and %d\r\n", g_adc1_offset, g_adc2_offset);
+    //printf("ADC OFFSET: %d and %d\r\n", g_adc1_offset, g_adc2_offset);
     return true;
 }
 
@@ -141,20 +139,14 @@ bool calibrate_motor()
 
     // Make sure we have no PWM period
 	motor_controller->SetDuty(0.5f,0.5f,0.5f);
+    osDelay(100);
 
-    // Turn on PWM outputs
-	motor_controller->EnablePWM(true);
-
-    motor->Calibrate(motor_controller);
+    motor->Calibrate(motor_controller); // Run Motor Calibration
 
     // Shutdown the phases
 	motor_controller->SetDuty(0.5f,0.5f,0.5f);
+	osDelay(100);
 
-	// Turn off PWM outputs
-	motor_controller->EnablePWM(false); // enable pwm outputs
-
-	//osDelay(100);
-    
     printf("Motor Control Calibrate End.\n\r");
     return true;
 }
@@ -167,7 +159,7 @@ void measure_motor_parameters()
     set_control_mode(CALIBRATION_MODE); // Put in calibration mode
     //motor->Calibrate(motor_controller);
     //set_control_mode(IDLE_MODE);        // Back to IDLE Mode
-    printf("GOING TO IDLE\r\n");
+    //printf("GOING TO IDLE\r\n");
 }
 
 // Control Loop Timer Interrupt Synced with PWM
@@ -192,7 +184,7 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
 
 void MotorController::Init()
 {
-    printf("MotorController::Init() - Motor Controller Initializing...\n\r");
+    //printf("MotorController::Init() - Motor Controller Initializing...\n\r");
 
     // Update Control Thread State
     control_thread_id_ = osThreadGetId();
@@ -237,7 +229,7 @@ void MotorController::Init()
 
     // TODO: This should only happen when commanded.  Just Testing
     // Do Motor Calibration
-    calibrate_motor();
+    //calibrate_motor();
 
     // TODO: Compute Loop Gains With measured motor parameters
 
@@ -251,12 +243,12 @@ void MotorController::Init()
     //gate_driver_->disable_gd(); // Disable Gate Driver.  TODO: A Bit Reduntant
     control_mode_ = IDLE_MODE;
     control_initialized_ = true;
-    printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
+    //printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
 }
 
 void MotorController::StartControlFSM()
 {
-    printf("STARTING FSM\r\n");
+    //printf("NomadBLDC UP!\r\n");
     // TODO: Check for DRV Errors Here -> ERROR MODE
     static control_mode_type_t current_control_mode = IDLE_MODE;
     for (;;)
@@ -291,7 +283,10 @@ void MotorController::StartControlFSM()
                 gate_driver_->enable_gd();
                 EnablePWM(true);
 
+                printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
                 motor->Calibrate(motor_controller);
+                // TODO: Check Errors
+                printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
             }
             //printf("Calib Mode!\r\n");
