@@ -64,6 +64,7 @@ void Motor::Update()
 
     // Update State
     state_.theta_mech = rotor_sensor_->GetMechanicalPosition();
+    state_.theta_mech_true = rotor_sensor_->GetMechanicalPositionTrue();
     state_.theta_mech_dot = rotor_sensor_->GetMechanicalVelocity();
     state_.theta_elec = rotor_sensor_->GetElectricalPosition();
     state_.theta_elec_dot = rotor_sensor_->GetElectricalVelocity();
@@ -84,6 +85,9 @@ bool Motor::Calibrate(MotorController *controller)
     MeasureMotorInductance(controller, -2.0f, 2.0f);
 
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+
+    // Order Phases
+    OrderPhases(controller);
 
     config_.calibrated = true; // Update Flag
     dirty_ = true;
@@ -208,9 +212,86 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     osDelay(200);
     return true;
 }
+
+bool Motor::OrderPhases(MotorController *controller)
+{
+    printf("\n\rRunning phase direction scan.\n\r");
+
+    float rotor_lock_duration = 2.0f; // Time needed for rotor to lock and settle on D-Axis
+
+    float theta_start = 0;
+    float theta_end = 0;
+    float U, V, W = 0;
+    float dtc_U, dtc_V, dtc_W = .5f;
+    float test_voltage = 1.0f;
+
+    float scan_step_size = 1.0f/5000.0f; // Amount to step in open loop
+	float scan_range = 16.0f * M_PI; // Scan range for phase order (electrical range)
+
+    printf("Locking Rotor to D-Axis:\n\r");
+	// go to encoder zero phase for start_lock_duration to get ready to scan
+	for (int i = 0; i < rotor_lock_duration*(float)sample_time_; ++i) {
+		if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+			return false;
+		}
+        controller->dqInverseTransform(0.0f, test_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
+        controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
+        controller->SetDuty(dtc_U, dtc_V, dtc_W);
+        //controller->SetModulationOutput();
+		//ParkInverseTransform(0.0f, calib_voltage, v_q, &v_alpha, &v_beta);
+		//SetVoltageTimings(calib_voltage, 0.0f);
+	}
+
+    printf("Rotor stabilized.  Running phase direciton scan: \n\r");
+    
+    Update(); // Update State/Position Sensor
+
+    osDelay(1); // Wait a ms
+
+    for(float ref_angle = 0; ref_angle < scan_range; ref_angle += scan_step_size)
+	{
+		//for (int i = 0; i < step_dt*(float)current_meas_freq_; ++i) {
+			if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+				return false;
+			}
+            controller->dqInverseTransform(ref_angle, test_voltage, 0.0f, &U, &V, &W);
+            controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
+            controller->SetDuty(dtc_U, dtc_V, dtc_W);
+
+            Update(); // Update State/Position Sensor
+
+            if(ref_angle == 0) // TODO: This seems unnecessary.  Since rotor is already locked we should just be able to do this outside the loop.
+            {
+                theta_start = state_.theta_mech_true;
+            }
+			//ParkInverseTransform(ref_angle, calib_voltage, 0.0f,  &v_alpha, &v_beta);
+			//SetVoltageTimings(v_alpha, v_beta);
+		//}
+	}
+    theta_end = state_.theta_mech_true;
+
+    printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
+	if(theta_end - theta_start > 0)
+	{
+		printf("Phase Order is correct!\n\r");
+        rotor_sensor_->SetDirection(1);
+        config_.phase_order = 1;
+	}
+	else
+	{
+		printf("Phase Order is incorrect!\n\r");
+		rotor_sensor_->SetDirection(-1);
+        config_.phase_order = 0;
+	}
+    return true;
+    // TODO: Probably have to rezero some things on the position sensor.
+}
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {
     config_.num_pole_pairs = pole_pairs;
+
+    // Update Rotor
+    rotor_sensor_->SetPolePairs(pole_pairs);
     dirty_ = true;
 }
 

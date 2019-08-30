@@ -481,6 +481,11 @@ void MotorController::SetDuty(float duty_U, float duty_V, float duty_W)
     }
 }
 
+// void MotorController::SetModulationOutput(float v_alpha, float v_beta)
+// {
+
+// }
+
 // Transform Functions
 void MotorController::dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c)
 {

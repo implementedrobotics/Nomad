@@ -83,7 +83,11 @@ void PositionSensorAS5x47::SetMechanicalOffset(float offset)
     config_.offset_mech = offset;
     dirty_ = true;
 }
-
+void PositionSensorAS5x47::SetDirection(int32_t direction)
+{
+    config_.direction = direction;
+    dirty_ = true;
+}
 void PositionSensorAS5x47::SetOffsetLUT(int32_t lookup_table[128])
 {
     memcpy(&config_.offset_lut, &lookup_table, sizeof(config_.offset_lut));
@@ -123,7 +127,7 @@ void PositionSensorAS5x47::Update(float Ts)
     int32_t offset_2 = config_.offset_lut[((position_raw_ >> 7) + 1) % 128];
     int32_t offset_interp = offset_1 + ((offset_2 - offset_1) * (position_raw_ - ((position_raw_ >> 7) << 7)) >> 7);
 
-    int32_t current_counts = position_raw_ + offset_interp; // Compensate for non linearities from the sensor calibration
+    int32_t current_counts = (config_.direction * position_raw_) + offset_interp; // Compensate for non linearities from the sensor calibration
 
     // Wrap angle rotations and count them
     if (current_counts - prev_counts > config_.cpr / 2)

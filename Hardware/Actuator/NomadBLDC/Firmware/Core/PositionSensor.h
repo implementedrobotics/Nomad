@@ -42,6 +42,7 @@ public:
         float offset_elec;       // Electrical Position Offset (Radians)
         float offset_mech;       // Mechanical Position Offset (Radians)
         int32_t cpr;             // Sensor Counts Per Revolution
+        int32_t direction;       // Sensor Direction for Positive Rotation
         int32_t offset_lut[128]; // Offset Lookup Table
     };
 
@@ -52,7 +53,8 @@ public:
     void SetMechanicalOffset(float offset);       // Set Sensor Mechanical Position Offset, Output "zero" point (radians)
     void SetOffsetLUT(int32_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
     void SetPolePairs(uint32_t pole_pairs);       // Set Pole Pair Count for Electrical Position Calculations
-
+    void SetDirection(int32_t direction);         // Sensor Direction
+    
     void ZeroPosition(); // Zero Mechanical Position Offset
 
     inline int32_t GetRawPosition() { return position_raw_; }                                 // Get Sensor Raw Position (counts)

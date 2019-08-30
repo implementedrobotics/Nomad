@@ -48,6 +48,7 @@ public:
         float I_c;            // Phase C Currents
         float theta_mech;     // Mechanical Position @ Output (Radians)
         float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
+        float theta_mech_true;// Mechanical Position @ Output w/ Offset (Radians) 
         float theta_elec;     // Electrical Position @ Rotor (Radians)
         float theta_elec_dot; // Electrical Velocity @ Rotor (Radians/Sec)
         float windings_temp;  // Motor Windings Temperature (Degrees Celcius)
@@ -71,13 +72,14 @@ public:
 
     void SetPolePairs(uint32_t pole_pairs);  // Set Motor Pole Count
     void SetKV(float K_v);  // Set Motor KV Rating
+
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
 
     void Update();          // Update Motor State
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
-    bool WriteConfig(); // Write Configuration to Flash Memory
-    bool ReadConfig();  // Read Configuration from Flash Memory
+    //bool WriteConfig(); // Write Configuration to Flash Memory
+    //bool ReadConfig();  // Read Configuration from Flash Memory
 
     State_t state_;  // Motor State
     Config_t config_; // Motor Params
@@ -87,6 +89,9 @@ private:
     // Measure Routines
     bool MeasureMotorResistance(MotorController *controller, float test_current, float max_voltage);
     bool MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high);
+    bool CalibrateEncoderOffset(MotorController *controller); // Calibrate Encoder Offset
+    bool OrderPhases(MotorController *controller);     // Check Phase Order
+
 
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
     bool dirty_; // Has unsaved changes to config
