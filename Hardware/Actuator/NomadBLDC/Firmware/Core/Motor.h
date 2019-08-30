@@ -77,10 +77,12 @@ public:
 
     void Update();          // Update Motor State
 
+
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
     //bool WriteConfig(); // Write Configuration to Flash Memory
     //bool ReadConfig();  // Read Configuration from Flash Memory
-
+    void PrintPosition();
+    
     State_t state_;  // Motor State
     Config_t config_; // Motor Params
     

@@ -87,7 +87,8 @@ typedef enum
     CALIBRATION_MODE = 2,
     FOC_CURRENT_MODE = 3,
     FOC_VOLTAGE_MODE = 4,
-    FOC_TORQUE_MODE = 5
+    FOC_TORQUE_MODE = 5,
+    ENCODER_DEBUG = 6,
 } control_mode_type_t;
 
 typedef enum

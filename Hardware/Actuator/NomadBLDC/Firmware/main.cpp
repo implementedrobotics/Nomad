@@ -161,12 +161,6 @@ Thread control_task(osPriorityRealtime, 2048);
 //     state_change = 0;
 // }
 
-void print_encoder(void)
-{
-    //printf(" Mechanical Angle:  %f    Electrical Angle:  %f    Raw:  %d\n\r", spi.GetMechPosition(), spi.GetElecPosition(), spi.GetRawPosition());
-    wait(.001);
-}
-
 char cmd_val[8] = {0};
 char cmd_id = 0;
 char char_count = 0;
@@ -314,10 +308,10 @@ int main()
     // Create Menus
     MainMenu *main_menu = new MainMenu("Main Menu", 0x27, 0);
 
-    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu);
+    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu, &start_control);
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
-    MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu);
+    MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &show_encoder_debug);
     MainMenu *information_mode = new MainMenu("Show Configuration", 'i', main_menu);
     MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
     MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);

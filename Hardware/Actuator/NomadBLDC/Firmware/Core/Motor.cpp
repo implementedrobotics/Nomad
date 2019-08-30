@@ -71,6 +71,11 @@ void Motor::Update()
 
     // Update Temparature Observer
 }
+
+void Motor::PrintPosition()
+{
+    printf(" Mechanical Angle:  %f/%f    Electrical Angle:  %f    Raw:  %d\n\r", state_.theta_mech, state_.theta_mech_true, state_.theta_elec, rotor_sensor_->GetRawPosition());
+}
 bool Motor::Calibrate(MotorController *controller)
 {
 
@@ -226,7 +231,7 @@ bool Motor::OrderPhases(MotorController *controller)
     float test_voltage = 1.0f;
 
     float scan_step_size = 1.0f/5000.0f; // Amount to step in open loop
-	float scan_range = 16.0f * M_PI; // Scan range for phase order (electrical range)
+	float scan_range = 4.0f * M_PI; // Scan range for phase order (electrical range)
 
     printf("Locking Rotor to D-Axis:\n\r");
 	// go to encoder zero phase for start_lock_duration to get ready to scan
@@ -284,7 +289,6 @@ bool Motor::OrderPhases(MotorController *controller)
         config_.phase_order = 0;
 	}
     return true;
-    // TODO: Probably have to rezero some things on the position sensor.
 }
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {

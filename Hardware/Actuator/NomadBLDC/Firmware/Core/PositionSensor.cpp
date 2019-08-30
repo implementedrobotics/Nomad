@@ -50,6 +50,7 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
     config_.offset_elec = 0;
     config_.offset_mech = 0;
     config_.cpr = cpr;
+    config_.direction = 1;
     memset(&config_.offset_lut, 0, sizeof(config_.offset_lut));
 
     // Init SPI Driver Handle for Encoder Sensor
@@ -127,7 +128,7 @@ void PositionSensorAS5x47::Update(float Ts)
     int32_t offset_2 = config_.offset_lut[((position_raw_ >> 7) + 1) % 128];
     int32_t offset_interp = offset_1 + ((offset_2 - offset_1) * (position_raw_ - ((position_raw_ >> 7) << 7)) >> 7);
 
-    int32_t current_counts = (config_.direction * position_raw_) + offset_interp; // Compensate for non linearities from the sensor calibration
+    int32_t current_counts = position_raw_ + offset_interp; // Compensate for non linearities from the sensor calibration
 
     // Wrap angle rotations and count them
     if (current_counts - prev_counts > config_.cpr / 2)

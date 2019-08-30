@@ -180,7 +180,7 @@ void save_configuration()
 
     Save_format_t save;
     save.signature = FLASH_SAVE_SIGNATURE;
-    save.version = 1;   // Set Version
+    save.version = 1; // Set Version
     save.motor_config = motor->config_;
     save.position_sensor_config = motor->PositionSensor()->config_;
     save.controller_config = motor_controller->config_;
@@ -200,7 +200,7 @@ void load_configuration()
     FlashInterface::Instance().Read(0, (uint8_t *)&load, sizeof(load));
     FlashInterface::Instance().Close();
 
-    if(load.signature != FLASH_SAVE_SIGNATURE)
+    if (load.signature != FLASH_SAVE_SIGNATURE)
     {
         printf("\r\nERROR: No Configuration Found!.  Press ESC to return to menu.\r\n\r\n");
         return;
@@ -216,6 +216,18 @@ void load_configuration()
 void reboot_system()
 {
     HAL_NVIC_SystemReset();
+}
+
+void start_control()
+{
+    printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
+    set_control_mode(FOC_VOLTAGE_MODE);
+}
+
+void show_encoder_debug()
+{
+    printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
+    set_control_mode(ENCODER_DEBUG);
 }
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
@@ -244,7 +256,7 @@ void MotorController::Init()
     // Update Control Thread State
     control_thread_id_ = osThreadGetId();
     control_thread_ready_ = true;
-
+    control_mode_ = CALIBRATION_MODE; // Start in "Calibration" mode.
     // Compute Maximum Allowed Current
     float margin = 0.90f;
     float max_input = margin * 0.3f * SENSE_CONDUCTANCE;
@@ -294,7 +306,11 @@ void MotorController::StartControlFSM()
 {
     //printf("NomadBLDC UP!\r\n");
     // TODO: Check for DRV Errors Here -> ERROR MODE
+
+    // Start IDLE and PWM/Gate Driver Off
     static control_mode_type_t current_control_mode = IDLE_MODE;
+    gate_driver_->disable_gd();
+    EnablePWM(false);
     for (;;)
     {
         // Check Current Mode
@@ -347,11 +363,23 @@ void MotorController::StartControlFSM()
             }
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
             {
-                // TODO: Should have a check for number of missed deadlines, then bail
+                // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
                 printf("ERROR: Motor Controller Timeout!\r\n");
                 control_mode_ = ERROR_MODE;
+                break;
             }
             DoMotorControl();
+            break;
+        case (ENCODER_DEBUG):
+            if (current_control_mode != control_mode_)
+            {
+                current_control_mode = control_mode_;
+                gate_driver_->disable_gd();
+                EnablePWM(false);
+            }
+            motor->Update();
+            motor->PrintPosition();
+            osDelay(200);
             break;
         default:
             if (current_control_mode != control_mode_)
@@ -368,17 +396,37 @@ void MotorController::StartControlFSM()
 }
 void MotorController::DoMotorControl()
 {
-    //control_enabled_ = true;
-    //while (control_enabled_) // Do Forever
-    //{
-    // TODO: Error Checking
-    //if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
-    //{
-    // TODO: Error here for timing
-    //printf("ERROR: Motor Controller Timeout!\r\n");
-    //break;
-    //}
-    //}
+    float v_d = 0.0f;
+    float v_q = 0.0f;
+    float v_alpha, v_beta;
+    float input_voltage = 1.0f;
+    float U, V, W;
+    float dtc_U, dtc_V, dtc_W;
+
+    // control_enabled_ = true;
+    // while(control_enabled_) // Do Forever
+    // {
+    // 	// voltage loop can wait forever
+    // 	if(osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal){
+    // 		// TODO: Error here for timing
+    // 		break;
+    // 	}
+    // 	// Get Rotor Position
+    // 	motor_->UpdateState();
+
+    if (control_mode_ == FOC_VOLTAGE_MODE)
+    {
+
+        dqInverseTransform(motor->state_.theta_elec, input_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
+        SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
+        SetDuty(dtc_U, dtc_V, dtc_W);
+
+        //dqInverseTransform(motor_->GetElectricalPhaseAngle(), v_d, input_voltage, &v_a, &v_b, &v_c);
+        //ParkInverseTransform(motor->state_.position_electrical_, v_d, input_voltage, &v_alpha, &v_beta);
+
+        // Update Timings
+        //SetVoltageTimings(v_alpha, v_beta);
+    }
 }
 
 void MotorController::StartPWM()
@@ -467,18 +515,18 @@ void MotorController::EnablePWM(bool enable)
 void MotorController::SetDuty(float duty_U, float duty_V, float duty_W)
 {
     // TODO: We should just reverse the "encoder direcion to simplify this"
-    if (motor_->config_.phase_order)
-    {                                                                        // Check which phase order to use,
-        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U); // Write duty cycles
-        TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
-        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
-    }
-    else
-    {
-        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U);
-        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
-        TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
-    }
+    //if (motor_->config_.phase_order)
+    //{                                                                        // Check which phase order to use,
+    TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U); // Write duty cycles
+    TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
+    TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+    //}
+    // else
+    // {
+    //     TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U);
+    //     TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
+    //     TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+    // }
 }
 
 // void MotorController::SetModulationOutput(float v_alpha, float v_beta)

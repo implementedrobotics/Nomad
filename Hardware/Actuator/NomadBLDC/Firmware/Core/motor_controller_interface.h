@@ -41,6 +41,9 @@ void save_configuration();
 void load_configuration();
 void restore_configuration();
 void reboot_system();
+void start_control();
+void enter_idle();
+void show_encoder_debug();
 //
 void set_control_mode(int mode);
 
