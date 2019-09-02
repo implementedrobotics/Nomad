@@ -282,13 +282,13 @@ bool Motor::OrderPhases(MotorController *controller)
 	if(theta_end - theta_start > 0)
 	{
 		printf("Phase Order is correct!\n\r");
-        rotor_sensor_->SetDirection(1);
+        //rotor_sensor_->SetDirection(1);
         config_.phase_order = 1;
 	}
 	else
 	{
 		printf("Phase Order is incorrect!\n\r");
-		rotor_sensor_->SetDirection(-1);
+		//rotor_sensor_->SetDirection(-1);
         config_.phase_order = 0;
 	}
     return true;
