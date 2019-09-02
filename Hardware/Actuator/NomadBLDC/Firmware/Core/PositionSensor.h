@@ -57,6 +57,7 @@ public:
     
     void ZeroPosition(); // Zero Mechanical Position Offset
 
+    inline int32_t GetCPR() { return config_.cpr;}
     inline int32_t GetRawPosition() { return position_raw_; }                                 // Get Sensor Raw Position (counts)
     inline float GetElectricalPosition() { return position_electrical_ * config_.direction; }                    // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
     inline float GetMechanicalPosition() { return position_mechanical_ * config_.direction; }                    // Get Sensor Mechanical Position w/ Offset, (radians)
