@@ -9,4 +9,3 @@
 10. Clean up class access public/privates
 11. HDLC Serial Communications Layer
 12. UI for motor configuring
-13. Encoder Offset Calibration LUT bug fixes
