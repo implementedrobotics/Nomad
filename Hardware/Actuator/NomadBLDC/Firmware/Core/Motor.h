@@ -64,18 +64,20 @@ public:
         float K_v;                // Motor KV Rating (RPM/V)
         float flux_linkage;       // Rotor Flux Linkage (Webers)
         float K_t;                // Torque Constant (N*m/A)
+        float K_t_out;            // Torque Constant @ Output (N*m/A)
+        // TODO: Custom override for torques if measured experimentally?
         int32_t phase_order;      // Winding Phase Order
         bool calibrated;          // Calibrated
     };
 
     Motor(float sample_time, float K_v = 100, uint32_t pole_pairs = 21);
 
-    void SetPolePairs(uint32_t pole_pairs);  // Set Motor Pole Count
-    void SetKV(float K_v);  // Set Motor KV Rating
+    void SetPolePairs(uint32_t pole_pairs);            // Set Motor Pole Count
+    void SetKV(float K_v);                             // Set Motor KV Rating
 
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
 
-    void Update();          // Update Motor State
+    void Update();                                     // Update Motor State
 
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
@@ -93,7 +95,7 @@ private:
     bool MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high);
     bool CalibrateEncoderOffset(MotorController *controller); // Calibrate Encoder Offset
     bool OrderPhases(MotorController *controller);     // Check Phase Order
-
+    bool LockRotor(MotorController *controller, float lock_duration, float lock_voltage); // Lock Rotor to A/D Axis
 
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
     bool dirty_; // Has unsaved changes to config

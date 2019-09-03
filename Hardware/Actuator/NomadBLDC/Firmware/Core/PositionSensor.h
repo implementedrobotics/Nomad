@@ -59,11 +59,11 @@ public:
 
     inline int32_t GetCPR() { return config_.cpr;}
     inline int32_t GetRawPosition() { return position_raw_; }                                 // Get Sensor Raw Position (counts)
-    inline float GetElectricalPosition() { return position_electrical_ * config_.direction; }                    // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
-    inline float GetMechanicalPosition() { return position_mechanical_ * config_.direction; }                    // Get Sensor Mechanical Position w/ Offset, (radians)
-    inline float GetMechanicalPositionTrue() { return (position_mechanical_ + config_.offset_mech) * config_.direction; } // Get Sensor Real Mechanical Position without Offset, (radians)
-    inline float GetElectricalVelocity() { return velocity_electrical_ * config_.direction; }                    // Get Sensor Electrical Velocity (radians/sec)
-    inline float GetMechanicalVelocity() { return velocity_mechanical_ * config_.direction; }                    // Get Sensor Mechanical Velocity (radians/sec)
+    inline float GetElectricalPosition() { return position_electrical_; }                    // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
+    inline float GetMechanicalPosition() { return position_mechanical_; }                    // Get Sensor Mechanical Position w/ Offset, (radians)
+    inline float GetMechanicalPositionTrue() { return (position_mechanical_ + config_.offset_mech); } // Get Sensor Real Mechanical Position without Offset, (radians)
+    inline float GetElectricalVelocity() { return velocity_electrical_; }                    // Get Sensor Electrical Velocity (radians/sec)
+    inline float GetMechanicalVelocity() { return velocity_mechanical_ ; }                    // Get Sensor Mechanical Velocity (radians/sec)
 
     void Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
     void Update(float Ts); // Update Position Sensor State w/ Sample Time (for velocity estimation)

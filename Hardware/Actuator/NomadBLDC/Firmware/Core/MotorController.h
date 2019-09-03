@@ -125,22 +125,26 @@ public:
 
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
 
-    void SetDuty(float duty_U, float duty_V, float duty_W); // Set PWM Duty Cycles
+    void SetModulationOutput(float theta, float v_d, float v_q);  // Helper Function to compute PWM Duty Cycles directly from D/Q Voltages
+    void SetModulationOutput(float v_alpha, float v_beta);        // Helper Function to compute PWM Duty Cycles directly from Park Inverse Transformed Alpha/Beta Voltages
+    void SetDuty(float duty_A, float duty_B, float duty_C);       // Set PWM Duty Cycles Directly
 
     // Transforms
-    void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c);
+    void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c); // DQ Transfrom -> A, B, C voltages
+
     void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta);
     void ParkTransform(float theta, float alpha, float beta, float *d, float *q);
     void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c);
     void ClarkeTransform(float I_a, float I_b, float *alpha, float *beta);
 
-    void SVM(float u, float v, float w, float *dtc_u, float *dtc_v, float *dtc_w);
+    void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c);
 
     inline osThreadId GetThreadID() { return control_thread_id_; }
     inline bool IsInitialized() { return control_initialized_; }
     inline bool ControlThreadReady() { return control_thread_ready_; }
 
     inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
+
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
@@ -149,11 +153,10 @@ public:
     volatile control_mode_type_t control_mode_; // Controller Mode
 
     Config_t config_; // Position Sensor Configuration Parameters
+    
 private:
 
     void DoMotorControl(); // Motor Control Loop
-    
-
 
     float controller_update_period_;            // Controller Update Period (Seconds)
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
@@ -163,7 +166,6 @@ private:
     volatile bool control_enabled_;             // Controller thread enabled
 
     osThreadId control_thread_id_;              // Controller Thread ID
-
 
     DRV832x *gate_driver_;    // Gate Driver Device for DRV8323
     SPI *spi_handle_;         // SPI Handle for Communication to Gate Driver

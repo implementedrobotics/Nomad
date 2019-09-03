@@ -379,7 +379,7 @@ void MotorController::StartControlFSM()
             }
             motor->Update();
             motor->PrintPosition();
-            osDelay(200);
+            osDelay(100);
             break;
         default:
             if (current_control_mode != control_mode_)
@@ -397,11 +397,11 @@ void MotorController::StartControlFSM()
 void MotorController::DoMotorControl()
 {
     float v_d = 0.0f;
-    float v_q = 0.0f;
-    float v_alpha, v_beta;
-    float input_voltage = 1.0f;
-    float U, V, W;
-    float dtc_U, dtc_V, dtc_W;
+    float v_q = 1.0f;
+    // float v_alpha, v_beta;
+    // float input_voltage = 1.0f;
+    // float U, V, W;
+    // float dtc_U, dtc_V, dtc_W;
 
     // control_enabled_ = true;
     // while(control_enabled_) // Do Forever
@@ -417,9 +417,10 @@ void MotorController::DoMotorControl()
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
 
-        dqInverseTransform(motor->state_.theta_elec, input_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
-        SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-        SetDuty(dtc_U, dtc_V, dtc_W);
+        SetModulationOutput(motor->state_.theta_elec, v_d, v_q);
+       // dqInverseTransform(motor->state_.theta_elec, input_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
+        //SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
+        //SetDuty(dtc_U, dtc_V, dtc_W);
 
         //dqInverseTransform(motor_->GetElectricalPhaseAngle(), v_d, input_voltage, &v_a, &v_b, &v_c);
         //ParkInverseTransform(motor->state_.position_electrical_, v_d, input_voltage, &v_alpha, &v_beta);
@@ -584,4 +585,21 @@ void MotorController::SVM(float u, float v, float w, float *dtc_u, float *dtc_v,
     *dtc_u = fminf(fmaxf(((u - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
     *dtc_v = fminf(fmaxf(((v - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
     *dtc_w = fminf(fmaxf(((w - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
+}
+
+void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
+{
+    //dqInverseTransform(0.0f, lock_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
+    float v_alpha, v_beta;
+    ParkInverseTransform(theta, v_d, v_q, &v_alpha, &v_beta);
+    SetModulationOutput(v_alpha, v_beta);
+}
+
+void MotorController::SetModulationOutput(float v_alpha, float v_beta)
+{
+    float A, B, C;
+    float dtc_A, dtc_B, dtc_C = 0.5f;
+    ClarkeInverseTransform(v_alpha, v_beta, &A, &B, &C);
+    SVM(A, B, C, &dtc_A, &dtc_B, &dtc_C); // Space Vector Modulation
+    SetDuty(dtc_A, dtc_B, dtc_C);
 }

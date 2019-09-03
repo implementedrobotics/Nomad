@@ -51,7 +51,7 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
     config_.offset_mech = 0;
     config_.cpr = cpr;
     config_.direction = 1;
-    memset(&config_.offset_lut, 0, sizeof(config_.offset_lut));
+    memset(config_.offset_lut, 0, sizeof(config_.offset_lut));
 
     // Init SPI Driver Handle for Encoder Sensor
     spi_handle_ = new SPI(PC_12, PC_11, PC_10);
@@ -84,14 +84,16 @@ void PositionSensorAS5x47::SetMechanicalOffset(float offset)
     config_.offset_mech = offset;
     dirty_ = true;
 }
-void PositionSensorAS5x47::SetDirection(int32_t direction)
-{
-    config_.direction = direction;
-    dirty_ = true;
-}
+// void PositionSensorAS5x47::SetDirection(int32_t direction)
+// {
+//     //config_.direction = direction;
+//     dirty_ = true;
+// }
+
+// TODO: Support custom LUT Sizes
 void PositionSensorAS5x47::SetOffsetLUT(int32_t lookup_table[128])
 {
-    memcpy(&config_.offset_lut, &lookup_table, sizeof(config_.offset_lut));
+    memcpy(config_.offset_lut, lookup_table, sizeof(config_.offset_lut));
     dirty_ = true;
 }
 
@@ -122,6 +124,15 @@ void PositionSensorAS5x47::Update(float Ts)
     position_raw_ = spi_handle_->write(0xFFFF);
     position_raw_ &= 0x3FFF; // Data in last 14 bits.
     GPIOA->ODR |= (1 << 15); // Reset CS
+
+    // Double Check High/Low Values
+    if(position_raw_ == 0  || position_raw_ == 0x3FFF)
+    {
+        GPIOA->ODR &= ~(1 << 15); // Pull CS (PA_15) Low.  Do this directly for less latency
+        position_raw_ = spi_handle_->write(0xFFFF);
+        position_raw_ &= 0x3FFF; // Data in last 14 bits.
+        GPIOA->ODR |= (1 << 15); // Reset CS
+    }
 
     // Interpolate position offset from Lookup Table
     int32_t offset_1 = config_.offset_lut[position_raw_ >> 7];
@@ -184,7 +195,7 @@ void PositionSensorAS5x47::Update(float Ts)
     // Estimate/Filter Velocity
     // TODO: Change this to a PLL?
     float vel_sum = velocity;
-    for (int i = 1; i < (filter_size_); i++)
+    for (int32_t i = 1; i < (filter_size_); i++)
     {
         velocity_samples_[filter_size_ - i] = velocity_samples_[filter_size_ - i - 1];
         vel_sum += velocity_samples_[filter_size_ - i];

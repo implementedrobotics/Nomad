@@ -74,8 +74,9 @@ void Motor::Update()
 
 void Motor::PrintPosition()
 {
-    printf(" Mechanical Angle:  %f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, state_.theta_elec, rotor_sensor_->GetRawPosition());
+    printf(" Mechanical Angle:  %f/%f    Electrical Angle:  %f    Raw:  %d\n\r", state_.theta_mech, state_.theta_mech_true, state_.theta_elec, rotor_sensor_->GetRawPosition());
 }
+
 bool Motor::Calibrate(MotorController *controller)
 {
 
@@ -84,6 +85,10 @@ bool Motor::Calibrate(MotorController *controller)
     // TODO: Check Error Here
     // Measure Resistance
     MeasureMotorResistance(controller, 15.0f, 3.0f);
+
+    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+
+    wait(1);
 
     // AND Here
     // Measure Inductance
@@ -94,6 +99,11 @@ bool Motor::Calibrate(MotorController *controller)
     // Order Phases
     OrderPhases(controller);
 
+    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+
+    //printf("\r\nCooling Down 10s...\r\n");
+    //wait(10);
+    
     // Offset Calibration
     CalibrateEncoderOffset(controller);
 
@@ -225,72 +235,52 @@ bool Motor::OrderPhases(MotorController *controller)
 {
     printf("\n\rRunning phase direction scan.\n\r");
 
-    float rotor_lock_duration = 2.0f; // Time needed for rotor to lock and settle on D-Axis
-
     float theta_start = 0;
     float theta_end = 0;
     float U, V, W = 0;
     float dtc_U, dtc_V, dtc_W = 0.5f; // Default to idle
     float test_voltage = 1.0f;
 
-    float scan_step_size = 1.0f/5000.0f; // Amount to step in open loop
-	float scan_range = 4.0f * M_PI; // Scan range for phase order (electrical range)
+    float scan_step_size = 1.0f / 5000.0f; // Amount to step in open loop
+    float scan_range = 4.0f * M_PI;        // Scan range for phase order (electrical range)
 
     printf("Locking Rotor to D-Axis:\n\r");
-	// go to encoder zero phase for rotor_lock_duration to get ready to scan
-	for (int i = 0; i < rotor_lock_duration*(float)sample_time_; ++i) {
-		if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-			return false;
-		}
-        controller->dqInverseTransform(0.0f, test_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
-        controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-        controller->SetDuty(dtc_U, dtc_V, dtc_W);
-        //controller->SetModulationOutput();
-		//ParkInverseTransform(0.0f, calib_voltage, v_q, &v_alpha, &v_beta);
-		//SetVoltageTimings(calib_voltage, 0.0f);
-	}
-
+    LockRotor(controller, 2.0f, test_voltage);
     printf("Rotor stabilized.  Running phase direciton scan: \n\r");
-    
+
     Update(); // Update State/Position Sensor
 
     osDelay(1); // Wait a ms
 
-    for(float ref_angle = 0; ref_angle < scan_range; ref_angle += scan_step_size)
-	{
-		//for (int i = 0; i < step_dt*(float)current_meas_freq_; ++i) {
-			if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-				return false;
-			}
-            controller->dqInverseTransform(ref_angle, test_voltage, 0.0f, &U, &V, &W);
-            controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-            controller->SetDuty(dtc_U, dtc_V, dtc_W);
+    theta_start = state_.theta_mech_true;
+    for (float ref_angle = 0; ref_angle < scan_range; ref_angle += scan_step_size)
+    {
+        if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+        {
+            // TODO: Error
+            return false;
+        }
+        // Set PWM Output
+        controller->SetModulationOutput(ref_angle, test_voltage, 0.0f);
 
-            Update(); // Update State/Position Sensor
-
-            if(ref_angle == 0) // TODO: This seems unnecessary.  Since rotor is already locked we should just be able to do this outside the loop.
-            {
-                theta_start = state_.theta_mech_true;
-            }
-			//ParkInverseTransform(ref_angle, calib_voltage, 0.0f,  &v_alpha, &v_beta);
-			//SetVoltageTimings(v_alpha, v_beta);
-		//}
-	}
+        Update(); // Update State/Position Sensor
+    }
     theta_end = state_.theta_mech_true;
 
     printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
-	if(theta_end - theta_start > 0)
-	{
-		printf("Phase Order is correct!\n\r");
+    if (theta_end - theta_start > 0)
+    {
+        printf("Phase Order is correct!\n\r");
         //rotor_sensor_->SetDirection(1);
         config_.phase_order = 1;
-	}
-	else
-	{
-		printf("Phase Order is incorrect!\n\r");
-		//rotor_sensor_->SetDirection(-1);
+    }
+    else
+    {
+        printf("Phase Order is incorrect!\n\r");
+        //rotor_sensor_->SetDirection(-1);
         config_.phase_order = 0;
-	}
+    }
+    PrintPosition();
     return true;
 }
 
@@ -298,76 +288,80 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
 {
     printf("\n\rRunning Encoder Offset/Eccentricity Calibration.\n\r");
 
-    float *error_forward;       // Error Vector Forward Rotation
-    float *error_backward;      // Error Vector Backward Rotation
-    int32_t *lookup_table;      // Lookup Table
+    float *error_forward;  // Error Vector Forward Rotation
+    float *error_backward; // Error Vector Backward Rotation
+    int32_t *lookup_table; // Lookup Table
     int32_t *raw_forward;
     int32_t *raw_backward;
     float *error;
     float *error_filtered;
 
     const int32_t window = 128;
-    const int32_t num_samples = 128 * config_.num_pole_pairs;    // Num samples per mechanical rotation.  Multiple of NPP for filtering reasons (see later)
-    const int32_t sub_samples = 40;                     // increments between saved samples (for smoothing motion)
+    const int32_t num_samples = 128 * config_.num_pole_pairs;                    // Num samples per mechanical rotation.  Multiple of NPP for filtering reasons (see later)
+    const int32_t sub_samples = 40*1;                                              // increments between saved samples (for smoothing motion)
     float delta = 2 * PI * config_.num_pole_pairs / (num_samples * sub_samples); // change in angle between samples
 
-    error_forward = new float[num_samples]();  
-    error_backward = new float[num_samples]();
+    error_forward = new float[num_samples];
+    error_backward = new float[num_samples];
 
     error = new float[num_samples];
     error_filtered = new float[num_samples];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(error_forward, 0, sizeof(float)*num_samples);
+    memset(error_backward, 0, sizeof(float)*num_samples);
+    memset(error, 0, sizeof(float)*num_samples);
+    memset(error_filtered, 0, sizeof(float)*num_samples);
+    
     //float cogging_current[window] = {0};
 
     const int32_t num_lookups = 128;
     lookup_table = new int32_t[num_lookups]; // Clear the previous lookup table.
-    memset(&lookup_table, 0, sizeof(lookup_table));
-    rotor_sensor_->SetOffsetLUT(lookup_table);
-    raw_forward = new int32_t[num_samples]();
-    raw_backward = new int32_t[num_samples]();
 
-    float rotor_lock_duration = 2.0f; // Time needed for rotor to lock and settle on D-Axis
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(lookup_table, 0, sizeof(int32_t)*num_lookups);
+
+    rotor_sensor_->SetOffsetLUT(lookup_table);
+    rotor_sensor_->SetElectricalOffset(0); // Clear Offset
+
+    raw_forward = new int32_t[num_samples];
+    raw_backward = new int32_t[num_samples];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(raw_forward, 0, sizeof(int32_t)*num_samples);
+    memset(raw_backward, 0, sizeof(int32_t)*num_samples);
+    
 
     float theta_ref = 0;
     float theta_actual = 0;
-    float U, V, W = 0;
-    float dtc_U, dtc_V, dtc_W = 0.5f; // Default to idle
+    float v_calib = 1.0f;
     float v_d = 1.0f;
     float v_q = 0.0f;
+    
 
     printf("Locking Rotor to D-Axis:\n\r");
-	// Go to encoder zero phase for rotor_lock_duration to get ready for calibraion
-	for (int32_t i = 0; i < rotor_lock_duration*(float)sample_time_; ++i) {
-		if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-			return false;
-		}
-        controller->dqInverseTransform(0.0f, v_d, v_q, &U, &V, &W); // Test voltage to D-Axis
-        controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-        controller->SetDuty(dtc_U, dtc_V, dtc_W);
-        //controller->SetModulationOutput();
-		//ParkInverseTransform(0.0f, calib_voltage, v_q, &v_alpha, &v_beta);
-		//SetVoltageTimings(calib_voltage, 0.0f);
-	}
+
+    LockRotor(controller, 2.0f, v_calib);
+
     printf("Rotor stabilized.  Running encoder offset calibration: \n\r");
-    Update(); // Update State/Position Sensor
+    Update();   // Update State/Position Sensor
     osDelay(1); // Wait a ms
 
     // TODO: Cogging Current
 
+    printf("\n\rCalibrating Forwards Direction\r\n");
     // Rotate Forward
     for (int32_t i = 0; i < num_samples; i++)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
-            // if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-			//     return false;
-		    // }
+            //if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+            //     return false;
+            //}
             theta_ref += delta;
-            
-            controller->dqInverseTransform(theta_ref, v_d, v_q, &U, &V, &W); // Test voltage to D-Axis
-            controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-            controller->SetDuty(dtc_U, dtc_V, dtc_W);
+            controller->SetModulationOutput(theta_ref, v_calib, v_q);
 
-            wait_us(100);
+            wait_us(100); // Wait a bit.
 
             Update(); // Update State/Position Sensor
         }
@@ -379,19 +373,24 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         printf("%.4f   %.4f    %ld\n\r", theta_ref / (config_.num_pole_pairs), theta_actual, raw_forward[i]);
         //theta_ref += delta;
     }
+
+    // Clear output
+    controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
+
+    printf("\r\nCooling Down 5s...\r\n");
+    wait(5); // 10 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
+    printf("\n\rCalibrating Backwards Direction\r\n");
+
     // Rotate Backwards
     for (int32_t i = 0; i < num_samples; i++)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
-            // if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-			//     return false;
-		    // }
+            //if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+            //     return false;
+            //}
             theta_ref -= delta;
-            
-            controller->dqInverseTransform(theta_ref, v_d, v_q, &U, &V, &W); // Test voltage to D-Axis
-            controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-            controller->SetDuty(dtc_U, dtc_V, dtc_W);
+            controller->SetModulationOutput(theta_ref, v_calib, v_q);
 
             wait_us(100);
 
@@ -416,15 +415,19 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
 
     rotor_sensor_->SetElectricalOffset(offset); // Set Offset
 
+    // Clear output
+    controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
+
     // Perform filtering to linearize position sensor eccentricity
     // FIR n-sample average, where n = number of samples in one electrical cycle
     // This filter has zero gain at electrical frequency and all integer multiples
     // So cogging effects should be completely filtered out.
 
     float mean = 0;
+
     // Average Forward and Backward Directions
     for (int32_t i = 0; i < num_samples; i++)
-    { 
+    {
         error[i] = 0.5f * (error_forward[i] + error_backward[num_samples - i - 1]);
     }
 
@@ -441,37 +444,41 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
             {
                 index -= num_samples;
             }
+            
             error_filtered[i] += error[index] / (float)window;
         }
         // if (i < window)
         // {
         //     cogging_current[i] = current * sinf((error[i] - error_filtered[i]) * config_.num_pole_pairs);
         // }
-        //printf("%.4f   %4f    %.4f   %.4f\n\r", error[i], error_filt[i], error_f[i], error_b[i]);
+        //printf("%.4f   %4f    %.4f   %.4f\n\r", error[i], error_filtered[i], error_forward[i], error_backward[i]);
         mean += error_filtered[i] / num_samples;
     }
 
+    //printf("MEAN: %f.\r\n", mean);
     int32_t raw_offset = (raw_forward[0] + raw_backward[num_samples - 1]) / 2; //Insensitive to errors in this direction, so 2 points is plenty
 
     printf("\n\r Encoder non-linearity compensation table\n\r");
     printf(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
-    for (int32_t i = 0; i < num_lookups; i++)
-    { // build lookup table
+    for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
+    {
         int32_t index = (raw_offset >> 7) + i;
         if (index > (num_lookups - 1))
         {
             index -= num_lookups;
         }
         lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
-        printf("%ld   %ld   %ld \n\r", i, index, lookup_table[index]);
+        printf("%ld   %ld   %ld %f\n\r", i, index, lookup_table[index], error_filtered[i * config_.num_pole_pairs]);
         wait(.001);
     }
-    rotor_sensor_->SetOffsetLUT(lookup_table); // Write Compensated Lookup Table
+    // TODO: Not quite working. Need to fix.  For now don't compensate eccentricity
+    //rotor_sensor_->SetOffsetLUT(lookup_table); // Write Compensated Lookup Table
 
     //memcpy(controller->cogging, cogging_current, sizeof(controller->cogging));  //compensation doesn't actually work yet....
     printf("\n\rEncoder Electrical Offset (rad) %f\n\r", offset);
 
-    delete[] error_forward; //gotta free up that ram
+    // Clear Memory
+    delete[] error_forward; 
     delete[] error_backward;
     delete[] lookup_table;
     delete[] raw_forward;
@@ -482,9 +489,26 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     return true;
 }
 
+bool Motor::LockRotor(MotorController *controller, float lock_duration, float lock_voltage)
+{
+    // Lock rotor to zero phase, A/D-Axis
+    for (int i = 0; i < lock_duration * (float)sample_time_; ++i)
+    {
+        if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+        {
+            return false;
+        }
+        controller->SetModulationOutput(0.0f, lock_voltage, 0.0f);
+    }
+    return true;
+}
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {
     config_.num_pole_pairs = pole_pairs;
+
+    // Compute other parameters
+    config_.flux_linkage = 60.0f / (SQRT3 * config_.K_v * PI * config_.num_pole_pairs * 2);
+    config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f; // rotor_flux_*Pole_Pairs*3/2
 
     // Update Rotor
     rotor_sensor_->SetPolePairs(pole_pairs);

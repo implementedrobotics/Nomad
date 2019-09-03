@@ -1,5 +1,4 @@
 1. Configuration dumpers on motor, controller, position sensor, etc.
-2. Refactor position sensor calibration
 3. Current control loop
 4. CAN Bus
 5. Finish Menus
@@ -10,3 +9,4 @@
 10. Clean up class access public/privates
 11. HDLC Serial Communications Layer
 12. UI for motor configuring
+13. Encoder Offset Calibration LUT bug fixes
