@@ -306,17 +306,20 @@ int main()
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
 
     // Create Menus
-    MainMenu *main_menu = new MainMenu("Main Menu", 0x27, 0);
+    MainMenu *main_menu = new MainMenu("Main Menu", 0x27, NULL, &enter_idle);
 
     MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu, &start_control);
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
-    MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &show_encoder_debug);
+    MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
     MainMenu *information_mode = new MainMenu("Show Configuration", 'i', main_menu);
     MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
     MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
 
     MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
+
+    MainMenu *encoder_display_mode = new MainMenu(" Display Encoder Debug", 'd', encoder_mode, &show_encoder_debug);
+    MainMenu *encoder_zero_mode = new MainMenu(" Zero Encoder Mechanical Output", 'z', encoder_mode, &zero_encoder_offset);
 
     NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
     //MainMenu *zero_position = new MainMenu(" z - Set Zero Position", 'z', main_menu);

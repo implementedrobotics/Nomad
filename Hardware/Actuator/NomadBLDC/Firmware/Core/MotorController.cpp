@@ -226,9 +226,22 @@ void start_control()
 
 void show_encoder_debug()
 {
-    printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
+    printf("\r\nEncoder Debug Mode. Press ESC to stop.\r\n\r\n");
     set_control_mode(ENCODER_DEBUG);
 }
+void enter_idle()
+{
+    set_control_mode(IDLE_MODE);
+}
+
+void zero_encoder_offset()
+{
+    printf("\r\n\r\nZeroing Mechanical Offset...\r\n\r\n");
+    motor->ZeroOutputPosition();
+    motor->PrintPosition();
+    printf("\r\nEncoder Output Zeroed!. Press ESC to return to menu.\r\n\r\n");
+}
+
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
@@ -529,11 +542,6 @@ void MotorController::SetDuty(float duty_U, float duty_V, float duty_W)
         TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
     }
 }
-
-// void MotorController::SetModulationOutput(float v_alpha, float v_beta)
-// {
-
-// }
 
 // Transform Functions
 void MotorController::dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c)

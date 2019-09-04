@@ -92,7 +92,6 @@ void MainMenu::Execute()
 
 void MainMenu::Close()
 {
-    printf("CLOSING\r\n");
 }
 
 Serial *UserMenu::serial_ = nullptr;
@@ -116,8 +115,9 @@ void UserMenu::Interrupt()
         char c = serial_->getc();
         if(c == 27 && current_menu_->parent_menu_ != nullptr) // Escape
         {
+            current_menu_->Close();
             current_menu_ = current_menu_->parent_menu_;
-            current_menu_->Show();
+            current_menu_->Execute();
         }
         for(uint32_t i = 0; i < current_menu_->sub_menus_.size(); i++)
         {

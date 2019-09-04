@@ -40,14 +40,14 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     // Zero State
     memset(&state_, 0, sizeof(state_));
 
-    // TODO: Check for FLASH, otherwise defaults
-
     // Setup Default Configs
     config_.num_pole_pairs = pole_pairs;
     config_.phase_resistance = 0.0f;
     config_.phase_inductance_d = 0.0f;
     config_.phase_inductance_q = 0.0f;
     config_.phase_order = 1;
+    config_.calib_current = 15.0f;
+    config_.calib_voltage = 3.0f;
     config_.calibrated = false;
 
     // Update KV Calulations
@@ -74,9 +74,14 @@ void Motor::Update()
 
 void Motor::PrintPosition()
 {
-    printf(" Mechanical Angle:  %f/%f    Electrical Angle:  %f    Raw:  %d\n\r", state_.theta_mech, state_.theta_mech_true, state_.theta_elec, rotor_sensor_->GetRawPosition());
+    printf(" Mechanical Angle:  %f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, state_.theta_elec, rotor_sensor_->GetRawPosition());
 }
-
+void Motor::ZeroOutputPosition()
+{
+    Update(); // Make sure we are updated
+    rotor_sensor_->ZeroPosition();
+    Update(); // Post update
+}
 bool Motor::Calibrate(MotorController *controller)
 {
 
@@ -84,7 +89,7 @@ bool Motor::Calibrate(MotorController *controller)
 
     // TODO: Check Error Here
     // Measure Resistance
-    MeasureMotorResistance(controller, 15.0f, 3.0f);
+    MeasureMotorResistance(controller, config_.calib_current, config_.calib_voltage);
 
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
@@ -92,7 +97,7 @@ bool Motor::Calibrate(MotorController *controller)
 
     // AND Here
     // Measure Inductance
-    MeasureMotorInductance(controller, -2.0f, 2.0f);
+    MeasureMotorInductance(controller, -config_.calib_voltage, config_.calib_voltage);
 
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
@@ -115,14 +120,12 @@ bool Motor::Calibrate(MotorController *controller)
 
 bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high)
 {
-    printf("Measure Motor Inductance:\n\r");
+    printf("\n\rMeasure Motor Inductance...\n\r");
 
     float test_voltages[2] = {voltage_low, voltage_high};
-    float Ialphas[2] = {0.0f};
-    float U = 0, V = 0, W = 0;
-    float dtc_U = 0, dtc_V = 0, dtc_W = 0;
+    float I_alpha[2] = {0.0f};
 
-    static const int num_cycles = 1.5f / sample_time_; // Test runs for 3s;
+    static const int num_cycles = 3.0f / sample_time_; // Test runs for 3s;
 
     // Shutdown Phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
@@ -139,29 +142,26 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
                 return false;
             }
             if (i == 1) // When you step you are reading the previous step.  TODO: Make this Better!
-                Ialphas[0] += state_.I_a;
+                I_alpha[0] += state_.I_a;
             else
-                Ialphas[1] += state_.I_a;
+                I_alpha[1] += state_.I_a;
 
             // Test voltage along phase A
-            controller->dqInverseTransform(0.0f, test_voltages[i], 0.0f, &U, &V, &W);
-            controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-            controller->SetDuty(dtc_U, dtc_V, dtc_W);
-            //SetVoltageTimings(test_voltages[i], 0.0f);
+            controller->SetModulationOutput(0.0f, test_voltages[i], 0.0f);
         }
     }
 
     // Shutdown phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
-    //printf("I Alpha: %f/%f\n\r", Ialphas[0], Ialphas[1]);
-    float v_L = 0.5f * (voltage_high - voltage_low);
+    //printf("I Alpha: %f/%f\n\r", I_alpha[0], I_alpha[1]);
+    float v_L = 0.5f * (voltage_high - voltage_low); // Inductor Voltage
 
     // Note: A more correct formula would also take into account that there is a finite timestep.
     // However, the discretisation in the current control loop inverts the same discrepancy
-    float dI_by_dt = (Ialphas[1] - Ialphas[0]) / (sample_time_ * (float)num_cycles);
+    float dI_by_dt = (I_alpha[1] - I_alpha[0]) / (sample_time_ * (float)num_cycles);
     float L = v_L / dI_by_dt;
 
-    // TODO arbitrary values set for now
+    // TODO: arbitrary values set for now
     if (L < 1e-6f || L > 500e-6f)
     {
         //motor->error = ERROR_PHASE_INDUCTANCE_OUT_OF_RANGE;
@@ -182,10 +182,8 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     static const float kI = 10.0f;                          // [(V/s)/A]
     static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
     float test_voltage = 0.0f;
-    float U = 0, V = 0, W = 0;
-    float dtc_U = 0, dtc_V = 0, dtc_W = 0;
-    //int sum = 0;
-    printf("Measure Motor Resistance:\n\r");
+
+    printf("\n\rMeasure Motor Resistance...\n\r");
 
     for (int i = 0; i < num_test_cycles; ++i)
     {
@@ -197,8 +195,8 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
             return false;
         }
 
-        float Ialpha = state_.I_a;
-        test_voltage += (kI * sample_time_) * (test_current - Ialpha);
+        float I_alpha = state_.I_a;
+        test_voltage += (kI * sample_time_) * (test_current - I_alpha);
 
         if (test_voltage > max_voltage)
             test_voltage = max_voltage; // Clamp Current
@@ -206,12 +204,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
             test_voltage = -max_voltage; // Clamp Current
 
         // Test voltage along phase A
-        controller->dqInverseTransform(0.0f, test_voltage, 0.0f, &U, &V, &W);
-        controller->SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-        controller->SetDuty(dtc_U, dtc_V, dtc_W);
-        //controller->ParkInverseTransform(0.0f, test_voltage, 0.0f,  &v_alpha, &v_beta); // No need for a transform A axis = Alpha axis
-        //controller->ClarkeInverseTransform(v_alpha, v_beta,
-        //SetVoltageTimings(test_voltage, 0.0f);
+        controller->SetModulationOutput(0.0f, test_voltage, 0.0f);
     }
 
     float R = test_voltage / test_current;
@@ -233,21 +226,20 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
 
 bool Motor::OrderPhases(MotorController *controller)
 {
-    printf("\n\rRunning phase direction scan.\n\r");
+    printf("\n\rRunning phase direction scan...\n\r");
 
     float theta_start = 0;
     float theta_end = 0;
-    float U, V, W = 0;
-    float dtc_U, dtc_V, dtc_W = 0.5f; // Default to idle
-    float test_voltage = 1.0f;
-
+    float test_voltage = config_.calib_current * config_.phase_resistance;
+    float rotor_lock_duration = 2.0f;
     float scan_step_size = 1.0f / 5000.0f; // Amount to step in open loop
     float scan_range = 4.0f * M_PI;        // Scan range for phase order (electrical range)
 
     config_.phase_order = 1;               // Reset Phase Order to Default
-    printf("Locking Rotor to D-Axis:\n\r");
-    LockRotor(controller, 2.0f, test_voltage);
-    printf("Rotor stabilized.  Running phase direciton scan: \n\r");
+
+    printf("Locking Rotor to D-Axis...\n\r");
+    LockRotor(controller, rotor_lock_duration, test_voltage);
+    printf("Rotor stabilized.\n\r");
 
     Update(); // Update State/Position Sensor
 
@@ -271,24 +263,24 @@ bool Motor::OrderPhases(MotorController *controller)
     printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
     if (theta_end - theta_start > 0)
     {
-        printf("Phase Order is correct!\n\r");
+        printf("Phase Order is CORRECT!\n\r");
         //rotor_sensor_->SetDirection(1);
         config_.phase_order = 1;
     }
     else
     {
-        printf("Phase Order is incorrect!\n\r");
+        printf("Phase Order is INCORRECT!\n\r");
         //rotor_sensor_->SetDirection(-1);
         config_.phase_order = 0;
     }
-    PrintPosition();
     return true;
 }
 
 bool Motor::CalibrateEncoderOffset(MotorController *controller)
 {
-    printf("\n\rRunning Encoder Offset/Eccentricity Calibration.\n\r");
+    printf("\n\rRunning Encoder Offset/Eccentricity Calibration...\n\r");
 
+    float rotor_lock_duration = 2.0f; // Rotor Lock Settling Time
     float *error_forward;  // Error Vector Forward Rotation
     float *error_backward; // Error Vector Backward Rotation
     int32_t *lookup_table; // Lookup Table
@@ -321,9 +313,10 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
 
     // Zero Array.  Do this explicitly in case compilers vary
     memset(lookup_table, 0, sizeof(int32_t)*num_lookups);
-
-    rotor_sensor_->SetOffsetLUT(lookup_table);
-    rotor_sensor_->SetElectricalOffset(0); // Clear Offset
+    rotor_sensor_->Reset();
+    
+    //rotor_sensor_->SetOffsetLUT(lookup_table);
+    //rotor_sensor_->SetElectricalOffset(0); // Clear Offset
 
     raw_forward = new int32_t[num_samples];
     raw_backward = new int32_t[num_samples];
@@ -335,22 +328,19 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
 
     float theta_ref = 0;
     float theta_actual = 0;
-    float v_calib = 1.0f;
-    float v_d = 1.0f;
-    float v_q = 0.0f;
-    
+    float test_voltage = config_.calib_current * config_.phase_resistance;
 
-    printf("Locking Rotor to D-Axis:\n\r");
+    printf("Locking Rotor to D-Axis...\n\r");
 
-    LockRotor(controller, 2.0f, v_calib);
+    LockRotor(controller, rotor_lock_duration, test_voltage);
 
-    printf("Rotor stabilized.  Running encoder offset calibration: \n\r");
+    printf("Rotor stabilized.\n\r");
     Update();   // Update State/Position Sensor
     osDelay(1); // Wait a ms
 
     // TODO: Cogging Current
 
-    printf("\n\rCalibrating Forwards Direction\r\n");
+    printf("\n\rCalibrating Forwards Direction...\n\r");
     // Rotate Forward
     for (int32_t i = 0; i < num_samples; i++)
     {
@@ -360,7 +350,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
                  return false;
             }
             theta_ref += delta;
-            controller->SetModulationOutput(theta_ref, v_calib, v_q);
+            controller->SetModulationOutput(theta_ref, test_voltage, 0.0f);
 
             //wait_us(100); // Wait a bit.
 
@@ -378,9 +368,9 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     // Clear output
     //controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
 
-    //printf("\r\nCooling Down 5s...\r\n");
-    //wait(5); // 10 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
-    printf("\n\rCalibrating Backwards Direction\r\n");
+    printf("\r\nCooling Down 5s...\r\n");
+    wait(5); // 5 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
+    printf("\n\rCalibrating Backwards Direction...\n\r");
 
     // Rotate Backwards
     for (int32_t i = 0; i < num_samples; i++)
@@ -391,7 +381,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
                  return false;
             }
             theta_ref -= delta;
-            controller->SetModulationOutput(theta_ref, v_calib, v_q);
+            controller->SetModulationOutput(theta_ref, test_voltage, 0.0f);
 
             //wait_us(100);
 
@@ -404,6 +394,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         raw_backward[i] = rotor_sensor_->GetRawPosition();
         //printf("%.4f   %.4f    %ld\n\r", theta_ref / (config_.num_pole_pairs), theta_actual, raw_backward[i]);
         //theta_ref -= delta;
+        //printf(".\r");
     }
 
     // Compute Electrical Offset
@@ -413,6 +404,9 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         offset += (error_forward[i] + error_backward[num_samples - 1 - i]) / (2.0f * num_samples); // calclate average position sensor offset
     }
     offset = fmod(offset * config_.num_pole_pairs, 2 * PI); // convert mechanical angle to electrical angle
+    
+    while(offset < 0) // Keep offset 0 to 2*PI
+        offset += 2 * PI;
 
     rotor_sensor_->SetElectricalOffset(offset); // Set Offset
 

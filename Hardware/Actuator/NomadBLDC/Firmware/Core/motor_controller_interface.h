@@ -44,6 +44,7 @@ void reboot_system();
 void start_control();
 void enter_idle();
 void show_encoder_debug();
+void zero_encoder_offset();
 //
 void set_control_mode(int mode);
 

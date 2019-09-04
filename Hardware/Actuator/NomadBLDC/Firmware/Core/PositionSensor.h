@@ -54,7 +54,7 @@ public:
     void SetOffsetLUT(int32_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
     void SetPolePairs(uint32_t pole_pairs);       // Set Pole Pair Count for Electrical Position Calculations
     void SetDirection(int32_t direction);         // Sensor Direction
-    
+    void Reset();                                 // Reset position sensor to defaults, i.e. ignore any saved/restored settings
     void ZeroPosition(); // Zero Mechanical Position Offset
 
     inline int32_t GetCPR() { return config_.cpr;}

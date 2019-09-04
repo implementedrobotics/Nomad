@@ -65,7 +65,15 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
     DigitalOut cs(PA_15);
     cs.write(1);
 }
-
+void PositionSensorAS5x47::Reset()
+{
+    // Reset Values
+    memset(config_.offset_lut, 0, sizeof(config_.offset_lut));
+    
+    config_.offset_elec = 0;
+    config_.offset_mech = 0;
+    dirty_ = true;
+}
 /* Setters */
 void PositionSensorAS5x47::SetCPR(int32_t cpr)
 {
