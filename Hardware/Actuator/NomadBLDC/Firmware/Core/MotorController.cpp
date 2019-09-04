@@ -279,13 +279,12 @@ void show_motor_config()
 }
 void show_controller_config()
 {
-
     printf("\r\nMotor Controller Configuration:\r\n");
     printf("\r\nController Timings:\r\n");
-    printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.4f s",
-    40.0,
-    40.0,
-    0.00025);
+    printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.6f s",
+    PWM_FREQ / 1000.0f,
+    CONTROL_LOOP_FREQ / 1000.0f,
+    CONTROL_LOOP_PERIOD);
     printf("\r\n\r\nController Gains:\r\n");
 
     printf("\r\n Loop Bandwidth: %.4f hz    Loop Gain(kd/kq): %.4f/%.4f    Integrator Gain(k_i_d/k_i_q): %.4f/%.4f\r\n", 
@@ -338,6 +337,16 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
     control_thread_ready_ = false;
     control_initialized_ = false;
     control_enabled_ = false;
+
+    // Defaults
+    config_.k_d = 0.0f;
+    config_.k_q = 0.0f;
+    config_.k_i_d = 0.0f;
+    config_.k_i_q = 0.0f;
+    config_.overmodulation = 1.0f;
+    config_.velocity_limit = 10.0f;
+    config_.current_limit = 20.0f;
+    config_.current_bandwidth = 1000.0f;
 }
 
 void MotorController::Init()
@@ -436,6 +445,7 @@ void MotorController::StartControlFSM()
 
                 printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
                 motor->Calibrate(motor_controller);
+                UpdateControllerGains();
                 // TODO: Check Errors
                 printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
@@ -459,6 +469,8 @@ void MotorController::StartControlFSM()
                 control_mode_ = ERROR_MODE;
                 break;
             }
+            // TODO: Check Faults and Bail
+            gate_driver_->print_faults();
             DoMotorControl();
             break;
         case (ENCODER_DEBUG):
@@ -507,17 +519,7 @@ void MotorController::DoMotorControl()
 
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-
         SetModulationOutput(motor->state_.theta_elec, v_d, v_q);
-       // dqInverseTransform(motor->state_.theta_elec, input_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
-        //SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-        //SetDuty(dtc_U, dtc_V, dtc_W);
-
-        //dqInverseTransform(motor_->GetElectricalPhaseAngle(), v_d, input_voltage, &v_a, &v_b, &v_c);
-        //ParkInverseTransform(motor->state_.position_electrical_, v_d, input_voltage, &v_alpha, &v_beta);
-
-        // Update Timings
-        //SetVoltageTimings(v_alpha, v_beta);
     }
 }
 
@@ -604,20 +606,31 @@ void MotorController::EnablePWM(bool enable)
     //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
 }
 
-void MotorController::SetDuty(float duty_U, float duty_V, float duty_W)
+void MotorController::UpdateControllerGains()
+{
+    float crossover_freq = PI/10.0f;
+    float k_i = 1-exp(-motor_->config_.phase_resistance*CONTROL_LOOP_PERIOD/motor->config_.phase_inductance_q);
+    float k = motor->config_.phase_resistance*((crossover_freq)/k_i);
+
+    config_.k_d = config_.k_q = k;
+    config_.k_i_d = config_.k_i_q = k_i;
+
+    dirty_ = true;
+}
+void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
     // TODO: We should just reverse the "encoder direcion to simplify this"
     if (motor_->config_.phase_order)
     {                                                                        // Check which phase order to use,
-        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U); // Write duty cycles
-        TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
-        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_A); // Write duty cycles
+        TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_B);
+        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_C);
     }
     else
     {
-        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U);
-        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
-        TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_A);
+        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_B);
+        TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_C);
     }
 }
 

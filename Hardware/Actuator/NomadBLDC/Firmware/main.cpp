@@ -300,7 +300,7 @@ int main()
 {
     // Setup LED
     LEDService::Instance().Init(LED_PIN);
-    LEDService::Instance().On();
+    LEDService::Instance().Off();
 
     serial.baud(921600); // set serial baud rateSerial
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
@@ -326,10 +326,6 @@ int main()
     MainMenu *encoder_config_show = new MainMenu(" Show Encoder Configuration", 'e', show_config_mode, &show_encoder_config);
 
     NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
-    //MainMenu *zero_position = new MainMenu(" z - Set Zero Position", 'z', main_menu);
-    //MainMenu *run_mode = new MainMenu(" r - Run Motor", 'r', main_menu);
-    //sub_menu = new MainMenu(" esc - Exit Menu", 0x27, main_menu);
-
 
     UserMenu *user_menu = new UserMenu(&serial, main_menu);
     user_menu->Show();
@@ -372,21 +368,9 @@ int main()
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
     // printf(" CAN ID:  %d\n\r", CAN_ID);
 
-    // printf(" %d\n\r", drv.read_register(DCR));
-    // wait_us(100);
-    // printf(" %d\n\r", drv.read_register(CSACR));
-    // wait_us(100);
-    // printf(" %d\n\r", drv.read_register(OCPCR));
-    // drv.disable_gd();
-
-    // pc.attach(&serial_interrupt); // attach serial interrupt
 
     // while (1)
     // {
-    //     drv.print_faults();
-    //     wait(.1);
-    //     //printf("%.4f\n\r", controller.v_bus);
-    //     //gpio.led->write(1);
 
     //     if (state == MOTOR_MODE)
     //     {

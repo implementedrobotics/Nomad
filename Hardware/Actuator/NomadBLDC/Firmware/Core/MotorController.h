@@ -44,15 +44,15 @@
 #define DTC_MIN 0.0f  // Min phase duty cycle
 
 // TODO: User configuratable.  Default to 40khz
-#define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
-
+#define PWM_COUNTER_PERIOD_TICKS 0x8CA*2 // PWM Timer Auto Reload Value
+#define PWM_INTERRUPT_DIVIDER 1
 // TODO: User Configurable Parameter
-#define CONTROL_LOOP_FREQ 40000.0f
-#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
-
-//#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
-//#define CURRENT_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
-//#define CURRENT_LOOP_PERIOD (1.0f/(float)CURRENT_LOOP_FREQ)
+//#define CONTROL_LOOP_FREQ 40000.0f
+//#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
+#define SYS_CLOCK_FREQ 180000000
+#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
+#define CONTROL_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
+#define CONTROL_LOOP_PERIOD (1.0f/(float)CONTROL_LOOP_FREQ)
 
 // C System Files
 #include <arm_math.h>
@@ -128,6 +128,7 @@ public:
     void SetModulationOutput(float theta, float v_d, float v_q);  // Helper Function to compute PWM Duty Cycles directly from D/Q Voltages
     void SetModulationOutput(float v_alpha, float v_beta);        // Helper Function to compute PWM Duty Cycles directly from Park Inverse Transformed Alpha/Beta Voltages
     void SetDuty(float duty_A, float duty_B, float duty_C);       // Set PWM Duty Cycles Directly
+    void UpdateControllerGains();                                 // Controller Gains from Measured Motor Parameters
 
     // Transforms
     void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c); // DQ Transfrom -> A, B, C voltages

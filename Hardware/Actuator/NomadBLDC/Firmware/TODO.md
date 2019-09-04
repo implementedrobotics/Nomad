@@ -1,4 +1,3 @@
-1. Configuration dumpers on motor, controller, position sensor, etc.
 2. DRV Check Faults
 3. Current control loop
 4. CAN Bus
