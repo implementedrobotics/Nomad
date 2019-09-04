@@ -70,7 +70,6 @@ public:
         float calib_current;      // Calibration Current
         float calib_voltage;      // Calibration Voltage
         bool calibrated;          // Calibrated
-
     };
 
     Motor(float sample_time, float K_v = 100, uint32_t pole_pairs = 21);

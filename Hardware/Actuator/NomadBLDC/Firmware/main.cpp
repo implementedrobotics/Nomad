@@ -312,7 +312,7 @@ int main()
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
     MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
-    MainMenu *information_mode = new MainMenu("Show Configuration", 'i', main_menu);
+    MainMenu *show_config_mode = new MainMenu("Show Configuration", 'i', main_menu);
     MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
     MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
 
@@ -320,6 +320,10 @@ int main()
 
     MainMenu *encoder_display_mode = new MainMenu(" Display Encoder Debug", 'd', encoder_mode, &show_encoder_debug);
     MainMenu *encoder_zero_mode = new MainMenu(" Zero Encoder Mechanical Output", 'z', encoder_mode, &zero_encoder_offset);
+
+    MainMenu *motor_config_show = new MainMenu(" Show Motor Configuration", 'm', show_config_mode, &show_motor_config);
+    MainMenu *controller_config_show = new MainMenu(" Show Controller Configuration", 'c', show_config_mode, &show_controller_config);
+    MainMenu *encoder_config_show = new MainMenu(" Show Encoder Configuration", 'e', show_config_mode, &show_encoder_config);
 
     NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
     //MainMenu *zero_position = new MainMenu(" z - Set Zero Position", 'z', main_menu);
@@ -329,17 +333,6 @@ int main()
 
     UserMenu *user_menu = new UserMenu(&serial, main_menu);
     user_menu->Show();
-
-    // uint32_t buf[2] = {1234567, 987654321};
-    // uint32_t r_buf[2];
-    // FlashInterface::Instance().Open(6, FlashInterface::WRITE);
-    // FlashInterface::Instance().Write(0, (uint8_t *)buf, sizeof(buf));
-    // FlashInterface::Instance().Close();
-
-
-    // FlashInterface::Instance().Open(6, FlashInterface::READ);
-    // FlashInterface::Instance().Read(0, (uint8_t *)r_buf, sizeof(r_buf));
-    // FlashInterface::Instance().Close();
 
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
@@ -353,15 +346,6 @@ int main()
     // can.attach(&onMsgReceived); // attach 'CAN receive-complete' interrupt handler
 
     // // If preferences haven't been user configured yet, set defaults
-    // prefs.load(); // Read flash
-    // if (isnan(E_OFFSET))
-    // {
-    //     E_OFFSET = 0.0f;
-    // }
-    // if (isnan(M_OFFSET))
-    // {
-    //     M_OFFSET = 0.0f;
-    // }
     // if (isnan(I_BW) || I_BW == -1)
     // {
     //     I_BW = 1000;
@@ -382,13 +366,6 @@ int main()
     // {
     //     CAN_TIMEOUT = 0;
     // }
-    // spi.SetElecOffset(E_OFFSET); // Set position sensor offset
-    // spi.SetMechOffset(M_OFFSET);
-    // int lut[128] = {0};
-    // memcpy(&lut, &ENCODER_LUT, sizeof(lut));
-    // spi.WriteLUT(lut); // Set potision sensor nonlinearity lookup table
-    // init_controller_params(&controller);
-
 
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);

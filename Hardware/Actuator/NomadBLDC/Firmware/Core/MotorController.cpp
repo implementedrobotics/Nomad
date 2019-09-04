@@ -242,6 +242,84 @@ void zero_encoder_offset()
     printf("\r\nEncoder Output Zeroed!. Press ESC to return to menu.\r\n\r\n");
 }
 
+void show_motor_config()
+{
+    printf("\r\nMotor Configuration:\r\n");
+    printf("\r\n Calibration Status: ");
+    if(motor->config_.calibrated)
+        printf("CALIBRATED\r\n");
+    else
+        printf("UNCALIBRATED\r\n");
+
+    printf("\r\n Phase Order: ");
+    if(motor->config_.phase_order == 1)
+        printf("CORRECT\r\n");
+    else
+        printf("REVERSED\r\n");
+
+    printf("\r\nMotor Constants:\r\n");
+
+    printf("\r\n Pole Pairs: %u    K_v: %.2f RPM/V    K_t: %.4f (N*m)/A    Flux Linkage: %.4f Webers\r\n", 
+    motor->config_.num_pole_pairs, 
+    motor->config_.K_v, 
+    motor->config_.K_t,
+    motor->config_.flux_linkage);
+
+    printf("\r\n Phase Resistance: %.5f ohms    Phase Inductance D: %.5f H    Phase Inductance Q: %.5f H\r\n", 
+    motor->config_.phase_resistance, 
+    motor->config_.phase_inductance_d, 
+    motor->config_.phase_inductance_q);
+
+    printf("\r\nCalibration Parameters: \r\n");
+    printf("\r\n Calibration Current: %.4f\tCalibration Voltage: %.4f\r\n", 
+    motor->config_.calib_current,
+    motor->config_.calib_voltage);
+
+    printf("\r\nPress ESC to return to menu.\r\n\r\n");
+}
+void show_controller_config()
+{
+
+    printf("\r\nMotor Controller Configuration:\r\n");
+    printf("\r\nController Timings:\r\n");
+    printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.4f s",
+    40.0,
+    40.0,
+    0.00025);
+    printf("\r\n\r\nController Gains:\r\n");
+
+    printf("\r\n Loop Bandwidth: %.4f hz    Loop Gain(kd/kq): %.4f/%.4f    Integrator Gain(k_i_d/k_i_q): %.4f/%.4f\r\n", 
+    motor_controller->config_.current_bandwidth, 
+    motor_controller->config_.k_d, 
+    motor_controller->config_.k_q, 
+    motor_controller->config_.k_i_d, 
+    motor_controller->config_.k_i_q);
+
+    printf("\r\nController Limits: \r\n");
+    printf("\r\n Current Limit: %.4f A    Velocity Limit: %.4f rad/s   Overmodulation: %.4f\r\n", 
+    motor_controller->config_.current_limit,
+    motor_controller->config_.velocity_limit,
+    motor_controller->config_.overmodulation);
+    printf("\r\nPress ESC to return to menu.\r\n\r\n");
+}
+void show_encoder_config()
+{
+    printf("\r\nAM5147 Position Sensor Configuration:\r\n");
+    printf("\r\n Encoder CPR: %d", motor->PositionSensor()->config_.cpr);
+    printf("\r\n\r\nSensor Offsets:\r\n");
+
+    printf("\r\n Electrical Offset: %.4f rad    Mechanical Offset: %.4f rad\r\n", 
+    motor->PositionSensor()->config_.offset_elec, 
+    motor->PositionSensor()->config_.offset_mech);
+
+    printf("\n\r Encoder non-linearity compensation table\n\r");
+    printf(" Lookup Index : Lookup Value\n\r\n\r");
+    for (int32_t i = 0; i < 128; i++) // Build Lookup Table
+    {
+        printf("%ld\t\t%ld\n\r", i, motor->PositionSensor()->config_.offset_lut[i]);
+    }
+    printf("\r\nPress ESC to return to menu.\r\n\r\n");
+}
 // Control Loop Timer Interrupt Synced with PWM
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
@@ -454,9 +532,9 @@ void MotorController::StartPWM()
     //GPIOC->MODER |= (1 << 10); // set pin 5 to be general purpose output for LED
 
     // Setup PWM Pins
-    PWM_u_ = new FastPWM(PIN_U);
-    PWM_v_ = new FastPWM(PIN_V);
-    PWM_w_ = new FastPWM(PIN_W);
+    PWM_A_ = new FastPWM(PIN_A);
+    PWM_B_ = new FastPWM(PIN_B);
+    PWM_C_ = new FastPWM(PIN_C);
 
     // Enable Interrupt Service Routines:
     NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn); //Enable TIM1/10 IRQ

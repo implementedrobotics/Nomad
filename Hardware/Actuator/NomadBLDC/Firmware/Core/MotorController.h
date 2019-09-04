@@ -34,9 +34,9 @@
 #define CURRENT_SENSE_GAIN 40         // Gain from current amplifier.  TODO: A Parameter
 
 // Hardware Pins
-#define PIN_U PA_10      // PWM Ouput PIN U
-#define PIN_V PA_9       // PWM Ouput PIN V
-#define PIN_W PA_8       // PWM Ouput PIN W
+#define PIN_A PA_10      // PWM Ouput PIN A
+#define PIN_B PA_9       // PWM Ouput PIN B
+#define PIN_C PA_8       // PWM Ouput PIN C
 #define ENABLE_PIN PA_11 // DRV8323 Enable Pin
 
 // Duty Cycle Min/Max
@@ -173,9 +173,9 @@ private:
     DigitalOut *gate_enable_; // Enable Pin for Gate Driver
 
     // Make Static?
-    FastPWM *PWM_u_; // PWM Output Pin
-    FastPWM *PWM_v_; // PWM Output Pin
-    FastPWM *PWM_w_; // PWM Output Pin
+    FastPWM *PWM_A_; // PWM Output Pin
+    FastPWM *PWM_B_; // PWM Output Pin
+    FastPWM *PWM_C_; // PWM Output Pin
 
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config

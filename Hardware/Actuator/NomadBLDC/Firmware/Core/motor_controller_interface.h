@@ -45,6 +45,11 @@ void start_control();
 void enter_idle();
 void show_encoder_debug();
 void zero_encoder_offset();
+
+void show_motor_config();
+void show_encoder_config();
+void show_controller_config();
+
 //
 void set_control_mode(int mode);
 
