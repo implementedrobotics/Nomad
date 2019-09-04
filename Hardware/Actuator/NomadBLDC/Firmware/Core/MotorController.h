@@ -44,11 +44,10 @@
 #define DTC_MIN 0.0f  // Min phase duty cycle
 
 // TODO: User configuratable.  Default to 40khz
-#define PWM_COUNTER_PERIOD_TICKS 0x8CA*2 // PWM Timer Auto Reload Value
+#define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
 #define PWM_INTERRUPT_DIVIDER 1
+
 // TODO: User Configurable Parameter
-//#define CONTROL_LOOP_FREQ 40000.0f
-//#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
 #define SYS_CLOCK_FREQ 180000000
 #define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
 #define CONTROL_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
@@ -116,9 +115,41 @@ public:
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
     };
 
+    struct __attribute__((__packed__))  State_t
+    {
+        float I_d;               // Measured Current (D Axis)
+        float I_q;               // Measured Current (Q Axis)
+        float I_d_filtered;      // Measured Current Filtered (D Axis)
+        float I_q_filtered;      // Measured Current Filtered (Q Axis)
+        float V_d;               // Voltage (D Axis)
+        float V_q;               // Voltage (Q Axis)
+
+        float alpha;             // Current Reference Filter Coefficient
+        volatile float I_d_ref;           // Current Reference (D Axis)
+        volatile float I_q_ref;           // Current Reference (Q Axis)
+        float I_d_ref_filtered;  // Current Reference Filtered (D Axis)
+        float I_q_ref_filtered;  // Current Reference Filtered (Q Axis)
+        volatile float V_d_ref;           // Voltage Reference (D Axis)
+        volatile float V_q_ref;           // Voltage Reference (Q Axis)
+        volatile float Voltage_bus;       // Bus Voltage
+
+        volatile float Pos_ref;           // Position Setpoint Reference
+        volatile float Vel_ref;           // Velocity Setpoint Reference
+        volatile float K_p;               // Position Gain N*m/rad
+        volatile float K_d;               // Velocity Gain N*m/rad/s
+        volatile float T_ff;              // Feed Forward Torque Value N*m
+
+        uint32_t timeout;           // Keep up with number of controller timeouts for missed deadlines
+
+        float d_int;             // Current Integral Error
+        float q_int;             // Current Integral Error
+    };
+
+
     MotorController(Motor *motor, float sample_time); // TODO: Pass in motor object
 
     void Init();            // Init Controller
+    void Reset();           // Reset Controller
     void StartControlFSM(); // Begin Control Loop
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
@@ -150,11 +181,10 @@ public:
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
     // Public for now...  TODO: Need something better here
-    float voltage_bus_; // Bus Voltage (Volts)
     volatile control_mode_type_t control_mode_; // Controller Mode
 
-    Config_t config_; // Position Sensor Configuration Parameters
-    
+    Config_t config_; // Controller Configuration Parameters
+    State_t state_;   // Controller State Struct
 private:
 
     void DoMotorControl(); // Motor Control Loop

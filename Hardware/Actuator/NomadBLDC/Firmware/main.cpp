@@ -42,25 +42,12 @@
 
 extern "C"
 {
-	#include "Core/motor_controller_interface.h"
+    #include "Core/motor_controller_interface.h"
 }
 
-// #include "structs.h"
-// #include "foc.h"
-// #include "calibration.h"
-// #include "hw_setup.h"
-// #include "math_ops.h"
-// #include "hw_config.h"
-// #include "motor_config.h"
-// #include "stm32f4xx_flash.h"
-// #include "FlashWriter.h"
-// #include "user_config.h"
-// #include "PreferenceWriter.h"
 // #include "CAN_com.h"
-// #include "DRV.h"
 
 // ObserverStruct observer;
-
 
 // CAN can(PB_8, PB_9, 1000000); // CAN Rx pin name, CAN Tx pin name
 // CANMessage rxMsg;
@@ -145,26 +132,6 @@ Thread control_task(osPriorityRealtime, 2048);
 //     printf("\n\r Entering Motor Mode \n\r");
 // }
 
-// void calibrate(void)
-// {
-//     drv.enable_gd();
-//     //gpio.enable->write(1);
-//     gpio.led->write(1);                             // Turn on status LED
-//     order_phases(&spi, &gpio, &controller, &prefs); // Check phase ordering
-//     calibrate(&spi, &gpio, &controller, &prefs);    // Perform calibration procedure
-//     gpio.led->write(0);
-//     ; // Turn off status LED
-//     wait(.2);
-//     printf("\n\r Calibration complete.  Press 'esc' to return to menu\n\r");
-//     drv.disable_gd();
-//     //gpio.enable->write(0);
-//     state_change = 0;
-// }
-
-char cmd_val[8] = {0};
-char cmd_id = 0;
-char char_count = 0;
-
 /// Manage state machine with commands from serial terminal or configurator gui ///
 /// Called when data received over serial ///
 //void serial_interrupt(void)
@@ -187,39 +154,6 @@ char char_count = 0;
     //     }
     //     if (state == REST_MODE)
     //     {
-    //         switch (c)
-    //         {
-    //         case 'c':
-    //             state = CALIBRATION_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 'm':
-    //             state = MOTOR_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 'e':
-    //             state = ENCODER_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 's':
-    //             state = SETUP_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 'z':
-    //             // spi.SetMechOffset(0);
-    //             // spi.Sample(DT);
-    //             // wait_us(20);
-    //             // M_OFFSET = spi.GetMechPosition();
-    //             // if (!prefs.ready())
-    //             //     prefs.open();
-    //             // prefs.flush(); // Write new prefs to flash
-    //             // prefs.close();
-    //             // prefs.load();
-    //             // spi.SetMechOffset(M_OFFSET);
-    //             // printf("\n\r  Saved new zero position:  %.4f\n\r\n\r", M_OFFSET);
-
-    //             break;
-    //         }
     //     }
     //     // else if (state == SETUP_MODE)
     //     // {

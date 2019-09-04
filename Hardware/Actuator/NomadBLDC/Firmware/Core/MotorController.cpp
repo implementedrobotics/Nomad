@@ -109,7 +109,7 @@ void current_measurement_cb()
     // Always Update Motor State
     motor->Update();
     // TODO: Filter v_bus current measurements
-    motor_controller->voltage_bus_ = 0.95f * motor_controller->voltage_bus_ + 0.05f * ((float)adc3_raw) * voltage_scale;
+    motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)adc3_raw) * voltage_scale;
 
     // Make sure control thread is ready
 
@@ -167,12 +167,7 @@ bool calibrate_motor()
 // Menu Callbacks
 void measure_motor_parameters()
 {
-    //currentSignalTID = osThreadId();
-    //printf("Setting Signal\r\n");
     set_control_mode(CALIBRATION_MODE); // Put in calibration mode
-    //motor->Calibrate(motor_controller);
-    //set_control_mode(IDLE_MODE);        // Back to IDLE Mode
-    //printf("GOING TO IDLE\r\n");
 }
 void save_configuration()
 {
@@ -280,6 +275,9 @@ void show_motor_config()
 void show_controller_config()
 {
     printf("\r\nMotor Controller Configuration:\r\n");
+
+    printf("\r\nBus Voltage: %.4f V\r\n", motor_controller->state_.Voltage_bus);
+
     printf("\r\nController Timings:\r\n");
     printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.6f s",
     PWM_FREQ / 1000.0f,
@@ -338,6 +336,9 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
     control_initialized_ = false;
     control_enabled_ = false;
 
+    // Zero State
+    memset(&state_, 0, sizeof(state_));
+
     // Defaults
     config_.k_d = 0.0f;
     config_.k_q = 0.0f;
@@ -348,7 +349,33 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
     config_.current_limit = 20.0f;
     config_.current_bandwidth = 1000.0f;
 }
+void MotorController::Reset()
+{
+    SetModulationOutput(0.0f, 0.0f);
 
+    state_.I_d = 0.0f;
+    state_.I_q = 0.0f;
+    state_.I_d_filtered = 0.0f;
+    state_.I_q_filtered = 0.0f;
+    state_.V_d = 0.0f;
+    state_.V_q = 0.0f;
+    state_.I_d_ref = 0.0f;
+    state_.I_q_ref = 0.0f;
+    state_.I_d_ref_filtered = 0.0f;
+    state_.I_q_ref_filtered = 0.0f;
+    state_.V_d_ref = 0.0f;
+    state_.V_q_ref = 0.0f;
+
+    state_.d_int = 0.0f;
+    state_.q_int = 0.0f;
+    state_.timeout = 0;
+
+    state_.Pos_ref = 0.0f;
+    state_.Vel_ref = 0.0f;
+    state_.K_p = 0.0f;
+    state_.K_d = 0.0f;
+    state_.T_ff = 0.0f;
+}
 void MotorController::Init()
 {
     //printf("MotorController::Init() - Motor Controller Initializing...\n\r");
@@ -500,7 +527,7 @@ void MotorController::StartControlFSM()
 void MotorController::DoMotorControl()
 {
     float v_d = 0.0f;
-    float v_q = 1.0f;
+    float v_q = 2.0f;
     // float v_alpha, v_beta;
     // float input_voltage = 1.0f;
     // float U, V, W;
@@ -681,9 +708,9 @@ void MotorController::SVM(float u, float v, float w, float *dtc_u, float *dtc_v,
     // u,v,w amplitude = Bus Voltage for Full Modulation Depth
     float v_offset = (fminf3(u, v, w) + fmaxf3(u, v, w)) * 0.5f;
 
-    *dtc_u = fminf(fmaxf(((u - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
-    *dtc_v = fminf(fmaxf(((v - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
-    *dtc_w = fminf(fmaxf(((w - v_offset) / voltage_bus_ + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_u = fminf(fmaxf(((u - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_v = fminf(fmaxf(((v - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_w = fminf(fmaxf(((w - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
 }
 
 void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
