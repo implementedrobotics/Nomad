@@ -36,6 +36,7 @@
 #include "Motor.h"
 #include "UserMenu.h"
 #include "FlashInterface.h"
+#include "LEDService.h"
 #include "../../math_ops.h"
 
 Motor *motor = 0;
@@ -167,7 +168,9 @@ bool calibrate_motor()
 // Menu Callbacks
 void measure_motor_parameters()
 {
+    LEDService::Instance().On();
     set_control_mode(CALIBRATION_MODE); // Put in calibration mode
+    LEDService::Instance().Off();
 }
 void save_configuration()
 {
@@ -794,3 +797,22 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
     SVM(A, B, C, &dtc_A, &dtc_B, &dtc_C); // Space Vector Modulation
     SetDuty(dtc_A, dtc_B, dtc_C);
 }
+
+// void torque_control(ControllerStruct *controller)
+// {
+//     float torque_ref = controller->kp * (controller->p_des - controller->theta_mech) + controller->t_ff + controller->kd * (controller->v_des - controller->dtheta_mech);
+//     //float torque_ref = -.1*(controller->p_des - controller->theta_mech);
+//     controller->i_q_ref = torque_ref / KT_OUT;
+//     controller->i_d_ref = 0.0f;
+// }
+// void init_controller_params(ControllerStruct *controller)
+// {
+    //#define K_SCALE 0.0002157f             // K_loop/Loop BW (Hz) 0.0042 (TMOTOR)
+    //#define R_TH 1.25f                   //Kelvin per watt
+//#define INV_M_TH 0.03125f            //Kelvin per joule 
+//     controller->ki_d = KI_D;
+//     controller->ki_q = KI_Q;
+//     controller->k_d = K_SCALE * I_BW;
+//     controller->k_q = K_SCALE * I_BW;
+//     controller->alpha = 1.0f - 1.0f / (1.0f - DT * I_BW * 2.0f * PI);
+// }
