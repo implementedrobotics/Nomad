@@ -41,7 +41,6 @@
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
-osThreadId currentSignalTID = 0;
 // Globals
 static int32_t g_adc1_offset;
 static int32_t g_adc2_offset;
@@ -50,8 +49,10 @@ extern "C"
 {
 #include "motor_controller_interface.h"
 }
-#define FLASH_SAVE_SIGNATURE 0x78D5FC00
+
 // Flash Save Struct.  TODO: Move to own file
+#define FLASH_SAVE_SIGNATURE 0x78D5FC00
+
 struct __attribute__((__packed__)) Save_format_t
 {
     uint32_t signature;
@@ -431,15 +432,6 @@ void MotorController::DoMotorControl()
     {
 
         SetModulationOutput(motor->state_.theta_elec, v_d, v_q);
-       // dqInverseTransform(motor->state_.theta_elec, input_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
-        //SVM(U, V, W, &dtc_U, &dtc_V, &dtc_W);
-        //SetDuty(dtc_U, dtc_V, dtc_W);
-
-        //dqInverseTransform(motor_->GetElectricalPhaseAngle(), v_d, input_voltage, &v_a, &v_b, &v_c);
-        //ParkInverseTransform(motor->state_.position_electrical_, v_d, input_voltage, &v_alpha, &v_beta);
-
-        // Update Timings
-        //SetVoltageTimings(v_alpha, v_beta);
     }
 }
 
@@ -449,9 +441,6 @@ void MotorController::StartPWM()
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable the clock to GPIOC
     RCC->APB1ENR |= 0x00000001;          // Enable TIM2 clock (TODO: What is on TIM2?)
     RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;  // Enable TIM1 clock
-
-    // TODO: Move to main, elsewhere
-    //GPIOC->MODER |= (1 << 10); // set pin 5 to be general purpose output for LED
 
     // Setup PWM Pins
     PWM_u_ = new FastPWM(PIN_U);
@@ -526,20 +515,20 @@ void MotorController::EnablePWM(bool enable)
     //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
 }
 
-void MotorController::SetDuty(float duty_U, float duty_V, float duty_W)
+void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
     // TODO: We should just reverse the "encoder direcion to simplify this"
     if (motor_->config_.phase_order)
     {                                                                        // Check which phase order to use,
-        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U); // Write duty cycles
-        TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
-        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_A); // Write duty cycles
+        TIM1->CCR2 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_B);
+        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_C);
     }
     else
     {
-        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_U);
-        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_V);
-        TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_W);
+        TIM1->CCR3 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_A);
+        TIM1->CCR1 = (uint16_t)(PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_B);
+        TIM1->CCR2 = ((uint16_t)PWM_COUNTER_PERIOD_TICKS) * (1.0f - duty_C);
     }
 }
 
