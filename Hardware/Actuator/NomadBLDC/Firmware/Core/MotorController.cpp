@@ -555,8 +555,7 @@ void MotorController::DoMotorControl()
     }
     else if(control_mode_ == FOC_TORQUE_MODE)
     {
-        // TODO: Compute Torque for Current References
-        CurrentControl();
+        TorqueControl();
     }   
 }
 void MotorController::CurrentControl()
@@ -798,13 +797,13 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
     SetDuty(dtc_A, dtc_B, dtc_C);
 }
 
-// void torque_control(ControllerStruct *controller)
-// {
-//     float torque_ref = controller->kp * (controller->p_des - controller->theta_mech) + controller->t_ff + controller->kd * (controller->v_des - controller->dtheta_mech);
-//     //float torque_ref = -.1*(controller->p_des - controller->theta_mech);
-//     controller->i_q_ref = torque_ref / KT_OUT;
-//     controller->i_d_ref = 0.0f;
-// }
+void MotorController::TorqueControl()
+{
+     float torque_ref = state_.K_p * (state_.Pos_ref - motor->state_.theta_mech_true) + state_.T_ff + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+     //float torque_ref = -.1*(controller->p_des - controller->theta_mech);
+     state_.I_q_ref = torque_ref / motor->config_.K_t_out;
+     state_.I_d_ref = 0.0f;
+}
 // void init_controller_params(ControllerStruct *controller)
 // {
     //#define K_SCALE 0.0002157f             // K_loop/Loop BW (Hz) 0.0042 (TMOTOR)

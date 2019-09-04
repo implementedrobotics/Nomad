@@ -48,6 +48,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.phase_order = 1;
     config_.calib_current = 15.0f;
     config_.calib_voltage = 3.0f;
+    config_.gear_ratio = 1.0f; // No Gearbox by default
     config_.calibrated = false;
 
     // Update KV Calulations
@@ -504,7 +505,7 @@ void Motor::SetPolePairs(uint32_t pole_pairs)
     // Compute other parameters
     config_.flux_linkage = 60.0f / (SQRT3 * config_.K_v * PI * config_.num_pole_pairs * 2);
     config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f; // rotor_flux_*Pole_Pairs*3/2
-
+    config_.K_t_out = config_.K_t * config_.gear_ratio;
     // Update Rotor
     rotor_sensor_->SetPolePairs(pole_pairs);
     dirty_ = true;
@@ -517,6 +518,7 @@ void Motor::SetKV(float K_v)
     // Compute other parameters
     config_.flux_linkage = 60.0f / (SQRT3 * config_.K_v * PI * config_.num_pole_pairs * 2);
     config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f; // rotor_flux_*Pole_Pairs*3/2
+    config_.K_t_out = config_.K_t * config_.gear_ratio;
 
     dirty_ = true;
 }

@@ -190,6 +190,7 @@ private:
 
     void DoMotorControl(); // Motor Control Loop
     void CurrentControl(); // Current Control Loop
+    void TorqueControl(); // Torque Control Fucntion
     void LinearizeDTC(float *dtc);  // Linearize Small Non-Linear Duty Cycles
 
     float controller_update_period_;            // Controller Update Period (Seconds)
