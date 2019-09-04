@@ -1,5 +1,4 @@
 2. DRV Check Faults
-3. Current control loop
 4. CAN Bus
 5. Finish Menus
 6. Torque Controller

@@ -125,8 +125,8 @@ public:
         float V_q;               // Voltage (Q Axis)
 
         float alpha;             // Current Reference Filter Coefficient
-        volatile float I_d_ref;           // Current Reference (D Axis)
-        volatile float I_q_ref;           // Current Reference (Q Axis)
+        float I_d_ref;           // Current Reference (D Axis)
+        float I_q_ref;           // Current Reference (Q Axis)
         float I_d_ref_filtered;  // Current Reference Filtered (D Axis)
         float I_q_ref_filtered;  // Current Reference Filtered (Q Axis)
         volatile float V_d_ref;           // Voltage Reference (D Axis)
@@ -163,7 +163,8 @@ public:
 
     // Transforms
     void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c); // DQ Transfrom -> A, B, C voltages
-
+    void dq0(float theta, float a, float b, float c, float *d, float *q);
+    
     void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta);
     void ParkTransform(float theta, float alpha, float beta, float *d, float *q);
     void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c);
@@ -188,6 +189,8 @@ public:
 private:
 
     void DoMotorControl(); // Motor Control Loop
+    void CurrentControl(); // Current Control Loop
+    void LinearizeDTC(float *dtc);  // Linearize Small Non-Linear Duty Cycles
 
     float controller_update_period_;            // Controller Update Period (Seconds)
     float current_max_;                         // Maximum allowed current before clamped by sense resistor

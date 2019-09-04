@@ -376,6 +376,20 @@ void MotorController::Reset()
     state_.K_d = 0.0f;
     state_.T_ff = 0.0f;
 }
+void MotorController::LinearizeDTC(float *dtc)
+{
+    /// linearizes the output of the inverter, which is not linear for small duty cycles ///
+    float sgn = 1.0f - (2.0f * (*dtc < 0));
+    if (abs(*dtc) >= .01f)
+    {
+        *dtc = *dtc * .986f + .014f * sgn;
+    }
+    else
+    {
+        *dtc = 2.5f * (*dtc);
+    }
+}
+
 void MotorController::Init()
 {
     //printf("MotorController::Init() - Motor Controller Initializing...\n\r");
@@ -526,30 +540,68 @@ void MotorController::StartControlFSM()
 }
 void MotorController::DoMotorControl()
 {
-    float v_d = 0.0f;
-    float v_q = 2.0f;
-    // float v_alpha, v_beta;
-    // float input_voltage = 1.0f;
-    // float U, V, W;
-    // float dtc_U, dtc_V, dtc_W;
-
-    // control_enabled_ = true;
-    // while(control_enabled_) // Do Forever
-    // {
-    // 	// voltage loop can wait forever
-    // 	if(osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal){
-    // 		// TODO: Error here for timing
-    // 		break;
-    // 	}
-    // 	// Get Rotor Position
-    // 	motor_->UpdateState();
-
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
+        float v_d = 0.0f;
+        float v_q = 2.0f;
         SetModulationOutput(motor->state_.theta_elec, v_d, v_q);
     }
+    else if(control_mode_ == FOC_CURRENT_MODE)
+    {
+        CurrentControl();
+    }
+    else if(control_mode_ == FOC_TORQUE_MODE)
+    {
+        // TODO: Compute Torque for Current References
+        CurrentControl();
+    }   
 }
+void MotorController::CurrentControl()
+{
 
+    dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents                                                                                                               
+
+    state_.I_q_filtered = 0.95f * state_.I_q_filtered + 0.05f * state_.I_q;
+    state_.I_d_filtered = 0.95f * state_.I_d_filtered + 0.05f * state_.I_q;
+
+    // Filter the current references to the desired closed-loop bandwidth
+    state_.I_d_ref_filtered = (1.0f - state_.alpha) * state_.I_d_ref_filtered + state_.alpha * state_.I_d_ref;
+    state_.I_q_ref_filtered  = (1.0f - state_.alpha) * state_.I_q_ref_filtered+ state_.alpha * state_.I_q_ref;
+
+    limit_norm(&state_.I_d_ref, &state_.I_q_ref, config_.current_limit);
+
+    // PI Controller
+    float i_d_error = state_.I_d_ref - state_.I_d;
+    float i_q_error = state_.I_q_ref - state_.I_q; //  + cogging_current;
+
+    // Calculate feed-forward voltages
+    //float v_d_ff = SQRT3 * (1.0f * controller->i_d_ref * R_PHASE - controller->dtheta_elec * L_Q * controller->i_q); //feed-forward voltages
+    //float v_q_ff = SQRT3 * (1.0f * controller->i_q_ref * R_PHASE + controller->dtheta_elec * (L_D * controller->i_d + 1.0f * WB));
+
+    // Integrate Error
+    state_.d_int += config_.k_d * config_.k_i_d * i_d_error;
+    state_.q_int += config_.k_q * config_.k_i_q * i_q_error;
+
+    state_.d_int = fmaxf(fminf(state_.d_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
+    state_.q_int = fmaxf(fminf(state_.q_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
+
+    //limit_norm(&controller->d_int, &controller->q_int, OVERMODULATION*controller->v_bus);
+    state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
+    state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
+
+    //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
+
+    limit_norm(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within curcle of radius v_bus
+    float dtc_d = state_.V_d / state_.Voltage_bus;
+    float dtc_q = state_.V_q / state_.Voltage_bus;
+    LinearizeDTC(&dtc_d);
+    LinearizeDTC(&dtc_q);
+
+    state_.V_d = dtc_d * state_.Voltage_bus;
+    state_.V_q = dtc_q * state_.Voltage_bus;
+
+    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, state_.V_d, state_.V_q);
+}
 void MotorController::StartPWM()
 {
     // TODO: I think this does not belong here
@@ -672,6 +724,19 @@ void MotorController::dqInverseTransform(float theta, float d, float q, float *a
     *b = d * arm_cos_f32(theta - (2.0f * M_PI / 3.0f)) - q * arm_sin_f32(theta - (2.0f * M_PI / 3.0f));
     *c = d * arm_cos_f32(theta + (2.0f * M_PI / 3.0f)) - q * arm_sin_f32(theta + (2.0f * M_PI / 3.0f));
 }
+void MotorController::dq0(float theta, float a, float b, float c, float *d, float *q)
+{
+    // DQ0 Transform
+    // Phase current amplitude = length of dq vector
+    // i.e. iq = 1, id = 0, peak phase current of 1
+
+    float cf = arm_cos_f32(theta);
+    float sf = arm_sin_f32(theta);
+
+    *d = 0.6666667f * (cf * a + (0.86602540378f * sf - .5f * cf) * b + (-0.86602540378f * sf - .5f * cf) * c); ///Faster DQ0 Transform
+    *q = 0.6666667f * (-sf * a - (-0.86602540378f * cf - .5f * sf) * b - (0.86602540378f * cf - .5f * sf) * c);
+}
+
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
 {
     float cos_theta = arm_cos_f32(theta);
