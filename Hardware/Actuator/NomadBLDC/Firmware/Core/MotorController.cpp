@@ -42,7 +42,6 @@
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
-osThreadId currentSignalTID = 0;
 // Globals
 static int32_t g_adc1_offset;
 static int32_t g_adc2_offset;
@@ -51,8 +50,10 @@ extern "C"
 {
 #include "motor_controller_interface.h"
 }
-#define FLASH_SAVE_SIGNATURE 0x78D5FC00
+
 // Flash Save Struct.  TODO: Move to own file
+#define FLASH_SAVE_SIGNATURE 0x78D5FC00
+
 struct __attribute__((__packed__)) Save_format_t
 {
     uint32_t signature;
@@ -613,9 +614,6 @@ void MotorController::StartPWM()
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable the clock to GPIOC
     RCC->APB1ENR |= 0x00000001;          // Enable TIM2 clock (TODO: What is on TIM2?)
     RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;  // Enable TIM1 clock
-
-    // TODO: Move to main, elsewhere
-    //GPIOC->MODER |= (1 << 10); // set pin 5 to be general purpose output for LED
 
     // Setup PWM Pins
     PWM_A_ = new FastPWM(PIN_A);
