@@ -75,7 +75,7 @@ void Motor::Update()
 
 void Motor::PrintPosition()
 {
-    printf(" Mechanical Angle:  %f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, state_.theta_elec, rotor_sensor_->GetRawPosition());
+    printf(" Mechanical Angle:  %f/%f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, rotor_sensor_->config_.offset_mech, state_.theta_elec, rotor_sensor_->GetRawPosition());
 }
 void Motor::ZeroOutputPosition()
 {

@@ -109,6 +109,7 @@ public:
         float k_q;               // Current Controller Loop Gain (Q Axis)
         float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
+        float alpha;             // Current Reference Filter Coefficient
         float overmodulation;    // Overmodulation Amount
         float velocity_limit;    // Limit on maximum velocity
         float current_limit;     // Max Current Limit
@@ -124,7 +125,6 @@ public:
         float V_d;               // Voltage (D Axis)
         float V_q;               // Voltage (Q Axis)
 
-        float alpha;             // Current Reference Filter Coefficient
         float I_d_ref;           // Current Reference (D Axis)
         float I_q_ref;           // Current Reference (Q Axis)
         float I_d_ref_filtered;  // Current Reference Filtered (D Axis)
