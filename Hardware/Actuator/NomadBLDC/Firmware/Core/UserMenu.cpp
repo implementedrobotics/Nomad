@@ -118,7 +118,10 @@ void UserMenu::Interrupt()
             current_menu_->Close();
             current_menu_ = current_menu_->parent_menu_;
             current_menu_->Execute();
+            continue;
         }
+        // TODO: Pass commands of arbitrary length
+        // Type, Short vs Long Command
         for(uint32_t i = 0; i < current_menu_->sub_menus_.size(); i++)
         {
             if(current_menu_->sub_menus_[i]->CommandID() == c)

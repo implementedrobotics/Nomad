@@ -261,14 +261,6 @@ int main()
     // can.attach(&onMsgReceived); // attach 'CAN receive-complete' interrupt handler
 
     // // If preferences haven't been user configured yet, set defaults
-    // if (isnan(I_BW) || I_BW == -1)
-    // {
-    //     I_BW = 1000;
-    // }
-    // if (isnan(TORQUE_LIMIT) || TORQUE_LIMIT == -1)
-    // {
-    //     TORQUE_LIMIT = 18;
-    // }
     // if (isnan(CAN_ID) || CAN_ID == -1)
     // {
     //     CAN_ID = 1;
@@ -286,7 +278,6 @@ int main()
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
     // printf(" CAN ID:  %d\n\r", CAN_ID);
-
 
     // while (1)
     // {
@@ -306,7 +297,8 @@ int main()
     //     }
     // }
 
-
-
     control_task.start(motor_controller_thread_entry);
+
+    // TODO: Idle Task
+    
 }

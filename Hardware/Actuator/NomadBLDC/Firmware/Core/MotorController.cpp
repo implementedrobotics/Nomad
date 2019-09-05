@@ -494,6 +494,7 @@ void MotorController::StartControlFSM()
 
                 // Reset
                 Reset();
+                
                 LEDService::Instance().On();
                 gate_driver_->enable_gd();
                 EnablePWM(true);
@@ -774,7 +775,7 @@ void MotorController::ClarkeTransform(float I_a, float I_b, float *alpha, float 
 void MotorController::SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c)
 {
     // Space Vector Modulation
-    // u,v,w amplitude = Bus Voltage for Full Modulation Depth
+    // a,b,c amplitude = Bus Voltage for Full Modulation Depth
     float v_offset = (fminf3(a, b, c) + fmaxf3(a, b, c)) * 0.5f;
 
     *dtc_a = fminf(fmaxf(((a - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);

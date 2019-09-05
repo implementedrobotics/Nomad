@@ -48,7 +48,6 @@ PROJECT := NomadBLDC
 
 OBJECTS += CAN/CAN_com.o
 OBJECTS += DRV8323/DRV.o
-OBJECTS += FastMath/FastMath.o
 OBJECTS += FastPWM/Device/FastPWM_KLXX_K20D50M.o
 OBJECTS += FastPWM/Device/FastPWM_KSDK.o
 OBJECTS += FastPWM/Device/FastPWM_LPC11XX.o
