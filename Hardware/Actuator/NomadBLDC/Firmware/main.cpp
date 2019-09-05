@@ -42,25 +42,12 @@
 
 extern "C"
 {
-	#include "Core/motor_controller_interface.h"
+    #include "Core/motor_controller_interface.h"
 }
 
-// #include "structs.h"
-// #include "foc.h"
-// #include "calibration.h"
-// #include "hw_setup.h"
-// #include "math_ops.h"
-// #include "hw_config.h"
-// #include "motor_config.h"
-// #include "stm32f4xx_flash.h"
-// #include "FlashWriter.h"
-// #include "user_config.h"
-// #include "PreferenceWriter.h"
 // #include "CAN_com.h"
-// #include "DRV.h"
 
 // ObserverStruct observer;
-
 
 // CAN can(PB_8, PB_9, 1000000); // CAN Rx pin name, CAN Tx pin name
 // CANMessage rxMsg;
@@ -145,26 +132,6 @@ Thread control_task(osPriorityRealtime, 2048);
 //     printf("\n\r Entering Motor Mode \n\r");
 // }
 
-// void calibrate(void)
-// {
-//     drv.enable_gd();
-//     //gpio.enable->write(1);
-//     gpio.led->write(1);                             // Turn on status LED
-//     order_phases(&spi, &gpio, &controller, &prefs); // Check phase ordering
-//     calibrate(&spi, &gpio, &controller, &prefs);    // Perform calibration procedure
-//     gpio.led->write(0);
-//     ; // Turn off status LED
-//     wait(.2);
-//     printf("\n\r Calibration complete.  Press 'esc' to return to menu\n\r");
-//     drv.disable_gd();
-//     //gpio.enable->write(0);
-//     state_change = 0;
-// }
-
-char cmd_val[8] = {0};
-char cmd_id = 0;
-char char_count = 0;
-
 /// Manage state machine with commands from serial terminal or configurator gui ///
 /// Called when data received over serial ///
 //void serial_interrupt(void)
@@ -187,39 +154,6 @@ char char_count = 0;
     //     }
     //     if (state == REST_MODE)
     //     {
-    //         switch (c)
-    //         {
-    //         case 'c':
-    //             state = CALIBRATION_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 'm':
-    //             state = MOTOR_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 'e':
-    //             state = ENCODER_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 's':
-    //             state = SETUP_MODE;
-    //             state_change = 1;
-    //             break;
-    //         case 'z':
-    //             // spi.SetMechOffset(0);
-    //             // spi.Sample(DT);
-    //             // wait_us(20);
-    //             // M_OFFSET = spi.GetMechPosition();
-    //             // if (!prefs.ready())
-    //             //     prefs.open();
-    //             // prefs.flush(); // Write new prefs to flash
-    //             // prefs.close();
-    //             // prefs.load();
-    //             // spi.SetMechOffset(M_OFFSET);
-    //             // printf("\n\r  Saved new zero position:  %.4f\n\r\n\r", M_OFFSET);
-
-    //             break;
-    //         }
     //     }
     //     // else if (state == SETUP_MODE)
     //     // {
@@ -300,7 +234,7 @@ int main()
 {
     // Setup LED
     LEDService::Instance().Init(LED_PIN);
-    LEDService::Instance().On();
+    LEDService::Instance().Off();
 
     serial.baud(921600); // set serial baud rateSerial
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
@@ -312,7 +246,7 @@ int main()
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
     MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
-    MainMenu *information_mode = new MainMenu("Show Configuration", 'i', main_menu);
+    MainMenu *show_config_mode = new MainMenu("Show Configuration", 'i', main_menu);
     MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
     MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
 
@@ -321,25 +255,14 @@ int main()
     MainMenu *encoder_display_mode = new MainMenu(" Display Encoder Debug", 'd', encoder_mode, &show_encoder_debug);
     MainMenu *encoder_zero_mode = new MainMenu(" Zero Encoder Mechanical Output", 'z', encoder_mode, &zero_encoder_offset);
 
-    NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
-    //MainMenu *zero_position = new MainMenu(" z - Set Zero Position", 'z', main_menu);
-    //MainMenu *run_mode = new MainMenu(" r - Run Motor", 'r', main_menu);
-    //sub_menu = new MainMenu(" esc - Exit Menu", 0x27, main_menu);
+    MainMenu *motor_config_show = new MainMenu(" Show Motor Configuration", 'm', show_config_mode, &show_motor_config);
+    MainMenu *controller_config_show = new MainMenu(" Show Controller Configuration", 'c', show_config_mode, &show_controller_config);
+    MainMenu *encoder_config_show = new MainMenu(" Show Encoder Configuration", 'e', show_config_mode, &show_encoder_config);
 
+    NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
 
     UserMenu *user_menu = new UserMenu(&serial, main_menu);
     user_menu->Show();
-
-    // uint32_t buf[2] = {1234567, 987654321};
-    // uint32_t r_buf[2];
-    // FlashInterface::Instance().Open(6, FlashInterface::WRITE);
-    // FlashInterface::Instance().Write(0, (uint8_t *)buf, sizeof(buf));
-    // FlashInterface::Instance().Close();
-
-
-    // FlashInterface::Instance().Open(6, FlashInterface::READ);
-    // FlashInterface::Instance().Read(0, (uint8_t *)r_buf, sizeof(r_buf));
-    // FlashInterface::Instance().Close();
 
     // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
@@ -353,15 +276,6 @@ int main()
     // can.attach(&onMsgReceived); // attach 'CAN receive-complete' interrupt handler
 
     // // If preferences haven't been user configured yet, set defaults
-    // prefs.load(); // Read flash
-    // if (isnan(E_OFFSET))
-    // {
-    //     E_OFFSET = 0.0f;
-    // }
-    // if (isnan(M_OFFSET))
-    // {
-    //     M_OFFSET = 0.0f;
-    // }
     // if (isnan(I_BW) || I_BW == -1)
     // {
     //     I_BW = 1000;
@@ -382,34 +296,15 @@ int main()
     // {
     //     CAN_TIMEOUT = 0;
     // }
-    // spi.SetElecOffset(E_OFFSET); // Set position sensor offset
-    // spi.SetMechOffset(M_OFFSET);
-    // int lut[128] = {0};
-    // memcpy(&lut, &ENCODER_LUT, sizeof(lut));
-    // spi.WriteLUT(lut); // Set potision sensor nonlinearity lookup table
-    // init_controller_params(&controller);
-
 
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
     // printf(" CAN ID:  %d\n\r", CAN_ID);
 
-    // printf(" %d\n\r", drv.read_register(DCR));
-    // wait_us(100);
-    // printf(" %d\n\r", drv.read_register(CSACR));
-    // wait_us(100);
-    // printf(" %d\n\r", drv.read_register(OCPCR));
-    // drv.disable_gd();
-
-    // pc.attach(&serial_interrupt); // attach serial interrupt
 
     // while (1)
     // {
-    //     drv.print_faults();
-    //     wait(.1);
-    //     //printf("%.4f\n\r", controller.v_bus);
-    //     //gpio.led->write(1);
 
     //     if (state == MOTOR_MODE)
     //     {

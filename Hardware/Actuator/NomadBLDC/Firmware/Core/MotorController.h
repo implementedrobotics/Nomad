@@ -34,9 +34,9 @@
 #define CURRENT_SENSE_GAIN 40         // Gain from current amplifier.  TODO: A Parameter
 
 // Hardware Pins
-#define PIN_U PA_10      // PWM Ouput PIN U
-#define PIN_V PA_9       // PWM Ouput PIN V
-#define PIN_W PA_8       // PWM Ouput PIN W
+#define PIN_A PA_10      // PWM Ouput PIN A
+#define PIN_B PA_9       // PWM Ouput PIN B
+#define PIN_C PA_8       // PWM Ouput PIN C
 #define ENABLE_PIN PA_11 // DRV8323 Enable Pin
 
 // Duty Cycle Min/Max
@@ -45,14 +45,13 @@
 
 // TODO: User configuratable.  Default to 40khz
 #define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
+#define PWM_INTERRUPT_DIVIDER 1
 
 // TODO: User Configurable Parameter
-#define CONTROL_LOOP_FREQ 40000.0f
-#define CONTROL_LOOP_PERIOD 1.0f / CONTROL_LOOP_FREQ
-
-//#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
-//#define CURRENT_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
-//#define CURRENT_LOOP_PERIOD (1.0f/(float)CURRENT_LOOP_FREQ)
+#define SYS_CLOCK_FREQ 180000000
+#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
+#define CONTROL_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
+#define CONTROL_LOOP_PERIOD (1.0f/(float)CONTROL_LOOP_FREQ)
 
 // C System Files
 #include <arm_math.h>
@@ -110,15 +109,47 @@ public:
         float k_q;               // Current Controller Loop Gain (Q Axis)
         float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
+        float alpha;             // Current Reference Filter Coefficient
         float overmodulation;    // Overmodulation Amount
         float velocity_limit;    // Limit on maximum velocity
         float current_limit;     // Max Current Limit
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
     };
 
+    struct __attribute__((__packed__))  State_t
+    {
+        float I_d;               // Measured Current (D Axis)
+        float I_q;               // Measured Current (Q Axis)
+        float I_d_filtered;      // Measured Current Filtered (D Axis)
+        float I_q_filtered;      // Measured Current Filtered (Q Axis)
+        float V_d;               // Voltage (D Axis)
+        float V_q;               // Voltage (Q Axis)
+
+        float I_d_ref;           // Current Reference (D Axis)
+        float I_q_ref;           // Current Reference (Q Axis)
+        float I_d_ref_filtered;  // Current Reference Filtered (D Axis)
+        float I_q_ref_filtered;  // Current Reference Filtered (Q Axis)
+        volatile float V_d_ref;           // Voltage Reference (D Axis)
+        volatile float V_q_ref;           // Voltage Reference (Q Axis)
+        volatile float Voltage_bus;       // Bus Voltage
+
+        volatile float Pos_ref;           // Position Setpoint Reference
+        volatile float Vel_ref;           // Velocity Setpoint Reference
+        volatile float K_p;               // Position Gain N*m/rad
+        volatile float K_d;               // Velocity Gain N*m/rad/s
+        volatile float T_ff;              // Feed Forward Torque Value N*m
+
+        uint32_t timeout;           // Keep up with number of controller timeouts for missed deadlines
+
+        float d_int;             // Current Integral Error
+        float q_int;             // Current Integral Error
+    };
+
+
     MotorController(Motor *motor, float sample_time); // TODO: Pass in motor object
 
     void Init();            // Init Controller
+    void Reset();           // Reset Controller
     void StartControlFSM(); // Begin Control Loop
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
@@ -128,10 +159,12 @@ public:
     void SetModulationOutput(float theta, float v_d, float v_q);  // Helper Function to compute PWM Duty Cycles directly from D/Q Voltages
     void SetModulationOutput(float v_alpha, float v_beta);        // Helper Function to compute PWM Duty Cycles directly from Park Inverse Transformed Alpha/Beta Voltages
     void SetDuty(float duty_A, float duty_B, float duty_C);       // Set PWM Duty Cycles Directly
+    void UpdateControllerGains();                                 // Controller Gains from Measured Motor Parameters
 
     // Transforms
     void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c); // DQ Transfrom -> A, B, C voltages
-
+    void dq0(float theta, float a, float b, float c, float *d, float *q);
+    
     void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta);
     void ParkTransform(float theta, float alpha, float beta, float *d, float *q);
     void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c);
@@ -149,14 +182,16 @@ public:
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
     // Public for now...  TODO: Need something better here
-    float voltage_bus_; // Bus Voltage (Volts)
     volatile control_mode_type_t control_mode_; // Controller Mode
 
-    Config_t config_; // Position Sensor Configuration Parameters
-    
+    Config_t config_; // Controller Configuration Parameters
+    State_t state_;   // Controller State Struct
 private:
 
     void DoMotorControl(); // Motor Control Loop
+    void CurrentControl(); // Current Control Loop
+    void TorqueControl(); // Torque Control Fucntion
+    void LinearizeDTC(float *dtc);  // Linearize Small Non-Linear Duty Cycles
 
     float controller_update_period_;            // Controller Update Period (Seconds)
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
@@ -173,9 +208,9 @@ private:
     DigitalOut *gate_enable_; // Enable Pin for Gate Driver
 
     // Make Static?
-    FastPWM *PWM_u_; // PWM Output Pin
-    FastPWM *PWM_v_; // PWM Output Pin
-    FastPWM *PWM_w_; // PWM Output Pin
+    FastPWM *PWM_A_; // PWM Output Pin
+    FastPWM *PWM_B_; // PWM Output Pin
+    FastPWM *PWM_C_; // PWM Output Pin
 
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config
