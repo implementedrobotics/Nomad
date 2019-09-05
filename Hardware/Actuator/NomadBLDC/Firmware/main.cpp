@@ -118,20 +118,6 @@ Thread control_task(osPriorityRealtime, 2048);
 //     state_change = 0;
 // }
 
-// void enter_torque_mode(void)
-// {
-//     drv.enable_gd();
-//     //gpio.enable->write(1);
-//     controller.ovp_flag = 0;
-//     reset_foc(&controller); // Tesets integrators, and other control loop parameters
-//     wait(.001);
-//     controller.i_d_ref = 0;
-//     controller.i_q_ref = 0; // Current Setpoints
-//     gpio.led->write(1);     // Turn on status LED
-//     state_change = 0;
-//     printf("\n\r Entering Motor Mode \n\r");
-// }
-
 /// Manage state machine with commands from serial terminal or configurator gui ///
 /// Called when data received over serial ///
 //void serial_interrupt(void)
@@ -264,7 +250,6 @@ int main()
     UserMenu *user_menu = new UserMenu(&serial, main_menu);
     user_menu->Show();
 
-    // reset_foc(&controller);    // Reset current controller
     // reset_observer(&observer); // Reset observer
 
     // NVIC_SetPriority(CAN1_RX0_IRQn, 3);

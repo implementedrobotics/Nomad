@@ -333,7 +333,7 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
     config_.k_i_q = 0.0f;
     config_.overmodulation = 1.0f;
     config_.velocity_limit = 10.0f;
-    config_.current_limit = 10.0f;
+    config_.current_limit = 20.0f;
     config_.current_bandwidth = 1000.0f;
 }
 void MotorController::Reset()
@@ -490,6 +490,9 @@ void MotorController::StartControlFSM()
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
+
+                // Reset
+                Reset();
                 LEDService::Instance().On();
                 gate_driver_->enable_gd();
                 EnablePWM(true);
@@ -770,15 +773,15 @@ void MotorController::ClarkeTransform(float I_a, float I_b, float *alpha, float 
     *beta = 0.57735026919f * (I_a + 2.0f * I_b);
 }
 
-void MotorController::SVM(float u, float v, float w, float *dtc_u, float *dtc_v, float *dtc_w)
+void MotorController::SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c)
 {
     // Space Vector Modulation
     // u,v,w amplitude = Bus Voltage for Full Modulation Depth
-    float v_offset = (fminf3(u, v, w) + fmaxf3(u, v, w)) * 0.5f;
+    float v_offset = (fminf3(a, b, c) + fmaxf3(a, b, c)) * 0.5f;
 
-    *dtc_u = fminf(fmaxf(((u - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
-    *dtc_v = fminf(fmaxf(((v - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
-    *dtc_w = fminf(fmaxf(((w - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_a = fminf(fmaxf(((a - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_b = fminf(fmaxf(((b - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_c = fminf(fmaxf(((c - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
 }
 
 void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
@@ -800,7 +803,7 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 
 void MotorController::TorqueControl()
 {
-    //state_.K_p = .1;
+    //state_.K_p = .4;
     float torque_ref = state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.T_ff + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     state_.I_q_ref = torque_ref / motor->config_.K_t_out;
     state_.I_d_ref = 0.0f;
