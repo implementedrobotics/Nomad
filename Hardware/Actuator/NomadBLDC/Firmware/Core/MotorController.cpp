@@ -84,6 +84,7 @@ void motor_controller_thread_entry()
 void debug_thread_entry()
 {
     // TODO: Print Speed/Rate
+    // TODO: Move Encoder Debug Print Here
     while (1)
     {
         if (motor_controller->GetDebugMode() == true)
@@ -98,6 +99,7 @@ void debug_thread_entry()
                 (state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
 
                 printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
+                // TODO: Power, temperatures etc.
             }
         }
         osDelay(500);
@@ -126,8 +128,6 @@ void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, 
     motor_controller->state_.Vel_ref = Vel_des;
     motor_controller->state_.T_ff = T_ff;
 }
-
-
 
 void current_measurement_cb()
 {
