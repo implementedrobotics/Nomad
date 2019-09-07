@@ -165,44 +165,7 @@ Thread debug_task(osPriorityRealtime, 2048);
     //     //             printf("\n\r '%c' Not a valid command prefix\n\r\n\r", cmd_id);
     //     //             break;
     //     //         }
-
-    //     //         if (!prefs.ready())
-    //     //             prefs.open();
-    //     //         prefs.flush(); // Write new prefs to flash
-    //     //         prefs.close();
-    //     //         prefs.load();
-    //     //         state_change = 1;
-    //     //         char_count = 0;
-    //     //         cmd_id = 0;
-    //     //         for (int i = 0; i < 8; i++)
-    //     //         {
-    //     //             cmd_val[i] = 0;
-    //     //         }
-    //     //     }
-    //     //     else
-    //     //     {
-    //     //         if (char_count == 0)
-    //     //         {
-    //     //             cmd_id = c;
-    //     //         }
-    //     //         else
-    //     //         {
-    //     //             cmd_val[char_count - 1] = c;
-    //     //         }
-    //     //         pc.putc(c);
-    //     //         char_count++;
-    //     //     }
     //     // }
-    //     else if (state == ENCODER_MODE)
-    //     {
-    //         switch (c)
-    //         {
-    //         case 27:
-    //             state = REST_MODE;
-    //             state_change = 1;
-    //             break;
-    //         }
-    //     }
     //     // else if (state == MOTOR_MODE)
     //     // {
     //     //     switch (c)
@@ -301,6 +264,24 @@ int main()
     //         wait(.002);
     //     }
     // }
+
+    //     printf("\n\r\n\r Configuration Options \n\r\n\n");
+    // wait_us(10);
+    // printf(" %-4fs %-31s %-5s %-6s %-5s\n\r\n\r", "prefix", "parameter", "min", "max", "current value");
+    // wait_us(10);
+    // printf(" %-4s %-31s %-5s %-6s %.1f\n\r", "b", "Current Bandwidth (Hz)", "100", "2000", 1000);
+    // wait_us(10);
+    // printf(" %-5s %-31s %-5s %-6s %-5i\n\r", "i", "CAN ID", "0", "127", 2);
+    // wait_us(10);
+    // printf(" %-4s %-31s %-5s %-6s %-5i\n\r", "m", "CAN Master ID", "0", "127", 3);
+    // wait_us(10);
+    // printf(" %-4s %-31s %-5s %-6s %.1f\n\r", "l", "Torque Limit (N-m)", "0.0", "18.0", 4);
+    // wait_us(10);
+    // printf(" %-4s %-31s %-5s %-6s %d\n\r", "t", "CAN Timeout (cycles)(0 = none)", "0", "100000", 5);
+    // wait_us(10);
+    // printf("\n\r To change a value, type 'prefix''value''ENTER'\n\r i.e. 'b1000''ENTER'\n\r\n\r");
+    // wait_us(10);
+
 
 
     control_task.start(motor_controller_thread_entry);
