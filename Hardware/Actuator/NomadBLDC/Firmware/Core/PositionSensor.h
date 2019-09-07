@@ -37,7 +37,7 @@ class PositionSensorAS5x47
 
 public:
     // Motor Parameters
-    struct __attribute__((__packed__)) Config_t
+    struct Config_t
     {
         float offset_elec;       // Electrical Position Offset (Radians)
         float offset_mech;       // Mechanical Position Offset (Radians)

@@ -163,6 +163,32 @@
 #define SEN_LVL_0_75        0x2
 #define SEN_LVL_1_0         0x3
 
+#define ERROR_FAULT         (1 << 10) // Fault Status Error
+#define VDS_OCP_FAULT       (1 << 9)  // VDS Overcurrent Fault
+#define GDF_FAULT           (1 << 8)  // Gate Drive Fault
+#define UVLO_FAULT          (1 << 7)  // Undervoltage Lockout Fault
+#define OTSD_FAULT          (1 << 6)  // Overtemperature Shutdown Fault
+#define VDS_HA_FAULT        (1 << 5)  // VDS Overcurrent A High-Side MOSFET
+#define VDS_LA_FAULT        (1 << 4)  // VDS Overcurrent A Low-Side MOSFET
+#define VDS_HB_FAULT        (1 << 3)  // VDS Overcurrent B High-Side MOSFET
+#define VDS_LB_FAULT        (1 << 2)  // VDS Overcurrent B Low-Side MOSFET
+#define VDS_HC_FAULT        (1 << 1)  // VDS Overcurrent C High-Side MOSFET
+#define VDS_LC_FAULT        (1 << 0)  // VDS Overcurrent C Low-Side MOSFET
+
+#define SA_OC_FAULT         (1 << 10) // Overcurrent on Phase A Sense Amplifier
+#define SB_OC_FAULT         (1 << 9)  // Overcurrent on Phase B Sense Amplifier
+#define SC_OC_FAULT         (1 << 8)  // Overcurrent on Phase C Sense Amplifier
+#define OTW_FAULT           (1 << 7)  // Over Temperature Warning Fault
+#define CPUV_FAULT          (1 << 6)  // Charge Pump Undervoltage Fault
+#define VGS_HA_FAULT        (1 << 5)  // Gate Drive Fault on A High-Side MOSFET
+#define VGS_LA_FAULT        (1 << 4)  // Gate Drive Fault on A Low-Side MOSFET
+#define VGS_HB_FAULT        (1 << 3)  // Gate Drive Fault on B High-Side MOSFET
+#define VGS_LB_FAULT        (1 << 2)  // Gate Drive Fault on B Low-Side MOSFET
+#define VGS_HC_FAULT        (1 << 1)  // Gate Drive Fault on C High-Side MOSFET
+#define VGS_LC_FAULT        (1 << 0)  // Gate Drive Fault on C Low-Side MOSFET
+
+
+
 class DRV832x {
     public:
         DRV832x(SPI *spi, DigitalOut *cs);
@@ -175,10 +201,11 @@ class DRV832x {
         void write_LSR(int CBC, int TDRIVE, int IDRIVEP_LS, int IDRIVEN_LS);
         void write_OCPCR(int TRETRY, int DEAD_TIME, int OCP_MODE, int OCP_DEG, int VDS_LVL);
         void write_CSACR(int CSA_FET, int VREF_DIV, int LS_REF, int CSA_GAIN, int DIS_SEN, int CSA_CAL_A, int CSA_CAL_B, int CSA_CAL_C, int SEN_LVL);
-        void enable_gd(void);
-        void disable_gd(void);
-        void calibrate(void);
-        void print_faults();
+        void Enable(void);
+        void Disable(void);
+        void Calibrate(void);
+        void PrintFaults();
+        bool CheckFaults();
         
     private:
         SPI *_spi;

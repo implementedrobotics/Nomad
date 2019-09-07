@@ -54,7 +54,7 @@ extern "C"
 // Flash Save Struct.  TODO: Move to own file
 #define FLASH_SAVE_SIGNATURE 0x78D5FC00
 
-struct __attribute__((__packed__)) Save_format_t
+struct Save_format_t
 {
     uint32_t signature;
     uint32_t version;
@@ -190,7 +190,6 @@ void load_configuration()
 
     motor->ZeroOutputPosition();
 
-
     //printf("READ Version: %d\r\n", load.version);
     printf("\r\nLoaded.\r\n");
 }
@@ -199,10 +198,28 @@ void reboot_system()
     HAL_NVIC_SystemReset();
 }
 
-void start_control()
+void start_torque_control()
+{
+    printf("\r\nFOC Torque Mode Enabled. Press ESC to stop.\r\n\r\n");
+    set_control_mode(FOC_TORQUE_MODE);
+}
+
+void start_current_control()
+{
+    printf("\r\nFOC Current Mode Enabled. Press ESC to stop.\r\n\r\n");
+    set_control_mode(FOC_CURRENT_MODE);
+}
+
+void start_speed_control()
+{
+    printf("\r\nFOC Speed Mode Enabled. Press ESC to stop.\r\n\r\n");
+    set_control_mode(FOC_SPEED_MODE);
+}
+
+void start_voltage_control()
 {
     printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
-    set_control_mode(FOC_TORQUE_MODE);
+    set_control_mode(FOC_VOLTAGE_MODE);
 }
 
 void show_encoder_debug()
@@ -400,7 +417,7 @@ void MotorController::Init()
 
     gate_enable_->write(1);
     wait_us(100);
-    gate_driver_->calibrate();
+    gate_driver_->Calibrate();
     wait_us(100);
     gate_driver_->write_DCR(0x0, 0x0, 0x0, PWM_MODE_3X, 0x0, 0x0, 0x0, 0x0, 0x1);
     wait_us(100);
@@ -431,17 +448,26 @@ void MotorController::Init()
     //printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
 }
 
+bool MotorController::CheckErrors()
+{
+    //if (gate_driver_->CheckFaults())
+    //    return true;
+
+    return false;
+}
 void MotorController::StartControlFSM()
 {
-    //printf("NomadBLDC UP!\r\n");
-    // TODO: Check for DRV Errors Here -> ERROR MODE
-
     // Start IDLE and PWM/Gate Driver Off
     static control_mode_type_t current_control_mode = IDLE_MODE;
-    gate_driver_->disable_gd();
+    gate_driver_->Disable();
     EnablePWM(false);
     for (;;)
     {
+        if (control_mode_ != IDLE_MODE && CheckErrors())
+        {
+            control_mode_ = ERROR_MODE;
+        }
+
         // Check Current Mode
         switch (control_mode_)
         {
@@ -450,21 +476,27 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().Off();
-                gate_driver_->disable_gd();
+                gate_driver_->Disable();
                 EnablePWM(false);
             }
-            //printf("IDLE Mode!\r\n");
+
             osDelay(1);
             break;
         case (ERROR_MODE):
             if (current_control_mode != control_mode_)
             {
-                //TODO: Flash a code... LEDService::Instance().Off();
                 current_control_mode = control_mode_;
-                gate_driver_->disable_gd();
+                //TODO: Flash a code... LEDService::Instance().Off();
+                printf("Controller Error: \r\n");
+
+                gate_driver_->PrintFaults();
+
+                Reset(); // Reset Controller to Zero
+
+                gate_driver_->Disable();
                 EnablePWM(false);
             }
-            printf("Error Mode!\r\n");
+
             osDelay(1);
             break;
         case (CALIBRATION_MODE):
@@ -472,12 +504,13 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->enable_gd();
+                gate_driver_->Enable();
                 EnablePWM(true);
 
                 printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
                 motor->Calibrate(motor_controller);
                 UpdateControllerGains();
+
                 // TODO: Check Errors
                 printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
@@ -488,15 +521,24 @@ void MotorController::StartControlFSM()
         case (FOC_CURRENT_MODE):
         case (FOC_VOLTAGE_MODE):
         case (FOC_TORQUE_MODE):
+        case (FOC_SPEED_MODE):
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
 
+                // Make sure we are calibrated:
+                if (!motor_->config_.calibrated)
+                {
+                    printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
+                    control_mode_ = ERROR_MODE;
+                    continue;
+                }
+
                 // Reset
                 Reset();
-                
+
                 LEDService::Instance().On();
-                gate_driver_->enable_gd();
+                gate_driver_->Enable();
                 EnablePWM(true);
             }
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
@@ -504,17 +546,15 @@ void MotorController::StartControlFSM()
                 // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
                 printf("ERROR: Motor Controller Timeout!\r\n");
                 control_mode_ = ERROR_MODE;
-                break;
+                continue;
             }
-            // TODO: Check Faults and Bail
-            gate_driver_->print_faults();
             DoMotorControl();
             break;
         case (ENCODER_DEBUG):
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
-                gate_driver_->disable_gd();
+                gate_driver_->Disable();
                 EnablePWM(false);
             }
             motor->Update();
@@ -526,7 +566,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().Off();
-                gate_driver_->disable_gd();
+                gate_driver_->Disable();
                 EnablePWM(false);
             }
             printf("Unhandled Control Mode: %d!\r\n", control_mode_);
@@ -554,11 +594,8 @@ void MotorController::DoMotorControl()
 }
 void MotorController::CurrentControl()
 {
-    float d_val;
-    float q_val;
-    dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &d_val, &q_val); //dq0 transform on currents
-    state_.I_d = d_val;
-    state_.I_q = q_val;
+
+    dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
 
     state_.I_q_filtered = 0.95f * state_.I_q_filtered + 0.05f * state_.I_q;
     state_.I_d_filtered = 0.95f * state_.I_d_filtered + 0.05f * state_.I_q;
@@ -567,11 +604,7 @@ void MotorController::CurrentControl()
     state_.I_d_ref_filtered = (1.0f - config_.alpha) * state_.I_d_ref_filtered + config_.alpha * state_.I_d_ref;
     state_.I_q_ref_filtered = (1.0f - config_.alpha) * state_.I_q_ref_filtered + config_.alpha * state_.I_q_ref;
 
-    d_val = state_.I_d_ref;
-    q_val = state_.I_q_ref;
-    limit_norm(&d_val, &q_val, config_.current_limit);
-    state_.I_d_ref = d_val;
-    state_.I_q_ref = q_val;
+    limit_norm(&state_.I_d_ref, &state_.I_q_ref, config_.current_limit);
 
     // PI Controller
     float i_d_error = state_.I_d_ref - state_.I_d;
@@ -593,12 +626,8 @@ void MotorController::CurrentControl()
     state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
 
     //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
-    d_val = state_.V_d;
-    q_val = state_.V_q;
-    limit_norm(&d_val, &q_val, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within curcle of radius v_bus
-    state_.V_d = d_val;
-    state_.V_q = q_val;
-    
+    limit_norm(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within curcle of radius v_bus
+
     float dtc_d = state_.V_d / state_.Voltage_bus;
     float dtc_q = state_.V_q / state_.Voltage_bus;
     LinearizeDTC(&dtc_d);
@@ -739,7 +768,6 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
     float sf = arm_sin_f32(theta);
     *d = 0.6666667f * (cf * a + (0.86602540378f * sf - .5f * cf) * b + (-0.86602540378f * sf - .5f * cf) * c); ///Faster DQ0 Transform
     *q = 0.6666667f * (-sf * a - (-0.86602540378f * cf - .5f * sf) * b - (0.86602540378f * cf - .5f * sf) * c);
-
 }
 
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
@@ -802,7 +830,6 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 
 void MotorController::TorqueControl()
 {
-    //state_.K_p = .4;
     float torque_ref = state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.T_ff + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     state_.I_q_ref = torque_ref / motor->config_.K_t_out;
     state_.I_d_ref = 0.0f;

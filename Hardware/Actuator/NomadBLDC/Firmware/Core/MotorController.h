@@ -87,7 +87,8 @@ typedef enum
     FOC_CURRENT_MODE = 3,
     FOC_VOLTAGE_MODE = 4,
     FOC_TORQUE_MODE = 5,
-    ENCODER_DEBUG = 6,
+    FOC_SPEED_MODE = 6,
+    ENCODER_DEBUG = 7,
 } control_mode_type_t;
 
 typedef enum
@@ -95,7 +96,8 @@ typedef enum
     FOC_TIMING_ERROR = 0,
     OVERVOLTAGE_ERROR = 1,
     UNDERVOLTAGE_ERROR = 2,
-    OVERTEMPERATURE_ERROR = 3
+    OVERTEMPERATURE_ERROR = 3,
+    NOT_CALIBRATED_ERROR = 4
 } error_type_t;
 
 class MotorController
@@ -103,7 +105,7 @@ class MotorController
     // TODO: Setpoint references, etc.
 public:
     // Motor Controller Parameters
-    struct __attribute__((__packed__))  Config_t
+    struct Config_t
     {
         float k_d;               // Current Controller Loop Gain (D Axis)
         float k_q;               // Current Controller Loop Gain (Q Axis)
@@ -116,7 +118,7 @@ public:
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
     };
 
-    struct __attribute__((__packed__))  State_t
+    struct State_t
     {
         float I_d;               // Measured Current (D Axis)
         float I_q;               // Measured Current (Q Axis)
@@ -178,6 +180,7 @@ public:
 
     inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
 
+    bool CheckErrors();                 // Check for Controller Errors
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 

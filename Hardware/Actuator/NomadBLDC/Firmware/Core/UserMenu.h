@@ -36,17 +36,18 @@
 
 class MenuItem
 {
-friend class UserMenu;
+    friend class UserMenu;
+
 public:
     MenuItem(const std::string name, char command_char, MenuItem *parent, void (*cb_ptr)() = nullptr);
 
     void AddSubMenu(MenuItem *menu);
 
 protected:
-
     virtual void Show();
-    virtual void Execute() = 0;
+    virtual void Execute();
     virtual void Close() {}
+    virtual void Handle(char c); // Handle Character Input from Serial Interrupt Handler
     inline char CommandID() { return command_; }
     inline const std::string &Name() { return name_; }
 
@@ -67,35 +68,20 @@ public:
     MainMenu(const std::string name, char command_char, MenuItem *parent, void (*cb_ptr)() = nullptr);
 
 protected:
-    virtual void Execute();
     virtual void Close();
-
 };
 
-class CalibrateMenu : public MenuItem
+class TorqueControlMenu : public MenuItem
 {
-
 public:
-    CalibrateMenu(const std::string name, char command_char, MenuItem *parent);
+    TorqueControlMenu(const std::string name, char command_char, MenuItem *parent, void (*cb_ptr)() = nullptr);
 
 protected:
+    virtual void Handle(char c); // Handle Character Input from Serial Interrupt Handler
     virtual void Execute();
-    virtual void Close();
-
+    int32_t buffer_index;
+    char command_buffer[100];
 };
-
-class EncoderMenu : public MenuItem
-{
-
-public:
-    EncoderMenu(const std::string name, char command_char, MenuItem *parent);
-
-protected:
-    virtual void Execute();
-    virtual void Close();
-
-};
-
 
 class UserMenu
 {
@@ -103,6 +89,7 @@ class UserMenu
 public:
     UserMenu(Serial *uart, MenuItem *root);
     void Show();
+    static Serial* GetSerial() { return serial_; }
     static void Interrupt();
     static MenuItem *current_menu_;
 

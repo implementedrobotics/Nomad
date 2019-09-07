@@ -228,13 +228,19 @@ int main()
     // Create Menus
     MainMenu *main_menu = new MainMenu("Main Menu", 0x27, NULL, &enter_idle);
 
-    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu, &start_control);
+    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu);
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
     MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
     MainMenu *show_config_mode = new MainMenu("Show Configuration", 'i', main_menu);
     MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
     MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
+
+    // Motor Mode
+    TorqueControlMenu *torque_mode = new TorqueControlMenu(" Torque Control Mode", 't', motor_mode, &start_torque_control);
+    MainMenu *current_mode = new MainMenu(" Current Control Mode", 'c', motor_mode, &start_current_control);
+    MainMenu *speed_mode = new MainMenu(" Speed Control Mode", 's', motor_mode, &start_speed_control);
+    MainMenu *voltage_mode = new MainMenu(" Voltage Control Mode", 'v', motor_mode, &start_voltage_control);
 
     MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
 
