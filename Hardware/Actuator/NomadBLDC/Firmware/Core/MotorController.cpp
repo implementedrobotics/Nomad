@@ -81,11 +81,53 @@ void motor_controller_thread_entry()
     motor_controller->StartControlFSM();
 }
 
+void debug_thread_entry()
+{
+    // TODO: Print Speed/Rate
+    while (1)
+    {
+        if (motor_controller->GetDebugMode() == true)
+        {
+            if (motor_controller->GetControlMode() == FOC_TORQUE_MODE)
+            {
+                MotorController::State_t state = motor_controller->state_;
+                Motor::Config_t config = motor->config_;
+                printf("\r\nI_d: %.3f/%.3f A\tI_q: %.3f/%.3f A\t| Torque: %.2f/%.2f N*m\r\n", 
+                state.I_d_filtered, state.I_d_ref, 
+                state.I_q_filtered, state.I_q_ref, 
+                (state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
+
+                printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
+            }
+        }
+        osDelay(500);
+    }
+}
 // Controller Mode Interface
 void set_control_mode(int mode)
 {
     motor_controller->SetControlMode((control_mode_type_t)mode);
 }
+
+void set_controller_debug(bool debug)
+{
+    motor_controller->SetDebugMode(debug);
+}
+
+bool get_controller_debug()
+{
+    return motor_controller->GetDebugMode();
+}
+void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, float T_ff)
+{
+    motor_controller->state_.K_p = K_p;
+    motor_controller->state_.K_d = K_d;
+    motor_controller->state_.Pos_ref = Pos_des;
+    motor_controller->state_.Vel_ref = Vel_des;
+    motor_controller->state_.T_ff = T_ff;
+}
+
+
 
 void current_measurement_cb()
 {
@@ -340,6 +382,7 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
     control_thread_ready_ = false;
     control_initialized_ = false;
     control_enabled_ = false;
+    control_debug_ = false;
 
     // Zero State
     memset(&state_, 0, sizeof(state_));

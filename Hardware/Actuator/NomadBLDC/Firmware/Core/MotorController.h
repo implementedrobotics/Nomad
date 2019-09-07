@@ -179,8 +179,13 @@ public:
     inline bool ControlThreadReady() { return control_thread_ready_; }
 
     inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
+    inline control_mode_type_t GetControlMode() {return control_mode_;}
 
     bool CheckErrors();                 // Check for Controller Errors
+
+    inline void SetDebugMode(bool debug) {control_debug_ = debug;}
+    inline bool GetDebugMode() {return control_debug_;}
+    
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
@@ -199,6 +204,7 @@ private:
     float controller_update_period_;            // Controller Update Period (Seconds)
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 
+    bool control_debug_;                        // Controller in Debug. TODO: Move this to a more general application struct
     bool control_thread_ready_;                 // Controller thread ready/active
     bool control_initialized_;                  // Controller thread initialized
     volatile bool control_enabled_;             // Controller thread enabled

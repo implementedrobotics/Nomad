@@ -53,15 +53,14 @@ extern "C"
 // CANMessage rxMsg;
 // CANMessage txMsg;
 
-volatile int count = 0;
-//volatile int state = REST_MODE;
-volatile int state_change;
-
 // Serial Handler
 Serial serial(PA_2, PA_3);
 
 // Control Thread
 Thread control_task(osPriorityRealtime, 2048);
+
+// Debug/Print Thread
+Thread debug_task(osPriorityRealtime, 2048);
 
 // void onMsgReceived()
 // {
@@ -228,7 +227,7 @@ int main()
     // Create Menus
     MainMenu *main_menu = new MainMenu("Main Menu", 0x27, NULL, &enter_idle);
 
-    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu);
+    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu, &enter_idle);
     MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
     MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
     MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
@@ -303,8 +302,10 @@ int main()
     //     }
     // }
 
+
     control_task.start(motor_controller_thread_entry);
 
+    debug_task.start(debug_thread_entry);
     // TODO: Idle Task
     
 }

@@ -32,6 +32,7 @@
 // Project Includes
 #include "mbed.h"
 #include "rtos.h"
+#include "motor_controller_interface.h"
 
 // Statics
 MenuItem *UserMenu::current_menu_ = nullptr;
@@ -123,6 +124,17 @@ void TorqueControlMenu::Handle(char c)
     // Look for new line
     if (c != 13)
     {
+        if(buffer_index == 0 && c == 'd')
+        {
+            bool debug_mode = get_controller_debug();
+            if(!debug_mode)
+                printf("Debug Mode ON.\r\n\r\n");
+            else
+                printf("Debug Mode OFF\r\n\r\n");
+            
+            set_controller_debug(!debug_mode);
+            return;
+        }
         command_buffer[buffer_index++] = c;
         UserMenu::GetSerial()->putc(c);
     }
@@ -156,6 +168,7 @@ void TorqueControlMenu::Handle(char c)
         else
         {
             printf("\r\nGot Command: K_p = %.4f, K_d = %.4f, Pos = %.4f, Vel = %.4f, Torque_ff = %.4f\r\n", command[0],command[1],command[2],command[3],command[4]);
+            set_torque_control_ref(command[0], command[1], command[2], command[3], command[4]);
         }
         
         buffer_index = 0;

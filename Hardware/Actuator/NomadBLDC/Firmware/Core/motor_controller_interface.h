@@ -32,6 +32,8 @@ extern "C" {
 // Entry point to facilitate transition to C++ for RTOS Task
 void motor_controller_thread_entry();
 
+void debug_thread_entry();
+
 // Callbacks
 void current_measurement_cb();
 
@@ -55,6 +57,9 @@ void show_controller_config();
 
 //
 void set_control_mode(int mode);
+void set_controller_debug(bool debug);
+bool get_controller_debug();
+void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, float T_ff);
 
 
 #ifdef __cplusplus
