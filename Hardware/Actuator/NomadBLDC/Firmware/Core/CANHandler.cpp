@@ -66,7 +66,7 @@ CANHandler::CANHandler(PinName rx_pin, PinName tx_pin, uint32_t speed) : rx_pin_
     // Setup Filters
     can_->filter(config_.can_id << 21, 0xFFE00004, CANFormat::CANStandard, 0);
 
-    tx_msg_.id = config_.can_id;
+    tx_msg_.id = config_.can_master_id;
     tx_msg_.len = 6; // 6 Bytes(48-bits) = [Pos (16 bits) | Vel (12 bits) | T_hat (12 bits) | CAN ID (8 bits)]
     rx_msg_.len = 8; // 8 Bytes(64-bits) = [Pos Ref (16 bits) | Vel Ref (12 bits) | K_p (12 bits) | K_d (12 bits) | Torque (12 bits)]
 
@@ -80,7 +80,7 @@ void CANHandler::Interrupt()
         return;
 
     can_->read(rx_msg_);
-    printf("%df\n\r", rx_msg_.id);
+    printf("%d\r\n", rx_msg_.id);
     if ((rx_msg_.id == config_.can_id))
     {
         controller->state_.timeout = 0;

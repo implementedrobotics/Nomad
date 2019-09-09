@@ -59,12 +59,13 @@ struct Save_format_t
     uint32_t signature;
     uint32_t version;
     Motor::Config_t motor_config;
-    uint8_t motor_reserved[128]; // Reservered;
+    uint8_t motor_reserved[128]; // Reserved;
     PositionSensorAS5x47::Config_t position_sensor_config;
-    uint8_t position_reserved[128]; // Reservered;
+    uint8_t position_reserved[128]; // Reserved;
     MotorController::Config_t controller_config;
-    uint8_t controller_reserved[128]; // Reservered;
-
+    uint8_t controller_reserved[128]; // Reserved;
+    //CANHandler::Config_t can_config;
+    //uint8_t can_reserved[128]; // Reserved;
 };
 
 void motor_controller_thread_entry()
@@ -205,7 +206,6 @@ void save_configuration()
     save.motor_config = motor->config_;
     save.position_sensor_config = motor->PositionSensor()->config_;
     save.controller_config = motor_controller->config_;
-
     FlashInterface::Instance().Open(6, FlashInterface::WRITE);
     FlashInterface::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashInterface::Instance().Close();

@@ -86,23 +86,6 @@ Thread debug_task(osPriorityRealtime, 2048);
 //{
     // while (pc.readable())
     // {
-    //     char c = pc.getc();
-    //     if (c == 27)
-    //     {
-    //         state = REST_MODE;
-    //         state_change = 1;
-    //         char_count = 0;
-    //         cmd_id = 0;
-    //         gpio.led->write(0);
-    //         ;
-    //         for (int i = 0; i < 8; i++)
-    //         {
-    //             cmd_val[i] = 0;
-    //         }
-    //     }
-    //     if (state == REST_MODE)
-    //     {
-    //     }
     //     // else if (state == SETUP_MODE)
     //     // {
     //     //     if (c == 13)
@@ -137,7 +120,7 @@ int main()
 
     serial.baud(921600); // set serial baud rate
 
-    // CAN Handler Init
+    // CAN Handler Init              //rx  //tx
     CANHandler *can = new CANHandler(PB_8, PB_9, 1000000);
 
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
