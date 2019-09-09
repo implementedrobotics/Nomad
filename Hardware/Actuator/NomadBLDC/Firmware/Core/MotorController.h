@@ -114,8 +114,14 @@ public:
         float alpha;             // Current Reference Filter Coefficient
         float overmodulation;    // Overmodulation Amount
         float velocity_limit;    // Limit on maximum velocity
+        float position_limit;    // Limit on position input
         float current_limit;     // Max Current Limit
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
+        float K_p_min;           // Position Gain Minimum
+        float K_p_max;           // Position Gain Maximum
+        float K_d_min;           // Velocity Gain Minimum
+        float K_d_max;           // Velocity Gain Maximum
+        float torque_limit;      // Torque Limit
     };
 
     struct State_t
@@ -150,6 +156,8 @@ public:
 
     MotorController(Motor *motor, float sample_time); // TODO: Pass in motor object
 
+    static MotorController* GetInstance() { return singleton_; } // Singleton Instance
+    inline Motor* GetMotor() { return motor_; }
     void Init();            // Init Controller
     void Reset();           // Reset Controller
     void StartControlFSM(); // Begin Control Loop
@@ -223,6 +231,9 @@ private:
 
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config
+
+
+    static MotorController *singleton_; // Singleton
 };
 
 #endif // CORE_MOTOR_CONTROLLER_H_

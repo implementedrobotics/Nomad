@@ -39,61 +39,24 @@
 #include "Core/LEDService.h"
 #include "Core/UserMenu.h"
 #include "Core/FlashInterface.h"
+#include "Core/CANHandler.h"
 
 extern "C"
 {
     #include "Core/motor_controller_interface.h"
 }
 
-// #include "CAN_com.h"
-
-// ObserverStruct observer;
-
-// CAN can(PB_8, PB_9, 1000000); // CAN Rx pin name, CAN Tx pin name
-// CANMessage rxMsg;
-// CANMessage txMsg;
 
 // Serial Handler
 Serial serial(PA_2, PA_3);
+
+// ObserverStruct observer;
 
 // Control Thread
 Thread control_task(osPriorityRealtime, 2048);
 
 // Debug/Print Thread
 Thread debug_task(osPriorityRealtime, 2048);
-
-// void onMsgReceived()
-// {
-//     //msgAvailable = true;
-//     printf("%df\n\r", rxMsg.id);
-//     can.read(rxMsg);
-//     if ((rxMsg.id == CAN_ID))
-//     {
-//         controller.timeout = 0;
-//         if (((rxMsg.data[0] == 0xFF) & (rxMsg.data[1] == 0xFF) & (rxMsg.data[2] == 0xFF) & (rxMsg.data[3] == 0xFF) & (rxMsg.data[4] == 0xFF) & (rxMsg.data[5] == 0xFF) & (rxMsg.data[6] == 0xFF) & (rxMsg.data[7] == 0xFC)))
-//         {
-//             state = MOTOR_MODE;
-//             state_change = 1;
-//         }
-//         else if (((rxMsg.data[0] == 0xFF) & (rxMsg.data[1] == 0xFF) & (rxMsg.data[2] == 0xFF) & (rxMsg.data[3] == 0xFF) * (rxMsg.data[4] == 0xFF) & (rxMsg.data[5] == 0xFF) & (rxMsg.data[6] == 0xFF) & (rxMsg.data[7] == 0xFD)))
-//         {
-//             state = REST_MODE;
-//             state_change = 1;
-//             gpio.led->write(0);
-//             ;
-//         }
-//         else if (((rxMsg.data[0] == 0xFF) & (rxMsg.data[1] == 0xFF) & (rxMsg.data[2] == 0xFF) & (rxMsg.data[3] == 0xFF) * (rxMsg.data[4] == 0xFF) & (rxMsg.data[5] == 0xFF) & (rxMsg.data[6] == 0xFF) & (rxMsg.data[7] == 0xFE)))
-//         {
-//             spi.ZeroPosition();
-//         }
-//         else if (state == MOTOR_MODE)
-//         {
-//             unpack_cmd(rxMsg, &controller);
-//         }
-//         pack_reply(&txMsg, controller.theta_mech, controller.dtheta_mech, controller.i_q_filt * KT_OUT);
-//         can.write(txMsg);
-//     }
-// }
 
 
 // void enter_setup_state(void)
@@ -149,20 +112,8 @@ Thread debug_task(osPriorityRealtime, 2048);
     //     //         case 'b':
     //     //             I_BW = fmaxf(fminf(atof(cmd_val), 2000.0f), 100.0f);
     //     //             break;
-    //     //         case 'i':
-    //     //             CAN_ID = atoi(cmd_val);
-    //     //             break;
-    //     //         case 'm':
-    //     //             CAN_MASTER = atoi(cmd_val);
-    //     //             break;
     //     //         case 'l':
     //     //             TORQUE_LIMIT = fmaxf(fminf(atof(cmd_val), 18.0f), 0.0f);
-    //     //             break;
-    //     //         case 't':
-    //     //             CAN_TIMEOUT = atoi(cmd_val);
-    //     //             break;
-    //     //         default:
-    //     //             printf("\n\r '%c' Not a valid command prefix\n\r\n\r", cmd_id);
     //     //             break;
     //     //         }
     //     // }
@@ -184,7 +135,11 @@ int main()
     LEDService::Instance().Init(LED_PIN);
     LEDService::Instance().Off();
 
-    serial.baud(921600); // set serial baud rateSerial
+    serial.baud(921600); // set serial baud rate
+
+    // CAN Handler Init
+    CANHandler *can = new CANHandler(PB_8, PB_9, 1000000);
+
     printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
 
     // Create Menus
@@ -220,28 +175,6 @@ int main()
 
     // reset_observer(&observer); // Reset observer
 
-    // NVIC_SetPriority(CAN1_RX0_IRQn, 3);
-    //can.filter(CAN_ID << 21, 0xFFE00004, CANFormat::CANStandard, 0);
-
-    // txMsg.id = CAN_MASTER;
-    // txMsg.len = 6;
-    // rxMsg.len = 8;
-    // can.attach(&onMsgReceived); // attach 'CAN receive-complete' interrupt handler
-
-    // // If preferences haven't been user configured yet, set defaults
-    // if (isnan(CAN_ID) || CAN_ID == -1)
-    // {
-    //     CAN_ID = 1;
-    // }
-    // if (isnan(CAN_MASTER) || CAN_MASTER == -1)
-    // {
-    //     CAN_MASTER = 0;
-    // }
-    // if (isnan(CAN_TIMEOUT) || CAN_TIMEOUT == -1)
-    // {
-    //     CAN_TIMEOUT = 0;
-    // }
-
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
     // printf(" Position Sensor Electrical Offset:   %.4f\n\r", E_OFFSET);
     // printf(" Output Zero Position:  %.4f\n\r", M_OFFSET);
@@ -265,28 +198,9 @@ int main()
     //     }
     // }
 
-    //     printf("\n\r\n\r Configuration Options \n\r\n\n");
-    // wait_us(10);
-    // printf(" %-4fs %-31s %-5s %-6s %-5s\n\r\n\r", "prefix", "parameter", "min", "max", "current value");
-    // wait_us(10);
-    // printf(" %-4s %-31s %-5s %-6s %.1f\n\r", "b", "Current Bandwidth (Hz)", "100", "2000", 1000);
-    // wait_us(10);
-    // printf(" %-5s %-31s %-5s %-6s %-5i\n\r", "i", "CAN ID", "0", "127", 2);
-    // wait_us(10);
-    // printf(" %-4s %-31s %-5s %-6s %-5i\n\r", "m", "CAN Master ID", "0", "127", 3);
-    // wait_us(10);
-    // printf(" %-4s %-31s %-5s %-6s %.1f\n\r", "l", "Torque Limit (N-m)", "0.0", "18.0", 4);
-    // wait_us(10);
-    // printf(" %-4s %-31s %-5s %-6s %d\n\r", "t", "CAN Timeout (cycles)(0 = none)", "0", "100000", 5);
-    // wait_us(10);
-    // printf("\n\r To change a value, type 'prefix''value''ENTER'\n\r i.e. 'b1000''ENTER'\n\r\n\r");
-    // wait_us(10);
-
-
-
     control_task.start(motor_controller_thread_entry);
 
     debug_task.start(debug_thread_entry);
     // TODO: Idle Task
-    
+
 }

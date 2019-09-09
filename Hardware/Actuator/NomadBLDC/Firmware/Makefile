@@ -46,7 +46,6 @@ PROJECT := NomadBLDC
 ###############################################################################
 # Objects and Paths
 
-OBJECTS += CAN/CAN_com.o
 OBJECTS += DRV8323/DRV.o
 OBJECTS += FastPWM/Device/FastPWM_KLXX_K20D50M.o
 OBJECTS += FastPWM/Device/FastPWM_KSDK.o
@@ -62,6 +61,7 @@ OBJECTS += Core/Motor.o
 OBJECTS += Core/LEDService.o
 OBJECTS += Core/UserMenu.o
 OBJECTS += Core/FlashInterface.o
+OBJECTS += Core/CANHandler.o
 OBJECTS += main.o
 OBJECTS += math_ops.o
 OBJECTS += mbed-dev/drivers/AnalogIn.o

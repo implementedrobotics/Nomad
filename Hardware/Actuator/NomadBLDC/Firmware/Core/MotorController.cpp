@@ -64,6 +64,7 @@ struct Save_format_t
     uint8_t position_reserved[128]; // Reservered;
     MotorController::Config_t controller_config;
     uint8_t controller_reserved[128]; // Reservered;
+
 };
 
 void motor_controller_thread_entry()
@@ -374,6 +375,8 @@ extern "C" void TIM1_UP_TIM10_IRQHandler(void)
     }
     TIM1->SR = 0x0; // reset the status register
 }
+// Statics
+MotorController *MotorController::singleton_ = nullptr;
 
 MotorController::MotorController(Motor *motor, float sample_time) : controller_update_period_(sample_time), motor_(motor)
 {
@@ -393,9 +396,17 @@ MotorController::MotorController(Motor *motor, float sample_time) : controller_u
     config_.k_i_d = 0.0f;
     config_.k_i_q = 0.0f;
     config_.overmodulation = 1.0f;
-    config_.velocity_limit = 10.0f;
-    config_.current_limit = 20.0f;
+    config_.position_limit = 12.5f; // +/-
+    config_.velocity_limit = 10.0f; // +/-
+    config_.current_limit = 20.0f;  // +/-
     config_.current_bandwidth = 1000.0f;
+
+    config_.K_p_min = 0.0f;
+    config_.K_p_max = 500.0f;
+    config_.K_d_min = 0.0f;
+    config_.K_d_max = 5.0f; 
+    config_.torque_limit = 10.0f; // +/-
+
 }
 void MotorController::Reset()
 {
@@ -488,6 +499,9 @@ void MotorController::Init()
     // Default Mode Idle:
     control_mode_ = IDLE_MODE;
     control_initialized_ = true;
+
+    // Set Singleton
+    singleton_ = this;
     //printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
 }
 

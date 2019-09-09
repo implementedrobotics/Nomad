@@ -89,12 +89,13 @@ class UserMenu
 public:
     UserMenu(Serial *uart, MenuItem *root);
     void Show();
-    static Serial* GetSerial() { return serial_; }
-    static void Interrupt();
-    static MenuItem *current_menu_;
+    Serial* GetSerial() { return serial_; }
+    void Interrupt();
+    MenuItem *current_menu_;
+    static UserMenu *current_user_menu_;
 
 private:
-    static Serial *serial_;
+    Serial *serial_;
     MenuItem *root_;
 };
 

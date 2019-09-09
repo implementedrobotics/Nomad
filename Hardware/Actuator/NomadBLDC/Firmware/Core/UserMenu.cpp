@@ -35,7 +35,7 @@
 #include "motor_controller_interface.h"
 
 // Statics
-MenuItem *UserMenu::current_menu_ = nullptr;
+UserMenu *UserMenu::current_user_menu_ = nullptr;
 
 MenuItem::MenuItem(const std::string name, char command_char, MenuItem *parent, void (*cb_ptr)())
 {
@@ -87,16 +87,13 @@ void MenuItem::Show()
 
 void MenuItem::Handle(char c)
 {
-    // TODO: Forward this character, and have current menu handle it
-    // TODO: Pass commands of arbitrary length
-    // Type, Short vs Long Command
     for (uint32_t i = 0; i < sub_menus_.size(); i++)
     {
         if (sub_menus_[i]->CommandID() == c)
         {
             MenuItem *selected_menu = sub_menus_[i];
             selected_menu->Execute();
-            UserMenu::current_menu_ = selected_menu;
+            UserMenu::current_user_menu_->current_menu_ = selected_menu;
         }
     }
 }
@@ -136,7 +133,7 @@ void TorqueControlMenu::Handle(char c)
             return;
         }
         command_buffer[buffer_index++] = c;
-        UserMenu::GetSerial()->putc(c);
+        UserMenu::current_user_menu_->GetSerial()->putc(c);
     }
     else
     {
@@ -175,17 +172,17 @@ void TorqueControlMenu::Handle(char c)
     }
 }
 
-Serial *UserMenu::serial_ = nullptr;
 UserMenu::UserMenu(Serial *uart, MenuItem *menu)
 {
     root_ = menu;                          // Set Root Menu
     current_menu_ = menu;                  // Set Current Menu
     serial_ = uart;                        // UART Handler
-    serial_->attach(&UserMenu::Interrupt); // attach serial interrupt
+    serial_->attach(callback(this, &UserMenu::Interrupt)); // attach serial interrupt
 }
 
 void UserMenu::Show()
 {
+    current_user_menu_ = this;
     root_->Show();
 }
 
