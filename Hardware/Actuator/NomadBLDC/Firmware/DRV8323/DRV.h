@@ -141,12 +141,53 @@
 #define CSA_GAIN_10         0x1
 #define CSA_GAIN_20         0x2
 #define CSA_GAIN_40         0x3
+#define CSA_CAL_A_BITS           (1 << 4)
+#define CSA_CAL_B_BITS           (1 << 3)
+#define CSA_CAL_C_BITS           (1 << 2)
+
+#define CSA_CAL_A_NO_LOAD   (1 << 4)  
+#define CSA_CAL_A_LOAD      (0 << 4)  
+#define CSA_CAL_B_NO_LOAD   (1 << 3)  
+#define CSA_CAL_B_LOAD      (0 << 3)  
+#define CSA_CAL_C_NO_LOAD   (1 << 2)  
+#define CSA_CAL_C_LOAD      (0 << 2)
+
+#define CSA_AMP_ID_A        1
+#define CSA_AMP_ID_B        2
+#define CSA_AMP_ID_C        3  
+
 #define DIS_SEN_EN          0x0     /// Overcurrent Fault
 #define DIS_SEN_DIS         0x1
 #define SEN_LVL_0_25        0x0     /// Sense OCP voltage level
 #define SEN_LVL_0_5         0x1
 #define SEN_LVL_0_75        0x2
 #define SEN_LVL_1_0         0x3
+
+#define ERROR_FAULT         (1 << 10) // Fault Status Error
+#define VDS_OCP_FAULT       (1 << 9)  // VDS Overcurrent Fault
+#define GDF_FAULT           (1 << 8)  // Gate Drive Fault
+#define UVLO_FAULT          (1 << 7)  // Undervoltage Lockout Fault
+#define OTSD_FAULT          (1 << 6)  // Overtemperature Shutdown Fault
+#define VDS_HA_FAULT        (1 << 5)  // VDS Overcurrent A High-Side MOSFET
+#define VDS_LA_FAULT        (1 << 4)  // VDS Overcurrent A Low-Side MOSFET
+#define VDS_HB_FAULT        (1 << 3)  // VDS Overcurrent B High-Side MOSFET
+#define VDS_LB_FAULT        (1 << 2)  // VDS Overcurrent B Low-Side MOSFET
+#define VDS_HC_FAULT        (1 << 1)  // VDS Overcurrent C High-Side MOSFET
+#define VDS_LC_FAULT        (1 << 0)  // VDS Overcurrent C Low-Side MOSFET
+
+#define SA_OC_FAULT         (1 << 10) // Overcurrent on Phase A Sense Amplifier
+#define SB_OC_FAULT         (1 << 9)  // Overcurrent on Phase B Sense Amplifier
+#define SC_OC_FAULT         (1 << 8)  // Overcurrent on Phase C Sense Amplifier
+#define OTW_FAULT           (1 << 7)  // Over Temperature Warning Fault
+#define CPUV_FAULT          (1 << 6)  // Charge Pump Undervoltage Fault
+#define VGS_HA_FAULT        (1 << 5)  // Gate Drive Fault on A High-Side MOSFET
+#define VGS_LA_FAULT        (1 << 4)  // Gate Drive Fault on A Low-Side MOSFET
+#define VGS_HB_FAULT        (1 << 3)  // Gate Drive Fault on B High-Side MOSFET
+#define VGS_LB_FAULT        (1 << 2)  // Gate Drive Fault on B Low-Side MOSFET
+#define VGS_HC_FAULT        (1 << 1)  // Gate Drive Fault on C High-Side MOSFET
+#define VGS_LC_FAULT        (1 << 0)  // Gate Drive Fault on C Low-Side MOSFET
+
+
 
 class DRV832x {
     public:
@@ -160,15 +201,17 @@ class DRV832x {
         void write_LSR(int CBC, int TDRIVE, int IDRIVEP_LS, int IDRIVEN_LS);
         void write_OCPCR(int TRETRY, int DEAD_TIME, int OCP_MODE, int OCP_DEG, int VDS_LVL);
         void write_CSACR(int CSA_FET, int VREF_DIV, int LS_REF, int CSA_GAIN, int DIS_SEN, int CSA_CAL_A, int CSA_CAL_B, int CSA_CAL_C, int SEN_LVL);
-        void enable_gd(void);
-        void disable_gd(void);
-        void calibrate(void);
-        void print_faults();
+        void Enable(void);
+        void Disable(void);
+        void Calibrate(void);
+        void PrintFaults();
+        bool CheckFaults();
         
     private:
         SPI *_spi;
         DigitalOut *_cs;
         uint16_t spi_write(uint16_t val);
+        void set_dc_cal_mode(uint16_t amp_id, uint16_t mode);
 };
 
 #endif

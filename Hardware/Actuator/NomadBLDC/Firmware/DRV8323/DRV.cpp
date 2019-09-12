@@ -67,118 +67,164 @@ void DRV832x::write_CSACR(int CSA_FET, int VREF_DIV, int LS_REF, int CSA_GAIN, i
     spi_write(val);
 }
 
-void DRV832x::print_faults(void)
+void DRV832x::PrintFaults(void)
 {
     uint16_t val1 = read_FSR1();
     wait_us(10);
+
     uint16_t val2 = read_FSR2();
     wait_us(10);
-    if (val1 & (1 << 10))
-    {
-        printf("\n\rFAULT\n\r");
-    }
 
-    if (val1 & (1 << 9))
+    // Fault Status Register 1
+    if (val1 & (VDS_OCP_FAULT))
     {
         printf("VDS_OCP\n\r");
     }
-    if (val1 & (1 << 8))
+    if (val1 & GDF_FAULT)
     {
         printf("GDF\n\r");
     }
-    if (val1 & (1 << 7))
+    if (val1 & UVLO_FAULT)
     {
         printf("UVLO\n\r");
     }
-    if (val1 & (1 << 6))
+    if (val1 & OTSD_FAULT)
     {
         printf("OTSD\n\r");
     }
-    if (val1 & (1 << 5))
+    if (val1 & VDS_HA_FAULT)
     {
         printf("VDS_HA\n\r");
     }
-    if (val1 & (1 << 4))
+    if (val1 & VDS_LA_FAULT)
     {
         printf("VDS_LA\n\r");
     }
-    if (val1 & (1 << 3))
+    if (val1 & VDS_HB_FAULT)
     {
         printf("VDS_HB\n\r");
     }
-    if (val1 & (1 << 2))
+    if (val1 & VDS_LB_FAULT)
     {
         printf("VDS_LB\n\r");
     }
-    if (val1 & (1 << 1))
+    if (val1 & VDS_HC_FAULT)
     {
         printf("VDS_HC\n\r");
     }
-    if (val1 & (1))
+    if (val1 & VDS_LC_FAULT)
     {
         printf("VDS_LC\n\r");
     }
 
-    if (val2 & (1 << 10))
+    // Fault Status Register 2
+    if (val2 & SA_OC_FAULT)
     {
         printf("SA_OC\n\r");
     }
-    if (val2 & (1 << 9))
+    if (val2 & SB_OC_FAULT)
     {
         printf("SB_OC\n\r");
     }
-    if (val2 & (1 << 8))
+    if (val2 & SC_OC_FAULT)
     {
         printf("SC_OC\n\r");
     }
-    if (val2 & (1 << 7))
+    if (val2 & OTW_FAULT)
     {
         printf("OTW\n\r");
     }
-    if (val2 & (1 << 6))
+    if (val2 & CPUV_FAULT)
     {
         printf("CPUV\n\r");
     }
-    if (val2 & (1 << 5))
+    if (val2 & VGS_HA_FAULT)
     {
         printf("VGS_HA\n\r");
     }
-    if (val2 & (1 << 4))
+    if (val2 & VGS_LA_FAULT)
     {
         printf("VGS_LA\n\r");
     }
-    if (val2 & (1 << 3))
+    if (val2 & VGS_HB_FAULT)
     {
         printf("VGS_HB\n\r");
     }
-    if (val2 & (1 << 2))
+    if (val2 & VGS_LB_FAULT)
     {
         printf("VGS_LB\n\r");
     }
-    if (val2 & (1 << 1))
+    if (val2 & VGS_HC_FAULT)
     {
         printf("VGS_HC\n\r");
     }
-    if (val2 & (1))
+    if (val2 & VGS_LC_FAULT)
     {
         printf("VGS_LC\n\r");
     }
 }
 
-void DRV832x::enable_gd(void)
+bool DRV832x::CheckFaults()
+{
+    uint16_t val1 = read_FSR1();
+    wait_us(10);
+
+    return (val1 & ERROR_FAULT);
+
+}
+void DRV832x::Enable(void)
 {
     uint16_t val = (read_register(DCR)) & (~(0x1 << 2));
     write_register(DCR, val);
 }
 
-void DRV832x::disable_gd(void)
+void DRV832x::Disable(void)
 {
     uint16_t val = (read_register(DCR)) | (0x1 << 2);
     write_register(DCR, val);
 }
 
-void DRV832x::calibrate(void)
+void DRV832x::Calibrate(void)
 {
-    uint16_t val = 0x1 << (4 + 0x1) << (3 + 0x1) << 2;
-    write_register(CSACR, val);
+    // Calibrate one amplifier at a time.  Could we do all at once?
+
+    // CSA Amplifier A
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_A_NO_LOAD); // Disconnect and Calibrate
+    wait_us(500);
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_A_LOAD); // Reconnect
+    wait_us(500);
+
+    // CSA Amplifier B
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_B_NO_LOAD); // Disconnect and Calibrate
+    wait_us(500);
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_B_LOAD); // Reconnect
+    wait_us(500);
+
+    // CSA Amplifier C
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_C_NO_LOAD); // Disconnect and Calibrate
+    wait_us(500);
+    set_dc_cal_mode(CSA_AMP_ID_A, CSA_CAL_C_LOAD); // Reconnect
+    wait_us(500);
+}
+void DRV832x::set_dc_cal_mode(uint16_t amp_id, uint16_t mode)
+{
+    uint16_t data = read_register(CSACR); // Read Data
+
+    if (amp_id == CSA_AMP_ID_A) // Clear the bits
+    {
+        data &= (~CSA_CAL_A_BITS);
+    }
+    else if (amp_id == CSA_AMP_ID_B)
+    {
+        data &= (~CSA_CAL_B_BITS);
+    }
+    else if (amp_id == CSA_AMP_ID_C)
+    {
+        data &= (~CSA_CAL_C_BITS);
+    }
+    data |= mode; // Set the bits
+
+    write_register(CSACR, data); // Write SPI Data
+
+
 }
