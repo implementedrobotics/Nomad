@@ -1,0 +1,304 @@
+PCBNEW-LibModule-V1  
+# encoding utf-8
+Units mm
+$INDEX
+MOSFET_CSD88599Q5DC
+$EndINDEX
+$MODULE MOSFET_CSD88599Q5DC
+Po 0 0 0 15 00000000 00000000 ~~
+Li MOSFET_CSD88599Q5DC
+Cd 
+Sc 00000000
+At SMD
+Op 0 0 0
+.SolderMask 0
+.SolderPaste 0
+T0 -0.914628 -4.21745 0.640158 0.640158 0 0.05 N V 21 "MOSFET_CSD88599Q5DC"
+T1 -1.01014 4.18248 0.641361 0.641361 0 0.05 N V 21 "VAL**"
+DS -2.5 -3 2.5 -3 0.127 27
+DS 2.5 -3 2.5 3 0.127 27
+DS 2.5 3 -2.5 3 0.127 27
+DS -2.5 3 -2.5 -3 0.127 27
+DS -2.875 -3.45 2.875 -3.45 0.05 26
+DS 2.875 -3.45 2.875 3.45 0.05 26
+DS 2.875 3.45 -2.875 3.45 0.05 26
+DS -2.875 3.45 -2.875 -3.45 0.05 26
+DS -1.738 -3 1.738 -3 0.127 21
+DS 1.738 3 -1.738 3 0.127 21
+DP 0 0 0 0 4 0 15
+Dl -2.3535 -1.5
+Dl -2 -1.5
+Dl -2 2.37854
+Dl -2.3535 2.37854
+DP 0 0 0 0 4 0 15
+Dl 2.00388 -1.5
+Dl 2.35 -1.5
+Dl 2.35 2.37961
+Dl 2.00388 2.37961
+DC -3 -2.5 -2.9 -2.5 0.2 21
+DP 0 0 0 0 4 0 19
+Dl 0.105387 0.1
+Dl 1.515 0.1
+Dl 1.515 1.2245
+Dl 0.105387 1.2245
+DP 0 0 0 0 4 0 19
+Dl 0.105034 1.42
+Dl 1.515 1.42
+Dl 1.515 2.54082
+Dl 0.105034 2.54082
+DP 0 0 0 0 4 0 19
+Dl 0.10521 -1.22
+Dl 1.515 -1.22
+Dl 1.515 -0.1002
+Dl 0.10521 -0.1002
+DP 0 0 0 0 4 0 19
+Dl 0.105264 -2.54
+Dl 1.515 -2.54
+Dl 1.515 -1.42358
+Dl 0.105264 -1.42358
+DP 0 0 0 0 4 0 19
+Dl -1.51751 -2.54
+Dl -0.105 -2.54
+Dl -0.105 -1.42234
+Dl -1.51751 -1.42234
+DP 0 0 0 0 4 0 19
+Dl -1.51647 -1.22
+Dl -0.105 -1.22
+Dl -0.105 -0.100097
+Dl -1.51647 -0.100097
+DP 0 0 0 0 4 0 19
+Dl -1.51814 0.1
+Dl -0.105 0.1
+Dl -0.105 1.22252
+Dl -1.51814 1.22252
+DP 0 0 0 0 4 0 19
+Dl -1.5185 1.42
+Dl -0.105 1.42
+Dl -0.105 2.54587
+Dl -1.5185 2.54587
+DP 0 0 0 0 4 0 19
+Dl -2.35572 -1.5
+Dl -2 -1.5
+Dl -2 2.38077
+Dl -2.35572 2.38077
+DP 0 0 0 0 4 0 19
+Dl 2.00394 -1.5
+Dl 2.35 -1.5
+Dl 2.35 2.37969
+Dl 2.00394 2.37969
+$PAD
+Sh "27" R 3.3 5.4 0 0 0
+At SMD N 00888000
+.SolderMask 0
+Ne 0 ""
+Po 0 0
+$EndPAD
+$PAD
+Sh "1" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 -2.5
+$EndPAD
+$PAD
+Sh "22" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 -2.5
+$EndPAD
+$PAD
+Sh "2" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 -2
+$EndPAD
+$PAD
+Sh "3" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 -1.5
+$EndPAD
+$PAD
+Sh "4" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 -1
+$EndPAD
+$PAD
+Sh "5" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 -0.5
+$EndPAD
+$PAD
+Sh "6" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 0
+$EndPAD
+$PAD
+Sh "7" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 0.5
+$EndPAD
+$PAD
+Sh "8" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 1
+$EndPAD
+$PAD
+Sh "9" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 1.5
+$EndPAD
+$PAD
+Sh "10" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 2
+$EndPAD
+$PAD
+Sh "11" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.35 2.5
+$EndPAD
+$PAD
+Sh "12" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 2.5
+$EndPAD
+$PAD
+Sh "13" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 2
+$EndPAD
+$PAD
+Sh "14" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 1.5
+$EndPAD
+$PAD
+Sh "15" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 1
+$EndPAD
+$PAD
+Sh "16" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 0.5
+$EndPAD
+$PAD
+Sh "17" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 0
+$EndPAD
+$PAD
+Sh "18" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 -0.5
+$EndPAD
+$PAD
+Sh "19" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 -1
+$EndPAD
+$PAD
+Sh "20" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 -1.5
+$EndPAD
+$PAD
+Sh "21" R 0.25 0.7 0 0 900
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.35 -2
+$EndPAD
+$PAD
+Sh "26" R 0.43 0.375 0 0 0
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.115 -3.013
+$EndPAD
+$PAD
+Sh "23" R 0.43 0.375 0 0 0
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.115 -3.013
+$EndPAD
+$PAD
+Sh "24" R 0.43 0.375 0 0 0
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po -2.115 3.013
+$EndPAD
+$PAD
+Sh "25" R 0.43 0.375 0 0 0
+At SMD N 00888000
+.SolderMask 0
+.SolderPaste 0
+Ne 0 ""
+Po 2.115 3.013
+$EndPAD
+$EndMODULE MOSFET_CSD88599Q5DC
