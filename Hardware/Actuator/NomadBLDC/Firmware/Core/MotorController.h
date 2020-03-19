@@ -37,7 +37,7 @@
 #define PIN_A PA_10      // PWM Ouput PIN A
 #define PIN_B PA_9       // PWM Ouput PIN B
 #define PIN_C PA_8       // PWM Ouput PIN C
-#define ENABLE_PIN PA_11 // DRV8323 Enable Pin
+#define ENABLE_PIN PC_9 // DRV8323 Enable Pin
 
 // Duty Cycle Min/Max
 #define DTC_MAX 0.94f // Max phase duty cycle

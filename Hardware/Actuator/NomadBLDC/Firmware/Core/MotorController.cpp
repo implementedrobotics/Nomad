@@ -466,7 +466,7 @@ void MotorController::Init()
     // Setup Gate Driver
     spi_handle_ = new SPI(PA_7, PA_6, PA_5);
     cs_ = new DigitalOut(PA_4);
-    gate_enable_ = new DigitalOut(PA_11);
+    gate_enable_ = new DigitalOut(ENABLE_PIN);
     gate_driver_ = new DRV832x(spi_handle_, cs_);
 
     gate_enable_->write(1);
