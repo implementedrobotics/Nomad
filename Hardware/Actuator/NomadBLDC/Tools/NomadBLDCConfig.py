@@ -1,6 +1,7 @@
 
 from PyQt5.QtWidgets import QMainWindow, QApplication
 import sys
+from NomadBLDC import NomadBLDC
 
 class Window(QMainWindow):
     def __init__(self):
@@ -21,10 +22,13 @@ class Window(QMainWindow):
         self.show()
 
 
+if __name__ == '__main__':
+    nomad = NomadBLDC(timeout=0.5, baud=921600)
+    nomad.connect()
 
-App = QApplication(sys.argv)
-window = Window()
+    #App = QApplication(sys.argv)
+    #window = Window()
 
-sys.exit(App.exec())
+    #sys.exit(App.exec())
 
 

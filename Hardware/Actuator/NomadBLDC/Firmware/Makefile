@@ -60,6 +60,7 @@ OBJECTS += Core/MotorController.o
 OBJECTS += Core/Motor.o
 OBJECTS += Core/LEDService.o
 OBJECTS += Core/UserMenu.o
+OBJECTS += Core/SerialHandler.o
 OBJECTS += Core/FlashInterface.o
 OBJECTS += Core/CANHandler.o
 OBJECTS += main.o

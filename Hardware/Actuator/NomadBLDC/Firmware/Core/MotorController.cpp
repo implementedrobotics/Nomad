@@ -214,7 +214,7 @@ void save_configuration()
 }
 void load_configuration()
 {
-    printf("\r\nLoading Configuration...\r\n");
+    //printf("\r\nLoading Configuration...\r\n");
     Save_format_t load;
 
     FlashInterface::Instance().Open(6, FlashInterface::READ);
@@ -223,7 +223,7 @@ void load_configuration()
 
     if (load.signature != FLASH_SAVE_SIGNATURE)
     {
-        printf("\r\nERROR: No Configuration Found!.  Press ESC to return to menu.\r\n\r\n");
+        //printf("\r\nERROR: No Configuration Found!.  Press ESC to return to menu.\r\n\r\n");
         return;
     }
 
