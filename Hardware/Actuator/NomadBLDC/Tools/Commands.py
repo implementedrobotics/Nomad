@@ -35,6 +35,7 @@ class CommandHandler:
     def read_firmware_version(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.FW_VERSION_READ, 0))
         transport.send_packet(command_packet)
+        
 
     #def process_packet(self, packet):
         # Unpack packet

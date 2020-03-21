@@ -34,20 +34,19 @@
 // Project Includes
 #include "mbed.h"
 
-
-typedef void (* packet_handler_t)(const uint8_t *packet_buffer, uint16_t packet_length);
 class HDLCHandler
 {
 private:
     uint16_t frame_offset_;
     uint16_t frame_chksum_;
     uint8_t receive_buffer_[512]; // Frame buffer.  Support 255
+    uint8_t transmit_buffer_ [512]; // Frame buffer out
     bool in_escape_; // Are we currently in escape?
 
 public:
     HDLCHandler();
     void ProcessByte(uint8_t byte);
-    void SendPacket(uint8_t packet);
+    bool SendPacket(uint8_t *packet, uint32_t length);
 
 };
 

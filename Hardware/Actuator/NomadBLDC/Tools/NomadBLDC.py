@@ -48,6 +48,7 @@ class NomadBLDC:
             self.commands.read_firmware_version(self.transport)
 
 
+
 nomad = NomadBLDC()
 nomad.connect()
 

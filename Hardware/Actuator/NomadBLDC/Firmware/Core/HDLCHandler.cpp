@@ -33,6 +33,7 @@
 #include "mbed.h"
 #include "rtos.h"
 #include "CommandHandler.h"
+#include "SerialHandler.h"
 #include "CRC16.h"
 
 // HDLC Asynchronous Framing
@@ -56,7 +57,7 @@ void HDLCHandler::ProcessByte(uint8_t byte)
         {
             // Command = receive_buffer_[0]
             // Payload Length = receive_buffer_[1]
-            printf("Got Packet: Command %d.  Length %d, Offset %d\n\r", receive_buffer_[0], receive_buffer_[1], frame_offset_-4);
+           // printf("Got Packet: Command %d.  Length %d, Offset %d\n\r", receive_buffer_[0], receive_buffer_[1], frame_offset_-4);
 
             // Fast early out on packet length
             if ((frame_offset_ - 4) == receive_buffer_[1])
@@ -67,7 +68,7 @@ void HDLCHandler::ProcessByte(uint8_t byte)
                 if (frame_chksum_ == sent_chksum)
                 {
                     // Execute Command Callback
-                    printf("SUCCESSFUL PACKET SEND!\r\n");
+                    //printf("SUCCESSFUL PACKET SEND!\r\n");
                     CommandHandler::ProcessPacket(receive_buffer_, frame_offset_-2);
                 }
             }
@@ -103,4 +104,31 @@ void HDLCHandler::ProcessByte(uint8_t byte)
         frame_offset_ = 0; // Reset
         frame_chksum_ = 0;
     }
+}
+
+bool HDLCHandler::SendPacket(uint8_t *packet, uint32_t length)
+{
+    if(length >= PACKET_SIZE_LIMIT)
+    {
+        return false;
+    }
+
+    // Compute CRC16 for Packet
+    frame_chksum_ = CRC16::Compute(packet, length);
+    //printf("Got Checksum: %d\n\r", frame_chksum_);
+
+    uint32_t buffer_offset = 0;
+    transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY;
+    memcpy(transmit_buffer_+buffer_offset, (uint8_t *)(packet), sizeof(uint8_t) * length);
+    buffer_offset += length;
+    memcpy(transmit_buffer_+buffer_offset, (uint8_t *)(&frame_chksum_), sizeof(uint16_t));
+    buffer_offset += 2;
+    transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY; 
+    for(uint32_t i = 0; i < length+4;i++) // Write the buffer
+    {
+        SerialHandler::GetSerial()->putc(transmit_buffer_[i]);
+    }
+    // TODO: Why does this break the connection?
+    // SerialHandler::GetSerial()->write(transmit_buffer_, length+4, 0);
+    return true;
 }

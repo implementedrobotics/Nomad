@@ -33,9 +33,8 @@
 
 // Project Includes
 #include "mbed.h"
+#include "HDLCHandler.h"
 
-
-//typedef void (* packet_handler_t)(const uint8_t *packet_buffer, uint16_t packet_length);
 
 class CommandHandler
 {
@@ -44,11 +43,13 @@ public:
 
     typedef enum
     {
-        COMM_FW_VERSION_READ = 1,
+        COMM_FW_VERSION = 1,
     } command_t;
 
     CommandHandler();
     static void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
+
+private:
 
 
 };

@@ -29,8 +29,10 @@ import serial
 import time
 import random
 import struct
+import threading
 
 from crc import crc16
+from HDLCHandler import HDLCHandler
 
 FRAME_BOUNDARY = 0x7E
 CONTROL_ESCAPE = 0x7D
@@ -43,7 +45,8 @@ class SerialHandler:
         self.baud = baud # Baud Rate
         self.connected = False # Connected Flag
         self.uart = serial.Serial(port, baudrate=baud, timeout=1) # Serial Port
-
+        self.hdlc = HDLCHandler()
+        self.start_recv_thread()
     def close(self):
         # Close Port
         self.uart.close()
@@ -64,7 +67,19 @@ class SerialHandler:
         hdlc_frame += crc
         hdlc_frame.append(FRAME_BOUNDARY)
         self.uart.write(hdlc_frame)
-        print(hdlc_frame)
+        #print(hdlc_frame)
+
+    def start_recv_thread(self):
+        def recv_packet():
+            while(True):   
+                if (self.uart.inWaiting()>0):
+                    byte = self.uart.read(1)
+                    #print(byte)
+                    self.hdlc.process_byte(byte)
+        
+        t = threading.Thread(target=recv_packet)
+        t.start()
+
 
 def get_available_ports():
     """ Lists serial port names

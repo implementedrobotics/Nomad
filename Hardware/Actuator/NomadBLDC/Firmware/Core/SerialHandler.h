@@ -40,32 +40,16 @@
 // Entry point to facilitate transition to C++ for RTOS Task
 void comms_thread_entry();
 
-struct Packet_t
-{
-    uint32_t length;
-    char data[16];
-};
-
-struct Command_t
-{
-    uint32_t command;
-};
-
-struct Reponse_t
-{
-    uint8_t value;
-};
-
 class SerialHandler
 {
 
 public:
     SerialHandler(Serial *uart);
-    Serial* GetSerial() { return serial_; }
+    static Serial* GetSerial() { return serial_; }
     void Interrupt();
 
 private:
-    Serial *serial_;
+    static Serial *serial_;
 };
 
 #endif // CORE_SERIAL_HANDLER_H_

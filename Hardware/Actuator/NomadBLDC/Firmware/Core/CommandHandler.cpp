@@ -34,20 +34,29 @@
 #include "rtos.h"
 #include "Core/nomad_common.h"
 
-// HDLC Handler Class
+
+HDLCHandler hdlc_out;
+
+// Command Handler Class
 CommandHandler::CommandHandler()
 {
 }
 
 void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length)
 {
-    printf("PROCESS PACKET: %d \n\r", packet_buffer[0]);
+    //printf("PROCESS PACKET: %d \n\r", packet_buffer[0]);
 
     command_t command = static_cast<command_t>(packet_buffer[0]);
     switch(command)
     {
-        case COMM_FW_VERSION_READ:
-            printf("READ FIRMWARE!\n\r");
+        case COMM_FW_VERSION:
+            //printf("READ FIRMWARE!\n\r");
+            uint8_t response[4];
+            response[0] = COMM_FW_VERSION;
+            response[1] = 2;
+            response[2] = VERSION_MAJOR;
+            response[3] = VERSION_MINOR;
+            hdlc_out.SendPacket(response, 4);
             break;
         default:
             break;

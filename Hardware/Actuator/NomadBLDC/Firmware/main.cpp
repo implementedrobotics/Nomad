@@ -191,7 +191,7 @@ int main()
 
     comms_task.start(comms_thread_entry);
 
-    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
+    //printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
     // TODO: Idle Task
 
 }

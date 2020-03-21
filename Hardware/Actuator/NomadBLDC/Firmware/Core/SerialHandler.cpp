@@ -63,6 +63,8 @@ SerialHandler::SerialHandler(Serial *uart)
     serial_->attach(callback(this, &SerialHandler::Interrupt)); // Attach Serial Interrupt
 }
 
+Serial *SerialHandler::serial_ = 0;
+
 void SerialHandler::Interrupt()
 {
     while (serial_->readable())
