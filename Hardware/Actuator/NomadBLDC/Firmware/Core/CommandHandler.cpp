@@ -34,9 +34,18 @@
 #include "rtos.h"
 #include "Core/nomad_common.h"
 
-
 HDLCHandler hdlc_out;
 
+struct Device_info_t
+{
+    uint8_t comm_id;            // Command ID
+    uint8_t packet_length;     // Packet Length
+    uint8_t fw_major;          // Firmware Version Major
+    uint8_t fw_minor;          // Firmware Version Minor
+    uint32_t uid1;             // Device Unique ID 1
+    uint32_t uid2;             // Device Unique ID 2
+    uint32_t uid3;             // Device Unique ID 3
+};
 // Command Handler Class
 CommandHandler::CommandHandler()
 {
@@ -47,19 +56,29 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     //printf("PROCESS PACKET: %d \n\r", packet_buffer[0]);
 
     command_t command = static_cast<command_t>(packet_buffer[0]);
-    switch(command)
+    switch (command)
     {
-        case COMM_FW_VERSION:
-            //printf("READ FIRMWARE!\n\r");
-            uint8_t response[4];
-            response[0] = COMM_FW_VERSION;
-            response[1] = 2;
-            response[2] = VERSION_MAJOR;
-            response[3] = VERSION_MINOR;
-            hdlc_out.SendPacket(response, 4);
-            break;
-        default:
-            break;
-    }
+    case COMM_DEVICE_INFO:
+    {
+        //printf("READ FIRMWARE!\n\r");
 
+        // Get Unique Device ID Offset Register
+        unsigned long *uid = (unsigned long *)0x1FFF7A10;
+        Device_info_t info;
+
+        info.comm_id = COMM_DEVICE_INFO;
+        info.packet_length = sizeof(Device_info_t) - 2; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+        info.fw_major = VERSION_MAJOR;
+        info.fw_minor = VERSION_MINOR;
+        info.uid1 = uid[0];
+        info.uid2 = uid[1];
+        info.uid3 = uid[2];
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&info, sizeof(Device_info_t));
+        break;
+    }
+    default:
+        break;
+    }
 }

@@ -43,7 +43,7 @@ public:
 
     typedef enum
     {
-        COMM_FW_VERSION = 1,
+        COMM_DEVICE_INFO = 1,
     } command_t;
 
     CommandHandler();

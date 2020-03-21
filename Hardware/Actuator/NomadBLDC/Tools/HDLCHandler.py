@@ -35,11 +35,12 @@ PACKET_SIZE_LIMIT = 256
 
 #Serial Handler Interface
 class HDLCHandler:
-    def __init__(self):
+    def __init__(self, packet_cb):
         self.frame_offset = 0
         self.frame_chksum = 0
-        self.receive_buffer = bytearray(10)
+        self.receive_buffer = bytearray(255)
         self.in_escape = False
+        self.packet_cb = packet_cb
 
     def frame_packet(self, packet):
          # Compute CRC16
@@ -59,19 +60,22 @@ class HDLCHandler:
             #print("GOT FRAME BOUNDARY!")
             # Check for End Frame + Validity
             if(self.frame_offset >= 2):
-               # print(f'Got Command {self.receive_buffer[0]} and {self.receive_buffer[1]}')
+                #print(f'Got Command {self.receive_buffer[0]} and {self.receive_buffer[1]}')
+                #print((self.frame_offset - 4))
                 if ((self.frame_offset - 4) == self.receive_buffer[1]):
                     # Length matches.  Now verify checksum
-                    #self.frame_chksum = bytearray(struct.pack("<H", crc16(self.receive_buffer[0:self.frame_offset-2])))
-                    self.frame_chksum = crc16(self.receive_buffer[0:self.frame_offset-2])
+                    self.frame_chksum = bytearray(struct.pack("<H", crc16(self.receive_buffer[0:self.frame_offset-2])))
+                    packet = self.receive_buffer[0:self.frame_offset-2]
+                    self.frame_chksum = crc16(packet)
                     #print(self.frame_chksum)
                     #print(self.receive_buffer[self.frame_offset-2:self.frame_offset])
                     sent_chksum = struct.unpack("<H", self.receive_buffer[self.frame_offset-2:self.frame_offset])[0]
                     #print("Successful Packet Receive")
                     #print(self.receive_buffer[0:self.frame_offset-2])
                     #print(sent_chksum)
-                    if(self.frame_chksum == sent_chksum):
-                        print("COMMAND SUCCESS")
+                    if(self.frame_chksum == sent_chksum and self.packet_cb is not None):
+                        self.packet_cb(packet)
+                        #print("COMMAND SUCCESS")
 
             # Reset and look for next frame
             self.frame_offset = 0

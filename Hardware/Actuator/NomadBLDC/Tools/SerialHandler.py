@@ -34,19 +34,21 @@ import threading
 from crc import crc16
 from HDLCHandler import HDLCHandler
 
-FRAME_BOUNDARY = 0x7E
-CONTROL_ESCAPE = 0x7D
+from LogPrint import LogPrint as logger
+
+# TODO: Unify with Framing Handler
 PACKET_SIZE_LIMIT = 256
 
 #Serial Handler Interface
 class SerialHandler:
-    def __init__(self, port, baud=115200):
+    def __init__(self, port, baud, packet_cb=None):
         self.port = port # Port
         self.baud = baud # Baud Rate
         self.connected = False # Connected Flag
         self.uart = serial.Serial(port, baudrate=baud, timeout=1) # Serial Port
-        self.hdlc = HDLCHandler()
+        self.hdlc = HDLCHandler(packet_cb)
         self.close_event = threading.Event()
+        #self.packet_cb = packet_cb
         self.start_read_task()
 
     def close(self):
@@ -62,17 +64,17 @@ class SerialHandler:
 
         hdlc_frame = self.hdlc.frame_packet(packet)
         self.uart.write(hdlc_frame)
-        print(hdlc_frame)
+        #print(hdlc_frame)
 
     def start_read_task(self):
 
         def recv_packet():
-            while(not self.close_event.is_set):   
+            while(not self.close_event.is_set()):   
                 if (self.uart.inWaiting() > 0): # Got Serial Data
                     byte = self.uart.read(1)
                     #print(byte)
                     self.hdlc.process_byte(byte) # Send to HDLC to process packet
-        
+            logger.print_info("Serial Receive Thread Terminated")
         t = threading.Thread(target=recv_packet)
         t.start()
 

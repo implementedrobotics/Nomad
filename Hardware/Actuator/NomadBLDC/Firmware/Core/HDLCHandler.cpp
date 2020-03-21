@@ -57,7 +57,7 @@ void HDLCHandler::ProcessByte(uint8_t byte)
         {
             // Command = receive_buffer_[0]
             // Payload Length = receive_buffer_[1]
-           // printf("Got Packet: Command %d.  Length %d, Offset %d\n\r", receive_buffer_[0], receive_buffer_[1], frame_offset_-4);
+            //printf("Got Packet: Command %d.  Length %d, Offset %d\n\r", receive_buffer_[0], receive_buffer_[1], frame_offset_-4);
 
             // Fast early out on packet length
             if ((frame_offset_ - 4) == receive_buffer_[1])

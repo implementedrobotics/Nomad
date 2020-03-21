@@ -28,13 +28,17 @@ import time
 import struct
 from SerialHandler import SerialHandler
 from SerialHandler import get_available_ports
-from Commands import CommandHandler
+from Commands import *
+
+from LogPrint import LogPrint as logger
 
 # Class Wrapper to interface with NomadBLDC control board
 class NomadBLDC:
     def __init__(self):
         self.transport = None # Serial Transport
         self.commands = CommandHandler()
+        self.connected = False
+        self.device_info = None
 
     # Connect to Nomad Board
     def connect(self):
@@ -43,15 +47,29 @@ class NomadBLDC:
         ports = get_available_ports() # Get available ports
         
         for port in ports: # Loop ports and try to read firmware version
-            print(f'Connecting to port: {port} [{baud} baud]')
-            self.transport = SerialHandler(port, baud)
-            self.commands.read_firmware_version(self.transport)
+            logger.print_info(f'Connecting to port: {port} [{baud} baud]')
+            self.transport = SerialHandler(port, baud, self.commands.process_packet)
+            self.device_info = self.commands.read_device_info(self.transport)
+            if(self.device_info  is None):
+                continue
+
+            logger.print_pass(f"Connected to NomadBLDC[ID: {self.device_info .device_id}] running Firmware v{self.device_info .fw_major}.{self.device_info .fw_minor} on {port}")
+            return True
+
+        return False # Failed to connect
+
     def disconnect(self):
         self.transport.close()
+        self.connected = False
 
-
+# TODO: Verify compatible firmware
 nomad = NomadBLDC()
-nomad.connect()
+if(nomad.connect()):
+    logger.print("Nomad Connected")
+else:
+    logger.print_fail("Failed to find Nomad Controller")
+
+time.sleep(1.0)
 nomad.disconnect()
 #nomad.connect()
 #print(nomad.disconnect())

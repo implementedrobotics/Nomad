@@ -24,6 +24,17 @@
 
 from enum import IntEnum
 import struct
+import threading
+from dataclasses import dataclass
+
+#from collections import namedtuple
+#from typing import NamedTuple
+
+@dataclass
+class DeviceInfo:
+    fw_major: int = None
+    fw_minor: int = None
+    device_id: 'typing.Any' = None
 
 class CommandID(IntEnum):
     DEVICE_INFO_READ = 1
@@ -31,13 +42,33 @@ class CommandID(IntEnum):
 class CommandHandler:
     def __init__(self):
         self.timeout = 10
+
+        # Events
+        self.device_info_received = threading.Event()
+
     
-    def read_firmware_version(self, transport):
+    # Read device info.  Blocking.
+    def read_device_info(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_INFO_READ, 0))
         transport.send_packet(command_packet)
-        
 
-    #def process_packet(self, packet):
+        # Wait for device response
+        self.device_info_received.wait(5)
+        if(self.device_info_received.is_set()):
+            self.device_info_received.clear() # Clear Flag
+            return self.device_info
+        
+        return None
+
+    def process_packet(self, packet):
+        comm_id = packet[0]
+        if(comm_id == CommandID.DEVICE_INFO_READ):
+            self.device_info = DeviceInfo()
+            self.device_info.fw_major = packet[2]
+            self.device_info.fw_minor = packet[3]
+            self.device_info.device_id = packet[4:16].hex()
+            self.device_info_received.set()
+
         # Unpack packet
         # Find
 
