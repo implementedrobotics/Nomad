@@ -41,6 +41,18 @@ class HDLCHandler:
         self.receive_buffer = bytearray(10)
         self.in_escape = False
 
+    def frame_packet(self, packet):
+         # Compute CRC16
+        crc = bytearray(struct.pack("<H", crc16(packet)))
+
+        # Format Packet for Transport
+        hdlc_frame = bytearray()
+        hdlc_frame.append(FRAME_BOUNDARY)
+        hdlc_frame += packet
+        hdlc_frame += crc
+        hdlc_frame.append(FRAME_BOUNDARY)
+        return hdlc_frame
+
     def process_byte(self, byte: bytes):
         
         if (byte[0] == FRAME_BOUNDARY):

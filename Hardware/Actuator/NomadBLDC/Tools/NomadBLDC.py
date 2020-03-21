@@ -46,11 +46,12 @@ class NomadBLDC:
             print(f'Connecting to port: {port} [{baud} baud]')
             self.transport = SerialHandler(port, baud)
             self.commands.read_firmware_version(self.transport)
-
+    def disconnect(self):
+        self.transport.close()
 
 
 nomad = NomadBLDC()
 nomad.connect()
-
+nomad.disconnect()
 #nomad.connect()
 #print(nomad.disconnect())

@@ -26,14 +26,14 @@ from enum import IntEnum
 import struct
 
 class CommandID(IntEnum):
-    FW_VERSION_READ = 1
+    DEVICE_INFO_READ = 1
     
 class CommandHandler:
     def __init__(self):
         self.timeout = 10
     
     def read_firmware_version(self, transport):
-        command_packet = bytearray(struct.pack("<BB", CommandID.FW_VERSION_READ, 0))
+        command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_INFO_READ, 0))
         transport.send_packet(command_packet)
         
 

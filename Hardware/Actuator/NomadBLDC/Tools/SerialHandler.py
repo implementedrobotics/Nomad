@@ -46,9 +46,12 @@ class SerialHandler:
         self.connected = False # Connected Flag
         self.uart = serial.Serial(port, baudrate=baud, timeout=1) # Serial Port
         self.hdlc = HDLCHandler()
-        self.start_recv_thread()
+        self.close_event = threading.Event()
+        self.start_read_task()
+
     def close(self):
         # Close Port
+        self.close_event.set()
         self.uart.close()
 
     def send_packet(self, packet):
@@ -57,25 +60,18 @@ class SerialHandler:
         if (len(packet) >= PACKET_SIZE_LIMIT):
             raise NotImplementedError(f"Can not send packet size {len(packet)} > {PACKET_SIZE_LIMIT}")
 
-        # Compute CRC16
-        crc = bytearray(struct.pack("<H", crc16(packet)))
-
-        # Format Packet for Transport
-        hdlc_frame = bytearray()
-        hdlc_frame.append(FRAME_BOUNDARY)
-        hdlc_frame += packet
-        hdlc_frame += crc
-        hdlc_frame.append(FRAME_BOUNDARY)
+        hdlc_frame = self.hdlc.frame_packet(packet)
         self.uart.write(hdlc_frame)
-        #print(hdlc_frame)
+        print(hdlc_frame)
 
-    def start_recv_thread(self):
+    def start_read_task(self):
+
         def recv_packet():
-            while(True):   
-                if (self.uart.inWaiting()>0):
+            while(not self.close_event.is_set):   
+                if (self.uart.inWaiting() > 0): # Got Serial Data
                     byte = self.uart.read(1)
                     #print(byte)
-                    self.hdlc.process_byte(byte)
+                    self.hdlc.process_byte(byte) # Send to HDLC to process packet
         
         t = threading.Thread(target=recv_packet)
         t.start()
