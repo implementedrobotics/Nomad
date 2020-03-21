@@ -1,7 +1,7 @@
 /*
- * SerialHandler.cpp
+ * CRC16.h
  *
- *  Created on: March 19, 2020
+ *  Created on: March 20, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,52 +22,23 @@
  * 
  */
 
-// Primary Include
-#include "SerialHandler.h"
-
+#ifndef CRC16_H_
+#define CRC16_H_
+ 
 // C System Files
 
 // C++ System Files
 
 // Project Includes
 #include "mbed.h"
-#include "rtos.h"
-#include "motor_controller_interface.h"
 
-
-// HDLC Handler    
-HDLCHandler hdlc;
-
-// Buffer Queue
-Queue<uint8_t, 10> byte_queue_;
-
-
-// Comms Event Loops
-void comms_thread_entry()
+class CRC16
 {
-    while (true)
-    {
-        osEvent evt = byte_queue_.get();
-        if (evt.status != osEventMessage) {
-            //printf("queue->get() returned %02x status\n\r", evt.status);
-        } else {
-            hdlc.ProcessByte(evt.value.v);
-        }
-    }
-}
+private:
+    static const uint16_t CRC16_CCITT_TAB[];
 
-// Serial Handler
-SerialHandler::SerialHandler(Serial *uart)
-{
-    serial_ = uart;                        // UART Handler
-    serial_->attach(callback(this, &SerialHandler::Interrupt)); // Attach Serial Interrupt
-}
+public:
+    static uint16_t Compute(const uint8_t *data, uint32_t length, uint16_t crc = 0x0000);
+};
+#endif // CRC16_H_
 
-void SerialHandler::Interrupt()
-{
-    while (serial_->readable())
-    {
-        //hdlc_.ProcessByte(serial_->getc());
-        byte_queue_.put((uint8_t*)serial_->getc());
-    }
-}

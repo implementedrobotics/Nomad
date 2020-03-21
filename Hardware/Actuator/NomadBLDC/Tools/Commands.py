@@ -1,8 +1,8 @@
 """Nomad Class Handler for Interaction with NomadBLDC Board"""
 
-#  NomadBLDC.py
+#  Commands.py
 #
-#  Created on: March 18, 2020
+#  Created on: March 20, 2020
 #      Author: Quincy Jones
 # 
 #  Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,34 +22,22 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import sys
-import glob
-import time
+from enum import IntEnum
 import struct
-from SerialHandler import SerialHandler
-from SerialHandler import get_available_ports
-from Commands import CommandHandler
 
-# Class Wrapper to interface with NomadBLDC control board
-class NomadBLDC:
+class CommandID(IntEnum):
+    FW_VERSION_READ = 1
+    
+class CommandHandler:
     def __init__(self):
-        self.transport = None # Serial Transport
-        self.commands = CommandHandler()
+        self.timeout = 10
+    
+    def read_firmware_version(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.FW_VERSION_READ, 0))
+        transport.send_packet(command_packet)
 
-    # Connect to Nomad Board
-    def connect(self):
-
-        baud = 115200 # TODO: Auto or from UI
-        ports = get_available_ports() # Get available ports
-        
-        for port in ports: # Loop ports and try to read firmware version
-            print(f'Connecting to port: {port} [{baud} baud]')
-            self.transport = SerialHandler(port, baud)
-            self.commands.read_firmware_version(self.transport)
+    #def process_packet(self, packet):
+        # Unpack packet
+        # Find
 
 
-nomad = NomadBLDC()
-nomad.connect()
-
-#nomad.connect()
-#print(nomad.disconnect())

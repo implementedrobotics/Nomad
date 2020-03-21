@@ -3,37 +3,38 @@ import glob
 import serial
 
 
-def serial_ports():
-    """ Lists serial port names
+POLYNOMIAL = 0x1021
+PRESET = 0
 
-        :raises EnvironmentError:
-            On unsupported or unknown platforms
-        :returns:
-            A list of the serial ports available on the system
-    """
-    if sys.platform.startswith('win'):
-        ports = ['COM%s' % (i + 1) for i in range(256)]
-    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
-        # this excludes your current terminal "/dev/tty"
-        ports = glob.glob('/dev/tty[A-Za-z]*')
-    elif sys.platform.startswith('darwin'):
-        ports = glob.glob('/dev/tty.*')
-    else:
-        raise EnvironmentError('Unsupported platform')
-
-    result = []
-    for port in ports:
-        try:
-            s = serial.Serial(port)
-            s.close()
-            result.append(port)
-        except (OSError, serial.SerialException):
-            pass
-    return result
+def _initial(c):
+    crc = 0
+    c = c << 8
+    for j in range(8):
+        if (crc ^ c) & 0x8000:
+            crc = (crc << 1) ^ POLYNOMIAL
+        else:
+            crc = crc << 1
+        c = c << 1
+    return crc
 
 
-if __name__ == '__main__':
-    print(serial_ports())
+def crc16(data: bytes):
+    '''
+    CRC-16-CCITT Algorithm
+    '''
+    data = bytearray(data)
+    crc = PRESET
+    for b in data:
+        cur_byte = 0xFF & b
+        tmp = (crc >> 8) ^ cur_byte
+        crc = (crc << 8) ^ _tab[tmp & 0xff]
+        crc = crc & 0xffff
+    
+    return crc
 
 
+_tab = [ _initial(i) for i in range(256) ]
 
+print(hex(_tab[2]))
+
+print(hex(crc16(b'\x31\x32\x33\x34\x35\x36\x37\x38\x39')))

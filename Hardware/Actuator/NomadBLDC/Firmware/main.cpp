@@ -28,9 +28,6 @@
  * 
  */
 
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 0
-
 #define LED_PIN PC_5
 
 #include "mbed.h"
@@ -41,6 +38,7 @@
 #include "Core/SerialHandler.h"
 #include "Core/FlashInterface.h"
 #include "Core/CANHandler.h"
+#include "Core/nomad_common.h"
 
 
 extern "C"
@@ -48,6 +46,8 @@ extern "C"
     #include "Core/motor_controller_interface.h"
 }
 
+// Serial Handler
+Serial serial(PA_2, PA_3);
 
 // ObserverStruct observer;
 
@@ -119,6 +119,8 @@ int main()
     LEDService::Instance().Init(LED_PIN);
     LEDService::Instance().Off();
 
+    // Set Baud Rate
+    serial.baud(115200);
     
 
     // CAN Handler Init              //rx  //tx
@@ -156,7 +158,7 @@ int main()
 
     //UserMenu *user_menu = new UserMenu(&serial, main_menu);
     //user_menu->Show();
-    //SerialHandler *serial_handler = new SerialHandler(&serial);
+    SerialHandler *serial_handler = new SerialHandler(&serial);
 
     // reset_observer(&observer); // Reset observer
 
@@ -189,7 +191,7 @@ int main()
 
     comms_task.start(comms_thread_entry);
 
-    //printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
+    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
     // TODO: Idle Task
 
 }

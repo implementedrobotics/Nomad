@@ -1,7 +1,7 @@
 /*
- * SerialHandler.cpp
+ * CommandHandler.cpp
  *
- *  Created on: March 19, 2020
+ *  Created on: March 20, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -23,7 +23,7 @@
  */
 
 // Primary Include
-#include "SerialHandler.h"
+#include "CommandHandler.h"
 
 // C System Files
 
@@ -32,42 +32,25 @@
 // Project Includes
 #include "mbed.h"
 #include "rtos.h"
-#include "motor_controller_interface.h"
+#include "Core/nomad_common.h"
 
-
-// HDLC Handler    
-HDLCHandler hdlc;
-
-// Buffer Queue
-Queue<uint8_t, 10> byte_queue_;
-
-
-// Comms Event Loops
-void comms_thread_entry()
+// HDLC Handler Class
+CommandHandler::CommandHandler()
 {
-    while (true)
-    {
-        osEvent evt = byte_queue_.get();
-        if (evt.status != osEventMessage) {
-            //printf("queue->get() returned %02x status\n\r", evt.status);
-        } else {
-            hdlc.ProcessByte(evt.value.v);
-        }
-    }
 }
 
-// Serial Handler
-SerialHandler::SerialHandler(Serial *uart)
+void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length)
 {
-    serial_ = uart;                        // UART Handler
-    serial_->attach(callback(this, &SerialHandler::Interrupt)); // Attach Serial Interrupt
-}
+    printf("PROCESS PACKET: %d \n\r", packet_buffer[0]);
 
-void SerialHandler::Interrupt()
-{
-    while (serial_->readable())
+    command_t command = static_cast<command_t>(packet_buffer[0]);
+    switch(command)
     {
-        //hdlc_.ProcessByte(serial_->getc());
-        byte_queue_.put((uint8_t*)serial_->getc());
+        case COMM_FW_VERSION_READ:
+            printf("READ FIRMWARE!\n\r");
+            break;
+        default:
+            break;
     }
+
 }

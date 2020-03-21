@@ -33,18 +33,12 @@
 
 // Project Includes
 #include "mbed.h"
+#include "rtos.h"
+#include "HDLCHandler.h"
 
 
 // Entry point to facilitate transition to C++ for RTOS Task
 void comms_thread_entry();
-
-
-// Signals
-typedef enum
-{
-    WAIT_PACKET = 0x0,
-    READ_PACKET = 0x1,
-} packet_read_type_t;
 
 struct Packet_t
 {
@@ -72,8 +66,6 @@ public:
 
 private:
     Serial *serial_;
-
-
 };
 
 #endif // CORE_SERIAL_HANDLER_H_
