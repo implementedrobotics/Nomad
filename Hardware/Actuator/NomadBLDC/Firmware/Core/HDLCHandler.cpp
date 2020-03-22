@@ -90,6 +90,7 @@ void HDLCHandler::ProcessByte(uint8_t byte)
     }
     else if (byte == CONTROL_ESCAPE)
     {
+        printf("EASCPE\n\r");
         in_escape_ = true;
         return; // Return here to read real byte on next run
     }

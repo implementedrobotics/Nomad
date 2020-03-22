@@ -95,12 +95,12 @@ void debug_thread_entry()
             {
                 MotorController::State_t state = motor_controller->state_;
                 Motor::Config_t config = motor->config_;
-                printf("\r\nI_d: %.3f/%.3f A\tI_q: %.3f/%.3f A\t| Torque: %.2f/%.2f N*m\r\n", 
-                state.I_d_filtered, state.I_d_ref, 
-                state.I_q_filtered, state.I_q_ref, 
-                (state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
+                //printf("\r\nI_d: %.3f/%.3f A\tI_q: %.3f/%.3f A\t| Torque: %.2f/%.2f N*m\r\n", 
+                //state.I_d_filtered, state.I_d_ref, 
+                //state.I_q_filtered, state.I_q_ref, 
+                //(state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
 
-                printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
+                //printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
                 // TODO: Power, temperatures etc.
             }
         }
@@ -131,6 +131,11 @@ void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, 
     motor_controller->state_.T_ff = T_ff;
 }
 
+void set_voltage_control_ref(float V_d, float V_q)
+{
+    motor_controller->state_.V_d_ref = V_d;
+    motor_controller->state_.V_q_ref = V_q;
+}
 void current_measurement_cb()
 {
     // Measure Currents/Bus Voltage
@@ -179,7 +184,7 @@ bool zero_current_sensors(uint32_t num_samples)
         if ((test = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT)).status != osEventSignal)
         {
             // TODO: Error here for timing
-            printf("ERROR: Zero Current FAILED!\r\n");
+            //printf("ERROR: Zero Current FAILED!\r\n");
             return false;
         }
         g_adc2_offset += ADC2->DR;
@@ -198,7 +203,7 @@ void measure_motor_parameters()
 }
 void save_configuration()
 {
-    printf("\r\nSaving Configuration...\r\n");
+    //printf("\r\nSaving Configuration...\r\n");
 
     Save_format_t save;
     save.signature = FLASH_SAVE_SIGNATURE;
@@ -210,7 +215,7 @@ void save_configuration()
     FlashInterface::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashInterface::Instance().Close();
 
-    printf("\r\nSaved.  Press ESC to return to menu.\r\n");
+    //printf("\r\nSaved.  Press ESC to return to menu.\r\n");
 }
 void load_configuration()
 {
@@ -234,7 +239,7 @@ void load_configuration()
     motor->ZeroOutputPosition();
 
     //printf("READ Version: %d\r\n", load.version);
-    printf("\r\nLoaded.\r\n");
+    //printf("\r\nLoaded.\r\n");
 }
 void reboot_system()
 {
@@ -243,31 +248,31 @@ void reboot_system()
 
 void start_torque_control()
 {
-    printf("\r\nFOC Torque Mode Enabled. Press ESC to stop.\r\n\r\n");
+    //printf("\r\nFOC Torque Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_TORQUE_MODE);
 }
 
 void start_current_control()
 {
-    printf("\r\nFOC Current Mode Enabled. Press ESC to stop.\r\n\r\n");
+    //printf("\r\nFOC Current Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_CURRENT_MODE);
 }
 
 void start_speed_control()
 {
-    printf("\r\nFOC Speed Mode Enabled. Press ESC to stop.\r\n\r\n");
+    //printf("\r\nFOC Speed Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_SPEED_MODE);
 }
 
 void start_voltage_control()
 {
-    printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
+    //printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_VOLTAGE_MODE);
 }
 
 void show_encoder_debug()
 {
-    printf("\r\nEncoder Debug Mode. Press ESC to stop.\r\n\r\n");
+    //printf("\r\nEncoder Debug Mode. Press ESC to stop.\r\n\r\n");
     set_control_mode(ENCODER_DEBUG);
 }
 void enter_idle()
@@ -277,10 +282,10 @@ void enter_idle()
 
 void zero_encoder_offset()
 {
-    printf("\r\n\r\nZeroing Mechanical Offset...\r\n\r\n");
+    //printf("\r\n\r\nZeroing Mechanical Offset...\r\n\r\n");
     motor->ZeroOutputPosition();
-    motor->PrintPosition();
-    printf("\r\nEncoder Output Zeroed!. Press ESC to return to menu.\r\n\r\n");
+    //motor->PrintPosition();
+    //printf("\r\nEncoder Output Zeroed!. Press ESC to return to menu.\r\n\r\n");
 }
 
 void show_motor_config()
@@ -544,7 +549,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 //TODO: Flash a code... LEDService::Instance().Off();
-                printf("Controller Error: \r\n");
+                //printf("Controller Error: \r\n");
 
                 gate_driver_->PrintFaults();
 
@@ -564,12 +569,12 @@ void MotorController::StartControlFSM()
                 gate_driver_->Enable();
                 EnablePWM(true);
 
-                printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
+                //printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
                 motor->Calibrate(motor_controller);
                 UpdateControllerGains();
 
                 // TODO: Check Errors
-                printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+                //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
             }
             //printf("Calib Mode!\r\n");
@@ -586,7 +591,7 @@ void MotorController::StartControlFSM()
                 // Make sure we are calibrated:
                 if (!motor_->config_.calibrated)
                 {
-                    printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
+                    //printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
                     control_mode_ = ERROR_MODE;
                     continue;
                 }
@@ -601,7 +606,7 @@ void MotorController::StartControlFSM()
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
             {
                 // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
-                printf("ERROR: Motor Controller Timeout!\r\n");
+                //printf("ERROR: Motor Controller Timeout!\r\n");
                 control_mode_ = ERROR_MODE;
                 continue;
             }
@@ -626,7 +631,7 @@ void MotorController::StartControlFSM()
                 gate_driver_->Disable();
                 EnablePWM(false);
             }
-            printf("Unhandled Control Mode: %d!\r\n", control_mode_);
+            //printf("Unhandled Control Mode: %d!\r\n", control_mode_);
             osDelay(1);
             break;
         }
@@ -636,9 +641,9 @@ void MotorController::DoMotorControl()
 {
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-        float v_d = 0.0f;
-        float v_q = 2.0f;
-        SetModulationOutput(motor->state_.theta_elec, v_d, v_q);
+        //float v_d = 0.0f;
+        //float v_q = 2.0f;
+        SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
     {

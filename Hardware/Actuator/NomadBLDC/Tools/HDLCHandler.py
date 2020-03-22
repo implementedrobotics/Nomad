@@ -38,7 +38,7 @@ class HDLCHandler:
     def __init__(self, packet_cb):
         self.frame_offset = 0
         self.frame_chksum = 0
-        self.receive_buffer = bytearray(255)
+        self.receive_buffer = bytearray(5048)
         self.in_escape = False
         self.packet_cb = packet_cb
 

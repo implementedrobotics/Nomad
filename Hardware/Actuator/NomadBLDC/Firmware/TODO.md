@@ -9,3 +9,4 @@
 8. Speed Controller
 9. Position limits on output?
 10. Clean up class access public/privates
+11. Add command for zero encoder and remove hardcoded from begin torque control commands

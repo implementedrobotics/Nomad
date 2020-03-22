@@ -38,7 +38,49 @@ class NomadBLDC:
         self.transport = None # Serial Transport
         self.commands = CommandHandler()
         self.connected = False
+        self.port = None
         self.device_info = None
+
+    def calibrate_motor(self):
+        if(not self.connected):
+            return False
+        
+        return self.commands.calibrate_motor(self.transport)
+
+    def restart_device(self):
+        if(not self.connected):
+            return False
+        
+        return self.commands.restart_device(self.transport)
+
+    def start_voltage_control(self):
+        if(not self.connected):
+            return False
+
+        return self.commands.start_voltage_control(self.transport)
+
+    def start_torque_control(self):
+        if(not self.connected):
+            return False
+
+        return self.commands.start_torque_control(self.transport)
+
+
+    def enter_idle_mode(self):
+        if(not self.connected):
+            return False
+
+        return self.commands.enter_idle_mode(self.transport)
+
+    def set_voltage_setpoint(self, v_d, v_q):
+        if(not self.connected):
+            return False
+        return self.commands.set_voltage_setpoint(self.transport, v_d, v_q)
+
+    def set_torque_setpoint(self, k_p, k_d, pos, vel, tau_ff):
+        if(not self.connected):
+            return False
+        return self.commands.set_torque_setpoint(self.transport, k_p, k_d, pos, vel, tau_ff)
 
     # Connect to Nomad Board
     def connect(self):
@@ -46,30 +88,34 @@ class NomadBLDC:
         baud = 115200 # TODO: Auto or from UI
         ports = get_available_ports() # Get available ports
         
-        for port in ports: # Loop ports and try to read firmware version
-            logger.print_info(f'Connecting to port: {port} [{baud} baud]')
-            self.transport = SerialHandler(port, baud, self.commands.process_packet)
+        for self.port in ports: # Loop ports and try to read firmware version
+            logger.print_info(f'Connecting to port: {self.port} [{baud} baud]')
+            self.transport = SerialHandler(self.port, baud, self.commands.process_packet)
             self.device_info = self.commands.read_device_info(self.transport)
             if(self.device_info  is None):
+                self.transport.close() # Close transport
                 continue
 
-            logger.print_pass(f"Connected to NomadBLDC[ID: {self.device_info .device_id}] running Firmware v{self.device_info .fw_major}.{self.device_info .fw_minor} on {port}")
+            logger.print_pass(f"Connected to NomadBLDC[ID: {self.device_info .device_id}] running Firmware v{self.device_info .fw_major}.{self.device_info .fw_minor} on {self.port}")
+            self.connected = True
             return True
 
+        logger.print_fail("Failed to find a Nomad BLDC Controller")
         return False # Failed to connect
 
     def disconnect(self):
-        self.transport.close()
-        self.connected = False
+        if(self.connected):
+            self.transport.close()
+            self.connected = False
 
-# TODO: Verify compatible firmware
-nomad = NomadBLDC()
-if(nomad.connect()):
-    logger.print("Nomad Connected")
-else:
-    logger.print_fail("Failed to find Nomad Controller")
+# # TODO: Verify compatible firmware
+# nomad = NomadBLDC()
+# if(nomad.connect()):
+#     logger.print("Nomad Connected")
+# else:
+#     logger.print_fail("Failed to find Nomad Controller")
 
-time.sleep(1.0)
-nomad.disconnect()
+# time.sleep(1.0)
+# nomad.disconnect()
 #nomad.connect()
 #print(nomad.disconnect())

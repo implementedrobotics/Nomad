@@ -64,7 +64,7 @@ class SerialHandler:
 
         hdlc_frame = self.hdlc.frame_packet(packet)
         self.uart.write(hdlc_frame)
-        #print(hdlc_frame)
+        print(hdlc_frame)
 
     def start_read_task(self):
 
@@ -72,7 +72,7 @@ class SerialHandler:
             while(not self.close_event.is_set()):   
                 if (self.uart.inWaiting() > 0): # Got Serial Data
                     byte = self.uart.read(1)
-                    #print(byte)
+                    print(byte)
                     self.hdlc.process_byte(byte) # Send to HDLC to process packet
             logger.print_info("Serial Receive Thread Terminated")
         t = threading.Thread(target=recv_packet)

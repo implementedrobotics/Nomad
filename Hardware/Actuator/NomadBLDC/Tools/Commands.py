@@ -37,8 +37,29 @@ class DeviceInfo:
     device_id: 'typing.Any' = None
 
 class CommandID(IntEnum):
+    # Info/Status Commands
     DEVICE_INFO_READ = 1
+
+    # Configuration Commands
+    CALIBRATE_MOTOR = 2
+    ZERO_POSITION = 3
+
+    # Motor Control Commands
+    ENABLE_CURRENT_CONTROL = 4
+    ENABLE_VOLTAGE_CONTROL = 5
+    ENABLE_TORQUE_CONTROL  = 6
+    ENABLE_SPEED_CONTROL   = 7
+    ENABLE_IDLE_MODE       = 8
+
+    # Device Control Commands
+    DEVICE_RESTART = 9
+    DEVICE_ABORT   = 10
+
     
+    # Set Points
+    SEND_VOLTAGE_SETPOINT = 11
+    SEND_TORQUE_SETPOINT = 12
+
 class CommandHandler:
     def __init__(self):
         self.timeout = 10
@@ -46,7 +67,49 @@ class CommandHandler:
         # Events
         self.device_info_received = threading.Event()
 
+
+    # Calibrate motor
+    def calibrate_motor(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.CALIBRATE_MOTOR, 0))
+        transport.send_packet(command_packet)
+        return True
     
+    # Restart device
+    def restart_device(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_RESTART, 0))
+        transport.send_packet(command_packet)
+        return True
+
+    # Voltage Control Mode
+    def start_voltage_control(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_VOLTAGE_CONTROL, 0))
+        transport.send_packet(command_packet)
+        return True
+
+    # Torque Control Mode
+    def start_torque_control(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_TORQUE_CONTROL, 0))
+        transport.send_packet(command_packet)
+        return True
+
+    # Enter Idle Mode
+    def enter_idle_mode(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_IDLE_MODE, 0))
+        transport.send_packet(command_packet)
+        return True
+
+    def set_voltage_setpoint(self, transport, v_d, v_q):
+        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_VOLTAGE_SETPOINT, 8, v_d, v_q))
+        transport.send_packet(command_packet)
+        return True
+        
+    def set_torque_setpoint(self, transport, k_p, k_d, pos, vel, tau_ff):
+        command_packet = bytearray(struct.pack("<BBf", CommandID.SEND_TORQUE_SETPOINT, 4, pos))
+        transport.send_packet(command_packet)
+        return True
+
+
+
     # Read device info.  Blocking.
     def read_device_info(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_INFO_READ, 0))

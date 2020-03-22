@@ -43,7 +43,27 @@ public:
 
     typedef enum
     {
+        // Info/Status Commands
         COMM_DEVICE_INFO = 1,
+
+        // Configuration Commands
+        COMM_CALIB_MOTOR = 2,
+        COMM_ZERO_POSITION = 3,
+
+        // Motor Control Modes
+        COMM_ENABLE_CURRENT_CONTROL = 4,
+        COMM_ENABLE_VOLTAGE_CONTROL = 5,
+        COMM_ENABLE_TORQUE_CONTROL = 6,
+        COMM_ENABLE_SPEED_CONTROL = 7,
+        COMM_ENABLE_IDLE_MODE = 8,
+
+        // Device Control
+        COMM_DEVICE_RESTART = 9,
+        COMM_DEVICE_ABORT = 10,
+
+        // Set points
+        COMM_VOLTAGE_SETPOINT = 11,
+        COMM_TORQUE_SETPOINT = 12,
     } command_t;
 
     CommandHandler();

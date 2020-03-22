@@ -60,7 +60,7 @@ void set_control_mode(int mode);
 void set_controller_debug(bool debug);
 bool get_controller_debug();
 void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, float T_ff);
-
+void set_voltage_control_ref(float V_d, float V_q);
 
 #ifdef __cplusplus
 }
