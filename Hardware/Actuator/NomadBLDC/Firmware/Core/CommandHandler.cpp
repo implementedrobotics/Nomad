@@ -39,7 +39,7 @@ HDLCHandler hdlc_out;
 #define PACKET_DATA_OFFSET 2
 struct Device_info_t
 {
-    uint8_t comm_id;            // Command ID
+    uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
     uint8_t fw_major;          // Firmware Version Major
     uint8_t fw_minor;          // Firmware Version Minor
@@ -57,7 +57,7 @@ struct Motor_setpoint_t
 
 struct Motor_torque_setpoint_t
 {
-    //float k_p;                 // V_d Setpoint
+    float k_p;                 // V_d Setpoint
     //float k_d;                 // V_q Setpoint
     float pos;
     //float vel;
@@ -131,9 +131,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_TORQUE_SETPOINT:
     {
         Motor_torque_setpoint_t *sp = (Motor_torque_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
-        set_torque_control_ref(0.2, 0, sp->pos, 0, 0);
-        //printf("\r\nGot Command: K_p = %.4f, K_d = %.4f, Pos = %.4f, Vel = %.4f, Torque_ff = %.4f\r\n", sp->k_p,sp->k_d,sp->pos,sp->vel,sp->tau_ff);
-
+        set_torque_control_ref(sp->k_p, 0, sp->pos, 0, 0);
+        //printf("\r\nGot Command: SETPOINT\r\n");
     }
     default:
         break;

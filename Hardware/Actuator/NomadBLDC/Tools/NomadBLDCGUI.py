@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, QtCore, uic
 import sys
 from NomadBLDC import NomadBLDC
 
@@ -51,6 +51,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     
     def StartTorqueControl(self):
         self.nomad_dev.start_torque_control()
+        #self.timer = QtCore.QTimer()
+        #self.timer.timeout.connect(self.SetTorqueSetPoint)
+        #self.timer.start(100)
+        # Begin Update Timer
 
     def EnterIdleMode(self):
         self.nomad_dev.enter_idle_mode()
@@ -67,7 +71,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.disconnect()
 
 
-
+0
 if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])

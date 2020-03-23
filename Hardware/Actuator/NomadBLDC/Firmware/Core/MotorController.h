@@ -43,9 +43,9 @@
 #define DTC_MAX 0.94f // Max phase duty cycle
 #define DTC_MIN 0.0f  // Min phase duty cycle
 
-// TODO: User configuratable.  Default to 40khz
+// TODO: User configurable.  Default to 40khzz
 #define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
-#define PWM_INTERRUPT_DIVIDER 1
+#define PWM_INTERRUPT_DIVIDER 2
 
 // TODO: User Configurable Parameter
 #define SYS_CLOCK_FREQ 180000000

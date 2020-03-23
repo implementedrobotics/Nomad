@@ -79,8 +79,11 @@ void motor_controller_thread_entry()
     motor_controller = new MotorController(motor, CONTROL_LOOP_PERIOD);
     motor_controller->Init();
 
+    printf("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
+    printf("PWM FREQ :%f\n\r", PWM_FREQ);
     // Begin Control Loop
     motor_controller->StartControlFSM();
+    
 }
 
 void debug_thread_entry()
@@ -612,17 +615,17 @@ void MotorController::StartControlFSM()
             }
             DoMotorControl();
             break;
-        case (ENCODER_DEBUG):
-            if (current_control_mode != control_mode_)
-            {
-                current_control_mode = control_mode_;
-                gate_driver_->Disable();
-                EnablePWM(false);
-            }
-            motor->Update();
-            motor->PrintPosition();
-            osDelay(100);
-            break;
+        // case (ENCODER_DEBUG):
+        //     if (current_control_mode != control_mode_)
+        //     {
+        //         current_control_mode = control_mode_;
+        //         gate_driver_->Disable();
+        //         EnablePWM(false);
+        //     }
+        //     motor->Update();
+        //     motor->PrintPosition();
+        //     osDelay(100);
+        //     break;
         default:
             if (current_control_mode != control_mode_)
             {
@@ -722,7 +725,7 @@ void MotorController::StartPWM()
     TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
     //TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
     TIM1->CR1 |= TIM_CR1_ARPE; // Auto Reload Timer
-    TIM1->RCR |= 0x001;        // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
+    TIM1->RCR |= 0x003;        // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
     TIM1->EGR |= TIM_EGR_UG;   // Generate an update event to reload the Prescaler/Repetition Counter immediately
 
     // PWM Setup
