@@ -5,6 +5,6 @@
 3. Add AS5147 Encoder to part list
 4. Add 120 ohm CAN termination resistor to part list
 5. Change CAN resistor value in schematic to 120 ohm
-
+6. Add AB input from encoder for optional quadruture input+incread encoder noise immunity from hall sensor noise
 
 
