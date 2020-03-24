@@ -52,18 +52,12 @@ void HDLCHandler::ProcessByte(uint8_t byte)
 {
     if (byte == FRAME_BOUNDARY && !in_escape_)
     {
-        //printf("FB\n\r");
-        //if(in_escape_ == true)
-       // {
-        //     in_escape_ = false;
-       // }
         // Check for End Frame + Validity
         if (frame_offset_ >= 2) // Need atleast 3 bytes for a valid frame, (BEGIN, CMD, LENGTH)
         {
             // Command = receive_buffer_[0]
             // Payload Length = receive_buffer_[1]
             //printf("Got Packet: Command %d.  Length %d, Offset %d\n\r", receive_buffer_[0], receive_buffer_[1], frame_offset_-4);
-            //printf("Check: %d to %d/%d\n\r",frame_offset_, receive_buffer_[1], frame_offset_-4);
             // Fast early out on packet length
             if ((frame_offset_ - 4) == receive_buffer_[1])
             {
@@ -74,47 +68,32 @@ void HDLCHandler::ProcessByte(uint8_t byte)
                 {
                     // Execute Command Callback
                     //printf("SUCCESSFUL PACKET SEND!\r\n");
-                    CommandHandler::ProcessPacket(receive_buffer_, frame_offset_-2);
+                    CommandHandler::ProcessPacket(receive_buffer_, frame_offset_ - 2);
                 }
             }
 
             // TODO: If invalid do we add support for an ack?
-
-            // Reset and look for next Frame
-            //frame_offset_ = 0;
-            //frame_chksum_ = 0;
-            //return;
         }
-        //else
-        //{
-            // Reset and look for next Frame
-            frame_offset_ = 0;
-            frame_chksum_ = 0;
-            return;
-        //}
+        // Reset and look for next Frame
+        frame_offset_ = 0;
+        frame_chksum_ = 0;
+        return;
     }
 
     // Handle Escape Sequences
     if (in_escape_)
     {
         byte ^= ESCAPE_INVERT;
-        //printf("NEW BYTE: %x\n\r", byte);
-       // printf("INVERT OUT\n\r");
         in_escape_ = false;
     }
     else if (byte == CONTROL_ESCAPE)
     {
-       // printf("ESCCCCC\n\r");
         in_escape_ = true;
         return; // Return here to read real byte on next run
     }
 
     // Copy to buffer
-    //printf("OFFSET: %d/%x\n\r", frame_offset_, byte);
     receive_buffer_[frame_offset_++] = byte;
-
-    //printf("NEW BYTE: %x\n\r", byte);
-    //frame_offset_++;
 
     if (frame_offset_ >= PACKET_SIZE_LIMIT) // Overflow Packet Limit,
     {
@@ -125,37 +104,45 @@ void HDLCHandler::ProcessByte(uint8_t byte)
 
 bool HDLCHandler::SendPacket(uint8_t *packet, uint32_t length)
 {
-    if(length >= PACKET_SIZE_LIMIT)
+    if (length >= PACKET_SIZE_LIMIT)
     {
         return false;
     }
 
+    Serial *serial = SerialHandler::GetSerial();
     // Compute CRC16 for Packet
     frame_chksum_ = CRC16::Compute(packet, length);
     //printf("Got Checksum: %d\n\r", frame_chksum_);
 
     uint32_t buffer_offset = 0;
     transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY;
+    //serial->putc(FRAME_BOUNDARY);
     // Process and Escape Packet
-    for(uint32_t i = 0; i < length; i++)
+    for (uint32_t i = 0; i < length; i++)
     {
         uint8_t data = packet[i];
-        if((data == FRAME_BOUNDARY) || (data == CONTROL_ESCAPE))
+        if ((data == FRAME_BOUNDARY) || (data == CONTROL_ESCAPE))
         {
             transmit_buffer_[buffer_offset++] = CONTROL_ESCAPE;
+            //serial->putc(CONTROL_ESCAPE);
             transmit_buffer_[buffer_offset++] = data ^ ESCAPE_INVERT;
+            //serial->putc(data ^ ESCAPE_INVERT);
         }
         else // Not Escaped
         {
             transmit_buffer_[buffer_offset++] = data;
-        }   
+            //serial->putc(data);
+        }
     }
     //memcpy(transmit_buffer_+buffer_offset, (uint8_t *)(packet), sizeof(uint8_t) * length);
     //buffer_offset += length;
-    memcpy(transmit_buffer_+buffer_offset, (uint8_t *)(&frame_chksum_), sizeof(uint16_t));
+    memcpy(transmit_buffer_ + buffer_offset, (uint8_t *)(&frame_chksum_), sizeof(uint16_t));
+    //serial->putc(frame_chksum_ & 0xFF);
+    //serial->putc((frame_chksum_>>8) & 0xFF);
     buffer_offset += 2;
-    transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY; 
-    for(uint32_t i = 0; i < buffer_offset;i++) // Write the buffer
+    transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY;
+    //serial->putc(FRAME_BOUNDARY);
+    for (uint32_t i = 0; i < buffer_offset; i++) // Write the buffer
     {
         SerialHandler::GetSerial()->putc(transmit_buffer_[i]);
     }

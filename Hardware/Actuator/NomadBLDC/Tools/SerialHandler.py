@@ -68,7 +68,7 @@ class SerialHandler:
         hdlc_frame = self.hdlc.frame_packet(packet)
         written = self.uart.write(hdlc_frame)
         #print(written)
-        #print(hdlc_frame)
+        print(hdlc_frame)
 
     def start_read_task(self):
 
@@ -81,8 +81,7 @@ class SerialHandler:
             logger.print_info("Serial Receive Thread Terminated")
         t = threading.Thread(target=recv_packet)
         t.start()
-
-
+        
 def get_available_ports():
     """ Lists serial port names
 

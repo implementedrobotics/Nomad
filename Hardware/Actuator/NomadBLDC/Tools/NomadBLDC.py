@@ -65,7 +65,6 @@ class NomadBLDC:
 
         return self.commands.start_torque_control(self.transport)
 
-
     def enter_idle_mode(self):
         if(not self.connected):
             return False
@@ -109,7 +108,8 @@ class NomadBLDC:
             self.connected = False
 
 # # TODO: Verify compatible firmware
-# nomad = NomadBLDC()
+#nomad = NomadBLDC()
+#nomad.test()
 # if(nomad.connect()):
 #     logger.print("Nomad Connected")
 # else:

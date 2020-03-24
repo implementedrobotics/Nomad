@@ -44,7 +44,6 @@ class HDLCHandler:
         self.packet_cb = packet_cb
 
     def frame_packet(self, packet: bytearray):
-        
         # Must use control escape sequence for the reserved bytes
         escaped_packet = bytearray()
         for byte in packet:
@@ -59,6 +58,7 @@ class HDLCHandler:
 
          # Compute CRC16
         crc = bytearray(struct.pack("<H", crc16(packet)))
+
         # Format Packet for Transport
         hdlc_frame = bytearray()
         hdlc_frame.append(FRAME_BOUNDARY)
@@ -71,7 +71,7 @@ class HDLCHandler:
 
     def process_byte(self, byte: bytes):
         
-        if (byte[0] == FRAME_BOUNDARY):
+        if (byte == FRAME_BOUNDARY and not self.in_escape):
             #print("GOT FRAME BOUNDARY!")
             # Check for End Frame + Validity
             if(self.frame_offset >= 2):
@@ -80,6 +80,7 @@ class HDLCHandler:
                 if ((self.frame_offset - 4) == self.receive_buffer[1]):
                     # Length matches.  Now verify checksum
                     self.frame_chksum = bytearray(struct.pack("<H", crc16(self.receive_buffer[0:self.frame_offset-2])))
+                    #print(f"Check Sum on {self.receive_buffer[0:self.frame_offset-2]}")
                     packet = self.receive_buffer[0:self.frame_offset-2]
                     self.frame_chksum = crc16(packet)
                     #print(self.frame_chksum)
@@ -90,6 +91,7 @@ class HDLCHandler:
                     #print(sent_chksum)
                     if(self.frame_chksum == sent_chksum and self.packet_cb is not None):
                         self.packet_cb(packet)
+                        print(f"Got packet SUCCESS: {packet}")
                         #print("COMMAND SUCCESS")
 
             # Reset and look for next frame
@@ -97,9 +99,16 @@ class HDLCHandler:
             self.frame_chksum = 0
             return
 
-        # TODO: Escape Control Sequences
+        # Handle Escape Sequence
+        if(self.in_escape is True):
+            byte = byte ^ HDLC_BYTE_INVERT
+            self.in_escape = False
+        elif(byte == CONTROL_ESCAPE):
+            self.in_escape = True
+            return
+
         # Copy to buffer
-        self.receive_buffer[self.frame_offset] = byte[0]
+        self.receive_buffer[self.frame_offset] = byte
         self.frame_offset += 1
 
         if (self.frame_offset >= PACKET_SIZE_LIMIT): # Overflow Packet Limit,
