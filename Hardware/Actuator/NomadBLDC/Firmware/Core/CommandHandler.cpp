@@ -132,7 +132,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     {
         Motor_torque_setpoint_t *sp = (Motor_torque_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
         set_torque_control_ref(sp->k_p, 0, sp->pos, 0, 0);
-        //printf("\r\nGot Command: SETPOINT\r\n");
+        //printf("\r\nXX\r\n");
     }
     default:
         break;

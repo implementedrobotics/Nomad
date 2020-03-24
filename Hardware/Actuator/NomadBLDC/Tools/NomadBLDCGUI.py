@@ -44,7 +44,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.calibrate_motor()
 
     def RestartDevice(self):
-        self.nomad_dev.restart_device()
+        self.nomad_dev.restart_device() 
     
     def StartVoltageControl(self):
         self.nomad_dev.start_voltage_control()

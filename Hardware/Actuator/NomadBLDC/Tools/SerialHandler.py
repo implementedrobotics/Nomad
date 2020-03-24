@@ -62,9 +62,13 @@ class SerialHandler:
         if (len(packet) >= PACKET_SIZE_LIMIT):
             raise NotImplementedError(f"Can not send packet size {len(packet)} > {PACKET_SIZE_LIMIT}")
 
+        #for byte in bytearray(packet):
+        #    print(f'Byte: {hex(byte)}')
+        #hdlc_frame = bytearray(b'~\x0c\x08\xa4p}]?\x04\x03\x01\x02\xac\xa1~')
         hdlc_frame = self.hdlc.frame_packet(packet)
-        self.uart.write(hdlc_frame)
-        print(hdlc_frame)
+        written = self.uart.write(hdlc_frame)
+        #print(written)
+        #print(hdlc_frame)
 
     def start_read_task(self):
 

@@ -31,6 +31,7 @@ from crc import crc16
 
 FRAME_BOUNDARY = 0x7E
 CONTROL_ESCAPE = 0x7D
+HDLC_BYTE_INVERT = 0x20
 PACKET_SIZE_LIMIT = 256
 
 #Serial Handler Interface
@@ -42,16 +43,30 @@ class HDLCHandler:
         self.in_escape = False
         self.packet_cb = packet_cb
 
-    def frame_packet(self, packet):
+    def frame_packet(self, packet: bytearray):
+        
+        # Must use control escape sequence for the reserved bytes
+        escaped_packet = bytearray()
+        for byte in packet:
+            if(byte == FRAME_BOUNDARY or byte == CONTROL_ESCAPE):
+                print("Escaping Packet!")
+                escaped_packet.append(CONTROL_ESCAPE)
+                escaped_packet.append(byte ^ HDLC_BYTE_INVERT)
+            else:
+                escaped_packet.append(byte)
+         #   print(f"Byte: {hex(byte)}")
+        #print("OUT")
+
          # Compute CRC16
         crc = bytearray(struct.pack("<H", crc16(packet)))
-
         # Format Packet for Transport
         hdlc_frame = bytearray()
         hdlc_frame.append(FRAME_BOUNDARY)
-        hdlc_frame += packet
+        hdlc_frame += escaped_packet
         hdlc_frame += crc
         hdlc_frame.append(FRAME_BOUNDARY)
+
+        #print(len(hdlc_frame))
         return hdlc_frame
 
     def process_byte(self, byte: bytes):

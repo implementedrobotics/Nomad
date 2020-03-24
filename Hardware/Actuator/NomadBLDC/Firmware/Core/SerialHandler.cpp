@@ -49,7 +49,7 @@ void comms_thread_entry()
     {
         osEvent evt = byte_queue_.get();
         if (evt.status != osEventMessage) {
-            //printf("queue->get() returned %02x status\n\r", evt.status);
+            printf("queue->get() returned %02x status\n\r", evt.status);
         } else {
             hdlc.ProcessByte(evt.value.v);
         }

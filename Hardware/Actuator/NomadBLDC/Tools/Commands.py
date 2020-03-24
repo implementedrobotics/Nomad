@@ -105,6 +105,7 @@ class CommandHandler:
         
     def set_torque_setpoint(self, transport, k_p, k_d, pos, vel, tau_ff):
         command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_TORQUE_SETPOINT, 8, k_p, pos))
+        #print(len(command_packet))
         transport.send_packet(command_packet)
         return True
 
