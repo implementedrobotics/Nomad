@@ -31,6 +31,7 @@
 #define LED_PIN PC_5
 
 #include "mbed.h"
+#include "mbed_stats.h"
 #include "rtos.h"
 #include "Core/MotorController.h"
 #include "Core/LEDService.h"
@@ -191,7 +192,7 @@ int main()
 
     comms_task.start(comms_thread_entry);
 
-    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
+    //printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
     // TODO: Idle Task
 
 }

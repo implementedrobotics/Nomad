@@ -60,13 +60,17 @@ class CommandID(IntEnum):
     SEND_VOLTAGE_SETPOINT = 11
     SEND_TORQUE_SETPOINT = 12
 
+    # Status
+    DEVICE_UPTIME = 100
+
 class CommandHandler:
     def __init__(self):
         self.timeout = 10
 
         # Events
         self.device_info_received = threading.Event()
-
+        self.device_stats_received = threading.Event()
+        self.device_stats = 0
 
     # Calibrate motor
     def calibrate_motor(self, transport):
@@ -108,6 +112,19 @@ class CommandHandler:
         transport.send_packet(command_packet)
         return True
 
+    # Device Stats
+    def get_device_stats(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_UPTIME, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.device_stats_received.wait(5)
+        if(self.device_stats_received.is_set()):
+            self.device_stats_received.clear() # Clear Flag
+            return self.device_stats
+
+        return 
+
     # Read device info.  Blocking.
     def read_device_info(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_INFO_READ, 0))
@@ -129,6 +146,12 @@ class CommandHandler:
             self.device_info.fw_minor = packet[3]
             self.device_info.device_id = packet[4:16].hex()
             self.device_info_received.set()
+        elif(comm_id == CommandID.DEVICE_UPTIME):
+            #print(f"PACKET: {packet}")
+            #print(f"PACKET INT: {packet[2:6]}")
+            self.device_stats = struct.unpack("@I", packet[4:8])[0]
+            #print(self.device_stats)
+            self.device_stats_received.set()
 
         # Unpack packet
         # Find

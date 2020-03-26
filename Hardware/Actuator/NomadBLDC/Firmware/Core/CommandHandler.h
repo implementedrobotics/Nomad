@@ -64,6 +64,9 @@ public:
         // Set points
         COMM_VOLTAGE_SETPOINT = 11,
         COMM_TORQUE_SETPOINT = 12,
+
+        // Status
+        COMM_SYSTEM_UPTIME = 100,
     } command_t;
 
     CommandHandler();

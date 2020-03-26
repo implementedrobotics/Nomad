@@ -69,8 +69,8 @@ class HDLCHandler:
         #print(len(hdlc_frame))
         return hdlc_frame
 
-    def process_byte(self, byte: bytes):
-        
+    def process_byte(self, byte_in: bytes):
+        byte = byte_in[0]
         if (byte == FRAME_BOUNDARY and not self.in_escape):
             #print("GOT FRAME BOUNDARY!")
             # Check for End Frame + Validity
@@ -91,7 +91,7 @@ class HDLCHandler:
                     #print(sent_chksum)
                     if(self.frame_chksum == sent_chksum and self.packet_cb is not None):
                         self.packet_cb(packet)
-                        print(f"Got packet SUCCESS: {packet}")
+                        #print(f"Got packet SUCCESS: {packet}")
                         #print("COMMAND SUCCESS")
 
             # Reset and look for next frame

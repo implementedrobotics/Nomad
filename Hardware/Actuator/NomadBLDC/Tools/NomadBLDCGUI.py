@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, uic
 import sys
+import time
 from NomadBLDC import NomadBLDC
 
 def Connect():
@@ -31,6 +32,20 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.vel_spin.valueChanged.connect(self.SetTorqueSetPoint)
         self.torqueFF_spin.valueChanged.connect(self.SetTorqueSetPoint)
 
+        self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
+        self.portInfoLabel.setText("")
+        self.deviceInfoLabel.setText("")
+        self.firmwareInfoLabel.setText("")
+        self.uptimeLabel.setText("")
+        self.restartButton.hide()
+
+        # Start Timer
+        self.update_timer = QtCore.QTimer()
+        self.update_timer.timeout.connect(self.UpdateEvent)
+        self.update_timer.start(1000)
+
+        # Begin Update Timer
+
 
     def InitWindow(self):
         self.statusBar().showMessage('Not Connected')
@@ -39,7 +54,17 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     def ConnectDevice(self):
         if(self.nomad_dev.connect()): # Connected
             self.statusBar().showMessage(f'NomadBLDC Device Connected: {self.nomad_dev.port}')
-    
+            # Update labels
+            self.connectInfoLabel.setText("Nomad BLDC Connected")
+            self.portInfoLabel.setText(f"Port: {self.nomad_dev.port}")
+            self.deviceInfoLabel.setText(f"Device ID: {self.nomad_dev.device_info.device_id}")
+            self.firmwareInfoLabel.setText(f"Firmware Version: v{self.nomad_dev.device_info.fw_major}.{self.nomad_dev.device_info.fw_minor}")    
+            self.uptimeLabel.setText("UpTime: 1h 30m 25s")
+            self.restartButton.show()
+
+            self.nomad_dev.get_device_stats()
+
+
     def CalibrateDevice(self):
         self.nomad_dev.calibrate_motor()
 
@@ -51,10 +76,6 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     
     def StartTorqueControl(self):
         self.nomad_dev.start_torque_control()
-        #self.timer = QtCore.QTimer()
-        #self.timer.timeout.connect(self.SetTorqueSetPoint)
-        #self.timer.start(100)
-        # Begin Update Timer
 
     def EnterIdleMode(self):
         self.nomad_dev.enter_idle_mode()
@@ -70,8 +91,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.nomad_dev.disconnect()
 
-
-0
+    def UpdateEvent(self):
+        if(self.nomad_dev.connected):
+            #print("UPDATE!")
+            uptime = self.nomad_dev.get_device_stats()
+            time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(uptime))
+            self.uptimeLabel.setText(f"UpTime: {time_str}")
+        
 if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])

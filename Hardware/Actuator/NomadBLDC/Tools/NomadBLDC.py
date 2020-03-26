@@ -81,6 +81,11 @@ class NomadBLDC:
             return False
         return self.commands.set_torque_setpoint(self.transport, k_p, k_d, pos, vel, tau_ff)
 
+    def get_device_stats(self):
+        if(not self.connected):
+            return False
+        return self.commands.get_device_stats(self.transport)
+
     # Connect to Nomad Board
     def connect(self):
 
@@ -91,7 +96,7 @@ class NomadBLDC:
             logger.print_info(f'Connecting to port: {self.port} [{baud} baud]')
             self.transport = SerialHandler(self.port, baud, self.commands.process_packet)
             self.device_info = self.commands.read_device_info(self.transport)
-            if(self.device_info  is None):
+            if(self.device_info  is None): # No device infor received.  Continue to next.
                 self.transport.close() # Close transport
                 continue
 

@@ -48,6 +48,13 @@ struct Device_info_t
     uint32_t uid3;             // Device Unique ID 3
 };
 
+struct Device_stats_t
+{
+    uint8_t comm_id;           // Command ID
+    uint8_t packet_length;     // Packet Length
+    uint32_t uptime;           // Device Uptime
+};
+
 
 struct Motor_setpoint_t
 {
@@ -127,13 +134,30 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         Motor_setpoint_t *sp = (Motor_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
         //printf("SET POINT VOLTAGE: %f\n\r");
         set_voltage_control_ref(sp->v_d, sp->v_q);
+        break;
     }
     case COMM_TORQUE_SETPOINT:
     {
         Motor_torque_setpoint_t *sp = (Motor_torque_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
         set_torque_control_ref(sp->k_p, 0, sp->pos, 0, 0);
+        break;
         //printf("\r\nXX\r\n");
     }
+    case COMM_SYSTEM_UPTIME:
+    {
+        //printf("T: %d\r\n", HAL_GetTick()/1000);
+
+        Device_stats_t stats;
+        stats.comm_id = COMM_SYSTEM_UPTIME;
+        stats.packet_length = sizeof(Device_stats_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+        stats.uptime = HAL_GetTick()/1000;
+        
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
+        break;
+    }
+
     default:
         break;
     }
