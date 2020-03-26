@@ -112,6 +112,7 @@ class NomadBLDC:
             self.transport.close()
             self.connected = False
 
+
 # # TODO: Verify compatible firmware
 #nomad = NomadBLDC()
 #nomad.test()

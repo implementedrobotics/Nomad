@@ -35,7 +35,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>220</width>
+            <width>230</width>
             <height>150</height>
            </size>
           </property>
@@ -250,32 +250,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="pwmFrequencyLabel">
-             <property name="font">
-              <font>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>PWM Frequency: 40khz</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="controllerFrequencyLabel">
-             <property name="font">
-              <font>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Controller Frequency: 20khz</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QLabel" name="busVoltageLabel">
              <property name="font">
               <font>
@@ -284,7 +258,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Bus Voltage: 20.01v</string>
+              <string>V&lt;sub&gt;(bus)&lt;/sub&gt;:</string>
              </property>
             </widget>
            </item>
@@ -473,6 +447,44 @@ color:white</string>
             </property>
             <property name="title">
              <string>Controller Configuration</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="pwmFrequencyLabel">
+            <property name="geometry">
+             <rect>
+              <x>490</x>
+              <y>390</y>
+              <width>206</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>PWM Frequency: 40khz</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="controllerFrequencyLabel">
+            <property name="geometry">
+             <rect>
+              <x>530</x>
+              <y>490</y>
+              <width>206</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Controller Frequency: 20khz</string>
             </property>
            </widget>
           </widget>

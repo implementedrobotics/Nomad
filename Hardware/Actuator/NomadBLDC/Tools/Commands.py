@@ -30,38 +30,61 @@ from dataclasses import dataclass
 #from collections import namedtuple
 #from typing import NamedTuple
 
+#@dataclass
+#class CommandPacket:
+#    self.length: int = None
+#    self.command: int = None
+
+@dataclass
+class DeviceStats:
+    __fmt = "<BIffff"
+    fault: int = None
+    uptime: int = None
+    voltage_bus: float = None
+    driver_temp: float = None
+    fet_temp: float = None
+    motor_temp: float = None
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = struct.unpack(cls.__fmt, data)
+        return DeviceStats(*unpacked)
+
 @dataclass
 class DeviceInfo:
     fw_major: int = None
     fw_minor: int = None
     device_id: 'typing.Any' = None
 
+
 class CommandID(IntEnum):
     # Info/Status Commands
     DEVICE_INFO_READ = 1
+    DEVICE_STATS_READ = 2
+    DEVICE_CONFIG_READ = 3
 
     # Configuration Commands
-    CALIBRATE_MOTOR = 2
-    ZERO_POSITION = 3
+    CALIBRATE_MOTOR = 4
+    ZERO_POSITION = 5
 
     # Motor Control Commands
-    ENABLE_CURRENT_CONTROL = 4
-    ENABLE_VOLTAGE_CONTROL = 5
-    ENABLE_TORQUE_CONTROL  = 6
-    ENABLE_SPEED_CONTROL   = 7
-    ENABLE_IDLE_MODE       = 8
+    ENABLE_CURRENT_CONTROL = 6
+    ENABLE_VOLTAGE_CONTROL = 7
+    ENABLE_TORQUE_CONTROL  = 8
+    ENABLE_SPEED_CONTROL   = 9
+    ENABLE_IDLE_MODE       = 10
 
     # Device Control Commands
-    DEVICE_RESTART = 9
-    DEVICE_ABORT   = 10
+    DEVICE_RESTART = 11
+    DEVICE_ABORT   = 12
 
     
     # Set Points
-    SEND_VOLTAGE_SETPOINT = 11
-    SEND_TORQUE_SETPOINT = 12
+    SEND_VOLTAGE_SETPOINT = 13
+    SEND_TORQUE_SETPOINT = 14
 
     # Status
-    DEVICE_UPTIME = 100
+    #DEVICE_UPTIME = 100
 
 class CommandHandler:
     def __init__(self):
@@ -114,7 +137,8 @@ class CommandHandler:
 
     # Device Stats
     def get_device_stats(self, transport):
-        command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_UPTIME, 0))
+
+        command_packet = bytearray(struct.pack("<BB", CommandID.DEVICE_STATS_READ, 0))
         transport.send_packet(command_packet)
 
         # Wait for device response
@@ -123,7 +147,7 @@ class CommandHandler:
             self.device_stats_received.clear() # Clear Flag
             return self.device_stats
 
-        return 
+        return None
 
     # Read device info.  Blocking.
     def read_device_info(self, transport):
@@ -146,10 +170,10 @@ class CommandHandler:
             self.device_info.fw_minor = packet[3]
             self.device_info.device_id = packet[4:16].hex()
             self.device_info_received.set()
-        elif(comm_id == CommandID.DEVICE_UPTIME):
-            #print(f"PACKET: {packet}")
-            #print(f"PACKET INT: {packet[2:6]}")
-            self.device_stats = struct.unpack("@I", packet[4:8])[0]
+
+        elif(comm_id == CommandID.DEVICE_STATS_READ):
+            #print(f"Length: {len(packet[2:])}")
+            self.device_stats = DeviceStats.unpack(packet[2:])
             #print(self.device_stats)
             self.device_stats_received.set()
 

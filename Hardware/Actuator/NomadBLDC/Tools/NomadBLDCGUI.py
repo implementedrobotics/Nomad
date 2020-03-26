@@ -52,16 +52,27 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.show()
 
     def ConnectDevice(self):
-        if(self.nomad_dev.connect()): # Connected
+        if(self.nomad_dev.connected): # Disconnect
+            self.nomad_dev.disconnect()
+            self.statusBar().showMessage(f'Not Connected')
+            self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
+            self.portInfoLabel.setText("")
+            self.deviceInfoLabel.setText("")
+            self.firmwareInfoLabel.setText("")
+            self.uptimeLabel.setText("")
+            self.restartButton.hide()
+
+        
+        elif(self.nomad_dev.connect()): # Connected
             self.statusBar().showMessage(f'NomadBLDC Device Connected: {self.nomad_dev.port}')
             # Update labels
             self.connectInfoLabel.setText("Nomad BLDC Connected")
             self.portInfoLabel.setText(f"Port: {self.nomad_dev.port}")
             self.deviceInfoLabel.setText(f"Device ID: {self.nomad_dev.device_info.device_id}")
             self.firmwareInfoLabel.setText(f"Firmware Version: v{self.nomad_dev.device_info.fw_major}.{self.nomad_dev.device_info.fw_minor}")    
-            self.uptimeLabel.setText("UpTime: 1h 30m 25s")
+            self.uptimeLabel.setText("Up Time: ")
             self.restartButton.show()
-
+            self.connectButton.setText("Disconnect")
             self.nomad_dev.get_device_stats()
 
 
@@ -94,10 +105,12 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     def UpdateEvent(self):
         if(self.nomad_dev.connected):
             #print("UPDATE!")
-            uptime = self.nomad_dev.get_device_stats()
-            time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(uptime))
-            self.uptimeLabel.setText(f"UpTime: {time_str}")
-        
+            stats = self.nomad_dev.get_device_stats()
+            if(stats is not None): # Update Stats
+                time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
+                self.uptimeLabel.setText(f"Up Time: " + time_str)
+                self.busVoltageLabel.setText(f"V<sub>(bus)</sub>: {stats.voltage_bus}v")
+        #A<sub>1</sub><sup>2</sup>
 if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])

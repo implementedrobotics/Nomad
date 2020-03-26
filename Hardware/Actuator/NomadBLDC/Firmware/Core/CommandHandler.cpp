@@ -37,7 +37,8 @@
 
 HDLCHandler hdlc_out;
 #define PACKET_DATA_OFFSET 2
-struct Device_info_t
+
+struct __attribute__((__packed__)) Device_info_t
 {
     uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
@@ -48,27 +49,32 @@ struct Device_info_t
     uint32_t uid3;             // Device Unique ID 3
 };
 
-struct Device_stats_t
+struct __attribute__((__packed__)) Device_stats_t
 {
     uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
+    uint8_t fault;             // Controller fault
     uint32_t uptime;           // Device Uptime
+    float voltage_bus;         // System Bus Voltage
+    float driver_temp;         // Gate Driver Temp
+    float fet_temp;            // FET Temp
+    float motor_temp;          // Motor Temp
 };
 
 
-struct Motor_setpoint_t
+struct __attribute__((__packed__)) Motor_setpoint_t
 {
     float v_d;                 // V_d Setpoint
     float v_q;                 // V_q Setpoint
 };
 
-struct Motor_torque_setpoint_t
+struct __attribute__((__packed__)) Motor_torque_setpoint_t
 {
-    float k_p;                 // V_d Setpoint
-    //float k_d;                 // V_q Setpoint
-    float pos;
-    //float vel;
-    //float tau_ff;
+    float k_p;                 // K_p position gain Setpoint
+    float k_d;                 // K_d damping Setpoint
+    float pos;                 // Output position Setpoint
+    float vel;                 // Output velocity Setpoint
+    float tau_ff;              // Torque Feed Forward
 };
 
 // Command Handler Class
@@ -101,6 +107,24 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&info, sizeof(Device_info_t));
+        break;
+    }
+    case COMM_DEVICE_STATS:
+    {
+        Device_stats_t stats;
+        stats.comm_id = COMM_DEVICE_STATS;
+        stats.packet_length = sizeof(Device_stats_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+        stats.uptime = HAL_GetTick()/1000;
+        stats.fault = 0;
+        stats.voltage_bus = 12.5f;
+        stats.driver_temp = 60.2f;
+        stats.fet_temp = 100.0f;
+        stats.motor_temp = 40.0f;
+
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
+
         break;
     }
     case COMM_CALIB_MOTOR:
@@ -143,20 +167,17 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         break;
         //printf("\r\nXX\r\n");
     }
-    case COMM_SYSTEM_UPTIME:
-    {
-        //printf("T: %d\r\n", HAL_GetTick()/1000);
+    // case COMM_SYSTEM_UPTIME:
+    // {
+    //     Device_stats_t stats;
+    //     stats.comm_id = COMM_SYSTEM_UPTIME;
+    //     stats.packet_length = sizeof(Device_stats_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+    //     stats.uptime = HAL_GetTick()/1000;
 
-        Device_stats_t stats;
-        stats.comm_id = COMM_SYSTEM_UPTIME;
-        stats.packet_length = sizeof(Device_stats_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
-        stats.uptime = HAL_GetTick()/1000;
-        
-
-        // Send it
-        hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
-        break;
-    }
+    //     // Send it
+    //     hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
+    //     break;
+    // }
 
     default:
         break;

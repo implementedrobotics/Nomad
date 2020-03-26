@@ -45,28 +45,28 @@ public:
     {
         // Info/Status Commands
         COMM_DEVICE_INFO = 1,
+        COMM_DEVICE_STATS = 2,
+        COMM_DEVICE_CONFIGURATION = 3,
 
         // Configuration Commands
-        COMM_CALIB_MOTOR = 2,
-        COMM_ZERO_POSITION = 3,
+        COMM_CALIB_MOTOR = 4,
+        COMM_ZERO_POSITION = 5,
 
         // Motor Control Modes
-        COMM_ENABLE_CURRENT_CONTROL = 4,
-        COMM_ENABLE_VOLTAGE_CONTROL = 5,
-        COMM_ENABLE_TORQUE_CONTROL = 6,
-        COMM_ENABLE_SPEED_CONTROL = 7,
-        COMM_ENABLE_IDLE_MODE = 8,
+        COMM_ENABLE_CURRENT_CONTROL = 6,
+        COMM_ENABLE_VOLTAGE_CONTROL = 7,
+        COMM_ENABLE_TORQUE_CONTROL = 8,
+        COMM_ENABLE_SPEED_CONTROL = 9,
+        COMM_ENABLE_IDLE_MODE = 10,
 
         // Device Control
-        COMM_DEVICE_RESTART = 9,
-        COMM_DEVICE_ABORT = 10,
+        COMM_DEVICE_RESTART = 11,
+        COMM_DEVICE_ABORT = 12,
 
         // Set points
-        COMM_VOLTAGE_SETPOINT = 11,
-        COMM_TORQUE_SETPOINT = 12,
+        COMM_VOLTAGE_SETPOINT = 13,
+        COMM_TORQUE_SETPOINT = 14,
 
-        // Status
-        COMM_SYSTEM_UPTIME = 100,
     } command_t;
 
     CommandHandler();
