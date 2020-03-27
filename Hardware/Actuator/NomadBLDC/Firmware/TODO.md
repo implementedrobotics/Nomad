@@ -9,6 +9,5 @@
 10. Clean up class access public/privates
 11. Add command for zero encoder and remove hardcoded from begin torque control commands
 12. Send mutex
-13. Logging to UI Support
 14. Refactor Measurement Routines
 15. Save Flash from GUI

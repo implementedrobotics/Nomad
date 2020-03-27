@@ -9,4 +9,3 @@
 10. Send mutex/locking
 11. Finish motor calibration.  Pass and save all measurements
 12. Signals for status feedback to handler
-13. Add live logging support
