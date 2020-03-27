@@ -70,11 +70,14 @@ public:
         COMM_VOLTAGE_SETPOINT = 16,
         COMM_TORQUE_SETPOINT = 17,
 
+        COMM_LOGGING_OUTPUT = 100,
+
     } command_t;
 
     CommandHandler();
     static void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
-
+    static void LogCommand(const std::string log_string);
+    
 private:
 
 

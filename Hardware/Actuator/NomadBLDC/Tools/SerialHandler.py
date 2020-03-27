@@ -68,7 +68,7 @@ class SerialHandler:
         hdlc_frame = self.hdlc.frame_packet(packet)
         written = self.uart.write(hdlc_frame)
         #print(written)
-        print(hdlc_frame)
+        #print(hdlc_frame)
 
     def start_read_task(self):
 

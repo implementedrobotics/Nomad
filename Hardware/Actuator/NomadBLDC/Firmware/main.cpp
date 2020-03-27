@@ -40,7 +40,7 @@
 #include "Core/FlashInterface.h"
 #include "Core/CANHandler.h"
 #include "Core/nomad_common.h"
-
+#include "Core/Logger.h"
 
 extern "C"
 {
@@ -82,37 +82,6 @@ Thread comms_task(osPriorityRealtime, 2048);
 //     state_change = 0;
 // }
 
-/// Manage state machine with commands from serial terminal or configurator gui ///
-/// Called when data received over serial ///
-//void serial_interrupt(void)
-//{
-    // while (pc.readable())
-    // {
-    //     // else if (state == SETUP_MODE)
-    //     // {
-    //     //     if (c == 13)
-    //     //     {
-    //     //         switch (cmd_id)
-    //     //         {
-    //     //         case 'b':
-    //     //             I_BW = fmaxf(fminf(atof(cmd_val), 2000.0f), 100.0f);
-    //     //             break;
-    //     //         case 'l':
-    //     //             TORQUE_LIMIT = fmaxf(fminf(atof(cmd_val), 18.0f), 0.0f);
-    //     //             break;
-    //     //         }
-    //     // }
-    //     // else if (state == MOTOR_MODE)
-    //     // {
-    //     //     switch (c)
-    //     //     {
-    //     //     case 'd':
-    //     //         controller.i_q_ref = 0;
-    //     //         controller.i_d_ref = 0;
-    //     //     }
-    //     // }
-    // }
-//}
 
 int main()
 {

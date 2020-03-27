@@ -1,7 +1,7 @@
 /*
- * SerialHandler.cpp
+ * Logger.h
  *
- *  Created on: March 19, 2020
+ *  Created on: March 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,53 +22,28 @@
  * 
  */
 
-// Primary Include
-#include "SerialHandler.h"
+#ifndef LOGGER_H_
+#define LOGGER_H_
 
 // C System Files
 
 // C++ System Files
+#include <string>
 
 // Project Includes
 #include "mbed.h"
-#include "rtos.h"
-#include "motor_controller_interface.h"
+#include "CommandHandler.h"
 
-
-// HDLC Handler    
-HDLCHandler hdlc;
-
-// Buffer Queue
-Queue<uint8_t, 10> byte_queue_;
-
-// Comms Event Loops
-void comms_thread_entry()
+class Logger
 {
-    while (true)
-    {
-        osEvent evt = byte_queue_.get();
-        if (evt.status != osEventMessage) {
-            //printf("queue->get() returned %02x status\n\r", evt.status);
-        } else {
-            hdlc.ProcessByte(evt.value.v);
-        }
-    }
-}
+private:
+    bool enable_logging_;
 
-// Serial Handler
-SerialHandler::SerialHandler(Serial *uart)
-{
-    serial_ = uart;                        // UART Handler
-    serial_->attach(callback(this, &SerialHandler::Interrupt)); // Attach Serial Interrupt
-}
+public:
+    Logger();
+    static Logger& Instance();
+    void Enable(bool enable);
+    void Print(const char *format, ...);
+};
 
-Serial *SerialHandler::serial_ = 0;
-
-void SerialHandler::Interrupt()
-{
-    while (serial_->readable())
-    {
-        //hdlc_.ProcessByte(serial_->getc());
-        byte_queue_.put((uint8_t*)serial_->getc());
-    }
-}
+#endif // LOGGER_H_

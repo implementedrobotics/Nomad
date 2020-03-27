@@ -36,6 +36,7 @@
 #include "Motor.h"
 #include "motor_controller_interface.h"
 #include "Core/nomad_common.h"
+#include "Core/Logger.h"
 
 HDLCHandler hdlc_out;
 #define PACKET_DATA_OFFSET 2
@@ -64,7 +65,6 @@ struct __attribute__((__packed__)) Device_stats_t
     float motor_temp;          // Motor Temp
 };
 
-
 struct __attribute__((__packed__)) Motor_setpoint_t
 {
     float v_d;                 // V_d Setpoint
@@ -80,15 +80,32 @@ struct __attribute__((__packed__)) Motor_torque_setpoint_t
     float tau_ff;              // Torque Feed Forward
 };
 
+struct __attribute__((__packed__)) Log_command_t
+{
+    uint8_t comm_id;           // Command ID
+    uint8_t packet_length;     // Packet Length
+    char log_buffer[256];      // String Buffer
+};
+
 // Command Handler Class
 CommandHandler::CommandHandler()
 {
 }
-
+void CommandHandler::LogCommand(const std::string log_string)
+{
+    // Create Log Packet
+    Log_command_t log;
+    log.comm_id = COMM_LOGGING_OUTPUT;
+    log.packet_length = log_string.size();
+    
+    // Copy in data
+    memcpy(log.log_buffer, (uint8_t *)log_string.c_str(), log_string.size());
+    
+    // HDLC Frame and Send Packet
+    hdlc_out.SendPacket((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
+}
 void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length)
 {
-    //printf("PROCESS PACKET: %d \n\r", packet_buffer[0]);
-
     command_t command = static_cast<command_t>(packet_buffer[0]);
     switch (command)
     {
@@ -174,7 +191,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_MEASURE_RESISTANCE:
     {
         measure_motor_resistance();
-        printf("\r\nXX\r\n");
+        Logger::Instance().Print("Measuring Resistance Complete.\r\n");
+        //printf("\r\nXX\r\n");
         // TODO: Wait for signal complete
         break;
     }

@@ -1,7 +1,8 @@
+
 /*
- * SerialHandler.cpp
+ * Logger.cpp
  *
- *  Created on: March 19, 2020
+ *  Created on: March 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -23,7 +24,7 @@
  */
 
 // Primary Include
-#include "SerialHandler.h"
+#include "Logger.h"
 
 // C System Files
 
@@ -32,43 +33,51 @@
 // Project Includes
 #include "mbed.h"
 #include "rtos.h"
-#include "motor_controller_interface.h"
+#include "CommandHandler.h"
 
 
-// HDLC Handler    
-HDLCHandler hdlc;
+#include <cstdarg>
+#include <string>
+#include <vector>
 
-// Buffer Queue
-Queue<uint8_t, 10> byte_queue_;
-
-// Comms Event Loops
-void comms_thread_entry()
+Logger::Logger() : enable_logging_(true) 
 {
-    while (true)
-    {
-        osEvent evt = byte_queue_.get();
-        if (evt.status != osEventMessage) {
-            //printf("queue->get() returned %02x status\n\r", evt.status);
-        } else {
-            hdlc.ProcessByte(evt.value.v);
-        }
-    }
+
 }
 
-// Serial Handler
-SerialHandler::SerialHandler(Serial *uart)
+// Singleton Insance
+Logger &Logger::Instance()
 {
-    serial_ = uart;                        // UART Handler
-    serial_->attach(callback(this, &SerialHandler::Interrupt)); // Attach Serial Interrupt
+    static Logger instance;
+    return instance;
 }
 
-Serial *SerialHandler::serial_ = 0;
-
-void SerialHandler::Interrupt()
+// Enable/Disable Logging
+void Logger::Enable(bool enable)
 {
-    while (serial_->readable())
-    {
-        //hdlc_.ProcessByte(serial_->getc());
-        byte_queue_.put((uint8_t*)serial_->getc());
-    }
+    enable_logging_ = enable;
 }
+
+// Formatted Logging print function
+void Logger::Print(const char *format ...) 
+{
+    if(!enable_logging_) // Logging not currently enabled
+        return;
+
+    // Variable argument array list
+    va_list vaArgs;
+    va_start(vaArgs, format);
+
+    va_list vaCopy;
+    va_copy(vaCopy, vaArgs);
+    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
+    va_end(vaCopy);
+
+    // Return formatted string
+    std::vector<char> zc(iLen + 1);
+    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
+    va_end(vaArgs);
+
+    // Log command
+    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
+} 

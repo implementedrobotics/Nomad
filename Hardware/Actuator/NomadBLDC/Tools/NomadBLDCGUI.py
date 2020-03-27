@@ -41,7 +41,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.update_timer.timeout.connect(self.UpdateEvent)
         self.update_timer.start(1000)
 
-        # Begin Update Timer
+        # Callbacks
+        self.nomad_dev.commands.set_logger_cb(self.UpdateLog)
 
 
     def InitWindow(self):
@@ -70,6 +71,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.restartButton.show()
             self.connectButton.setText("Disconnect")
             self.nomad_dev.get_device_stats()
+            self.logTerminalEdit.append("CONNECTED YO")
 
     # def CheckConnection(self):
     #     msgBox = QtWidgets.QMessageBox()
@@ -117,6 +119,15 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
                 self.busVoltageLabel.setText("V<sub>(bus)</sub>: {:0.2f}v".format(stats.voltage_bus))
                 self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
 
+    def UpdateLog(self, log_info):
+        
+        # Append to terminal
+        self.logTerminalEdit.append(log_info)
+
+        # Autoscroll?
+        if(self.autoScrollTerminalCheck.isChecked()):
+            self.logTerminalEdit.ensureCursorVisible()
+            
 if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])

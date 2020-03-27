@@ -32,6 +32,7 @@
 // Project Includes
 #include "mbed.h"
 #include "MotorController.h"
+#include "Logger.h"
 #include "../../math_ops.h"
 
 Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time),
@@ -107,7 +108,7 @@ bool Motor::Calibrate(MotorController *controller)
 
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
-    printf("\r\nCooling Down 3s...\r\n");
+    //printf("\r\nCooling Down 3s...\r\n");
     wait(3);
     
     // Offset Calibration
@@ -121,7 +122,7 @@ bool Motor::Calibrate(MotorController *controller)
 
 bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high)
 {
-    printf("\n\rMeasure Motor Inductance...\n\r");
+    //printf("\n\rMeasure Motor Inductance...\n\r");
 
     float test_voltages[2] = {voltage_low, voltage_high};
     float I_alpha[2] = {0.0f};
@@ -139,7 +140,7 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
             if (evt.status != osEventSignal)
             {
                 // motor->error = ERROR_PHASE_INDUCTANCE_MEASUREMENT_TIMEOUT;
-                printf("ERROR: Phase Inductance Measurement Timeout\n\r");
+                //printf("ERROR: Phase Inductance Measurement Timeout\n\r");
                 return false;
             }
             if (i == 1) // When you step you are reading the previous step.  TODO: Make this Better!
@@ -166,14 +167,14 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
     if (L < 1e-6f || L > 500e-6f)
     {
         //motor->error = ERROR_PHASE_INDUCTANCE_OUT_OF_RANGE;
-        printf("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
+        //printf("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
         return false;
     }
 
     // PMSM D/Q Inductance are the same.
     config_.phase_inductance_d = L;
     config_.phase_inductance_q = L;
-    printf("Phase Inductance: %f Henries\r\n", config_.phase_inductance_d);
+   // printf("Phase Inductance: %f Henries\r\n", config_.phase_inductance_d);
 
     return true;
 }
@@ -184,6 +185,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
     float test_voltage = 0.0f;
 
+    Logger::Instance().Print("Measure Motor Resistance...\n");
     //printf("\n\rMeasure Motor Resistance...\n\r");
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 

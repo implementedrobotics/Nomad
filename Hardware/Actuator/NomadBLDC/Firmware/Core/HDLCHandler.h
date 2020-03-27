@@ -50,4 +50,4 @@ public:
 
 };
 
-#endif // CORE_SERIAL_HANDLER_H_
+#endif // CORE_HDLC_HANDLER_H_

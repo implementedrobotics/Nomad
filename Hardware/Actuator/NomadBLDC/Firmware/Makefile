@@ -63,6 +63,7 @@ OBJECTS += Core/UserMenu.o
 OBJECTS += Core/SerialHandler.o
 OBJECTS += Core/HDLCHandler.o
 OBJECTS += Core/CommandHandler.o
+OBJECTS += Core/Logger.o
 OBJECTS += Core/CRC16.o
 OBJECTS += Core/FlashInterface.o
 OBJECTS += Core/CANHandler.o

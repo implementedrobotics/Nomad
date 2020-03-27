@@ -36,6 +36,15 @@ from dataclasses import dataclass
 #    self.command: int = None
 
 @dataclass
+class LogPacket:
+    log_length: int = None
+    log_string: str = None
+
+    @classmethod
+    def unpack(cls, data):
+        return struct.unpack(f"<{data[0]}s", data[1:])[0].decode("utf-8")
+
+@dataclass
 class DeviceStats:
     __fmt = "<BBIffff"
     fault: int = None
@@ -56,6 +65,7 @@ class DeviceInfo:
     fw_major: int = None
     fw_minor: int = None
     device_id: 'typing.Any' = None
+
 
 
 class CommandID(IntEnum):
@@ -89,7 +99,7 @@ class CommandID(IntEnum):
     SEND_TORQUE_SETPOINT = 17
 
     # Status
-    #DEVICE_UPTIME = 100
+    LOGGING_OUTPUT = 100
 
 class CommandHandler:
     def __init__(self):
@@ -99,6 +109,10 @@ class CommandHandler:
         self.device_info_received = threading.Event()
         self.device_stats_received = threading.Event()
         self.device_stats = 0
+        self.logger_cb = None
+    
+    def set_logger_cb(self, cb):
+        self.logger_cb = cb 
 
     # Measure Motor Resistance
     def measure_motor_resistance(self, transport, calib_voltage=15, calib_current=3):
@@ -185,8 +199,15 @@ class CommandHandler:
         elif(comm_id == CommandID.DEVICE_STATS_READ):
             #print(f"Length: {len(packet[2:])}")
             self.device_stats = DeviceStats.unpack(packet[2:])
-            print(self.device_stats)
+            #print(self.device_stats)
             self.device_stats_received.set()
+
+        elif(comm_id == CommandID.LOGGING_OUTPUT):
+            if(self.logger_cb is not None):
+                log_string = struct.unpack(f"<{packet[1]}s", packet[2:])[0].decode("utf-8")
+                self.logger_cb(log_string)
+
+
         # TODO: Measurement completes
         # Unpack packet
         # Find
