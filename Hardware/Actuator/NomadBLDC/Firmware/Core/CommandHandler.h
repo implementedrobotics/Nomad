@@ -48,24 +48,27 @@ public:
         COMM_DEVICE_STATS = 2,
         COMM_DEVICE_CONFIGURATION = 3,
 
-        // Configuration Commands
-        COMM_CALIB_MOTOR = 4,
-        COMM_ZERO_POSITION = 5,
+        // Configuration/Measurement Commands
+        COMM_MEASURE_RESISTANCE = 4,
+        COMM_MEASURE_INDUCTANCE = 5,
+        COMM_MEASURE_PHASE_ORDER = 6,
+        COMM_CALIB_MOTOR = 7,
+        COMM_ZERO_POSITION = 8,
 
         // Motor Control Modes
-        COMM_ENABLE_CURRENT_CONTROL = 6,
-        COMM_ENABLE_VOLTAGE_CONTROL = 7,
-        COMM_ENABLE_TORQUE_CONTROL = 8,
-        COMM_ENABLE_SPEED_CONTROL = 9,
-        COMM_ENABLE_IDLE_MODE = 10,
+        COMM_ENABLE_CURRENT_CONTROL = 9,
+        COMM_ENABLE_VOLTAGE_CONTROL = 10,
+        COMM_ENABLE_TORQUE_CONTROL = 11,
+        COMM_ENABLE_SPEED_CONTROL = 12,
+        COMM_ENABLE_IDLE_MODE = 13,
 
         // Device Control
-        COMM_DEVICE_RESTART = 11,
-        COMM_DEVICE_ABORT = 12,
+        COMM_DEVICE_RESTART = 14,
+        COMM_DEVICE_ABORT = 15,
 
         // Set points
-        COMM_VOLTAGE_SETPOINT = 13,
-        COMM_TORQUE_SETPOINT = 14,
+        COMM_VOLTAGE_SETPOINT = 16,
+        COMM_TORQUE_SETPOINT = 17,
 
     } command_t;
 

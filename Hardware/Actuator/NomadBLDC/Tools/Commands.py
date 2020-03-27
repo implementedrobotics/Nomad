@@ -37,8 +37,9 @@ from dataclasses import dataclass
 
 @dataclass
 class DeviceStats:
-    __fmt = "<BIffff"
+    __fmt = "<BBIffff"
     fault: int = None
+    control_status: int = None
     uptime: int = None
     voltage_bus: float = None
     driver_temp: float = None
@@ -64,24 +65,28 @@ class CommandID(IntEnum):
     DEVICE_CONFIG_READ = 3
 
     # Configuration Commands
-    CALIBRATE_MOTOR = 4
-    ZERO_POSITION = 5
+    MEASURE_RESISTANCE = 4
+    MEASURE_INDUCTANCE = 5
+    MEASURE_PHASE_ORDER = 6
+
+    CALIBRATE_MOTOR = 7
+    ZERO_POSITION = 8
 
     # Motor Control Commands
-    ENABLE_CURRENT_CONTROL = 6
-    ENABLE_VOLTAGE_CONTROL = 7
-    ENABLE_TORQUE_CONTROL  = 8
-    ENABLE_SPEED_CONTROL   = 9
-    ENABLE_IDLE_MODE       = 10
+    ENABLE_CURRENT_CONTROL = 9
+    ENABLE_VOLTAGE_CONTROL = 10
+    ENABLE_TORQUE_CONTROL  = 11
+    ENABLE_SPEED_CONTROL   = 12
+    ENABLE_IDLE_MODE       = 13
 
     # Device Control Commands
-    DEVICE_RESTART = 11
-    DEVICE_ABORT   = 12
+    DEVICE_RESTART = 14
+    DEVICE_ABORT   = 15
 
     
     # Set Points
-    SEND_VOLTAGE_SETPOINT = 13
-    SEND_TORQUE_SETPOINT = 14
+    SEND_VOLTAGE_SETPOINT = 16
+    SEND_TORQUE_SETPOINT = 17
 
     # Status
     #DEVICE_UPTIME = 100
@@ -94,6 +99,12 @@ class CommandHandler:
         self.device_info_received = threading.Event()
         self.device_stats_received = threading.Event()
         self.device_stats = 0
+
+    # Measure Motor Resistance
+    def measure_motor_resistance(self, transport, calib_voltage=15, calib_current=3):
+        command_packet = bytearray(struct.pack("<BB", CommandID.MEASURE_RESISTANCE, 0))
+        transport.send_packet(command_packet)
+        return True
 
     # Calibrate motor
     def calibrate_motor(self, transport):
@@ -174,9 +185,9 @@ class CommandHandler:
         elif(comm_id == CommandID.DEVICE_STATS_READ):
             #print(f"Length: {len(packet[2:])}")
             self.device_stats = DeviceStats.unpack(packet[2:])
-            #print(self.device_stats)
+            print(self.device_stats)
             self.device_stats_received.set()
-
+        # TODO: Measurement completes
         # Unpack packet
         # Find
 

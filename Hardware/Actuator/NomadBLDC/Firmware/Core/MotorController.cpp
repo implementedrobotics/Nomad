@@ -81,6 +81,7 @@ void motor_controller_thread_entry()
 
     //printf("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
     //printf("PWM FREQ :%f\n\r", PWM_FREQ);
+
     // Begin Control Loop
     motor_controller->StartControlFSM();
     
@@ -203,6 +204,10 @@ bool zero_current_sensors(uint32_t num_samples)
 void measure_motor_parameters()
 {
     set_control_mode(CALIBRATION_MODE); // Put in calibration mode
+}
+void measure_motor_resistance()
+{
+    set_control_mode(MEASURE_RESISTANCE_MODE);
 }
 void save_configuration()
 {
@@ -505,7 +510,14 @@ void MotorController::Init()
     load_configuration();
 
     // Default Mode Idle:
+    //if(!motor->config_.calibrated)
+    //{
     control_mode_ = IDLE_MODE;
+    //}
+    //else
+   // {
+   //     control_mode_ = IDLE_MODE;
+    //}
     control_initialized_ = true;
 
     // Set Singleton
@@ -583,6 +595,23 @@ void MotorController::StartControlFSM()
             //printf("Calib Mode!\r\n");
             osDelay(1);
             break;
+        case (MEASURE_RESISTANCE_MODE):
+        {
+            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+            {
+                current_control_mode = control_mode_;
+                LEDService::Instance().On();
+                gate_driver_->Enable();
+                EnablePWM(true);
+
+                motor->MeasureMotorResistance(motor_controller, 3.0f, 15.0f);
+                // TODO: Check Errors
+                //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+                control_mode_ = IDLE_MODE;
+            }
+            osDelay(1);
+            break;
+        }
         case (FOC_CURRENT_MODE):
         case (FOC_VOLTAGE_MODE):
         case (FOC_TORQUE_MODE):

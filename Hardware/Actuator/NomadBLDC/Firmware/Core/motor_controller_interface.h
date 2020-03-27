@@ -38,6 +38,10 @@ void debug_thread_entry();
 void current_measurement_cb();
 
 // UI Callbacks
+void measure_motor_resistance();
+void measure_motor_inductance();
+void measure_motor_phase_order();
+
 void measure_motor_parameters();
 void save_configuration();
 void load_configuration();

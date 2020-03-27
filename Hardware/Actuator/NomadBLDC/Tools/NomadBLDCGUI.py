@@ -3,13 +3,7 @@ import sys
 import time
 from NomadBLDC import NomadBLDC
 
-def Connect():
-    nomad = NomadBLDC()
-    nomad.connect()
-
-#import sys
-#from NomadBLDC import NomadBLDC
-
+Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE DIR', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -31,6 +25,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.pos_spin.valueChanged.connect(self.SetTorqueSetPoint)
         self.vel_spin.valueChanged.connect(self.SetTorqueSetPoint)
         self.torqueFF_spin.valueChanged.connect(self.SetTorqueSetPoint)
+
+        # Measurements
+        self.measurePhaseResistanceButton.clicked.connect(self.MeasureMotorResistance)
 
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
         self.portInfoLabel.setText("")
@@ -61,7 +58,6 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.firmwareInfoLabel.setText("")
             self.uptimeLabel.setText("")
             self.restartButton.hide()
-
         
         elif(self.nomad_dev.connect()): # Connected
             self.statusBar().showMessage(f'NomadBLDC Device Connected: {self.nomad_dev.port}')
@@ -75,6 +71,16 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.connectButton.setText("Disconnect")
             self.nomad_dev.get_device_stats()
 
+    # def CheckConnection(self):
+    #     msgBox = QtWidgets.QMessageBox()
+    #     msgBox.setIcon(QtWidgets.QMessageBox.Information)
+    #     msgBox.setText("Message box pop up window")
+    #     msgBox.setWindowTitle("QMessageBox Example")
+    #     msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+    #     msgBox.exec()
+
+    def MeasureMotorResistance(self):
+        self.nomad_dev.measure_motor_resistance()
 
     def CalibrateDevice(self):
         self.nomad_dev.calibrate_motor()
@@ -104,13 +110,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
     def UpdateEvent(self):
         if(self.nomad_dev.connected):
-            #print("UPDATE!")
             stats = self.nomad_dev.get_device_stats()
             if(stats is not None): # Update Stats
                 time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
                 self.uptimeLabel.setText(f"Up Time: " + time_str)
-                self.busVoltageLabel.setText(f"V<sub>(bus)</sub>: {stats.voltage_bus}v")
-        #A<sub>1</sub><sup>2</sup>
+                self.busVoltageLabel.setText("V<sub>(bus)</sub>: {:0.2f}v".format(stats.voltage_bus))
+                self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
+
 if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])

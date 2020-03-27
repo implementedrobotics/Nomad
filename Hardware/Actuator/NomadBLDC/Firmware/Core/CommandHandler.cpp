@@ -32,6 +32,8 @@
 // Project Includes
 #include "mbed.h"
 #include "rtos.h"
+#include "MotorController.h"
+#include "Motor.h"
 #include "motor_controller_interface.h"
 #include "Core/nomad_common.h"
 
@@ -54,6 +56,7 @@ struct __attribute__((__packed__)) Device_stats_t
     uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
     uint8_t fault;             // Controller fault
+    uint8_t control_status;    // Controller status/mode
     uint32_t uptime;           // Device Uptime
     float voltage_bus;         // System Bus Voltage
     float driver_temp;         // Gate Driver Temp
@@ -116,7 +119,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.packet_length = sizeof(Device_stats_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
         stats.uptime = HAL_GetTick()/1000;
         stats.fault = 0;
-        stats.voltage_bus = 12.5f;
+        stats.control_status = motor_controller->GetControlMode();
+        stats.voltage_bus = motor_controller->state_.Voltage_bus;
         stats.driver_temp = 60.2f;
         stats.fet_temp = 100.0f;
         stats.motor_temp = 40.0f;
@@ -163,9 +167,16 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_TORQUE_SETPOINT:
     {
         Motor_torque_setpoint_t *sp = (Motor_torque_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
-        set_torque_control_ref(sp->k_p, 0, sp->pos, 0, 0);
+        set_torque_control_ref(sp->k_p, sp->k_d, sp->pos, sp->vel, sp->tau_ff);
         break;
         //printf("\r\nXX\r\n");
+    }
+    case COMM_MEASURE_RESISTANCE:
+    {
+        measure_motor_resistance();
+        printf("\r\nXX\r\n");
+        // TODO: Wait for signal complete
+        break;
     }
     // case COMM_SYSTEM_UPTIME:
     // {

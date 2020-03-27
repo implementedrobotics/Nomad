@@ -184,7 +184,8 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
     float test_voltage = 0.0f;
 
-    printf("\n\rMeasure Motor Resistance...\n\r");
+    //printf("\n\rMeasure Motor Resistance...\n\r");
+    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
     for (int i = 0; i < num_test_cycles; ++i)
     {
@@ -222,6 +223,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     controller->SetDuty(0.5f, 0.5f, 0.5f);
 
     osDelay(200);
+    
     return true;
 }
 

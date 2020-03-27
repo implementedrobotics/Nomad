@@ -41,6 +41,12 @@ class NomadBLDC:
         self.port = None
         self.device_info = None
 
+    def measure_motor_resistance(self):
+        if(not self.connected):
+            return False
+        
+        return self.commands.measure_motor_resistance(self.transport)   
+
     def calibrate_motor(self):
         if(not self.connected):
             return False
