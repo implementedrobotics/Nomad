@@ -65,6 +65,14 @@ struct __attribute__((__packed__)) Device_stats_t
     float motor_temp;          // Motor Temp
 };
 
+struct __attribute__((__packed__)) Motor_config_packet_t
+{
+    uint8_t comm_id;           // Command ID
+    uint8_t packet_length;     // Packet Length
+    Motor::Config_t config;    // Motor config
+};
+
+
 struct __attribute__((__packed__)) Motor_setpoint_t
 {
     float v_d;                 // V_d Setpoint
@@ -104,6 +112,26 @@ void CommandHandler::LogCommand(const std::string log_string)
     // HDLC Frame and Send Packet
     hdlc_out.SendPacket((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
 }
+
+void CommandHandler::SendMeasurementComplete(command_feedback_t fb)
+{
+    switch(fb)
+    {
+        case command_feedback_t::MEASURE_RESISTANCE_COMPLETE:
+        {
+            uint8_t status[2];
+            status[0] = COMM_MEASURE_RESISTANCE;
+            status[1] = 0;
+
+            // Send it
+            hdlc_out.SendPacket((uint8_t *)&status, sizeof(uint8_t)*2);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length)
 {
     command_t command = static_cast<command_t>(packet_buffer[0]);
@@ -111,8 +139,6 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     {
     case COMM_DEVICE_INFO:
     {
-        //printf("READ FIRMWARE!\n\r");
-
         // Get Unique Device ID Offset Register
         unsigned long *uid = (unsigned long *)0x1FFF7A10;
         Device_info_t info;
@@ -145,6 +171,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
+
+        //Logger::Instance().Print("Phase Resistance Measurement Complete: \n\r");
 
         break;
     }
@@ -190,23 +218,27 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     }
     case COMM_MEASURE_RESISTANCE:
     {
-        measure_motor_resistance();
-        Logger::Instance().Print("Measuring Resistance Complete.\r\n");
-        //printf("\r\nXX\r\n");
-        // TODO: Wait for signal complete
+        bool status = measure_motor_resistance();
         break;
     }
-    // case COMM_SYSTEM_UPTIME:
-    // {
-    //     Device_stats_t stats;
-    //     stats.comm_id = COMM_SYSTEM_UPTIME;
-    //     stats.packet_length = sizeof(Device_stats_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
-    //     stats.uptime = HAL_GetTick()/1000;
 
-    //     // Send it
-    //     hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
-    //     break;
-    // }
+    // Read Configs
+    case COMM_READ_MOTOR_CONFIG:
+    {
+        Motor_config_packet_t packet;
+        packet.comm_id = COMM_READ_MOTOR_CONFIG;
+        packet.packet_length = sizeof(Motor::Config_t);
+        packet.config = motor->config_;
+        //Logger::Instance().Print("Config Size: %d\n", sizeof(Motor::Config_t));
+        //Logger::Instance().Print("Packet Size: %d\n", sizeof(packet));
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
+        Logger::Instance().Print("Packet Sent CONFIG: %d\n", (sizeof(Motor_config_packet_t)));
+        //Motor::Config_t motor_config = motor->config_;
+
+        break;
+    }
 
     default:
         break;

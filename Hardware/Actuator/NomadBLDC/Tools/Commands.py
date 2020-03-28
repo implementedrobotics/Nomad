@@ -25,48 +25,10 @@
 from enum import IntEnum
 import struct
 import threading
-from dataclasses import dataclass
+from DataContainers import *
 
 #from collections import namedtuple
 #from typing import NamedTuple
-
-#@dataclass
-#class CommandPacket:
-#    self.length: int = None
-#    self.command: int = None
-
-@dataclass
-class LogPacket:
-    log_length: int = None
-    log_string: str = None
-
-    @classmethod
-    def unpack(cls, data):
-        return struct.unpack(f"<{data[0]}s", data[1:])[0].decode("utf-8")
-
-@dataclass
-class DeviceStats:
-    __fmt = "<BBIffff"
-    fault: int = None
-    control_status: int = None
-    uptime: int = None
-    voltage_bus: float = None
-    driver_temp: float = None
-    fet_temp: float = None
-    motor_temp: float = None
-
-    @classmethod
-    def unpack(cls, data):
-        unpacked = struct.unpack(cls.__fmt, data)
-        return DeviceStats(*unpacked)
-
-@dataclass
-class DeviceInfo:
-    fw_major: int = None
-    fw_minor: int = None
-    device_id: 'typing.Any' = None
-
-
 
 class CommandID(IntEnum):
     # Info/Status Commands
@@ -89,14 +51,21 @@ class CommandID(IntEnum):
     ENABLE_SPEED_CONTROL   = 12
     ENABLE_IDLE_MODE       = 13
 
+    READ_MOTOR_STATE = 14
+    READ_CONTROLLER_STATE = 15
+    READ_POSITION_STATE = 16
+    READ_MOTOR_CONFIG = 17
+    READ_CONTROLLER_CONFIG = 18
+    READ_POSITION_CONFIG = 19
+
     # Device Control Commands
-    DEVICE_RESTART = 14
-    DEVICE_ABORT   = 15
+    DEVICE_RESTART = 20
+    DEVICE_ABORT   = 21
 
     
     # Set Points
-    SEND_VOLTAGE_SETPOINT = 16
-    SEND_TORQUE_SETPOINT = 17
+    SEND_VOLTAGE_SETPOINT = 22
+    SEND_TORQUE_SETPOINT = 23
 
     # Status
     LOGGING_OUTPUT = 100
@@ -108,7 +77,11 @@ class CommandHandler:
         # Events
         self.device_info_received = threading.Event()
         self.device_stats_received = threading.Event()
+        self.motor_config_received = threading.Event()
+        self.controller_config_received = threading.Event()
+        self.position_config_received = threading.Event()
         self.device_stats = 0
+        self.motor_config = 0
         self.logger_cb = None
     
     def set_logger_cb(self, cb):
@@ -119,6 +92,19 @@ class CommandHandler:
         command_packet = bytearray(struct.pack("<BB", CommandID.MEASURE_RESISTANCE, 0))
         transport.send_packet(command_packet)
         return True
+
+    # Load Configuration
+    def load_configuration(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_MOTOR_CONFIG, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.motor_config_received.wait(5)
+        if(self.motor_config_received.is_set()):
+            self.motor_config_received.clear() # Clear Flag
+            return self.motor_config
+
+        return None
 
     # Calibrate motor
     def calibrate_motor(self, transport):
@@ -197,15 +183,20 @@ class CommandHandler:
             self.device_info_received.set()
 
         elif(comm_id == CommandID.DEVICE_STATS_READ):
-            #print(f"Length: {len(packet[2:])}")
             self.device_stats = DeviceStats.unpack(packet[2:])
-            #print(self.device_stats)
             self.device_stats_received.set()
 
         elif(comm_id == CommandID.LOGGING_OUTPUT):
             if(self.logger_cb is not None):
                 log_string = struct.unpack(f"<{packet[1]}s", packet[2:])[0].decode("utf-8")
                 self.logger_cb(log_string)
+
+        elif(comm_id == CommandID.READ_MOTOR_CONFIG):
+            self.motor_config = MotorConfig.unpack(packet[2:])
+            self.motor_config_received.set()
+
+        elif(comm_id == CommandID.MEASURE_RESISTANCE):
+            print("GOT FINISHED MEASUREMENT!")
 
 
         # TODO: Measurement completes

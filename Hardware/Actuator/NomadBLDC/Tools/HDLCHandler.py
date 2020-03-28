@@ -48,7 +48,7 @@ class HDLCHandler:
         escaped_packet = bytearray()
         for byte in packet:
             if(byte == FRAME_BOUNDARY or byte == CONTROL_ESCAPE):
-                print("Escaping Packet!")
+                #print("Escaping Packet!")
                 escaped_packet.append(CONTROL_ESCAPE)
                 escaped_packet.append(byte ^ HDLC_BYTE_INVERT)
             else:
@@ -72,11 +72,12 @@ class HDLCHandler:
     def process_byte(self, byte_in: bytes):
         byte = byte_in[0]
         if (byte == FRAME_BOUNDARY and not self.in_escape):
-            #print("GOT FRAME BOUNDARY!")
+           # print("GOT FRAME BOUNDARY!")
             # Check for End Frame + Validity
             if(self.frame_offset >= 2):
-                #print(f'Got Command {self.receive_buffer[0]} and {self.receive_buffer[1]}')
-                #print((self.frame_offset - 4))
+            #    print(f'Got Command {self.receive_buffer[0]} and {self.receive_buffer[1]}')
+             #   print((self.frame_offset - 4))
+              #  print(self.receive_buffer[1])
                 if ((self.frame_offset - 4) == self.receive_buffer[1]):
                     # Length matches.  Now verify checksum
                     self.frame_chksum = bytearray(struct.pack("<H", crc16(self.receive_buffer[0:self.frame_offset-2])))

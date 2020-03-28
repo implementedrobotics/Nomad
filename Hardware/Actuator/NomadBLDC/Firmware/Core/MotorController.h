@@ -27,7 +27,8 @@
 
 // Some Constants
 #define ADC_RES 12                    // ADC Resolution (12-Bits)
-#define CURRENT_MEASUREMENT_TIMEOUT 2 //ms
+#define CURRENT_MEASUREMENT_TIMEOUT 2 // 2 ms
+#define CALIBRATION_MEASUREMENT_TIMEOUT 15000 // 15 seconds
 #define VBUS_DIVIDER 16.0f            // (150K+10K/10K)
 #define SENSE_RESISTANCE (1e-3)       // 1 milliohm sense resistor
 #define SENSE_CONDUCTANCE (1000)      // SENSE_RESISTANCE^-1
@@ -80,6 +81,13 @@ typedef enum
     CHANGE_MODE_SIGNAL = 0x3,
     CALIBRATION_MEASUREMENT_COMPLETE_SIGNAL = 0x4
 } thread_signal_type_t;
+
+typedef enum
+{
+    MEASURE_RESISTANCE_COMPLETE = 0,
+    MEASURE_INDUCTANCE_COMPLETE = 1,
+    MEASURE_PHASE_ORDER_COMPLETE = 2
+} command_feedback_t;
 
 typedef enum
 {

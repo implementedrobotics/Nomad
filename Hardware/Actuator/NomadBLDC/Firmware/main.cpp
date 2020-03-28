@@ -130,6 +130,10 @@ int main()
     //user_menu->Show();
     SerialHandler *serial_handler = new SerialHandler(&serial);
 
+    // Start Logger
+    Logger::Instance();
+
+    Logger::Instance().Enable(true);
     // reset_observer(&observer); // Reset observer
 
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);

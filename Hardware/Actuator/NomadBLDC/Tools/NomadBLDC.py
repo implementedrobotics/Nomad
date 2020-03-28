@@ -29,7 +29,7 @@ import struct
 from SerialHandler import SerialHandler
 from SerialHandler import get_available_ports
 from Commands import *
-
+from DataContainers import *
 from LogPrint import LogPrint as logger
 
 # Class Wrapper to interface with NomadBLDC control board
@@ -40,12 +40,24 @@ class NomadBLDC:
         self.connected = False
         self.port = None
         self.device_info = None
+        self.motor_config = MotorConfig()
+        self.controller_config = None
+        self.encoder_config = None
 
     def measure_motor_resistance(self):
         if(not self.connected):
             return False
         
         return self.commands.measure_motor_resistance(self.transport)   
+
+    def load_configuration(self):
+        if(not self.connected):
+            return False
+
+        self.motor_config = self.commands.load_configuration(self.transport)
+        if(self.motor_config is None):
+            return False
+        return True
 
     def calibrate_motor(self):
         if(not self.connected):

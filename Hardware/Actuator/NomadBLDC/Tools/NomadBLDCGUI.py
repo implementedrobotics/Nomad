@@ -28,6 +28,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Measurements
         self.measurePhaseResistanceButton.clicked.connect(self.MeasureMotorResistance)
+        self.loadConfigButton.clicked.connect(self.LoadConfiguration)
 
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
         self.portInfoLabel.setText("")
@@ -36,6 +37,14 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.uptimeLabel.setText("")
         self.restartButton.hide()
 
+        # Clear Status
+        self.gateDriverTempLabel.setText("")
+        self.fetTempLabel.setText("")
+        self.motorTempLabel.setText("")
+        self.busVoltageLabel.setText("")
+        self.controllerFaultLabel.setText("")
+        self.resetFaultButton.hide()
+        
         # Start Timer
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.UpdateEvent)
@@ -44,6 +53,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Callbacks
         self.nomad_dev.commands.set_logger_cb(self.UpdateLog)
 
+        self.mainSplitter.moveSplitter(700, 1)
 
     def InitWindow(self):
         self.statusBar().showMessage('Not Connected')
@@ -58,6 +68,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.deviceInfoLabel.setText("")
             self.firmwareInfoLabel.setText("")
             self.uptimeLabel.setText("")
+            self.connectButton.setText("Connect")
             self.restartButton.hide()
         
         elif(self.nomad_dev.connect()): # Connected
@@ -71,7 +82,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.restartButton.show()
             self.connectButton.setText("Disconnect")
             self.nomad_dev.get_device_stats()
-            self.logTerminalEdit.append("CONNECTED YO")
+            self.resetFaultButton.show()
 
     # def CheckConnection(self):
     #     msgBox = QtWidgets.QMessageBox()
@@ -83,6 +94,21 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
     def MeasureMotorResistance(self):
         self.nomad_dev.measure_motor_resistance()
+
+    def LoadConfiguration(self):
+        if(self.nomad_dev.load_configuration() is not None):
+            self.polePairVal.setValue(self.nomad_dev.motor_config.num_pole_pairs)
+            self.KvVal.setValue(self.nomad_dev.motor_config.K_v)
+            self.gearRatioVal.setValue(self.nomad_dev.motor_config.gear_ratio)
+            self.KtMotorVal.setValue(self.nomad_dev.motor_config.K_t)
+            self.KtOutputVal.setValue(self.nomad_dev.motor_config.K_t_out)
+            self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance)
+            self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d)
+
+            if(self.nomad_dev.motor_config.phase_order == 1):
+                self.phaseOrderVal.setText("CORRECT")
+            else:
+                self.phaseOrderVal.setText("REVERSED")
 
     def CalibrateDevice(self):
         self.nomad_dev.calibrate_motor()
@@ -116,8 +142,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             if(stats is not None): # Update Stats
                 time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
                 self.uptimeLabel.setText(f"Up Time: " + time_str)
-                self.busVoltageLabel.setText("V<sub>(bus)</sub>: {:0.2f}v".format(stats.voltage_bus))
+                self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.voltage_bus))
                 self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
+                self.gateDriverTempLabel.setText(f"Gate Driver Temp: <b>101.2 C</b>")
+                self.fetTempLabel.setText("FET Temp: <b>28.3 C</b>")
+                self.motorTempLabel.setText("Motor Temp: <b>29.5 C</b>")
+                self.controllerFaultLabel.setText("Fault: <b>None</b>")
+        
 
     def UpdateLog(self, log_info):
         
@@ -127,7 +158,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Autoscroll?
         if(self.autoScrollTerminalCheck.isChecked()):
             self.logTerminalEdit.ensureCursorVisible()
-            
+
 if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])

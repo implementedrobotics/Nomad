@@ -40,7 +40,7 @@
 #include <string>
 #include <vector>
 
-Logger::Logger() : enable_logging_(true) 
+Logger::Logger() : enable_logging_(false) 
 {
 
 }

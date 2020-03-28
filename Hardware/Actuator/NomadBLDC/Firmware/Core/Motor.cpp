@@ -185,8 +185,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
     float test_voltage = 0.0f;
 
-    Logger::Instance().Print("Measure Motor Resistance...\n");
-    //printf("\n\rMeasure Motor Resistance...\n\r");
+    Logger::Instance().Print("[MOTOR] Measure Motor Resistance...\n");
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
     for (int i = 0; i < num_test_cycles; ++i)
@@ -195,7 +194,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
         if (evt.status != osEventSignal)
         {
             // motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
-            printf("ERROR: Phase Resistance Measurement Timeout\n\r");
+            Logger::Instance().Print("ERROR: Phase Resistance Measurement Timeout\n");
             return false;
         }
 
@@ -215,17 +214,22 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f)
     {
         // motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
-        printf("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
+        Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
+        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE);
+        config_.phase_resistance = R;
         return false;
     }
     config_.phase_resistance = R;
-    printf("Phase Resistance: %f ohms\r\n", config_.phase_resistance);
+    Logger::Instance().Print("Phase Resistance: %f ohms\n", config_.phase_resistance);
 
     // Shutdown the phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
 
     osDelay(200);
-    
+
+    // Send Complete Signal
+    //osSignalSet(controller->GetThreadID(), CALIBRATION_MEASUREMENT_COMPLETE_SIGNAL);
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE);
     return true;
 }
 

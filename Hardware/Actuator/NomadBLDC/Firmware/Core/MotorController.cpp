@@ -201,13 +201,15 @@ bool zero_current_sensors(uint32_t num_samples)
 }
 
 // Menu Callbacks
-void measure_motor_parameters()
+bool measure_motor_parameters()
 {
     set_control_mode(CALIBRATION_MODE); // Put in calibration mode
+    return true;
 }
-void measure_motor_resistance()
+bool measure_motor_resistance()
 {
     set_control_mode(MEASURE_RESISTANCE_MODE);
+    return true;
 }
 void save_configuration()
 {

@@ -34,6 +34,7 @@
 // Project Includes
 #include "mbed.h"
 #include "HDLCHandler.h"
+#include "MotorController.h"
 
 
 class CommandHandler
@@ -62,13 +63,21 @@ public:
         COMM_ENABLE_SPEED_CONTROL = 12,
         COMM_ENABLE_IDLE_MODE = 13,
 
+        // Read/Write State and Config
+        COMM_READ_MOTOR_STATE = 14,
+        COMM_READ_CONTROLLER_STATE = 15,
+        COMM_READ_POSITION_STATE = 16,
+        COMM_READ_MOTOR_CONFIG = 17,
+        COMM_READ_CONTROLLER_CONFIG = 18,
+        COMM_READ_POSITION_CONFIG = 19,
+        
         // Device Control
-        COMM_DEVICE_RESTART = 14,
-        COMM_DEVICE_ABORT = 15,
+        COMM_DEVICE_RESTART = 20,
+        COMM_DEVICE_ABORT = 21,
 
         // Set points
-        COMM_VOLTAGE_SETPOINT = 16,
-        COMM_TORQUE_SETPOINT = 17,
+        COMM_VOLTAGE_SETPOINT = 22,
+        COMM_TORQUE_SETPOINT = 23,
 
         COMM_LOGGING_OUTPUT = 100,
 
@@ -77,6 +86,8 @@ public:
     CommandHandler();
     static void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
     static void LogCommand(const std::string log_string);
+    static void SendResistanceMeasurementComplete();
+    static void SendMeasurementComplete(command_feedback_t fb);
     
 private:
 
