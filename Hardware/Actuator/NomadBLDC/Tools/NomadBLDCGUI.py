@@ -1,7 +1,31 @@
 from PyQt5 import QtWidgets, QtCore, uic
 import sys
 import time
+import threading
 from NomadBLDC import NomadBLDC
+from PyQt5.QtCore import pyqtSlot
+
+close_event = threading.Event()
+# Background worker class
+class BackgroundUpdater(QtCore.QRunnable):
+    def __init__(self, nomad_device):
+        super(BackgroundUpdater, self).__init__()
+        self.nomad_dev = nomad_device
+
+    @pyqtSlot()
+    def run(self):
+        while(1):
+            if(self.nomad_dev.connected):
+                #stats = self.nomad_dev.get_device_stats()
+                print("Connected")
+                time.sleep(1)
+                print("THREAD OVER")
+            else:
+                print("Not Connected")
+            if(close_event.is_set()):
+                break
+
+
 
 Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE DIR', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
@@ -10,7 +34,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         uic.loadUi("NomadBLDCGUI.ui", self) 
         self.InitWindow()
         
+        # Thread Pool
+        self.threadpool = QtCore.QThreadPool()
 
+        print(f"Multithreading with maximum {self.threadpool.maxThreadCount()} threads")
         self.nomad_dev = NomadBLDC()
         self.connectButton.clicked.connect(self.ConnectDevice)
         self.calibrateButton.clicked.connect(self.CalibrateDevice)
@@ -45,6 +72,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.controllerFaultLabel.setText("")
         self.resetFaultButton.hide()
         
+        # Start Updater
+        updater = BackgroundUpdater(self.nomad_dev)
+        self.threadpool.start(updater)
+
         # Start Timer
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.UpdateEvent)
@@ -104,11 +135,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.KtOutputVal.setValue(self.nomad_dev.motor_config.K_t_out)
             self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance)
             self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d)
-
-            if(self.nomad_dev.motor_config.phase_order == 1):
-                self.phaseOrderVal.setText("CORRECT")
-            else:
-                self.phaseOrderVal.setText("REVERSED")
+            self.phaseOrderCombo.setCurrentIndex(self.nomad_dev.motor_config.phase_order)
 
     def CalibrateDevice(self):
         self.nomad_dev.calibrate_motor()
@@ -135,6 +162,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         self.nomad_dev.disconnect()
+        close_event.set()
 
     def UpdateEvent(self):
         if(self.nomad_dev.connected):
@@ -163,7 +191,7 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])
     window = NomadBLDCGUI()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
 
 
 
