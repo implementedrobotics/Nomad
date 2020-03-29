@@ -66,7 +66,7 @@ class NomadBasicProgressDialog(QtWidgets.QDialog):
     
    # def CloseWindow(self):
 
-Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE DIR', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -147,7 +147,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             # Update labels
             self.connectInfoLabel.setText("Nomad BLDC Connected")
             self.portInfoLabel.setText(f"Port: {self.nomad_dev.port}")
-            self.deviceInfoLabel.setText(f"Device ID: {self.nomad_dev.device_info.device_id}")
+            self.deviceInfoLabel.setText(f"ID: {self.nomad_dev.device_info.device_id}")
             self.firmwareInfoLabel.setText(f"Firmware Version: v{self.nomad_dev.device_info.fw_major}.{self.nomad_dev.device_info.fw_minor}")    
             self.uptimeLabel.setText("Up Time: ")
             self.restartButton.show()
