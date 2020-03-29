@@ -44,7 +44,7 @@ bool measure_motor_phase_order();
 bool measure_encoder_offset();
 
 bool measure_motor_parameters();
-void save_configuration();
+bool save_configuration();
 void load_configuration();
 void restore_configuration();
 void reboot_system();

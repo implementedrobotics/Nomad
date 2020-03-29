@@ -73,14 +73,15 @@ public:
         COMM_WRITE_MOTOR_CONFIG = 20,
         COMM_WRITE_CONTROLLER_CONFIG = 21,
         COMM_WRITE_POSITION_CONFIG = 22,
+        COMM_WRITE_FLASH = 23,
         
         // Device Control
-        COMM_DEVICE_RESTART = 23,
-        COMM_DEVICE_ABORT = 24,
+        COMM_DEVICE_RESTART = 24,
+        COMM_DEVICE_ABORT = 25,
 
         // Set points
-        COMM_VOLTAGE_SETPOINT = 25,
-        COMM_TORQUE_SETPOINT = 26,
+        COMM_VOLTAGE_SETPOINT = 26,
+        COMM_TORQUE_SETPOINT = 27,
 
         COMM_LOGGING_OUTPUT = 100,
         COMM_CALIB_MOTOR = 101,

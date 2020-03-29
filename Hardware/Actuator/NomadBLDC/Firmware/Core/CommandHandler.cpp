@@ -270,19 +270,21 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
         break;
     }
-    // // Write Configs
-    // case COMM_WRITE_MOTOR_CONFIG:
-    // {
-    //     bool status = measure_motor_phase_order();
-    //     Motor_config_packet_t packet;
-    //     packet.comm_id = COMM_READ_MOTOR_CONFIG;
-    //     packet.packet_length = sizeof(Motor::Config_t);
-    //     packet.config = motor->config_;
+    // Write Configs
+    case COMM_WRITE_FLASH:
+    {
+        bool status = save_configuration();
+        Logger::Instance().Print("Write to Flash: %d", status);
+        // bool status = measure_motor_phase_order();
+        // Motor_config_packet_t packet;
+        // packet.comm_id = COMM_READ_MOTOR_CONFIG;
+        // packet.packet_length = sizeof(Motor::Config_t);
+        // packet.config = motor->config_;
 
-    //     // Send it
-    //     hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
-    //     break;
-    // }
+        // // Send it
+        // hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
+        // break;
+    }
 
     default:
         break;

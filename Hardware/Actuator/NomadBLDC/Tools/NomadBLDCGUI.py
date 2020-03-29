@@ -104,7 +104,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.measurePhaseInductanceButton.clicked.connect(self.MeasureMotorInductance)
         self.measurePhaseOrderButton.clicked.connect(self.MeasurePhaseOrder)
         self.loadConfigButton.clicked.connect(self.LoadConfiguration)
-
+        self.saveConfigButton.clicked.connect(self.SaveConfiguration)
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
         self.portInfoLabel.setText("")
         self.deviceInfoLabel.setText("")
@@ -160,6 +160,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.connectButton.setText("Disconnect")
             self.nomad_dev.get_device_stats()
             self.resetFaultButton.show()
+
+            # Load Configuration
+            self.LoadConfiguration()
+
         else: # Did not connect
             msgBox = QtWidgets.QMessageBox()
             msgBox.setIcon(QtWidgets.QMessageBox.Information)
@@ -231,6 +235,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance)
             self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d)
             self.phaseOrderCombo.setCurrentIndex(self.nomad_dev.motor_config.phase_order)
+
+    def SaveConfiguration(self):
+        self.nomad_dev.save_configuration()
 
     def CalibrateDevice(self):
         self.nomad_dev.calibrate_motor()

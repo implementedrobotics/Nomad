@@ -59,15 +59,16 @@ class CommandID(IntEnum):
     WRITE_MOTOR_CONFIG = 20
     WRITE_CONTROLLER_CONFIG = 21
     WRITE_POSITION_CONFIG = 22
+    WRITE_FLASH = 23
 
     # Device Control Commands
-    DEVICE_RESTART = 23
-    DEVICE_ABORT   = 24
+    DEVICE_RESTART = 24
+    DEVICE_ABORT   = 25
 
     
     # Set Points
-    SEND_VOLTAGE_SETPOINT = 25
-    SEND_TORQUE_SETPOINT = 26
+    SEND_VOLTAGE_SETPOINT = 26
+    SEND_TORQUE_SETPOINT = 27
 
     # Status
     LOGGING_OUTPUT = 100
@@ -133,8 +134,16 @@ class CommandHandler:
 
         return None
 
+
+    # Save Configuration
+    def save_configuration(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_FLASH, 0))
+        transport.send_packet(command_packet)
+
     # Load Configuration
     def load_configuration(self, transport):
+
+        # TODO: Load Controller Config, Encoder Config
         command_packet = bytearray(struct.pack("<BB", CommandID.READ_MOTOR_CONFIG, 0))
         transport.send_packet(command_packet)
 

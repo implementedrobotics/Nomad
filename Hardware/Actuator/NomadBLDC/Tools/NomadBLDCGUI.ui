@@ -450,7 +450,7 @@ color:white</string>
           <rect>
            <x>10</x>
            <y>10</y>
-           <width>511</width>
+           <width>541</width>
            <height>361</height>
           </rect>
          </property>
@@ -507,7 +507,7 @@ color:white</string>
            <rect>
             <x>10</x>
             <y>30</y>
-            <width>493</width>
+            <width>521</width>
             <height>200</height>
            </rect>
           </property>
@@ -532,6 +532,9 @@ color:white</string>
              </item>
              <item>
               <widget class="QSpinBox" name="KvVal">
+               <property name="suffix">
+                <string> RPM/V</string>
+               </property>
                <property name="prefix">
                 <string>Kv: </string>
                </property>
@@ -570,6 +573,9 @@ color:white</string>
                <property name="prefix">
                 <string>Kt Motor: </string>
                </property>
+               <property name="suffix">
+                <string> Nm/A</string>
+               </property>
               </widget>
              </item>
              <item>
@@ -581,7 +587,7 @@ color:white</string>
                 <string>Kt Output: </string>
                </property>
                <property name="suffix">
-                <string/>
+                <string> Nm/A</string>
                </property>
               </widget>
              </item>
@@ -828,7 +834,7 @@ color:white</string>
           </property>
          </widget>
         </widget>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="saveConfigButton">
          <property name="geometry">
           <rect>
            <x>20</x>

@@ -223,10 +223,11 @@ bool measure_motor_phase_order()
     set_control_mode(MEASURE_PHASE_ORDER_MODE);
     return true;
 }
-void save_configuration()
+bool save_configuration()
 {
     //printf("\r\nSaving Configuration...\r\n");
 
+    bool status = false;
     Save_format_t save;
     save.signature = FLASH_SAVE_SIGNATURE;
     save.version = 1; // Set Version
@@ -234,9 +235,9 @@ void save_configuration()
     save.position_sensor_config = motor->PositionSensor()->config_;
     save.controller_config = motor_controller->config_;
     FlashInterface::Instance().Open(6, FlashInterface::WRITE);
-    FlashInterface::Instance().Write(0, (uint8_t *)&save, sizeof(save));
+    status = FlashInterface::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashInterface::Instance().Close();
-
+    return status;
     //printf("\r\nSaved.  Press ESC to return to menu.\r\n");
 }
 void load_configuration()

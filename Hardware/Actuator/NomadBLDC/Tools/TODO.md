@@ -1,4 +1,5 @@
 # PC/GUI TODO:
+1.  MAIN. -> Save Motor Config, Encoder Offset Measurement, Start Controller Configuration
 2.  Add encoder offset measurement
 3.  Save Configuration Command
 4.  Load Configuration Command
@@ -13,3 +14,4 @@
 12. Add support for checking port still open
 13. Send mutex/locking
 14. Finish motor calibration.  Pass and save all measurements
+15. Validate active connection to control button events that require a connection

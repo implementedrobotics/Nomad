@@ -63,6 +63,12 @@ class NomadBLDC:
         
         return self.commands.measure_motor_inductance(self.transport)   
 
+    def save_configuration(self):
+        if(not self.connected):
+            return False
+
+        self.commands.save_configuration(self.transport)
+
     def load_configuration(self):
         if(not self.connected):
             return False
