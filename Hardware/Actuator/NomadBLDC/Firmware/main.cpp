@@ -59,7 +59,7 @@ Thread control_task(osPriorityRealtime, 2048);
 Thread debug_task(osPriorityRealtime, 2048);
 
 // Serial Communications Thread
-Thread comms_task(osPriorityRealtime, 2048);
+Thread comms_task(osPriorityNormal, 2048);
 
 // void enter_setup_state(void)
 // {

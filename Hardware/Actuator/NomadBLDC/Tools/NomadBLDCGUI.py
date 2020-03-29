@@ -1,33 +1,72 @@
 from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
+
 import sys
 import time
 import threading
+
 from NomadBLDC import NomadBLDC
-from PyQt5.QtCore import pyqtSlot
 
 close_event = threading.Event()
+
+# Background measurement signals
+class MeasurementUpdateSignals(QtCore.QObject):
+    completed = pyqtSignal(object)
+
+# Background measurement worker class
+class MeasurementUpdater(QtCore.QRunnable, QtCore.QObject):
+    
+    def __init__(self, nomad_device):
+        super(MeasurementUpdater, self).__init__()
+        self.nomad_dev = nomad_device
+        self.signals = MeasurementUpdateSignals()
+        self.measure_fn = None
+        #self.timeout = 1
+
+    @pyqtSlot()
+    def run(self):
+        if(self.nomad_dev.connected):
+            result = self.measure_fn()
+            self.signals.completed.emit(result)
+            print(f"Result: {result}")
+
+# Background work signals
+class BackgroundUpdaterSignals(QtCore.QObject):
+    updated = pyqtSignal(object)
+
 # Background worker class
-class BackgroundUpdater(QtCore.QRunnable):
+class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
+    
     def __init__(self, nomad_device):
         super(BackgroundUpdater, self).__init__()
         self.nomad_dev = nomad_device
-
+        self.signals = BackgroundUpdaterSignals()
+        self.period = 1
     @pyqtSlot()
     def run(self):
         while(1):
             if(self.nomad_dev.connected):
-                #stats = self.nomad_dev.get_device_stats()
-                print("Connected")
-                time.sleep(1)
-                print("THREAD OVER")
+                stats = self.nomad_dev.get_device_stats()
+                if(stats is not None):
+                    self.signals.updated.emit(stats)
+                time.sleep(self.period)
             else:
-                print("Not Connected")
+                time.sleep(self.period)
+            
             if(close_event.is_set()):
                 break
+        
+# Progress Dialog
+class NomadBasicProgressDialog(QtWidgets.QDialog):
+    def __init__(self, parentWindow=None):
+        super(NomadBasicProgressDialog, self).__init__()
+        uic.loadUi("NomadBasicProgress.ui", self) 
+        if(parentWindow is not None): # Center on Parent
+            self.move(parentWindow.window().frameGeometry().topLeft() + parentWindow.window().rect().center() - self.rect().center())
+    
+   # def CloseWindow(self):
 
-
-
-Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE DIR', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE DIR', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -37,8 +76,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Thread Pool
         self.threadpool = QtCore.QThreadPool()
 
-        print(f"Multithreading with maximum {self.threadpool.maxThreadCount()} threads")
+        # Nomad BLDC Device
         self.nomad_dev = NomadBLDC()
+
+        # Signals/Slots
         self.connectButton.clicked.connect(self.ConnectDevice)
         self.calibrateButton.clicked.connect(self.CalibrateDevice)
         self.restartButton.clicked.connect(self.RestartDevice)
@@ -55,6 +96,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Measurements
         self.measurePhaseResistanceButton.clicked.connect(self.MeasureMotorResistance)
+        self.measurePhaseInductanceButton.clicked.connect(self.MeasureMotorInductance)
         self.loadConfigButton.clicked.connect(self.LoadConfiguration)
 
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
@@ -73,17 +115,15 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.resetFaultButton.hide()
         
         # Start Updater
-        updater = BackgroundUpdater(self.nomad_dev)
-        self.threadpool.start(updater)
-
-        # Start Timer
-        self.update_timer = QtCore.QTimer()
-        self.update_timer.timeout.connect(self.UpdateEvent)
-        self.update_timer.start(1000)
+        self.updater = BackgroundUpdater(self.nomad_dev)
+        self.updater.period = 1 # Seconds
+        self.updater.signals.updated.connect(self.UpdateSlot)
+        self.threadpool.start(self.updater)
 
         # Callbacks
         self.nomad_dev.commands.set_logger_cb(self.UpdateLog)
 
+        # Default Splitter
         self.mainSplitter.moveSplitter(700, 1)
 
     def InitWindow(self):
@@ -124,7 +164,37 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     #     msgBox.exec()
 
     def MeasureMotorResistance(self):
-        self.nomad_dev.measure_motor_resistance()
+        measurementTask = MeasurementUpdater(self.nomad_dev)
+        measurementTask.measure_fn = self.nomad_dev.measure_motor_resistance
+        #updater.period = 1 # Seconds
+        #updater.signals.updated.connect(self.UpdateSlot)
+        self.threadpool.start(measurementTask)
+        measure_progress = NomadBasicProgressDialog(self)
+        measure_progress.setWindowTitle("Resistance Measurement")
+        measure_progress.progressText.setText("Measure Resistance...")
+        measurementTask.signals.completed.connect(measure_progress.close)
+        measurementTask.signals.completed.connect(self.UpdateResistanceMeasurementValue)
+        measure_progress.exec_()    
+
+    def MeasureMotorInductance(self):
+        measurementTask = MeasurementUpdater(self.nomad_dev)
+        measurementTask.measure_fn = self.nomad_dev.measure_motor_inductance
+        self.threadpool.start(measurementTask)
+        measure_progress = NomadBasicProgressDialog(self)
+        measure_progress.setWindowTitle("Inductance Measurement")
+        measure_progress.progressText.setText("Measure Inductance...")
+        measurementTask.signals.completed.connect(measure_progress.close)
+        measurementTask.signals.completed.connect(self.UpdateInductanceMeasurementValue)
+        measure_progress.exec_()       
+
+    def UpdateResistanceMeasurementValue(self, measurement):
+        if(measurement is not None):
+            self.phaseResistanceVal.setValue(measurement.measurement)
+    
+    def UpdateInductanceMeasurementValue(self, measurement):
+        if(measurement is not None):
+            self.phaseInductanceVal.setValue(measurement.measurement)
+
 
     def LoadConfiguration(self):
         if(self.nomad_dev.load_configuration() is not None):
@@ -164,18 +234,17 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.disconnect()
         close_event.set()
 
-    def UpdateEvent(self):
-        if(self.nomad_dev.connected):
-            stats = self.nomad_dev.get_device_stats()
-            if(stats is not None): # Update Stats
-                time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
-                self.uptimeLabel.setText(f"Up Time: " + time_str)
-                self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.voltage_bus))
-                self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
-                self.gateDriverTempLabel.setText(f"Gate Driver Temp: <b>101.2 C</b>")
-                self.fetTempLabel.setText("FET Temp: <b>28.3 C</b>")
-                self.motorTempLabel.setText("Motor Temp: <b>29.5 C</b>")
-                self.controllerFaultLabel.setText("Fault: <b>None</b>")
+    #@pyqtSlot()
+    def UpdateSlot(self, stats):
+        if(stats is not None): # Update Stats
+            time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
+            self.uptimeLabel.setText(f"Up Time: " + time_str)
+            self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.voltage_bus))
+            self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
+            self.gateDriverTempLabel.setText(f"Gate Driver Temp: <b>101.2 C</b>")
+            self.fetTempLabel.setText("FET Temp: <b>28.3 C</b>")
+            self.motorTempLabel.setText("Motor Temp: <b>29.5 C</b>")
+            self.controllerFaultLabel.setText("Fault: <b>None</b>")
         
 
     def UpdateLog(self, log_info):

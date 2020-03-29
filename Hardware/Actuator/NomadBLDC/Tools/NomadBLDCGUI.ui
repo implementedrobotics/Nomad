@@ -481,7 +481,7 @@ color:white</string>
                 <string> A</string>
                </property>
                <property name="value">
-                <double>3.000000000000000</double>
+                <double>15.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -494,7 +494,7 @@ color:white</string>
                 <string> V</string>
                </property>
                <property name="value">
-                <double>15.000000000000000</double>
+                <double>3.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -647,7 +647,7 @@ color:white</string>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="measurePhaseInductanceButton_2">
+                <widget class="QPushButton" name="measurePhaseInductanceButton">
                  <property name="maximumSize">
                   <size>
                    <width>25</width>

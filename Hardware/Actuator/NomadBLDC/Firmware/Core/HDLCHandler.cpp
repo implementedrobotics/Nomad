@@ -109,7 +109,7 @@ bool HDLCHandler::SendPacket(uint8_t *packet, uint32_t length)
         return false;
     }
 
-    Serial *serial = SerialHandler::GetSerial();
+    //Serial *serial = SerialHandler::GetSerial();
     // Compute CRC16 for Packet
     frame_chksum_ = CRC16::Compute(packet, length);
     //printf("Got Checksum: %d\n\r", frame_chksum_);

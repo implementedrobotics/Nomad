@@ -80,6 +80,10 @@ class CommandHandler:
         self.motor_config_received = threading.Event()
         self.controller_config_received = threading.Event()
         self.position_config_received = threading.Event()
+        self.resistance_measurement_complete = threading.Event()
+        self.inductance_measurement_complete = threading.Event()
+        self.phase_order_measurement_complete = threading.Event()
+        self.measurement = 0
         self.device_stats = 0
         self.motor_config = 0
         self.logger_cb = None
@@ -88,10 +92,30 @@ class CommandHandler:
         self.logger_cb = cb 
 
     # Measure Motor Resistance
-    def measure_motor_resistance(self, transport, calib_voltage=15, calib_current=3):
+    def measure_motor_resistance(self, transport, calib_voltage=3, calib_current=15):
         command_packet = bytearray(struct.pack("<BB", CommandID.MEASURE_RESISTANCE, 0))
         transport.send_packet(command_packet)
-        return True
+
+        # Wait for device response
+        self.resistance_measurement_complete.wait(20)
+        if(self.resistance_measurement_complete.is_set()):
+            self.resistance_measurement_complete.clear() # Clear Flag
+            return self.measurement
+
+        return None
+
+    # Measure Motor Inductance
+    def measure_motor_inductance(self, transport, calib_voltage=3, calib_current=15):
+        command_packet = bytearray(struct.pack("<BB", CommandID.MEASURE_INDUCTANCE, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.inductance_measurement_complete.wait(20)
+        if(self.inductance_measurement_complete.is_set()):
+            self.inductance_measurement_complete.clear() # Clear Flag
+            return self.measurement
+
+        return None
 
     # Load Configuration
     def load_configuration(self, transport):
@@ -128,6 +152,7 @@ class CommandHandler:
     def start_torque_control(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_TORQUE_CONTROL, 0))
         transport.send_packet(command_packet)
+        print("TORQUE CONTROL")
         return True
 
     # Enter Idle Mode
@@ -142,7 +167,7 @@ class CommandHandler:
         return True
         
     def set_torque_setpoint(self, transport, k_p, k_d, pos, vel, tau_ff):
-        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_TORQUE_SETPOINT, 8, .99, 0))
+        command_packet = bytearray(struct.pack("<BBfffff", CommandID.SEND_TORQUE_SETPOINT, 20, k_p, k_d, pos, vel, tau_ff))
         transport.send_packet(command_packet)
         return True
 
@@ -196,7 +221,13 @@ class CommandHandler:
             self.motor_config_received.set()
 
         elif(comm_id == CommandID.MEASURE_RESISTANCE):
-            print("GOT FINISHED MEASUREMENT!")
+            self.measurement = FloatMeasurement.unpack(packet[2:])
+            self.resistance_measurement_complete.set()
+
+        elif(comm_id == CommandID.MEASURE_INDUCTANCE):
+            self.measurement = FloatMeasurement.unpack(packet[2:])
+            self.inductance_measurement_complete.set()
+           # print(f"Measurement: {self.measurement.status}")
 
 
         # TODO: Measurement completes

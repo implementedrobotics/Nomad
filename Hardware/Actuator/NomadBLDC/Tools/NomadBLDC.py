@@ -49,6 +49,12 @@ class NomadBLDC:
             return False
         
         return self.commands.measure_motor_resistance(self.transport)   
+    
+    def measure_motor_inductance(self):
+        if(not self.connected):
+            return False
+        
+        return self.commands.measure_motor_inductance(self.transport)   
 
     def load_configuration(self):
         if(not self.connected):

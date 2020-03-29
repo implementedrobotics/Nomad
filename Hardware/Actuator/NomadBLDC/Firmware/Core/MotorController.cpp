@@ -37,6 +37,7 @@
 #include "UserMenu.h"
 #include "FlashInterface.h"
 #include "LEDService.h"
+#include "Logger.h"
 #include "../../math_ops.h"
 
 Motor *motor = 0;
@@ -79,8 +80,9 @@ void motor_controller_thread_entry()
     motor_controller = new MotorController(motor, CONTROL_LOOP_PERIOD);
     motor_controller->Init();
 
-    //printf("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
-    //printf("PWM FREQ :%f\n\r", PWM_FREQ);
+
+    //Logger::Instance().Print("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
+    //Logger::Instance().Print("PWM FREQ :%f\n\r", PWM_FREQ);
 
     // Begin Control Loop
     motor_controller->StartControlFSM();
@@ -209,6 +211,12 @@ bool measure_motor_parameters()
 bool measure_motor_resistance()
 {
     set_control_mode(MEASURE_RESISTANCE_MODE);
+    return true;
+}
+
+bool measure_motor_inductance()
+{
+    set_control_mode(MEASURE_INDUCTANCE_MODE);
     return true;
 }
 void save_configuration()
@@ -606,7 +614,23 @@ void MotorController::StartControlFSM()
                 gate_driver_->Enable();
                 EnablePWM(true);
 
-                motor->MeasureMotorResistance(motor_controller, 3.0f, 15.0f);
+                motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
+                // TODO: Check Errors
+                //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+                control_mode_ = IDLE_MODE;
+            }
+            osDelay(1);
+            break;
+        }
+        case (MEASURE_INDUCTANCE_MODE):
+        {
+            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+            {
+                current_control_mode = control_mode_;
+                LEDService::Instance().On();
+                gate_driver_->Enable();
+                EnablePWM(true);
+                motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
                 // TODO: Check Errors
                 //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;

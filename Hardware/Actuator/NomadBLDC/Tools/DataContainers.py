@@ -78,3 +78,15 @@ class MotorConfig:
         unpacked = struct.unpack(cls.__fmt, data)
         return MotorConfig(*unpacked)
 
+
+@dataclass
+class FloatMeasurement:
+    __fmt = "<Bf"
+    status: int = None
+    measurement: float = None
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = struct.unpack(cls.__fmt, data)
+        return FloatMeasurement(*unpacked)
+

@@ -41,6 +41,14 @@
 HDLCHandler hdlc_out;
 #define PACKET_DATA_OFFSET 2
 
+struct __attribute__((__packed__)) Measurement_info_t
+{
+    uint8_t comm_id;           // Command ID
+    uint8_t packet_length;     // Packet Length
+    uint8_t status;            // Status
+    float measurement;         // Measurement Value
+};
+
 struct __attribute__((__packed__)) Device_info_t
 {
     uint8_t comm_id;           // Command ID
@@ -71,7 +79,6 @@ struct __attribute__((__packed__)) Motor_config_packet_t
     uint8_t packet_length;     // Packet Length
     Motor::Config_t config;    // Motor config
 };
-
 
 struct __attribute__((__packed__)) Motor_setpoint_t
 {
@@ -113,18 +120,30 @@ void CommandHandler::LogCommand(const std::string log_string)
     hdlc_out.SendPacket((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
 }
 
-void CommandHandler::SendMeasurementComplete(command_feedback_t fb)
+void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t status, float measurement)
 {
     switch(fb)
     {
         case command_feedback_t::MEASURE_RESISTANCE_COMPLETE:
         {
-            uint8_t status[2];
-            status[0] = COMM_MEASURE_RESISTANCE;
-            status[1] = 0;
-
+            Measurement_info_t result;
+            result.comm_id = COMM_MEASURE_RESISTANCE;
+            result.packet_length = sizeof(Measurement_info_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+            result.status = status;
+            result.measurement = measurement;
             // Send it
-            hdlc_out.SendPacket((uint8_t *)&status, sizeof(uint8_t)*2);
+            hdlc_out.SendPacket((uint8_t *)&result, sizeof(Measurement_info_t));
+            break;
+        }
+        case command_feedback_t::MEASURE_INDUCTANCE_COMPLETE:
+        {
+            Measurement_info_t result;
+            result.comm_id = COMM_MEASURE_INDUCTANCE;
+            result.packet_length = sizeof(Measurement_info_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+            result.status = status;
+            result.measurement = measurement;
+            // Send it
+            hdlc_out.SendPacket((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
         default:
@@ -212,6 +231,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_TORQUE_SETPOINT:
     {
         Motor_torque_setpoint_t *sp = (Motor_torque_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        Logger::Instance().Print("Got: %f and %f\r\n", sp->k_p, sp->pos)
         set_torque_control_ref(sp->k_p, sp->k_d, sp->pos, sp->vel, sp->tau_ff);
         break;
         //printf("\r\nXX\r\n");
@@ -221,6 +241,12 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         bool status = measure_motor_resistance();
         break;
     }
+    case COMM_MEASURE_INDUCTANCE:
+    {
+        bool status = measure_motor_inductance();
+        break;
+    }
+
 
     // Read Configs
     case COMM_READ_MOTOR_CONFIG:
@@ -234,7 +260,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
-        Logger::Instance().Print("Packet Sent CONFIG: %d\n", (sizeof(Motor_config_packet_t)));
+        //Logger::Instance().Print("Packet Sent CONFIG: %d\n", (sizeof(Motor_config_packet_t)));
         //Motor::Config_t motor_config = motor->config_;
 
         break;
