@@ -54,9 +54,9 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
                 stats = self.nomad_dev.get_device_stats()
                 if(stats is not None):
                     self.signals.updated.emit(stats)
-                time.sleep(self.period)
+                time.sleep(10)
             else:
-                time.sleep(self.period)
+                time.sleep(10)
             
             if(close_event.is_set()):
                 break
@@ -261,7 +261,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     
     def SetTorqueSetPoint(self):
         self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), self.torqueFF_spin.value()) 
-
+        self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value() * 6}")
+        self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / self.KtMotorVal.value()}")
+        arm = .458
+        force = (self.torqueFF_spin.value() * 6) / arm
+        self.scaleValue.setText(f"{1000*(force/9.81)}")
     def closeEvent(self, event):
         self.nomad_dev.disconnect()
         close_event.set()
