@@ -642,7 +642,7 @@ color:white</string>
                   <string> H</string>
                  </property>
                  <property name="decimals">
-                  <number>5</number>
+                  <number>6</number>
                  </property>
                 </widget>
                </item>

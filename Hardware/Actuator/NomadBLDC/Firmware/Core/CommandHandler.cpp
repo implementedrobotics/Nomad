@@ -200,12 +200,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.fet_temp = 100.0f;
         stats.motor_temp = 40.0f;
 
-
         // Send it
         hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
-
-        //Logger::Instance().Print("Phase Resistance Measurement Complete: \n\r");
-
         break;
     }
     case COMM_CALIB_MOTOR:

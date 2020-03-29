@@ -42,9 +42,14 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
         self.nomad_dev = nomad_device
         self.signals = BackgroundUpdaterSignals()
         self.period = 1
+        self.paused = False
     @pyqtSlot()
     def run(self):
         while(1):
+            if(self.paused is True):
+                time.sleep(1)
+                continue
+
             if(self.nomad_dev.connected):
                 stats = self.nomad_dev.get_device_stats()
                 if(stats is not None):
@@ -164,6 +169,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             msgBox.exec()
 
     def MeasureMotorResistance(self):
+        self.updater.paused = True
         measurementTask = MeasurementUpdater(self.nomad_dev)
         measurementTask.measure_fn = self.nomad_dev.measure_motor_resistance
         #updater.period = 1 # Seconds
@@ -174,9 +180,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         measure_progress.progressText.setText("Measure Resistance...")
         measurementTask.signals.completed.connect(measure_progress.close)
         measurementTask.signals.completed.connect(self.UpdateResistanceMeasurementValue)
-        measure_progress.exec_()    
+        measure_progress.exec_()   
+        self.updater.paused = False 
 
     def MeasureMotorInductance(self):
+        self.updater.paused = True
         measurementTask = MeasurementUpdater(self.nomad_dev)
         measurementTask.measure_fn = self.nomad_dev.measure_motor_inductance
         self.threadpool.start(measurementTask)
@@ -186,8 +194,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         measurementTask.signals.completed.connect(measure_progress.close)
         measurementTask.signals.completed.connect(self.UpdateInductanceMeasurementValue)
         measure_progress.exec_()     
+        self.updater.paused = False 
 
     def MeasurePhaseOrder(self):
+        self.updater.paused = True
         measurementTask = MeasurementUpdater(self.nomad_dev)
         measurementTask.measure_fn = self.nomad_dev.measure_motor_phase_order
         self.threadpool.start(measurementTask)
@@ -197,6 +207,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         measurementTask.signals.completed.connect(measure_progress.close)
         measurementTask.signals.completed.connect(self.UpdatePhaseOrderMeasurementValue)
         measure_progress.exec_()  
+        self.updater.paused = False 
 
     def UpdateResistanceMeasurementValue(self, measurement):
         if(measurement is not None):
