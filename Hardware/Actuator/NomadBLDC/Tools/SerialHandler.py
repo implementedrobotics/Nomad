@@ -25,19 +25,12 @@
 import sys
 import glob
 import serial
-
 import time
 import random
-import struct
 import threading
 
-from crc import crc16
 from HDLCHandler import HDLCHandler
-
 from LogPrint import LogPrint as logger
-
-# TODO: Unify with Framing Handler
-PACKET_SIZE_LIMIT = 256
 
 #Serial Handler Interface
 class SerialHandler:
@@ -46,10 +39,9 @@ class SerialHandler:
         self.baud = baud # Baud Rate
         self.connected = False # Connected Flag
         self.uart = serial.Serial(port, baudrate=baud, timeout=1) # Serial Port
-        self.hdlc = HDLCHandler(packet_cb)
-        self.close_event = threading.Event()
-        #self.packet_cb = packet_cb
-        self.start_read_task()
+        self.hdlc = HDLCHandler(packet_cb) # HDLC Framing handler
+        self.close_event = threading.Event() 
+        self.start_read_task() # Threaded Read Task
 
     def close(self):
         # Close Port
@@ -57,18 +49,8 @@ class SerialHandler:
         self.uart.close()
 
     def send_packet(self, packet):
-
-        #print(f'Sending Packet: {packet} with length: {len(packet)}')
-        if (len(packet) >= PACKET_SIZE_LIMIT):
-            raise NotImplementedError(f"Can not send packet size {len(packet)} > {PACKET_SIZE_LIMIT}")
-
-        #for byte in bytearray(packet):
-        #    print(f'Byte: {hex(byte)}')
-        #hdlc_frame = bytearray(b'~\x0c\x08\xa4p}]?\x04\x03\x01\x02\xac\xa1~')
         hdlc_frame = self.hdlc.frame_packet(packet)
-        written = self.uart.write(hdlc_frame)
-        #print(written)
-        #print(hdlc_frame)
+        self.uart.write(hdlc_frame)
 
     def start_read_task(self):
 
@@ -76,43 +58,38 @@ class SerialHandler:
             while(not self.close_event.is_set()):   
                 if (self.uart.inWaiting() > 0): # Got Serial Data
                     byte = self.uart.read(1)
-                    #print(byte)
                     self.hdlc.process_byte(byte) # Send to HDLC to process packet
             logger.print_info("Serial Receive Thread Terminated")
         t = threading.Thread(target=recv_packet)
+        t.daemon = True
         t.start()
-        
-def get_available_ports():
-    """ Lists serial port names
 
-        :raises EnvironmentError:
-            On unsupported or unknown platforms
-        :returns:
-            A list of the serial ports available on the system
-    """
-    if sys.platform.startswith('win'): # WINDOWS
-        ports = ['COM%s' % (i + 1) for i in range(256)]
-    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'): #LINUX
-        # this excludes your current terminal "/dev/tty"
-        ports = glob.glob('/dev/tty[A-Za-z]*')
-    elif sys.platform.startswith('darwin'): #MAC
-        ports = glob.glob('/dev/tty.*')
-    else:
-        raise EnvironmentError('Unsupported platform')
+    @staticmethod   
+    def get_available_ports():
+        """ Lists serial port names
 
-    result = []
-    for port in ports:
-        try:
-            s = serial.Serial(port)
-            s.close()
-            result.append(port)
-        except (OSError, serial.SerialException):
-            pass
-    return result
+            :raises EnvironmentError:
+                On unsupported or unknown platforms
+            :returns:
+                A list of the serial ports available on the system
+        """
+        if sys.platform.startswith('win'): # WINDOWS
+            ports = ['COM%s' % (i + 1) for i in range(256)]
+        elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'): #LINUX
+            # this excludes your current terminal "/dev/tty"
+            ports = glob.glob('/dev/tty[A-Za-z]*')
+        elif sys.platform.startswith('darwin'): #MAC
+            ports = glob.glob('/dev/tty.*')
+        else:
+            raise EnvironmentError('Unsupported platform')
 
+        result = []
+        for port in ports:
+            try:
+                s = serial.Serial(port)
+                s.close()
+                result.append(port)
+            except (OSError, serial.SerialException):
+                pass
+        return result
 
-
-
-#nomad = NomadBLDC(timeout=0.5, baud=921600)
-#nomad.connect()
-#print(nomad.disconnect())

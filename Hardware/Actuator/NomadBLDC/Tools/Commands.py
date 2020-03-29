@@ -40,9 +40,8 @@ class CommandID(IntEnum):
     MEASURE_RESISTANCE = 4
     MEASURE_INDUCTANCE = 5
     MEASURE_PHASE_ORDER = 6
-
-    CALIBRATE_MOTOR = 7
-    ZERO_POSITION = 8
+    MEASURE_ENCODER_OFFSET = 7
+    ZERO_ENCODER_POSITION = 8
 
     # Motor Control Commands
     ENABLE_CURRENT_CONTROL = 9
@@ -57,18 +56,22 @@ class CommandID(IntEnum):
     READ_MOTOR_CONFIG = 17
     READ_CONTROLLER_CONFIG = 18
     READ_POSITION_CONFIG = 19
+    WRITE_MOTOR_CONFIG = 20
+    WRITE_CONTROLLER_CONFIG = 21
+    WRITE_POSITION_CONFIG = 22
 
     # Device Control Commands
-    DEVICE_RESTART = 20
-    DEVICE_ABORT   = 21
+    DEVICE_RESTART = 23
+    DEVICE_ABORT   = 24
 
     
     # Set Points
-    SEND_VOLTAGE_SETPOINT = 22
-    SEND_TORQUE_SETPOINT = 23
+    SEND_VOLTAGE_SETPOINT = 25
+    SEND_TORQUE_SETPOINT = 26
 
     # Status
     LOGGING_OUTPUT = 100
+    CALIBRATE_MOTOR = 101
 
 class CommandHandler:
     def __init__(self):
@@ -90,6 +93,19 @@ class CommandHandler:
     
     def set_logger_cb(self, cb):
         self.logger_cb = cb 
+
+    # Measure Motor Phase Order
+    def measure_motor_phase_order(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.MEASURE_PHASE_ORDER, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.phase_order_measurement_complete.wait(20)
+        if(self.phase_order_measurement_complete.is_set()):
+            self.phase_order_measurement_complete.clear() # Clear Flag
+            return self.measurement
+
+        return None
 
     # Measure Motor Resistance
     def measure_motor_resistance(self, transport, calib_voltage=3, calib_current=15):
@@ -228,7 +244,9 @@ class CommandHandler:
             self.measurement = FloatMeasurement.unpack(packet[2:])
             self.inductance_measurement_complete.set()
            # print(f"Measurement: {self.measurement.status}")
-
+        elif(comm_id == CommandID.MEASURE_PHASE_ORDER):
+            self.measurement = IntMeasurement.unpack(packet[2:])
+            self.phase_order_measurement_complete.set()
 
         # TODO: Measurement completes
         # Unpack packet

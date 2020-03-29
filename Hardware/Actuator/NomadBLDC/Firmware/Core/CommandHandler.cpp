@@ -46,7 +46,7 @@ struct __attribute__((__packed__)) Measurement_info_t
     uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
     uint8_t status;            // Status
-    float measurement;         // Measurement Value
+    measurement_t measurement;         // Measurement Value
 };
 
 struct __attribute__((__packed__)) Device_info_t
@@ -120,7 +120,7 @@ void CommandHandler::LogCommand(const std::string log_string)
     hdlc_out.SendPacket((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
 }
 
-void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t status, float measurement)
+void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement)
 {
     switch(fb)
     {
@@ -146,6 +146,19 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
             hdlc_out.SendPacket((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
+    case command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE:
+        {
+            Measurement_info_t result;
+            result.comm_id = COMM_MEASURE_PHASE_ORDER;
+            result.packet_length = sizeof(Measurement_info_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+            result.status = status;
+            result.measurement = measurement;
+            
+            // Send it
+            hdlc_out.SendPacket((uint8_t *)&result, sizeof(Measurement_info_t));
+            break;
+        }
+        
         default:
             break;
     }
@@ -224,17 +237,14 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_VOLTAGE_SETPOINT:
     {
         Motor_setpoint_t *sp = (Motor_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
-        //printf("SET POINT VOLTAGE: %f\n\r");
         set_voltage_control_ref(sp->v_d, sp->v_q);
         break;
     }
     case COMM_TORQUE_SETPOINT:
     {
         Motor_torque_setpoint_t *sp = (Motor_torque_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
-        Logger::Instance().Print("Got: %f and %f\r\n", sp->k_p, sp->pos)
         set_torque_control_ref(sp->k_p, sp->k_d, sp->pos, sp->vel, sp->tau_ff);
         break;
-        //printf("\r\nXX\r\n");
     }
     case COMM_MEASURE_RESISTANCE:
     {
@@ -246,7 +256,11 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         bool status = measure_motor_inductance();
         break;
     }
-
+    case COMM_MEASURE_PHASE_ORDER:
+    {
+        bool status = measure_motor_phase_order();
+        break;
+    }
 
     // Read Configs
     case COMM_READ_MOTOR_CONFIG:
@@ -255,16 +269,24 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.comm_id = COMM_READ_MOTOR_CONFIG;
         packet.packet_length = sizeof(Motor::Config_t);
         packet.config = motor->config_;
-        //Logger::Instance().Print("Config Size: %d\n", sizeof(Motor::Config_t));
-        //Logger::Instance().Print("Packet Size: %d\n", sizeof(packet));
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
-        //Logger::Instance().Print("Packet Sent CONFIG: %d\n", (sizeof(Motor_config_packet_t)));
-        //Motor::Config_t motor_config = motor->config_;
-
         break;
     }
+    // // Write Configs
+    // case COMM_WRITE_MOTOR_CONFIG:
+    // {
+    //     bool status = measure_motor_phase_order();
+    //     Motor_config_packet_t packet;
+    //     packet.comm_id = COMM_READ_MOTOR_CONFIG;
+    //     packet.packet_length = sizeof(Motor::Config_t);
+    //     packet.config = motor->config_;
+
+    //     // Send it
+    //     hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
+    //     break;
+    // }
 
     default:
         break;

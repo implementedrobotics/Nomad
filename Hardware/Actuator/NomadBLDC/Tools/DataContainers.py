@@ -90,3 +90,13 @@ class FloatMeasurement:
         unpacked = struct.unpack(cls.__fmt, data)
         return FloatMeasurement(*unpacked)
 
+@dataclass
+class IntMeasurement:
+    __fmt = "<BI"
+    status: int = None
+    measurement: int = None
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = struct.unpack(cls.__fmt, data)
+        return IntMeasurement(*unpacked)

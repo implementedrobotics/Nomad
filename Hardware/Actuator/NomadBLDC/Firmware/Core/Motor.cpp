@@ -129,6 +129,9 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
 
     static const int num_cycles = 3.0f / sample_time_; // Test runs for 3s;
 
+    measurement_t measurement;
+    measurement.f32 = 0.0f;
+
     Logger::Instance().Print("[MOTOR] Measure Motor Inductance...\n");
     // Shutdown Phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
@@ -142,7 +145,7 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
             {
                 // motor->error = ERROR_PHASE_INDUCTANCE_MEASUREMENT_TIMEOUT;
                 //printf("ERROR: Phase Inductance Measurement Timeout\n\r");
-                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, 0);
+                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
                 Logger::Instance().Print("ERROR: Phase Inductance Measurement Timeout\n");
                 return false;
             }
@@ -165,7 +168,7 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
     // However, the discretisation in the current control loop inverts the same discrepancy
     float dI_by_dt = (I_alpha[1] - I_alpha[0]) / (sample_time_ * (float)num_cycles);
     float L = v_L / dI_by_dt;
-
+    measurement.f32 = L;
     // TODO: arbitrary values set for now
     if (L < 1e-6f || L > 500e-6f)
     {
@@ -173,7 +176,7 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
         //printf("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
         //Logger::Instance().Print("Phase Inductance: %f Henries\n", L);
         Logger::Instance().Print("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
-        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, L);
+        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
         return false;
     }
 
@@ -182,7 +185,7 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
     config_.phase_inductance_q = L;
 
     Logger::Instance().Print("Phase Inductance: %f Henries\n", L);
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, L);
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 
@@ -192,8 +195,13 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
     float test_voltage = 0.0f;
 
+    measurement_t measurement;
+    measurement.f32 = 0.0f;
+
+
     Logger::Instance().Print("[MOTOR] Measure Motor Resistance...\n");
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+
 
     for (int i = 0; i < num_test_cycles; ++i)
     {
@@ -202,7 +210,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
         {
             // motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
             // Update Serial Interface
-            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, 0);
+            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
             Logger::Instance().Print("ERROR: Phase Resistance Measurement Timeout\n");
             return false;
         }
@@ -220,13 +228,14 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     }
 
     float R = test_voltage / test_current;
+    measurement.f32 = R;
     if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f)
     {
         //motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
         Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
 
         // Update Serial Interface
-        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, R);
+        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
         config_.phase_resistance = R;
         return false;
     }
@@ -239,13 +248,13 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     osDelay(200);
 
     // Send Complete Feedback
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, R);
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 
 bool Motor::OrderPhases(MotorController *controller)
 {
-    printf("\n\rRunning phase direction scan...\n\r");
+    Logger::Instance().Print("[MOTOR]: \n\rRunning phase direction scan...\n\r");
 
     float theta_start = 0;
     float theta_end = 0;
@@ -256,9 +265,13 @@ bool Motor::OrderPhases(MotorController *controller)
 
     config_.phase_order = 1;               // Reset Phase Order to Default
 
-    printf("Locking Rotor to D-Axis...\n\r");
+    // Feedback measurement
+    measurement_t measurement;
+    measurement.i32 = config_.phase_order;
+
+    //printf("Locking Rotor to D-Axis...\n\r");
     LockRotor(controller, rotor_lock_duration, test_voltage);
-    printf("Rotor stabilized.\n\r");
+    //printf("Rotor stabilized.\n\r");
 
     Update(); // Update State/Position Sensor
 
@@ -270,6 +283,9 @@ bool Motor::OrderPhases(MotorController *controller)
         if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
         {
             // TODO: Error
+            Logger::Instance().Print("[MOTOR]: \n\rPhase Direction Scan Timeout!\n\r");
+            // Send Complete Feedback
+            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
             return false;
         }
         // Set PWM Output
@@ -279,19 +295,24 @@ bool Motor::OrderPhases(MotorController *controller)
     }
     theta_end = state_.theta_mech_true;
 
-    printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
+    //printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
     if (theta_end - theta_start > 0)
     {
-        printf("Phase Order is CORRECT!\n\r");
+        Logger::Instance().Print("[MOTOR]: \n\rPhase Order CORRECT.\n\r");
+        //printf("Phase Order is CORRECT!\n\r");
         //rotor_sensor_->SetDirection(1);
         config_.phase_order = 1;
     }
     else
     {
         printf("Phase Order is INCORRECT!\n\r");
+        Logger::Instance().Print("[MOTOR]: \n\rPhase Order REVERSED.\n\r");
         //rotor_sensor_->SetDirection(-1);
         config_.phase_order = 0;
     }
+    measurement.i32 = config_.phase_order;
+    // Send Complete Feedback
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 

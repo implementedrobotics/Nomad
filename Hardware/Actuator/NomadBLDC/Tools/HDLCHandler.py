@@ -44,17 +44,18 @@ class HDLCHandler:
         self.packet_cb = packet_cb
 
     def frame_packet(self, packet: bytearray):
+
+        if (len(packet) >= PACKET_SIZE_LIMIT):
+            raise NotImplementedError(f"Can not send packet size {len(packet)} > {PACKET_SIZE_LIMIT}")
+
         # Must use control escape sequence for the reserved bytes
         escaped_packet = bytearray()
         for byte in packet:
             if(byte == FRAME_BOUNDARY or byte == CONTROL_ESCAPE):
-                #print("Escaping Packet!")
                 escaped_packet.append(CONTROL_ESCAPE)
                 escaped_packet.append(byte ^ HDLC_BYTE_INVERT)
             else:
                 escaped_packet.append(byte)
-         #   print(f"Byte: {hex(byte)}")
-        #print("OUT")
 
          # Compute CRC16
         crc = bytearray(struct.pack("<H", crc16(packet)))
@@ -66,35 +67,21 @@ class HDLCHandler:
         hdlc_frame += crc
         hdlc_frame.append(FRAME_BOUNDARY)
 
-        #print(len(hdlc_frame))
         return hdlc_frame
 
     def process_byte(self, byte_in: bytes):
         byte = byte_in[0]
         if (byte == FRAME_BOUNDARY and not self.in_escape):
-           # print("GOT FRAME BOUNDARY!")
             # Check for End Frame + Validity
             if(self.frame_offset >= 2):
-            #    print(f'Got Command {self.receive_buffer[0]} and {self.receive_buffer[1]}')
-             #   print((self.frame_offset - 4))
-              #  print(self.receive_buffer[1])
                 if ((self.frame_offset - 4) == self.receive_buffer[1]):
                     # Length matches.  Now verify checksum
                     self.frame_chksum = bytearray(struct.pack("<H", crc16(self.receive_buffer[0:self.frame_offset-2])))
-                    #print(f"Check Sum on {self.receive_buffer[0:self.frame_offset-2]}")
                     packet = self.receive_buffer[0:self.frame_offset-2]
                     self.frame_chksum = crc16(packet)
-                    #print(self.frame_chksum)
-                    #print(self.receive_buffer[self.frame_offset-2:self.frame_offset])
                     sent_chksum = struct.unpack("<H", self.receive_buffer[self.frame_offset-2:self.frame_offset])[0]
-                    #print("Successful Packet Receive")
-                    #print(self.receive_buffer[0:self.frame_offset-2])
-                    #print(sent_chksum)
                     if(self.frame_chksum == sent_chksum and self.packet_cb is not None):
                         self.packet_cb(packet)
-                        #print(f"Got packet SUCCESS: {packet}")
-                        #print("COMMAND SUCCESS")
-
             # Reset and look for next frame
             self.frame_offset = 0
             self.frame_chksum = 0
@@ -114,7 +101,6 @@ class HDLCHandler:
 
         if (self.frame_offset >= PACKET_SIZE_LIMIT): # Overflow Packet Limit,
             self.frame_offset = 0 # Reset
-            self.frame_chksum = 0
-        #print(self.receive_buffer)
+            self.frame_chksum = 0 # Reset
 
 

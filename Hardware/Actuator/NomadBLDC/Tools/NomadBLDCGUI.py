@@ -97,6 +97,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Measurements
         self.measurePhaseResistanceButton.clicked.connect(self.MeasureMotorResistance)
         self.measurePhaseInductanceButton.clicked.connect(self.MeasureMotorInductance)
+        self.measurePhaseOrderButton.clicked.connect(self.MeasurePhaseOrder)
         self.loadConfigButton.clicked.connect(self.LoadConfiguration)
 
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
@@ -154,14 +155,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.connectButton.setText("Disconnect")
             self.nomad_dev.get_device_stats()
             self.resetFaultButton.show()
-
-    # def CheckConnection(self):
-    #     msgBox = QtWidgets.QMessageBox()
-    #     msgBox.setIcon(QtWidgets.QMessageBox.Information)
-    #     msgBox.setText("Message box pop up window")
-    #     msgBox.setWindowTitle("QMessageBox Example")
-    #     msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-    #     msgBox.exec()
+        else: # Did not connect
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Information)
+            msgBox.setText("Unable to connect to a valid Nomad BLDC Device.\nPlease verify connection and try again.")
+            msgBox.setWindowTitle("Nomad BLDC")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.exec()
 
     def MeasureMotorResistance(self):
         measurementTask = MeasurementUpdater(self.nomad_dev)
@@ -185,7 +185,18 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         measure_progress.progressText.setText("Measure Inductance...")
         measurementTask.signals.completed.connect(measure_progress.close)
         measurementTask.signals.completed.connect(self.UpdateInductanceMeasurementValue)
-        measure_progress.exec_()       
+        measure_progress.exec_()     
+
+    def MeasurePhaseOrder(self):
+        measurementTask = MeasurementUpdater(self.nomad_dev)
+        measurementTask.measure_fn = self.nomad_dev.measure_motor_phase_order
+        self.threadpool.start(measurementTask)
+        measure_progress = NomadBasicProgressDialog(self)
+        measure_progress.setWindowTitle("Phase Order Measurement")
+        measure_progress.progressText.setText("Measure Phase Order...")
+        measurementTask.signals.completed.connect(measure_progress.close)
+        measurementTask.signals.completed.connect(self.UpdatePhaseOrderMeasurementValue)
+        measure_progress.exec_()  
 
     def UpdateResistanceMeasurementValue(self, measurement):
         if(measurement is not None):
@@ -195,6 +206,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         if(measurement is not None):
             self.phaseInductanceVal.setValue(measurement.measurement)
 
+    def UpdatePhaseOrderMeasurementValue(self, measurement):
+        if(measurement is not None):
+            self.phaseOrderCombo.setCurrentIndex(measurement.measurement)
 
     def LoadConfiguration(self):
         if(self.nomad_dev.load_configuration() is not None):

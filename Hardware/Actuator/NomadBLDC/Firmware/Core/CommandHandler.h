@@ -53,8 +53,8 @@ public:
         COMM_MEASURE_RESISTANCE = 4,
         COMM_MEASURE_INDUCTANCE = 5,
         COMM_MEASURE_PHASE_ORDER = 6,
-        COMM_CALIB_MOTOR = 7,
-        COMM_ZERO_POSITION = 8,
+        COMM_MEASURE_ENCODER_OFFSET = 7,
+        COMM_ZERO_ENCODER_POSITION = 8,
 
         // Motor Control Modes
         COMM_ENABLE_CURRENT_CONTROL = 9,
@@ -70,25 +70,28 @@ public:
         COMM_READ_MOTOR_CONFIG = 17,
         COMM_READ_CONTROLLER_CONFIG = 18,
         COMM_READ_POSITION_CONFIG = 19,
+        COMM_WRITE_MOTOR_CONFIG = 20,
+        COMM_WRITE_CONTROLLER_CONFIG = 21,
+        COMM_WRITE_POSITION_CONFIG = 22,
         
         // Device Control
-        COMM_DEVICE_RESTART = 20,
-        COMM_DEVICE_ABORT = 21,
+        COMM_DEVICE_RESTART = 23,
+        COMM_DEVICE_ABORT = 24,
 
         // Set points
-        COMM_VOLTAGE_SETPOINT = 22,
-        COMM_TORQUE_SETPOINT = 23,
+        COMM_VOLTAGE_SETPOINT = 25,
+        COMM_TORQUE_SETPOINT = 26,
 
         COMM_LOGGING_OUTPUT = 100,
+        COMM_CALIB_MOTOR = 101,
 
     } command_t;
 
     CommandHandler();
     static void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
     static void LogCommand(const std::string log_string);
-    static void SendResistanceMeasurementComplete();
-    static void SendMeasurementComplete(command_feedback_t fb, uint8_t status, float measurement);
-    
+    static void SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement);
+
 private:
 
 

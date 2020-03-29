@@ -213,10 +213,14 @@ bool measure_motor_resistance()
     set_control_mode(MEASURE_RESISTANCE_MODE);
     return true;
 }
-
 bool measure_motor_inductance()
 {
     set_control_mode(MEASURE_INDUCTANCE_MODE);
+    return true;
+}
+bool measure_motor_phase_order()
+{
+    set_control_mode(MEASURE_PHASE_ORDER_MODE);
     return true;
 }
 void save_configuration()
@@ -633,6 +637,21 @@ void MotorController::StartControlFSM()
                 motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
                 // TODO: Check Errors
                 //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+                control_mode_ = IDLE_MODE;
+            }
+            osDelay(1);
+            break;
+        }
+        case (MEASURE_PHASE_ORDER_MODE):
+        {
+            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+            {
+                current_control_mode = control_mode_;
+                LEDService::Instance().On();
+                gate_driver_->Enable();
+                EnablePWM(true);
+                motor->OrderPhases(motor_controller);
+                // TODO: Check Errors
                 control_mode_ = IDLE_MODE;
             }
             osDelay(1);

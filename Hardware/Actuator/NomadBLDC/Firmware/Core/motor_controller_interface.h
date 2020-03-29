@@ -41,6 +41,7 @@ void current_measurement_cb();
 bool measure_motor_resistance();
 bool measure_motor_inductance();
 bool measure_motor_phase_order();
+bool measure_encoder_offset();
 
 bool measure_motor_parameters();
 void save_configuration();

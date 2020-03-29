@@ -674,14 +674,17 @@ color:white</string>
                 <layout class="QHBoxLayout" name="horizontalLayout_5">
                  <item>
                   <widget class="QComboBox" name="phaseOrderCombo">
+                   <property name="currentIndex">
+                    <number>1</number>
+                   </property>
                    <item>
                     <property name="text">
-                     <string>CORRECT</string>
+                     <string>REVERSED</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>REVERSED</string>
+                     <string>CORRECT</string>
                     </property>
                    </item>
                   </widget>

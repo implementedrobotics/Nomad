@@ -27,7 +27,6 @@ import glob
 import time
 import struct
 from SerialHandler import SerialHandler
-from SerialHandler import get_available_ports
 from Commands import *
 from DataContainers import *
 from LogPrint import LogPrint as logger
@@ -43,6 +42,14 @@ class NomadBLDC:
         self.motor_config = MotorConfig()
         self.controller_config = None
         self.encoder_config = None
+
+
+
+    def measure_motor_phase_order(self):
+        if(not self.connected):
+            return False
+        
+        return self.commands.measure_motor_phase_order(self.transport)  
 
     def measure_motor_resistance(self):
         if(not self.connected):
@@ -114,7 +121,7 @@ class NomadBLDC:
     def connect(self):
 
         baud = 115200 # TODO: Auto or from UI
-        ports = get_available_ports() # Get available ports
+        ports = SerialHandler.get_available_ports() # Get available ports
         
         for self.port in ports: # Loop ports and try to read firmware version
             logger.print_info(f'Connecting to port: {self.port} [{baud} baud]')

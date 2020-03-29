@@ -1,5 +1,4 @@
 # PC/GUI TODO:
-1.  Add phase direction measurement
 2.  Add encoder offset measurement
 3.  Save Configuration Command
 4.  Load Configuration Command

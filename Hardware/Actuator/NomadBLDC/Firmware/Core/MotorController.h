@@ -73,6 +73,14 @@ static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTA
 extern Motor *motor;
 extern MotorController *motor_controller;
 
+// Measurement Struct
+typedef union 
+{
+    float f32;
+    int32_t i32;
+    uint32_t u32;
+} measurement_t;
+
 // Signals
 typedef enum
 {
