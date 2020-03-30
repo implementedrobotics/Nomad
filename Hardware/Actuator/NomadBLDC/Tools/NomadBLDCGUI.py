@@ -56,9 +56,9 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
                 stats = self.nomad_dev.get_device_stats()
                 if(stats is not None):
                     self.signals.updated.emit(stats)
-                time.sleep(10)
+                time.sleep(1)
             else:
-                time.sleep(10)
+                time.sleep(1)
             
             if(close_event.is_set()):
                 break

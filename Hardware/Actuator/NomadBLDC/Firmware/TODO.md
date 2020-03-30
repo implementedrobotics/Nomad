@@ -1,4 +1,6 @@
 # Firmware TODO:
+1.  Controller priorities.  Make sure communications priorities are straight. 
+2.  Add serial interrupt cancel during commutation loop?
 2.  Remove all print statements and cleanup old serial
 3.  Move serial port creation back to thread
 5.  Verify CAN Messaging
