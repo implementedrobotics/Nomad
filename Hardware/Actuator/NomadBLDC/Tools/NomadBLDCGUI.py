@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 
+import pyqtgraph as pg
 import sys
 import time
 import threading
