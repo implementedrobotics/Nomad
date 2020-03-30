@@ -47,6 +47,7 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
     @pyqtSlot()
     def run(self):
         while(1):
+            
             if(self.paused is True):
                 time.sleep(1)
                 continue

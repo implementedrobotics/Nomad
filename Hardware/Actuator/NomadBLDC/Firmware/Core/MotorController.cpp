@@ -635,7 +635,9 @@ void MotorController::StartControlFSM()
                 LEDService::Instance().On();
                 gate_driver_->Enable();
                 EnablePWM(true);
+                //NVIC_DisableIRQ(USART2_IRQn);
                 motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
+                //NVIC_EnableIRQ(USART2_IRQn);
                 // TODO: Check Errors
                 //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
@@ -734,7 +736,6 @@ void MotorController::DoMotorControl()
 }
 void MotorController::CurrentControl()
 {
-
     dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
 
     state_.I_q_filtered = 0.95f * state_.I_q_filtered + 0.05f * state_.I_q;

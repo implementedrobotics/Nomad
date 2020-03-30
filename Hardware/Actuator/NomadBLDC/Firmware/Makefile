@@ -67,6 +67,8 @@ OBJECTS += Core/Logger.o
 OBJECTS += Core/CRC16.o
 OBJECTS += Core/FlashInterface.o
 OBJECTS += Core/CANHandler.o
+OBJECTS += Core/MyBuffer.o
+OBJECTS += Core/BufferedSerial.o
 OBJECTS += main.o
 OBJECTS += math_ops.o
 OBJECTS += mbed-dev/drivers/AnalogIn.o
@@ -588,7 +590,7 @@ CC      = arm-none-eabi-gcc
 CPP     = arm-none-eabi-g++
 LD      = arm-none-eabi-gcc
 ELF2BIN = arm-none-eabi-objcopy
-PREPROC = arm-none-eabi-cpp -E -P -Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,_malloc_r -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+PREPROC = arm-none-eabi-cpp -E -P -Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,_malloc_r -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 SF=st-flash
 
 
@@ -667,7 +669,7 @@ C_FLAGS += -DMBED_TRAP_ERRORS_ENABLED=1
 C_FLAGS += -mcpu=cortex-m4
 C_FLAGS += -mthumb
 C_FLAGS += -mfpu=fpv4-sp-d16
-C_FLAGS += -mfloat-abi=softfp
+C_FLAGS += -mfloat-abi=hard
 
 CXX_FLAGS += -std=gnu++14
 CXX_FLAGS += -fno-rtti
@@ -748,7 +750,7 @@ CXX_FLAGS += -DMBED_TRAP_ERRORS_ENABLED=1
 CXX_FLAGS += -mcpu=cortex-m4
 CXX_FLAGS += -mthumb
 CXX_FLAGS += -mfpu=fpv4-sp-d16
-CXX_FLAGS += -mfloat-abi=softfp
+CXX_FLAGS += -mfloat-abi=hard
 
 ASM_FLAGS += -x
 ASM_FLAGS += assembler-with-cpp
@@ -811,16 +813,16 @@ ASM_FLAGS += -funsigned-char
 ASM_FLAGS += -MMD
 ASM_FLAGS += -fno-delete-null-pointer-checks
 ASM_FLAGS += -fomit-frame-pointer
-ASM_FLAGS += -Os
+ASM_FLAGS += -O3
 ASM_FLAGS += -g1
 ASM_FLAGS += -DMBED_TRAP_ERRORS_ENABLED=1
 ASM_FLAGS += -mcpu=cortex-m4
 ASM_FLAGS += -mthumb
 ASM_FLAGS += -mfpu=fpv4-sp-d16
-ASM_FLAGS += -mfloat-abi=softfp
+ASM_FLAGS += -mfloat-abi=hard
 
 
-LD_FLAGS :=-Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,_malloc_r -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp 
+LD_FLAGS :=-Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,_malloc_r -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard 
 LD_SYS_LIBS :=-Wl,--start-group -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys  -Wl,--end-group
 
 # Tools and Flags

@@ -318,7 +318,9 @@ bool Motor::OrderPhases(MotorController *controller)
 
 bool Motor::CalibrateEncoderOffset(MotorController *controller)
 {
-    printf("\n\rRunning Encoder Offset/Eccentricity Calibration...\n\r");
+    //printf("\n\rRunning Encoder Offset/Eccentricity Calibration...\n\r");
+
+    Logger::Instance().Print("[MOTOR] Running Encoder Offset/Eccentricity Calibration......\n");
 
     float rotor_lock_duration = 2.0f; // Rotor Lock Settling Time
     float *error_forward;  // Error Vector Forward Rotation
@@ -370,17 +372,18 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     float theta_actual = 0;
     float test_voltage = config_.calib_current * config_.phase_resistance;
 
-    printf("Locking Rotor to D-Axis...\n\r");
+    //printf("Locking Rotor to D-Axis...\n\r");
 
     LockRotor(controller, rotor_lock_duration, test_voltage);
 
-    printf("Rotor stabilized.\n\r");
+    //printf("Rotor stabilized.\n\r");
     Update();   // Update State/Position Sensor
     osDelay(1); // Wait a ms
 
     // TODO: Cogging Current
 
-    printf("\n\rCalibrating Forwards Direction...\n\r");
+    //printf("\n\rCalibrating Forwards Direction...\n\r");
+    Logger::Instance().Print("[MOTOR] Calibrating Forwards Direction...\n");
     // Rotate Forward
     for (int32_t i = 0; i < num_samples; i++)
     {
@@ -408,9 +411,12 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     // Clear output
     //controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
 
-    printf("\r\nCooling Down 5s...\r\n");
-    wait(5); // 5 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
-    printf("\n\rCalibrating Backwards Direction...\n\r");
+
+    //printf("\r\nCooling Down 5s...\r\n");
+    //wait(5); // 5 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
+    //printf("\n\rCalibrating Backwards Direction...\n\r");
+
+    Logger::Instance().Print("[MOTOR] Calibrating Backwards Direction...\n");
 
     // Rotate Backwards
     for (int32_t i = 0; i < num_samples; i++)
@@ -492,26 +498,27 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
 
     int32_t raw_offset = (raw_forward[0] + raw_backward[num_samples - 1]) / 2; //Insensitive to errors in this direction, so 2 points is plenty
 
-    printf("\n\r Encoder non-linearity compensation table\n\r");
-    printf(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
-    for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
-    {
-        int32_t index = (raw_offset >> 7) + i;
-        if (index > (num_lookups - 1))
-        {
-            index -= num_lookups;
-        }
-        lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
-        printf("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
-        //printf("%ld, %ld \n\r", i, lookup_table[index]);
-        wait(.001);
-    }
+    
+    // printf("\n\r Encoder non-linearity compensation table\n\r");
+    // printf(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
+    // for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
+    // {
+    //     int32_t index = (raw_offset >> 7) + i;
+    //     if (index > (num_lookups - 1))
+    //     {
+    //         index -= num_lookups;
+    //     }
+    //     lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
+    //     printf("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
+    //     //printf("%ld, %ld \n\r", i, lookup_table[index]);
+    //     wait(.001);
+    // }
     // TODO: Not quite working. Need to fix.  For now don't compensate eccentricity
     rotor_sensor_->SetOffsetLUT(lookup_table); // Write Compensated Lookup Table
 
     //memcpy(controller->cogging, cogging_current, sizeof(controller->cogging));  //compensation doesn't actually work yet....
     printf("\n\rEncoder Electrical Offset (rad) %f\n\r", offset);
-
+    Logger::Instance().Print("[MOTOR] Encoder Electrical Offset (rad) %f\n\r", offset);
     // Clear Memory
     delete[] error_forward; 
     delete[] error_backward;

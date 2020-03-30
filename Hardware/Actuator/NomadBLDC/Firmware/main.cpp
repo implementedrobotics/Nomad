@@ -56,7 +56,7 @@ Serial serial(PA_2, PA_3);
 Thread control_task(osPriorityRealtime, 2048);
 
 // Debug/Print Thread
-Thread debug_task(osPriorityRealtime, 2048);
+//Thread debug_task(osPriorityRealtime, 2048);
 
 // Serial Communications Thread
 Thread comms_task(osPriorityNormal, 2048);
@@ -130,6 +130,14 @@ int main()
     //user_menu->Show();
     SerialHandler *serial_handler = new SerialHandler(&serial);
 
+    //
+    //NVIC_DisableIRQ(USART1_IRQn);
+   // NVIC_DisableIRQ(USART2_IRQn);
+    //NVIC_DisableIRQ(USART3_IRQn);
+
+    //NVIC_DisableIRQ(UART4_IRQn);
+    //NVIC_DisableIRQ(UART5_IRQn);
+    //NVIC_DisableIRQ(USART6_IRQn);
     // Start Logger
     Logger::Instance();
 
@@ -161,7 +169,7 @@ int main()
 
     control_task.start(motor_controller_thread_entry);
 
-    debug_task.start(debug_thread_entry);
+   // debug_task.start(debug_thread_entry);
 
     comms_task.start(comms_thread_entry);
 
