@@ -48,9 +48,9 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
     def run(self):
         while(1):
             
-            if(self.paused is True):
-                time.sleep(1)
-                continue
+            #if(self.paused is True):
+             #   time.sleep(1)
+              #  continue
 
             if(self.nomad_dev.connected):
                 stats = self.nomad_dev.get_device_stats()

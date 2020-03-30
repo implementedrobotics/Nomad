@@ -635,9 +635,9 @@ void MotorController::StartControlFSM()
                 LEDService::Instance().On();
                 gate_driver_->Enable();
                 EnablePWM(true);
-                //NVIC_DisableIRQ(USART2_IRQn);
+                NVIC_DisableIRQ(USART2_IRQn);
                 motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
-                //NVIC_EnableIRQ(USART2_IRQn);
+                NVIC_EnableIRQ(USART2_IRQn);
                 // TODO: Check Errors
                 //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
@@ -719,6 +719,7 @@ void MotorController::StartControlFSM()
 }
 void MotorController::DoMotorControl()
 {
+    NVIC_DisableIRQ(USART2_IRQn);
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
         //float v_d = 0.0f;
@@ -733,6 +734,7 @@ void MotorController::DoMotorControl()
     {
         TorqueControl();
     }
+    NVIC_EmableIRQ(USART2_IRQn);
 }
 void MotorController::CurrentControl()
 {
