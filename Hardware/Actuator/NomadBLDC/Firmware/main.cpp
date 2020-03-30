@@ -124,7 +124,7 @@ int main()
     // MainMenu *controller_config_show = new MainMenu(" Show Controller Configuration", 'c', show_config_mode, &show_controller_config);
     // MainMenu *encoder_config_show = new MainMenu(" Show Encoder Configuration", 'e', show_config_mode, &show_encoder_config);
 
-    NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
+    NVIC_SetPriority(USART2_IRQn, 3); // Set Interrupt Priorities
 
     //UserMenu *user_menu = new UserMenu(&serial, main_menu);
     //user_menu->Show();

@@ -795,7 +795,7 @@ void MotorController::StartPWM()
     NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn); //Enable TIM1/10 IRQ
 
     // Set Priority
-    NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0); // Commutation is highest priority interrupt
+    NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // Commutation is highest priority interrupt
 
     TIM1->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
     TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
