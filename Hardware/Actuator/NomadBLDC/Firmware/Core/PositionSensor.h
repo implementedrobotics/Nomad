@@ -42,8 +42,8 @@ public:
         float offset_elec;       // Electrical Position Offset (Radians)
         float offset_mech;       // Mechanical Position Offset (Radians)
         int32_t cpr;             // Sensor Counts Per Revolution
-        int32_t direction;       // Sensor Direction for Positive Rotation
-        int32_t offset_lut[128]; // Offset Lookup Table
+        //int32_t direction;       // Sensor Direction for Positive Rotation
+        int8_t offset_lut[128]; // Offset Lookup Table
     };
 
     PositionSensorAS5x47(float sample_time, uint32_t pole_pairs = 21, uint32_t cpr = 16384); // Constructor with some initial defaults.

@@ -40,10 +40,20 @@ class NomadBLDC:
         self.port = None
         self.device_info = None
         self.motor_config = MotorConfig()
-        self.controller_config = None
-        self.encoder_config = None
+        self.encoder_config = EncoderConfig()
+        self.controller_config = ControllerConfig()
 
 
+
+    def zero_mechanical_offset(self):
+        if(not self.connected):
+            return False
+        return self.commands.zero_mechanical_offset(self.transport)    
+
+    def measure_motor_encoder_offset(self):
+        if(not self.connected):
+            return False
+        return self.commands.measure_motor_encoder_offset(self.transport)
 
     def measure_motor_phase_order(self):
         if(not self.connected):
@@ -73,9 +83,14 @@ class NomadBLDC:
         if(not self.connected):
             return False
 
-        self.motor_config = self.commands.load_configuration(self.transport)
-        if(self.motor_config is None):
+        load_config = self.commands.load_configuration(self.transport)
+        self.motor_config = load_config[0]
+        self.controller_config = load_config[1]
+        self.encoder_config = load_config[2]
+
+        if(self.motor_config is None or self.encoder_config is None or self.controller_config is None):
             return False
+            
         return True
 
     def calibrate_motor(self):

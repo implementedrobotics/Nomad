@@ -80,6 +80,44 @@ class MotorConfig:
 
 
 @dataclass
+class ControllerConfig:
+    __fmt = "<15f"
+    k_d: float = None
+    k_q: float = None
+    k_i_d: float = None
+    k_i_q: float = None
+    alpha: float = None
+    overmodulation: float = None
+    velocity_limit: float = None
+    position_limit: float = None
+    current_limit: float = None
+    current_bandwidth: float = None
+    K_p_min: float = None
+    K_p_max: float = None
+    K_d_min: float = None
+    K_d_max: float = None
+    torque_limit: float = None
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = struct.unpack(cls.__fmt, data)
+        return ControllerConfig(*unpacked)
+
+@dataclass
+class EncoderConfig:
+    __fmt = "<ffi"
+    offset_elec: float = None
+    offset_mech: float = None
+    cpr: int = None
+    #direction: int = None
+    #offset_lut: list[int] = None
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = struct.unpack(cls.__fmt, data)
+        return EncoderConfig(*unpacked)
+
+@dataclass
 class FloatMeasurement:
     __fmt = "<Bf"
     status: int = None

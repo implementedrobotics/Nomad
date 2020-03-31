@@ -41,7 +41,7 @@ class CommandID(IntEnum):
     MEASURE_INDUCTANCE = 5
     MEASURE_PHASE_ORDER = 6
     MEASURE_ENCODER_OFFSET = 7
-    ZERO_ENCODER_POSITION = 8
+    ZERO_MECHANICAL_OFFSET = 8
 
     # Motor Control Commands
     ENABLE_CURRENT_CONTROL = 9
@@ -55,7 +55,7 @@ class CommandID(IntEnum):
     READ_POSITION_STATE = 16
     READ_MOTOR_CONFIG = 17
     READ_CONTROLLER_CONFIG = 18
-    READ_POSITION_CONFIG = 19
+    READ_ENCODER_CONFIG = 19
     WRITE_MOTOR_CONFIG = 20
     WRITE_CONTROLLER_CONFIG = 21
     WRITE_POSITION_CONFIG = 22
@@ -83,17 +83,36 @@ class CommandHandler:
         self.device_stats_received = threading.Event()
         self.motor_config_received = threading.Event()
         self.controller_config_received = threading.Event()
-        self.position_config_received = threading.Event()
+        self.encoder_config_received = threading.Event()
         self.resistance_measurement_complete = threading.Event()
         self.inductance_measurement_complete = threading.Event()
         self.phase_order_measurement_complete = threading.Event()
-        self.measurement = 0
-        self.device_stats = 0
-        self.motor_config = 0
+        self.encoder_offset_measurement_complete = threading.Event()
+        self.measurement = None
+        self.device_stats = None
+        self.motor_config = None
+        self.encoder_config = None
+        self.controller_config = None
         self.logger_cb = None
     
     def set_logger_cb(self, cb):
         self.logger_cb = cb 
+
+    # Mechnical Offset
+    def zero_mechanical_offset(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.ZERO_MECHANICAL_OFFSET, 0))
+        transport.send_packet(command_packet)
+
+    # Measure Encoder Offset
+    def measure_motor_encoder_offset(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.MEASURE_ENCODER_OFFSET, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.encoder_offset_measurement_complete.wait(30)
+        if(self.encoder_offset_measurement_complete.is_set()):
+            self.encoder_offset_measurement_complete.clear() # Clear Flag
+            return self.measurement
 
     # Measure Motor Phase Order
     def measure_motor_phase_order(self, transport):
@@ -143,17 +162,42 @@ class CommandHandler:
     # Load Configuration
     def load_configuration(self, transport):
 
-        # TODO: Load Controller Config, Encoder Config
+        ################ Load Motor Config
         command_packet = bytearray(struct.pack("<BB", CommandID.READ_MOTOR_CONFIG, 0))
         transport.send_packet(command_packet)
+
+        self.motor_config = None
+        self.controller_config = None
+        self.encoder_config = None
 
         # Wait for device response
         self.motor_config_received.wait(5)
         if(self.motor_config_received.is_set()):
             self.motor_config_received.clear() # Clear Flag
-            return self.motor_config
+        ####################
 
-        return None
+        ############### Load Controller Encoder Config
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_CONTROLLER_CONFIG, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.controller_config_received.wait(5)
+        if(self.controller_config_received.is_set()):
+            self.controller_config_received.clear() # Clear Flag
+        ###################
+
+        ################ Load Position Encoder Config
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_ENCODER_CONFIG, 0))
+        transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.encoder_config_received.wait(5)
+        if(self.encoder_config_received.is_set()):
+            self.encoder_config_received.clear() # Clear Flag
+        ###################
+
+
+        return (self.motor_config, self.controller_config, self.encoder_config)
 
     # Calibrate motor
     def calibrate_motor(self, transport):
@@ -177,7 +221,6 @@ class CommandHandler:
     def start_torque_control(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_TORQUE_CONTROL, 0))
         transport.send_packet(command_packet)
-        print("TORQUE CONTROL")
         return True
 
     # Enter Idle Mode
@@ -244,6 +287,15 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_MOTOR_CONFIG):
             self.motor_config = MotorConfig.unpack(packet[2:])
             self.motor_config_received.set()
+        
+        elif(comm_id == CommandID.READ_ENCODER_CONFIG):
+            self.encoder_config = EncoderConfig.unpack(packet[2:])
+            self.encoder_config_received.set()
+        
+        elif(comm_id == CommandID.READ_CONTROLLER_CONFIG):
+            self.controller_config = ControllerConfig.unpack(packet[2:])
+            self.controller_config_received.set()
+            print(self.controller_config)
 
         elif(comm_id == CommandID.MEASURE_RESISTANCE):
             self.measurement = FloatMeasurement.unpack(packet[2:])
@@ -252,13 +304,15 @@ class CommandHandler:
         elif(comm_id == CommandID.MEASURE_INDUCTANCE):
             self.measurement = FloatMeasurement.unpack(packet[2:])
             self.inductance_measurement_complete.set()
-           # print(f"Measurement: {self.measurement.status}")
+
         elif(comm_id == CommandID.MEASURE_PHASE_ORDER):
             self.measurement = IntMeasurement.unpack(packet[2:])
             self.phase_order_measurement_complete.set()
 
-        # TODO: Measurement completes
-        # Unpack packet
-        # Find
+        elif(comm_id == CommandID.MEASURE_ENCODER_OFFSET):
+            self.measurement = FloatMeasurement.unpack(packet[2:])
+            self.encoder_offset_measurement_complete.set()
+
+
 
 

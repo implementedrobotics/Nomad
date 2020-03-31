@@ -12,3 +12,4 @@
 12. Send mutex
 14. Refactor Measurement Routines
 15. Save Flash from GUI
+16. Move voltage ADC timer reading to own timer

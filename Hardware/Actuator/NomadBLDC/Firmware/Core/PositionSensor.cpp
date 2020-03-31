@@ -110,7 +110,6 @@ void PositionSensorAS5x47::SetPolePairs(uint32_t pole_pairs)
     pole_pairs_ = pole_pairs;
 }
 
-
 void PositionSensorAS5x47::ZeroPosition()
 {
     num_rotations_ = 0;

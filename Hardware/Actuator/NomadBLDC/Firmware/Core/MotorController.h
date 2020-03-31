@@ -94,7 +94,8 @@ typedef enum
 {
     MEASURE_RESISTANCE_COMPLETE = 0,
     MEASURE_INDUCTANCE_COMPLETE = 1,
-    MEASURE_PHASE_ORDER_COMPLETE = 2
+    MEASURE_PHASE_ORDER_COMPLETE = 2,
+    MEASURE_ENCODER_OFFSET_COMPLETE = 3
 } command_feedback_t;
 
 typedef enum
@@ -104,12 +105,13 @@ typedef enum
     MEASURE_RESISTANCE_MODE = 2,
     MEASURE_INDUCTANCE_MODE = 3,
     MEASURE_PHASE_ORDER_MODE = 4,
-    CALIBRATION_MODE = 5,
-    FOC_CURRENT_MODE = 6,
-    FOC_VOLTAGE_MODE = 7,
-    FOC_TORQUE_MODE = 8,
-    FOC_SPEED_MODE = 9,
-    ENCODER_DEBUG = 10,
+    MEASURE_ENCODER_OFFSET_MODE = 5,
+    CALIBRATION_MODE = 6,
+    FOC_CURRENT_MODE = 7,
+    FOC_VOLTAGE_MODE = 8,
+    FOC_TORQUE_MODE = 9,
+    FOC_SPEED_MODE = 10,
+    ENCODER_DEBUG = 11,
 } control_mode_type_t;
 
 typedef enum
@@ -147,6 +149,8 @@ public:
         float K_d_min;           // Velocity Gain Minimum
         float K_d_max;           // Velocity Gain Maximum
         float torque_limit;      // Torque Limit
+        // TODO: PWM Freq.
+        // TODO: FOC Divider
     };
 
     struct State_t

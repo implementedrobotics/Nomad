@@ -73,7 +73,7 @@ class NomadBasicProgressDialog(QtWidgets.QDialog):
     
    # def CloseWindow(self):
 
-Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -105,6 +105,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.measurePhaseResistanceButton.clicked.connect(self.MeasureMotorResistance)
         self.measurePhaseInductanceButton.clicked.connect(self.MeasureMotorInductance)
         self.measurePhaseOrderButton.clicked.connect(self.MeasurePhaseOrder)
+        self.measureEncoderOffsetButton.clicked.connect(self.MeasureEncoderOffset)
+        self.zeroMechanicalOffsetButton.clicked.connect(self.ZeroMechanicalOffset)
+
         self.loadConfigButton.clicked.connect(self.LoadConfiguration)
         self.saveConfigButton.clicked.connect(self.SaveConfiguration)
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
@@ -215,6 +218,19 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         measure_progress.exec_()  
         self.updater.paused = False 
 
+    def MeasureEncoderOffset(self):
+        self.updater.paused = True
+        measurementTask = MeasurementUpdater(self.nomad_dev)
+        measurementTask.measure_fn = self.nomad_dev.measure_motor_encoder_offset
+        self.threadpool.start(measurementTask)
+        measure_progress = NomadBasicProgressDialog(self)
+        measure_progress.setWindowTitle("Encoder Offset Measurement")
+        measure_progress.progressText.setText("Measure Encoder Offset...")
+        measurementTask.signals.completed.connect(measure_progress.close)
+        measurementTask.signals.completed.connect(self.UpdateEncoderOffsetMeasurementValue)
+        measure_progress.exec_()  
+        self.updater.paused = False 
+
     def UpdateResistanceMeasurementValue(self, measurement):
         if(measurement is not None):
             self.phaseResistanceVal.setValue(measurement.measurement)
@@ -227,8 +243,17 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         if(measurement is not None):
             self.phaseOrderCombo.setCurrentIndex(measurement.measurement)
 
+    def UpdateEncoderOffsetMeasurementValue(self, measurement):
+        if(measurement is not None):
+            self.electricalOffsetVal.setValue(measurement.measurement)
+
+    def ZeroMechanicalOffset(self):
+        self.nomad_dev.zero_mechanical_offset()
+
     def LoadConfiguration(self):
         if(self.nomad_dev.load_configuration() is not None):
+            
+            # Motor
             self.polePairVal.setValue(self.nomad_dev.motor_config.num_pole_pairs)
             self.KvVal.setValue(self.nomad_dev.motor_config.K_v)
             self.gearRatioVal.setValue(self.nomad_dev.motor_config.gear_ratio)
@@ -237,6 +262,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance)
             self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d)
             self.phaseOrderCombo.setCurrentIndex(self.nomad_dev.motor_config.phase_order)
+
+            # Encoder
+            self.encoderCPRVal.setValue(self.nomad_dev.encoder_config.cpr)
+            self.electricalOffsetVal.setValue(self.nomad_dev.encoder_config.offset_elec)
+            self.mechanicalOffsetVal.setValue(self.nomad_dev.encoder_config.offset_mech)
 
     def SaveConfiguration(self):
         self.nomad_dev.save_configuration()

@@ -73,6 +73,25 @@ struct __attribute__((__packed__)) Device_stats_t
     float motor_temp;          // Motor Temp
 };
 
+struct __attribute__((__packed__)) Position_config_packet_t
+{
+    uint8_t comm_id;                          // Command ID
+    uint8_t packet_length;                    // Packet Length
+    //PositionSensorAS5x47::Config_t config;    // Position config
+    float offset_elec;
+    float offset_mech;
+    int32_t cpr;
+    
+};
+
+struct __attribute__((__packed__)) Controller_config_packet_t
+{
+    uint8_t comm_id;                     // Command ID
+    uint8_t packet_length;               // Packet Length
+    MotorController::Config_t config;    // Controller config
+};
+
+
 struct __attribute__((__packed__)) Motor_config_packet_t
 {
     uint8_t comm_id;           // Command ID
@@ -158,7 +177,18 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
             hdlc_out.SendPacket((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
-        
+    case command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE:
+        {
+            Measurement_info_t result;
+            result.comm_id = COMM_MEASURE_ENCODER_OFFSET;
+            result.packet_length = sizeof(Measurement_info_t) - PACKET_DATA_OFFSET; // First 2 bytes don't count for packet length[CommandID/PacketLength]
+            result.status = status;
+            result.measurement = measurement;
+            
+            // Send it
+            hdlc_out.SendPacket((uint8_t *)&result, sizeof(Measurement_info_t));
+            break;
+        }
         default:
             break;
     }
@@ -257,6 +287,10 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         bool status = measure_motor_phase_order();
         break;
     }
+    case COMM_MEASURE_ENCODER_OFFSET:
+    {
+        bool status = measure_encoder_offset();
+    }
 
     // Read Configs
     case COMM_READ_MOTOR_CONFIG:
@@ -268,6 +302,31 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
+        break;
+    }
+    case COMM_READ_CONTROLLER_CONFIG:
+    {
+        Controller_config_packet_t packet;
+        packet.comm_id = COMM_READ_CONTROLLER_CONFIG;
+        packet.packet_length = sizeof(MotorController::Config_t);
+        packet.config = motor_controller->config_;
+
+        Logger::Instance().Print("READ CONTROLLER\n");
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Controller_config_packet_t));
+        break;
+    }
+    case COMM_READ_POSITION_CONFIG:
+    {
+        Position_config_packet_t packet;
+        packet.comm_id = COMM_READ_POSITION_CONFIG;
+        packet.packet_length = 12;//sizeof(PositionSensorAS5x47::Config_t);
+        packet.offset_elec = motor->PositionSensor()->config_.offset_elec;
+        packet.offset_mech = motor->PositionSensor()->config_.offset_mech;
+        packet.cpr = motor->PositionSensor()->config_.cpr;
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Position_config_packet_t));
         break;
     }
     // Write Configs

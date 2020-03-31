@@ -223,6 +223,10 @@ bool measure_motor_phase_order()
     set_control_mode(MEASURE_PHASE_ORDER_MODE);
     return true;
 }
+bool measure_encoder_offset()
+{
+    set_control_mode(MEASURE_ENCODER_OFFSET_MODE);
+}
 bool save_configuration()
 {
     //printf("\r\nSaving Configuration...\r\n");
@@ -542,8 +546,8 @@ void MotorController::Init()
 
 bool MotorController::CheckErrors()
 {
-    //if (gate_driver_->CheckFaults())
-    //    return true;
+    if (gate_driver_->CheckFaults())
+        return true;
 
     return false;
 }
@@ -653,7 +657,22 @@ void MotorController::StartControlFSM()
                 LEDService::Instance().On();
                 gate_driver_->Enable();
                 EnablePWM(true);
-                motor->OrderPhases(motor_controller);
+                motor->OrderPhases(this);
+                // TODO: Check Errors
+                control_mode_ = IDLE_MODE;
+            }
+            osDelay(1);
+            break;
+        }
+        case (MEASURE_ENCODER_OFFSET_MODE):
+        {
+            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+            {
+                current_control_mode = control_mode_;
+                LEDService::Instance().On();
+                gate_driver_->Enable();
+                EnablePWM(true);
+                motor->CalibrateEncoderOffset(this);
                 // TODO: Check Errors
                 control_mode_ = IDLE_MODE;
             }
@@ -722,8 +741,6 @@ void MotorController::DoMotorControl()
     NVIC_DisableIRQ(USART2_IRQn);
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-        //float v_d = 0.0f;
-        //float v_q = 2.0f;
         SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
@@ -734,7 +751,7 @@ void MotorController::DoMotorControl()
     {
         TorqueControl();
     }
-    NVIC_EmableIRQ(USART2_IRQn);
+    NVIC_EnableIRQ(USART2_IRQn);
 }
 void MotorController::CurrentControl()
 {
@@ -769,7 +786,7 @@ void MotorController::CurrentControl()
     state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
 
     //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
-    limit_norm(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within curcle of radius v_bus
+    limit_norm(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
     float dtc_d = state_.V_d / state_.Voltage_bus;
     float dtc_q = state_.V_q / state_.Voltage_bus;

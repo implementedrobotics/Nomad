@@ -318,9 +318,11 @@ bool Motor::OrderPhases(MotorController *controller)
 
 bool Motor::CalibrateEncoderOffset(MotorController *controller)
 {
-    //printf("\n\rRunning Encoder Offset/Eccentricity Calibration...\n\r");
-
     Logger::Instance().Print("[MOTOR] Running Encoder Offset/Eccentricity Calibration......\n");
+
+
+    measurement_t elec_offset;
+    elec_offset.f32 = 0.0f;
 
     float rotor_lock_duration = 2.0f; // Rotor Lock Settling Time
     float *error_forward;  // Error Vector Forward Rotation
@@ -390,7 +392,9 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         for (int32_t j = 0; j < sub_samples; j++)
         {
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-                 return false;
+                // Send Complete Feedback
+                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
+                return false;
             }
             theta_ref += delta;
             controller->SetModulationOutput(theta_ref, test_voltage, 0.0f);
@@ -424,6 +428,8 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         for (int32_t j = 0; j < sub_samples; j++)
         {
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+                // Send Complete Feedback
+                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
                  return false;
             }
             theta_ref -= delta;
@@ -455,6 +461,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         offset += 2 * PI;
 
     rotor_sensor_->SetElectricalOffset(offset); // Set Offset
+    elec_offset.f32 = offset;
 
     // Clear output
     controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
@@ -499,25 +506,26 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     int32_t raw_offset = (raw_forward[0] + raw_backward[num_samples - 1]) / 2; //Insensitive to errors in this direction, so 2 points is plenty
 
     
-    // printf("\n\r Encoder non-linearity compensation table\n\r");
-    // printf(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
-    // for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
-    // {
-    //     int32_t index = (raw_offset >> 7) + i;
-    //     if (index > (num_lookups - 1))
-    //     {
-    //         index -= num_lookups;
-    //     }
-    //     lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
-    //     printf("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
-    //     //printf("%ld, %ld \n\r", i, lookup_table[index]);
-    //     wait(.001);
-    // }
+    Logger::Instance().Print("\n\r Encoder non-linearity compensation table\n\r");
+    Logger::Instance().Print(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
+    for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
+    {
+        int32_t index = (raw_offset >> 7) + i;
+        if (index > (num_lookups - 1))
+        {
+            index -= num_lookups;
+        }
+        lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
+        Logger::Instance().Print("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
+        //printf("%ld, %ld \n\r", i, lookup_table[index]);
+        wait(.1);
+    }
+
     // TODO: Not quite working. Need to fix.  For now don't compensate eccentricity
     rotor_sensor_->SetOffsetLUT(lookup_table); // Write Compensated Lookup Table
 
     //memcpy(controller->cogging, cogging_current, sizeof(controller->cogging));  //compensation doesn't actually work yet....
-    printf("\n\rEncoder Electrical Offset (rad) %f\n\r", offset);
+    //printf("\n\rEncoder Electrical Offset (rad) %f\n\r", offset);
     Logger::Instance().Print("[MOTOR] Encoder Electrical Offset (rad) %f\n\r", offset);
     // Clear Memory
     delete[] error_forward; 
@@ -528,6 +536,11 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     delete[] error;
     delete[] error_filtered;
 
+    // Shutdown the phases
+    controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Send Complete Feedback
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
     return true;
 }
 
