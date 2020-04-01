@@ -512,8 +512,8 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     int32_t raw_offset = (raw_forward[0] + raw_backward[num_samples - 1]) / 2; //Insensitive to errors in this direction, so 2 points is plenty
 
     
-    Logger::Instance().Print("\n\r Encoder non-linearity compensation table\n\r");
-    Logger::Instance().Print(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
+    //Logger::Instance().Print("\n\r Encoder non-linearity compensation table\n\r");
+    //Logger::Instance().Print(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
     for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
     {
         int32_t index = (raw_offset >> 7) + i;
@@ -522,7 +522,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
             index -= num_lookups;
         }
         lookup_table[index] = (int8_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
-        Logger::Instance().Print("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
+        //Logger::Instance().Print("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
         //printf("%ld, %ld \n\r", i, lookup_table[index]);
         wait(.02);
     }
