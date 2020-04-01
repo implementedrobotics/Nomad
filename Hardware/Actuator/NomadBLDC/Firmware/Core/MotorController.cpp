@@ -559,8 +559,8 @@ void MotorController::Init()
 
 bool MotorController::CheckErrors()
 {
-    if (gate_driver_->CheckFaults())
-        return true;
+   // if (gate_driver_->CheckFaults())
+     //   return true;
 
     return false;
 }
@@ -574,6 +574,7 @@ void MotorController::StartControlFSM()
     {
         if (control_mode_ != IDLE_MODE && CheckErrors())
         {
+            Logger::Instance().Print("Bailing Here CHECK ERROR\n");
             control_mode_ = ERROR_MODE;
         }
 
@@ -704,6 +705,7 @@ void MotorController::StartControlFSM()
                 if (!motor_->config_.calibrated)
                 {
                     //printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
+                    Logger::Instance().Print("NOt Calibrated ERROR\n");
                     control_mode_ = ERROR_MODE;
                     continue;
                 }

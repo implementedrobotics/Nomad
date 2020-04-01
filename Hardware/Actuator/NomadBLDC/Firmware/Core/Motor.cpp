@@ -50,7 +50,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.calib_current = 15.0f;
     config_.calib_voltage = 3.0f;
     config_.gear_ratio = 1.0f; // No Gearbox by default
-    config_.calibrated = false;
+    config_.calibrated = 0;
 
     // Update KV Calulations
     SetKV(K_v);
@@ -120,7 +120,7 @@ bool Motor::Calibrate(MotorController *controller)
     // Offset Calibration
     CalibrateEncoderOffset(controller);
 
-    config_.calibrated = true; // Update Flag
+    config_.calibrated = 1; // Update Flag
     dirty_ = true;
 
     return true;

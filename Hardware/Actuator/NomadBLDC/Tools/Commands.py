@@ -308,6 +308,7 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_MOTOR_CONFIG):
             self.motor_config = MotorConfig.unpack(packet[2:])
             self.motor_config_received.set()
+            print(self.motor_config)
         
         elif(comm_id == CommandID.READ_ENCODER_CONFIG):
             self.encoder_config = EncoderConfig.unpack(packet[2:])
@@ -316,7 +317,7 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_CONTROLLER_CONFIG):
             self.controller_config = ControllerConfig.unpack(packet[2:])
             self.controller_config_received.set()
-            #print(self.controller_config)
+            
 
         elif(comm_id == CommandID.MEASURE_RESISTANCE):
             self.measurement = FloatMeasurement.unpack(packet[2:])

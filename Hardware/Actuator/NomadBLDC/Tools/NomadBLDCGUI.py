@@ -104,6 +104,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.vel_spin.valueChanged.connect(self.SetTorqueSetPoint)
         self.torqueFF_spin.valueChanged.connect(self.SetTorqueSetPoint)
 
+        self.gearRatioVal.valueChanged.connect(self.UpdateTorqueOutput)
+
         # Measurements
         self.measurePhaseResistanceButton.clicked.connect(self.MeasureMotorResistance)
         self.measurePhaseInductanceButton.clicked.connect(self.MeasureMotorInductance)
@@ -283,6 +285,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Will do for now
         self.LoadConfiguration()
 
+    def UpdateTorqueOutput(self):
+        self.KtOutputVal.setValue(self.KtMotorVal.value() * self.gearRatioVal.value())
 
     def LoadConfiguration(self):
         if(self.nomad_dev.load_configuration() is not None):
@@ -297,6 +301,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d)
             self.phaseOrderCombo.setCurrentIndex(self.nomad_dev.motor_config.phase_order)
 
+            print(self.nomad_dev.motor_config.calibrated)
             # Encoder
             self.encoderCPRVal.setValue(self.nomad_dev.encoder_config.cpr)
             self.electricalOffsetVal.setValue(self.nomad_dev.encoder_config.offset_elec)
@@ -335,6 +340,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.motor_config.phase_resistance = self.phaseResistanceVal.value()
         self.nomad_dev.motor_config.phase_inductance_d = self.phaseInductanceVal.value()
         self.nomad_dev.motor_config.phase_order = self.phaseOrderCombo.currentIndex()
+
+        #TODO: This should be based on the success of the calibration procedure.  
+        self.nomad_dev.motor_config.calibrated = 1 # Calibrated
 
         # Update Controller Parameters
         self.nomad_dev.controller_config.k_d = self.loopGainDAxisVal.value()

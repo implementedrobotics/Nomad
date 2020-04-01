@@ -70,7 +70,7 @@ public:
         int32_t phase_order;      // Winding Phase Order
         float calib_current;      // Calibration Current
         float calib_voltage;      // Calibration Voltage
-        bool calibrated;          // Calibrated
+        int32_t calibrated;          // Calibrated
     };
 
     Motor(float sample_time=0.000025f, float K_v = 100, uint32_t pole_pairs = 21);
