@@ -475,7 +475,7 @@ color:white</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_7">
              <item row="7" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_6">
+              <widget class="QDoubleSpinBox" name="refFilterCoefficientVal">
                <property name="toolTip">
                 <string>Alpha current reference filter cooeficient</string>
                </property>
@@ -491,7 +491,7 @@ color:white</string>
               </widget>
              </item>
              <item row="4" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_3">
+              <widget class="QDoubleSpinBox" name="loopGainQAxisVal">
                <property name="prefix">
                 <string>Loop Gain (Q Axis): </string>
                </property>
@@ -504,7 +504,7 @@ color:white</string>
               </widget>
              </item>
              <item row="6" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_5">
+              <widget class="QDoubleSpinBox" name="integratorGainQAxisVal">
                <property name="prefix">
                 <string>Integrator Gain (Q Axis): </string>
                </property>
@@ -517,14 +517,14 @@ color:white</string>
               </widget>
              </item>
              <item row="8" column="0">
-              <widget class="QPushButton" name="pushButton_3">
+              <widget class="QPushButton" name="autoComputeGainsButton">
                <property name="text">
                 <string>Auto Compute Controller Gains</string>
                </property>
               </widget>
              </item>
              <item row="2" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_12">
+              <widget class="QDoubleSpinBox" name="loopBandwidthVal">
                <property name="prefix">
                 <string>Loop Bandwidth: </string>
                </property>
@@ -546,7 +546,7 @@ color:white</string>
               </widget>
              </item>
              <item row="5" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_4">
+              <widget class="QDoubleSpinBox" name="integratorGainDAxisVal">
                <property name="prefix">
                 <string>Integrator Gain (D Axis): </string>
                </property>
@@ -561,7 +561,7 @@ color:white</string>
              <item row="0" column="0">
               <layout class="QHBoxLayout" name="horizontalLayout_10">
                <item>
-                <widget class="QDoubleSpinBox" name="phaseResistanceVal_17">
+                <widget class="QDoubleSpinBox" name="pwmFreqVal">
                  <property name="maximumSize">
                   <size>
                    <width>200</width>
@@ -589,7 +589,7 @@ color:white</string>
                 </widget>
                </item>
                <item>
-                <widget class="QSpinBox" name="polePairVal_2">
+                <widget class="QSpinBox" name="loopFreqDividerVal">
                  <property name="toolTip">
                   <string>Control Loop Frequency Divider</string>
                  </property>
@@ -610,7 +610,7 @@ color:white</string>
               </layout>
              </item>
              <item row="3" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_2">
+              <widget class="QDoubleSpinBox" name="loopGainDAxisVal">
                <property name="prefix">
                 <string>Loop Gain (D Axis): </string>
                </property>
@@ -623,7 +623,7 @@ color:white</string>
               </widget>
              </item>
              <item row="1" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_7">
+              <widget class="QDoubleSpinBox" name="overmodulationPercentageVal">
                <property name="prefix">
                 <string>Overmodulation Percentage: </string>
                </property>
@@ -653,7 +653,7 @@ color:white</string>
              <item row="1" column="0">
               <layout class="QHBoxLayout" name="horizontalLayout_7">
                <item>
-                <widget class="QDoubleSpinBox" name="phaseResistanceVal_14">
+                <widget class="QDoubleSpinBox" name="posGainMinVal">
                  <property name="prefix">
                   <string>Pos. Gain [Min]: </string>
                  </property>
@@ -666,7 +666,7 @@ color:white</string>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="phaseResistanceVal_13">
+                <widget class="QDoubleSpinBox" name="posGainMaxVal">
                  <property name="prefix">
                   <string>Pos. Gain [Max]: </string>
                  </property>
@@ -689,7 +689,7 @@ color:white</string>
              <item row="2" column="0">
               <layout class="QHBoxLayout" name="horizontalLayout_9">
                <item>
-                <widget class="QDoubleSpinBox" name="phaseResistanceVal_16">
+                <widget class="QDoubleSpinBox" name="velGainMinVal">
                  <property name="prefix">
                   <string>Vel. Gain [Min]: </string>
                  </property>
@@ -702,7 +702,7 @@ color:white</string>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="phaseResistanceVal_15">
+                <widget class="QDoubleSpinBox" name="velGainMaxVal">
                  <property name="prefix">
                   <string>Vel. Gain [Max]: </string>
                  </property>
@@ -732,7 +732,7 @@ color:white</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_8">
              <item row="2" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_11">
+              <widget class="QDoubleSpinBox" name="currentLimitVal">
                <property name="prefix">
                 <string>Current Limit: </string>
                </property>
@@ -754,7 +754,7 @@ color:white</string>
               </widget>
              </item>
              <item row="1" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_9">
+              <widget class="QDoubleSpinBox" name="posLimitVal">
                <property name="prefix">
                 <string>Position Limit: </string>
                </property>
@@ -770,7 +770,7 @@ color:white</string>
               </widget>
              </item>
              <item row="0" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_8">
+              <widget class="QDoubleSpinBox" name="velLimitVal">
                <property name="prefix">
                 <string>Velocity Limit: </string>
                </property>
@@ -786,7 +786,7 @@ color:white</string>
               </widget>
              </item>
              <item row="3" column="0">
-              <widget class="QDoubleSpinBox" name="phaseResistanceVal_10">
+              <widget class="QDoubleSpinBox" name="torqueLimitVal">
                <property name="prefix">
                 <string>Torque Limit: </string>
                </property>
