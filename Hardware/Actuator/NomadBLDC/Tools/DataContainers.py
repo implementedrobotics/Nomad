@@ -24,7 +24,8 @@
 
 import struct
 from dataclasses import dataclass
-from typing import List
+from typing import List, ClassVar
+
 
 @dataclass
 class LogPacket:
@@ -59,7 +60,8 @@ class DeviceInfo:
 
 @dataclass
 class MotorConfig:
-    __fmt = "<I8fiffi"
+    #__fmt = "<I8fiffi"
+    __packet : ClassVar[struct.Struct] = struct.Struct('<I8fiffi')
     num_pole_pairs: int = None
     phase_resistance: float = None
     phase_inductance_d: float = None
@@ -74,15 +76,31 @@ class MotorConfig:
     calib_voltage: float = None
     calibrated: int = None
 
+    def pack(self):
+        return self.__packet.pack(self.num_pole_pairs,
+        self.phase_resistance,
+        self.phase_inductance_d,
+        self.phase_inductance_q,
+        self.K_v,
+        self.flux_linkage,
+        self.K_t,
+        self.K_t_out,
+        self.gear_ratio,
+        self.phase_order,
+        self.calib_current,
+        self.calib_voltage,
+        self.calibrated)
+
     @classmethod
     def unpack(cls, data):
-        unpacked = struct.unpack(cls.__fmt, data)
+        unpacked = cls.__packet.unpack(data)
         return MotorConfig(*unpacked)
 
 
 @dataclass
 class ControllerConfig:
-    __fmt = "<16fI"
+    #__fmt = "<16fI"
+    __packet : ClassVar[struct.Struct] = struct.Struct('<16fI')
     k_d: float = None
     k_q: float = None
     k_i_d: float = None
@@ -101,28 +119,49 @@ class ControllerConfig:
     pwm_freq: float = None
     foc_ccl_divider: int = None
 
+    def pack(self):
+        return self.__packet.pack(self.k_d,
+        self.k_q,
+        self.k_i_d,
+        self.k_i_q,
+        self.alpha,
+        self.overmodulation,
+        self.velocity_limit,
+        self.position_limit,
+        self.torque_limit,
+        self.current_limit,
+        self.current_bandwidth,
+        self.K_p_min,
+        self.K_p_max,
+        self.K_d_min,
+        self.K_d_max,
+        self.pwm_freq,
+        self.foc_ccl_divider)
+
     @classmethod
     def unpack(cls, data):
-        unpacked = struct.unpack(cls.__fmt, data)
+        unpacked = cls.__packet.unpack(data)
         return ControllerConfig(*unpacked)
 
 @dataclass
 class EncoderConfig:
-    __fmt = "<ffi128b"
+    #__fmt = "<ffi128b"
+    __packet : ClassVar[struct.Struct] = struct.Struct('<ffi128b')
     offset_elec: float = None
     offset_mech: float = None
     cpr: int = None
     #direction: int = None
     offset_lut: List[int] = None
 
+    def pack(self):
+        return self.__packet.pack(self.offset_elec,
+        self.offset_mech,
+        self.cpr,
+        *self.offset_lut)
+
     @classmethod
     def unpack(cls, data):
-        unpacked = struct.unpack(cls.__fmt, data)
-        #print("ENCODER")
-        #print(unpacked[0])
-        #print(unpacked[1])
-        #print(unpacked[2])
-        #print([*unpacked[3:]])
+        unpacked = cls.__packet.unpack(data)
         return EncoderConfig(unpacked[0], unpacked[1], unpacked[2], [*unpacked[3:]])
 
 @dataclass

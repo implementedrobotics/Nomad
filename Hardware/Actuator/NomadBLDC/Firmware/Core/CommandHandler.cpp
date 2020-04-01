@@ -246,7 +246,6 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     }
     case COMM_ENABLE_TORQUE_CONTROL:
     {
-        zero_encoder_offset(); // TODO: Remove this
         start_torque_control();
         break;
     }
@@ -257,10 +256,10 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     }
     case COMM_DEVICE_RESTART:
     {
-        Logger::Instance().Print("Controller Ticks: %d\n", motor_controller->pwm_counter_period_ticks_);
-        Logger::Instance().Print("Controller Freq: %f\n", motor_controller->controller_loop_freq_);
-        Logger::Instance().Print("Controller Period: %f\n", motor_controller->controller_update_period_);
-        Logger::Instance().Print("Let's GO Period:\n");
+        //Logger::Instance().Print("Controller Ticks: %d\n", motor_controller->pwm_counter_period_ticks_);
+        //Logger::Instance().Print("Controller Freq: %f\n", motor_controller->controller_loop_freq_);
+        //Logger::Instance().Print("Controller Period: %f\n", motor_controller->controller_update_period_);
+        //Logger::Instance().Print("Let's GO Period:\n");
         reboot_system();
         break;
     }
@@ -294,6 +293,52 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_MEASURE_ENCODER_OFFSET:
     {
         bool status = measure_encoder_offset();
+        break;
+    }
+    case COMM_ZERO_ENCODER_POSITION:
+    {
+        zero_encoder_offset();
+        
+        //Logger::Instance().Print("Zero Encoder: %f\n", motor->PositionSensor()->config_.offset_mech);
+        break;
+    }
+    // Write Configs
+    case COMM_WRITE_MOTOR_CONFIG:
+    {
+        Motor::Config_t *config = (Motor::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        memcpy(&motor->config_, config, sizeof(Motor::Config_t));
+
+
+        //Logger::Instance().Print("Motor Config Write Test: %d\n", motor->config_.num_pole_pairs);
+       // Logger::Instance().Print("Motor Config Write Test: %f\n", motor->config_.phase_resistance);
+        break;
+        // TODO: Return status
+
+    }
+
+    case COMM_WRITE_CONTROLLER_CONFIG:
+    {
+        MotorController::Config_t *config = (MotorController::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        memcpy(&motor_controller->config_, config, sizeof(MotorController::Config_t));
+
+
+       // Logger::Instance().Print("Controller Config Write Test: %f\n", motor_controller->config_.pwm_freq);
+       // Logger::Instance().Print("Controller Config Write Test: %f\n", motor_controller->config_.alpha);
+        break;
+        // TODO: Return status
+
+    }
+
+    case COMM_WRITE_POSITION_CONFIG:
+    {
+        PositionSensorAS5x47::Config_t *config = (PositionSensorAS5x47::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        //memcpy(&motor->PositionSensor()->config_, config, 12); // Only copy first 12 bytes, do not want to pass encoder offset back and forth right now
+
+        motor->PositionSensor()->config_.cpr = config->cpr;
+        //Logger::Instance().Print("Encoder Config Write Test: %d\n", motor->PositionSensor()->config_.cpr);
+        break;
+        // TODO: Return status
+
     }
 
     // Read Configs
@@ -343,7 +388,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
         // // Send it
         // hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
-        // break;
+        break;
     }
 
     default:

@@ -8,9 +8,7 @@
 8.  Speed Controller
 9.  Position limits on output?
 10. Clean up class access public/privates
-11. Add command for zero encoder and remove hardcoded from begin torque control commands in CommandHandler...
 12. Send mutex
 14. Refactor Measurement Routines
-15. Save Flash from GUI
 16. Move voltage ADC timer reading to own timer
-17. Update Controller Gains from UI
+18. Should make sure controller is in "IDLE" state before resaving configs.  Also should restart to be sure on save

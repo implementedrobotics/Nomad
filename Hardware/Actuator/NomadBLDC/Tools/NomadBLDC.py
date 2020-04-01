@@ -77,7 +77,8 @@ class NomadBLDC:
         if(not self.connected):
             return False
 
-        self.commands.save_configuration(self.transport)
+        return self.commands.save_configuration(self.transport, self.motor_config, self.controller_config, self.encoder_config)
+        # TODO: Error check here?
 
     def load_configuration(self):
         if(not self.connected):
@@ -90,7 +91,6 @@ class NomadBLDC:
 
         if(self.motor_config is None or self.encoder_config is None or self.controller_config is None):
             return False
-            
         return True
 
     def calibrate_motor(self):

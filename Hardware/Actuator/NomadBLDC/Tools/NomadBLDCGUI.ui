@@ -476,8 +476,17 @@ color:white</string>
             <layout class="QGridLayout" name="gridLayout_7">
              <item row="7" column="0">
               <widget class="QDoubleSpinBox" name="refFilterCoefficientVal">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="toolTip">
                 <string>Alpha current reference filter cooeficient</string>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
                </property>
                <property name="prefix">
                 <string>Reference Filter Coefficient: </string>
@@ -486,7 +495,16 @@ color:white</string>
                 <string/>
                </property>
                <property name="decimals">
-                <number>3</number>
+                <number>5</number>
+               </property>
+               <property name="minimum">
+                <double>-100.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.005000000000000</double>
                </property>
               </widget>
              </item>
@@ -501,6 +519,9 @@ color:white</string>
                <property name="decimals">
                 <number>4</number>
                </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
+               </property>
               </widget>
              </item>
              <item row="6" column="0">
@@ -513,6 +534,9 @@ color:white</string>
                </property>
                <property name="decimals">
                 <number>4</number>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
                </property>
               </widget>
              </item>
@@ -555,6 +579,9 @@ color:white</string>
                </property>
                <property name="decimals">
                 <number>4</number>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
                </property>
               </widget>
              </item>
@@ -619,6 +646,9 @@ color:white</string>
                </property>
                <property name="decimals">
                 <number>4</number>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
                </property>
               </widget>
              </item>
@@ -946,7 +976,7 @@ color:white</string>
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QPushButton" name="pushButton_5">
+           <widget class="QPushButton" name="resetConfigButton">
             <property name="text">
              <string>Reset Configuration</string>
             </property>
@@ -1058,7 +1088,10 @@ color:white</string>
                        <string> ohms</string>
                       </property>
                       <property name="decimals">
-                       <number>5</number>
+                       <number>7</number>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.005000000000000</double>
                       </property>
                      </widget>
                     </item>
@@ -1100,7 +1133,10 @@ color:white</string>
                        <string> H</string>
                       </property>
                       <property name="decimals">
-                       <number>6</number>
+                       <number>7</number>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.000500000000000</double>
                       </property>
                      </widget>
                     </item>
@@ -1533,7 +1569,11 @@ color:white</string>
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="GraphicsLayoutWidget" name="graphicsView"/>
+          <widget class="GraphicsLayoutWidget" name="graphicsView">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

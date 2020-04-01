@@ -5,6 +5,9 @@ import pyqtgraph as pg
 import sys
 import time
 import threading
+import math
+
+import numpy as np
 
 from NomadBLDC import NomadBLDC
 
@@ -109,6 +112,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.zeroMechanicalOffsetButton.clicked.connect(self.ZeroMechanicalOffset)
         self.encoderEccentricityMapButton.clicked.connect(self.ShowEncoderEccentricity)
         
+        # Controller Settings
+        self.autoComputeGainsButton.clicked.connect(self.AutoComputeControllerGains)
+
+        #self.resetConfigButton.clicked.connect(self.ResetConfiguration)
         self.loadConfigButton.clicked.connect(self.LoadConfiguration)
         self.saveConfigButton.clicked.connect(self.SaveConfiguration)
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
@@ -137,6 +144,25 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Default Splitter
         self.mainSplitter.moveSplitter(700, 1)
+
+        # Graphics View Test
+
+        layout = pg.GraphicsLayout(border=(100,100,100))
+        self.graphicsView.setCentralItem(layout)
+        self.graphicsView.show()
+        self.graphicsView.setWindowTitle('pyqtgraph example: GraphicsLayout')
+        self.graphicsView.setAntialiasing(True)
+        self.graphicsView.setBackground('w')
+        self.graphicsView.enableMouse(False)
+
+        pg.setConfigOption('foreground', 'k')
+        test = layout.addPlot(title="Real Time Data Map")
+        test.showGrid(x=True, y=True)
+        test.setMouseEnabled(False)
+        test.setMenuEnabled(False)
+        #test.getAxis('left').setPen('b')
+        #test.getAxis('bottom').setPen('b')
+        #self.graphicsView.resize(800,600)
 
     def InitWindow(self):
         self.statusBar().showMessage('Not Connected')
@@ -249,7 +275,14 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.electricalOffsetVal.setValue(measurement.measurement)
 
     def ZeroMechanicalOffset(self):
+        #button = self.sender()
+        #print(button.objectName())
         self.nomad_dev.zero_mechanical_offset()
+
+        # Reload config to display it.  This is kind of crap.  Should get a return from zero_mech fucntion.
+        # Will do for now
+        self.LoadConfiguration()
+
 
     def LoadConfiguration(self):
         if(self.nomad_dev.load_configuration() is not None):
@@ -269,7 +302,65 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.electricalOffsetVal.setValue(self.nomad_dev.encoder_config.offset_elec)
             self.mechanicalOffsetVal.setValue(self.nomad_dev.encoder_config.offset_mech)
 
+            # Controller
+            self.pwmFreqVal.setValue(self.nomad_dev.controller_config.pwm_freq)
+            self.loopFreqDividerVal.setValue(self.nomad_dev.controller_config.foc_ccl_divider)
+            self.overmodulationPercentageVal.setValue(self.nomad_dev.controller_config.overmodulation*100.0)
+            self.loopBandwidthVal.setValue(self.nomad_dev.controller_config.current_bandwidth)
+            self.loopGainDAxisVal.setValue(self.nomad_dev.controller_config.k_d)
+            self.loopGainQAxisVal.setValue(self.nomad_dev.controller_config.k_q)
+            self.integratorGainDAxisVal.setValue(self.nomad_dev.controller_config.k_i_d)
+            self.integratorGainQAxisVal.setValue(self.nomad_dev.controller_config.k_i_q)
+            self.refFilterCoefficientVal.setValue(self.nomad_dev.controller_config.alpha)
+            
+            self.posGainMinVal.setValue(self.nomad_dev.controller_config.K_p_min)
+            self.posGainMaxVal.setValue(self.nomad_dev.controller_config.K_p_max)
+            self.velGainMinVal.setValue(self.nomad_dev.controller_config.K_d_min)
+            self.velGainMaxVal.setValue(self.nomad_dev.controller_config.K_d_max)
+
+            self.velLimitVal.setValue(self.nomad_dev.controller_config.velocity_limit)
+            self.posLimitVal.setValue(self.nomad_dev.controller_config.position_limit)
+            self.currentLimitVal.setValue(self.nomad_dev.controller_config.current_limit)
+            self.torqueLimitVal.setValue(self.nomad_dev.controller_config.torque_limit)
+
+
     def SaveConfiguration(self):
+
+        # Update Motor Parameters
+        self.nomad_dev.motor_config.num_pole_pairs = self.polePairVal.value()
+        self.nomad_dev.motor_config.K_v = self.KvVal.value()
+        self.nomad_dev.motor_config.gear_ratio = self.gearRatioVal.value()
+        self.nomad_dev.motor_config.K_t = self.KtMotorVal.value()
+        self.nomad_dev.motor_config.K_t_out = self.KtOutputVal.value()
+        self.nomad_dev.motor_config.phase_resistance = self.phaseResistanceVal.value()
+        self.nomad_dev.motor_config.phase_inductance_d = self.phaseInductanceVal.value()
+        self.nomad_dev.motor_config.phase_order = self.phaseOrderCombo.currentIndex()
+
+        # Update Controller Parameters
+        self.nomad_dev.controller_config.k_d = self.loopGainDAxisVal.value()
+        self.nomad_dev.controller_config.k_q = self.loopGainQAxisVal.value()
+        self.nomad_dev.controller_config.k_i_d = self.integratorGainDAxisVal.value()
+        self.nomad_dev.controller_config.k_i_q = self.integratorGainQAxisVal.value()
+        self.nomad_dev.controller_config.alpha = self.refFilterCoefficientVal.value()
+        self.nomad_dev.controller_config.overmodulation = self.overmodulationPercentageVal.value() / 100.0
+
+        self.nomad_dev.controller_config.velocity_limit = self.velLimitVal.value()
+        self.nomad_dev.controller_config.position_limit = self.posLimitVal.value()
+        self.nomad_dev.controller_config.torque_limit = self.torqueLimitVal.value()
+        self.nomad_dev.controller_config.current_limit = self.currentLimitVal.value()
+        self.nomad_dev.controller_config.current_bandwidth = self.loopBandwidthVal.value()
+        self.nomad_dev.controller_config.K_p_min = self.posGainMinVal.value()
+        self.nomad_dev.controller_config.K_p_max = self.posGainMaxVal.value()
+        self.nomad_dev.controller_config.K_d_min = self.velGainMinVal.value()
+        self.nomad_dev.controller_config.K_d_max = self.velGainMaxVal.value()
+        self.nomad_dev.controller_config.pwm_freq = self.pwmFreqVal.value()
+        self.nomad_dev.controller_config.foc_ccl_divider = self.loopFreqDividerVal.value()
+
+        # Update Encoder Parameters
+        self.nomad_dev.encoder_config.cpr = self.encoderCPRVal.value()
+        self.nomad_dev.encoder_config.offset_elec = self.electricalOffsetVal.value()
+        self.nomad_dev.encoder_config.offset_mech = self.mechanicalOffsetVal.value()
+
         self.nomad_dev.save_configuration()
 
     def CalibrateDevice(self):
@@ -300,9 +391,48 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         force = (self.torqueFF_spin.value() * 6) / arm
         self.scaleValue.setText(f"{1000*(force/9.81)}")
 
+    def AutoComputeControllerGains(self):
+
+        pwm_freq = self.pwmFreqVal.value()
+        control_loop_freq = pwm_freq / self.loopFreqDividerVal.value()
+        control_loop_period = 1.0 / control_loop_freq
+        current_bandwidth = self.loopBandwidthVal.value()
+        R_phase = self.phaseResistanceVal.value()
+        L_phase = self.phaseInductanceVal.value()
+
+        crossover_freq = current_bandwidth * control_loop_period * 2 * math.pi
+        k_i = 1 - math.exp(-R_phase * control_loop_period / L_phase)
+        k = R_phase * ((crossover_freq) / k_i)
+
+        k_d = k_q = k
+        k_i_d = k_i_q = k_i
+        alpha = 1.0 - 1.0 / (1.0 - control_loop_period * current_bandwidth * 2.0 * math.pi)
+
+        # Update UI
+        self.loopGainDAxisVal.setValue(k_d)
+        self.loopGainQAxisVal.setValue(k_q)
+        self.integratorGainDAxisVal.setValue(k_i_d)
+        self.integratorGainQAxisVal.setValue(k_i_q)
+        self.refFilterCoefficientVal.setValue(alpha)
+
+
     def ShowEncoderEccentricity(self):
-        print(f"Config: {self.nomad_dev.encoder_config.offset_lut}"
-        )
+      #  print(f"Config: {self.nomad_dev.encoder_config.offset_lut}"
+
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')
+        pg.setConfigOption('antialias', True)
+        
+        x = np.linspace(0, 360, 128)
+
+        pw = pg.plot(x=x, y=self.nomad_dev.encoder_config.offset_lut, pen='k', symbolBrush=(255,0,0), symbolPen='k')#, symbol='o')  # plot x vs y in red
+        pw.showGrid(x=True, y=True)
+        #pw.setMouseEnabled(False)
+        pw.setMenuEnabled(False)
+
+        pw.setLabel('left', 'Offset', 'Encoder Counts')
+        pw.setLabel('bottom', 'Rotor Angle', 'deg')
+
     def closeEvent(self, event):
         self.nomad_dev.disconnect()
         close_event.set()

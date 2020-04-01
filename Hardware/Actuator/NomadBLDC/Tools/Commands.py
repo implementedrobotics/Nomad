@@ -24,6 +24,7 @@
 
 from enum import IntEnum
 import struct
+import time
 import threading
 from DataContainers import *
 
@@ -52,13 +53,13 @@ class CommandID(IntEnum):
 
     READ_MOTOR_STATE = 14
     READ_CONTROLLER_STATE = 15
-    READ_POSITION_STATE = 16
+    READ_ENCODER_STATE = 16
     READ_MOTOR_CONFIG = 17
     READ_CONTROLLER_CONFIG = 18
     READ_ENCODER_CONFIG = 19
     WRITE_MOTOR_CONFIG = 20
     WRITE_CONTROLLER_CONFIG = 21
-    WRITE_POSITION_CONFIG = 22
+    WRITE_ENCODER_CONFIG = 22
     WRITE_FLASH = 23
 
     # Device Control Commands
@@ -153,9 +154,29 @@ class CommandHandler:
 
         return None
 
-
     # Save Configuration
-    def save_configuration(self, transport):
+    def save_configuration(self, transport, motor_config, controller_config, encoder_config):
+
+        # Send Motor Config
+        send_data = motor_config.pack()
+        command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_MOTOR_CONFIG, len(send_data)) + send_data)
+        transport.send_packet(command_packet)
+        
+        time.sleep(0.25) # Delay a bit
+
+        # Send Controller Config
+        send_data = controller_config.pack()
+        command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_CONTROLLER_CONFIG, len(send_data)) + send_data)
+        transport.send_packet(command_packet)
+
+        time.sleep(0.25) # Delay a bit
+
+        # Send Encoder Config
+        send_data = encoder_config.pack()
+        command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_ENCODER_CONFIG, len(send_data)) + send_data)
+        transport.send_packet(command_packet)
+
+        # Tell controller to save the values to flash
         command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_FLASH, 0))
         transport.send_packet(command_packet)
 
