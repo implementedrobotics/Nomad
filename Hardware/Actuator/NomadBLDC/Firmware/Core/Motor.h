@@ -65,21 +65,21 @@ public:
         float flux_linkage;       // Rotor Flux Linkage (Webers)
         float K_t;                // Torque Constant (N*m/A)
         float K_t_out;            // Torque Constant @ Output (N*m/A)
-        float gear_ratio;         // Gear Box Ratio
         // TODO: Custom override for torques if measured experimentally?
+        float gear_ratio;         // Gear Box Ratio
         int32_t phase_order;      // Winding Phase Order
         float calib_current;      // Calibration Current
         float calib_voltage;      // Calibration Voltage
         bool calibrated;          // Calibrated
     };
 
-    Motor(float sample_time, float K_v = 100, uint32_t pole_pairs = 21);
+    Motor(float sample_time=0.000025f, float K_v = 100, uint32_t pole_pairs = 21);
 
     void SetPolePairs(uint32_t pole_pairs);            // Set Motor Pole Count
     void SetKV(float K_v);                             // Set Motor KV Rating
     void ZeroOutputPosition();                         // Zero Mechanical Position Offset
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
-
+    void SetSampleTime(float sample_time);             // Update controller sample rate
     void Update();                                     // Update Motor State
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }

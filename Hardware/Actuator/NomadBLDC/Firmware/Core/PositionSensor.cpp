@@ -50,7 +50,7 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
     config_.offset_elec = 0;
     config_.offset_mech = 0;
     config_.cpr = cpr;
-    config_.direction = 1;
+   // config_.direction = 1;
     memset(config_.offset_lut, 0, sizeof(config_.offset_lut));
 
     // Init SPI Driver Handle for Encoder Sensor
@@ -75,6 +75,10 @@ void PositionSensorAS5x47::Reset()
     dirty_ = true;
 }
 /* Setters */
+void PositionSensorAS5x47::SetSampleTime(float sample_time)
+{
+    sample_time_ = sample_time;
+}
 void PositionSensorAS5x47::SetCPR(int32_t cpr)
 {
     config_.cpr = cpr;
@@ -99,7 +103,7 @@ void PositionSensorAS5x47::SetMechanicalOffset(float offset)
 // }
 
 // TODO: Support custom LUT Sizes
-void PositionSensorAS5x47::SetOffsetLUT(int32_t lookup_table[128])
+void PositionSensorAS5x47::SetOffsetLUT(int8_t lookup_table[128])
 {
     memcpy(config_.offset_lut, lookup_table, sizeof(config_.offset_lut));
     dirty_ = true;

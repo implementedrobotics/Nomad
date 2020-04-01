@@ -107,7 +107,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.measurePhaseOrderButton.clicked.connect(self.MeasurePhaseOrder)
         self.measureEncoderOffsetButton.clicked.connect(self.MeasureEncoderOffset)
         self.zeroMechanicalOffsetButton.clicked.connect(self.ZeroMechanicalOffset)
-
+        self.encoderEccentricityMapButton.clicked.connect(self.ShowEncoderEccentricity)
+        
         self.loadConfigButton.clicked.connect(self.LoadConfiguration)
         self.saveConfigButton.clicked.connect(self.SaveConfiguration)
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
@@ -252,7 +253,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
     def LoadConfiguration(self):
         if(self.nomad_dev.load_configuration() is not None):
-            
+
             # Motor
             self.polePairVal.setValue(self.nomad_dev.motor_config.num_pole_pairs)
             self.KvVal.setValue(self.nomad_dev.motor_config.K_v)
@@ -298,6 +299,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         arm = .458
         force = (self.torqueFF_spin.value() * 6) / arm
         self.scaleValue.setText(f"{1000*(force/9.81)}")
+
+    def ShowEncoderEccentricity(self):
+        print(f"Config: {self.nomad_dev.encoder_config.offset_lut}"
+        )
     def closeEvent(self, event):
         self.nomad_dev.disconnect()
         close_event.set()

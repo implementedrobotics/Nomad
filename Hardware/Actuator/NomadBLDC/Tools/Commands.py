@@ -295,7 +295,7 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_CONTROLLER_CONFIG):
             self.controller_config = ControllerConfig.unpack(packet[2:])
             self.controller_config_received.set()
-            print(self.controller_config)
+            #print(self.controller_config)
 
         elif(comm_id == CommandID.MEASURE_RESISTANCE):
             self.measurement = FloatMeasurement.unpack(packet[2:])

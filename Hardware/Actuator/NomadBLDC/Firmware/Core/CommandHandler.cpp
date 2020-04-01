@@ -77,10 +77,10 @@ struct __attribute__((__packed__)) Position_config_packet_t
 {
     uint8_t comm_id;                          // Command ID
     uint8_t packet_length;                    // Packet Length
-    //PositionSensorAS5x47::Config_t config;    // Position config
-    float offset_elec;
-    float offset_mech;
-    int32_t cpr;
+    PositionSensorAS5x47::Config_t config;    // Position config
+    //float offset_elec;
+    //float offset_mech;
+    //int32_t cpr;
     
 };
 
@@ -257,6 +257,10 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     }
     case COMM_DEVICE_RESTART:
     {
+        Logger::Instance().Print("Controller Ticks: %d\n", motor_controller->pwm_counter_period_ticks_);
+        Logger::Instance().Print("Controller Freq: %f\n", motor_controller->controller_loop_freq_);
+        Logger::Instance().Print("Controller Period: %f\n", motor_controller->controller_update_period_);
+        Logger::Instance().Print("Let's GO Period:\n");
         reboot_system();
         break;
     }
@@ -311,7 +315,6 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.packet_length = sizeof(MotorController::Config_t);
         packet.config = motor_controller->config_;
 
-        Logger::Instance().Print("READ CONTROLLER\n");
         // Send it
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Controller_config_packet_t));
         break;
@@ -320,10 +323,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     {
         Position_config_packet_t packet;
         packet.comm_id = COMM_READ_POSITION_CONFIG;
-        packet.packet_length = 12;//sizeof(PositionSensorAS5x47::Config_t);
-        packet.offset_elec = motor->PositionSensor()->config_.offset_elec;
-        packet.offset_mech = motor->PositionSensor()->config_.offset_mech;
-        packet.cpr = motor->PositionSensor()->config_.cpr;
+        packet.packet_length = sizeof(PositionSensorAS5x47::Config_t);
+        packet.config = motor->PositionSensor()->config_;
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Position_config_packet_t));

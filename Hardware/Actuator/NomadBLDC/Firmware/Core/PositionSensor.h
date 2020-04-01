@@ -51,9 +51,10 @@ public:
     void SetCPR(int32_t cpr);                     // Set Sensor Counts Per Revolution
     void SetElectricalOffset(float offset);       // Set Sensor Electrical Position Offset, Distance to A Axis (radians)
     void SetMechanicalOffset(float offset);       // Set Sensor Mechanical Position Offset, Output "zero" point (radians)
-    void SetOffsetLUT(int32_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
+    void SetOffsetLUT(int8_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
     void SetPolePairs(uint32_t pole_pairs);       // Set Pole Pair Count for Electrical Position Calculations
     void SetDirection(int32_t direction);         // Sensor Direction
+    void SetSampleTime(float sample_time);        // Update controller sample rate
     void Reset();                                 // Reset position sensor to defaults, i.e. ignore any saved/restored settings
     void ZeroPosition(); // Zero Mechanical Position Offset
 

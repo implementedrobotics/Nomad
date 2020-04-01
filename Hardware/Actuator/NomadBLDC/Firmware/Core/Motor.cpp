@@ -59,6 +59,12 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     rotor_sensor_ = new PositionSensorAS5x47(sample_time_, config_.num_pole_pairs);
 }
 
+void Motor::SetSampleTime(float sample_time)
+{
+    sample_time_ = sample_time;
+    rotor_sensor_->SetSampleTime(sample_time);
+}
+
 void Motor::Update()
 {
     // Update Position Sensor
@@ -327,7 +333,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     float rotor_lock_duration = 2.0f; // Rotor Lock Settling Time
     float *error_forward;  // Error Vector Forward Rotation
     float *error_backward; // Error Vector Backward Rotation
-    int32_t *lookup_table; // Lookup Table
+    int8_t *lookup_table; // Lookup Table
     int32_t *raw_forward;
     int32_t *raw_backward;
     float *error;
@@ -353,10 +359,10 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     //float cogging_current[window] = {0};
 
     const int32_t num_lookups = 128;
-    lookup_table = new int32_t[num_lookups]; // Clear the previous lookup table.
+    lookup_table = new int8_t[num_lookups]; // Clear the previous lookup table.
 
     // Zero Array.  Do this explicitly in case compilers vary
-    memset(lookup_table, 0, sizeof(int32_t)*num_lookups);
+    memset(lookup_table, 0, sizeof(int8_t)*num_lookups);
     rotor_sensor_->Reset();
     
     //rotor_sensor_->SetOffsetLUT(lookup_table);
@@ -515,10 +521,10 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         {
             index -= num_lookups;
         }
-        lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
+        lookup_table[index] = (int8_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
         Logger::Instance().Print("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
         //printf("%ld, %ld \n\r", i, lookup_table[index]);
-        wait(.1);
+        wait(.02);
     }
 
     // TODO: Not quite working. Need to fix.  For now don't compensate eccentricity

@@ -24,6 +24,7 @@
 
 import struct
 from dataclasses import dataclass
+from typing import List
 
 @dataclass
 class LogPacket:
@@ -81,7 +82,7 @@ class MotorConfig:
 
 @dataclass
 class ControllerConfig:
-    __fmt = "<15f"
+    __fmt = "<16fI"
     k_d: float = None
     k_q: float = None
     k_i_d: float = None
@@ -90,13 +91,15 @@ class ControllerConfig:
     overmodulation: float = None
     velocity_limit: float = None
     position_limit: float = None
+    torque_limit: float = None
     current_limit: float = None
     current_bandwidth: float = None
     K_p_min: float = None
     K_p_max: float = None
     K_d_min: float = None
     K_d_max: float = None
-    torque_limit: float = None
+    pwm_freq: float = None
+    foc_ccl_divider: int = None
 
     @classmethod
     def unpack(cls, data):
@@ -105,17 +108,22 @@ class ControllerConfig:
 
 @dataclass
 class EncoderConfig:
-    __fmt = "<ffi"
+    __fmt = "<ffi128b"
     offset_elec: float = None
     offset_mech: float = None
     cpr: int = None
     #direction: int = None
-    #offset_lut: list[int] = None
+    offset_lut: List[int] = None
 
     @classmethod
     def unpack(cls, data):
         unpacked = struct.unpack(cls.__fmt, data)
-        return EncoderConfig(*unpacked)
+        #print("ENCODER")
+        #print(unpacked[0])
+        #print(unpacked[1])
+        #print(unpacked[2])
+        #print([*unpacked[3:]])
+        return EncoderConfig(unpacked[0], unpacked[1], unpacked[2], [*unpacked[3:]])
 
 @dataclass
 class FloatMeasurement:

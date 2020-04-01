@@ -44,16 +44,16 @@
 #define DTC_MAX 0.94f // Max phase duty cycle
 #define DTC_MIN 0.0f  // Min phase duty cycle
 
-// TODO: User configurable.  Default to 40khz
-#define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
-#define PWM_INTERRUPT_DIVIDER 1
+//#define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
+//#define PWM_INTERRUPT_DIVIDER 1
 
 // TODO: User Configurable Parameter
 #define SYS_CLOCK_FREQ 180000000
-#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
+//#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
 //#define PWM_TICKS (float)SYS_CLOCK_FREQ / (2 * PWM_COUNTER_PERIOD_TICKS)
-#define CONTROL_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
-#define CONTROL_LOOP_PERIOD (1.0f/(float)CONTROL_LOOP_FREQ)
+
+//#define CONTROL_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
+//#define CONTROL_LOOP_PERIOD (1.0f/(float)CONTROL_LOOP_FREQ)
 
 // C System Files
 #include <arm_math.h>
@@ -142,15 +142,15 @@ public:
         float overmodulation;    // Overmodulation Amount
         float velocity_limit;    // Limit on maximum velocity
         float position_limit;    // Limit on position input
+        float torque_limit;      // Torque Limit
         float current_limit;     // Max Current Limit
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
         float K_p_min;           // Position Gain Minimum
         float K_p_max;           // Position Gain Maximum
         float K_d_min;           // Velocity Gain Minimum
         float K_d_max;           // Velocity Gain Maximum
-        float torque_limit;      // Torque Limit
-        // TODO: PWM Freq.
-        // TODO: FOC Divider
+        float pwm_freq;          // PWM Switching Frequency
+        uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
     };
 
     struct State_t
@@ -183,7 +183,7 @@ public:
     };
 
 
-    MotorController(Motor *motor, float sample_time); // TODO: Pass in motor object
+    MotorController(Motor *motor); // TODO: Pass in motor object
 
     static MotorController* GetInstance() { return singleton_; } // Singleton Instance
     inline Motor* GetMotor() { return motor_; }
@@ -223,6 +223,8 @@ public:
     inline void SetDebugMode(bool debug) {control_debug_ = debug;}
     inline bool GetDebugMode() {return control_debug_;}
     
+    inline float GetControlUpdatePeriod() {return controller_update_period_;}
+
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
@@ -231,6 +233,11 @@ public:
 
     Config_t config_; // Controller Configuration Parameters
     State_t state_;   // Controller State Struct
+
+        // PWM Variables
+    uint16_t pwm_counter_period_ticks_;
+    float controller_loop_freq_;
+    float controller_update_period_;            // Controller Update Period (Seconds)
 private:
 
     void DoMotorControl(); // Motor Control Loop
@@ -238,7 +245,7 @@ private:
     void TorqueControl(); // Torque Control Fucntion
     void LinearizeDTC(float *dtc);  // Linearize Small Non-Linear Duty Cycles
 
-    float controller_update_period_;            // Controller Update Period (Seconds)
+    
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 
     bool control_debug_;                        // Controller in Debug. TODO: Move this to a more general application struct
@@ -261,6 +268,9 @@ private:
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config
 
+
+
+    //float control_loop_period_;
 
     static MotorController *singleton_; // Singleton
 };

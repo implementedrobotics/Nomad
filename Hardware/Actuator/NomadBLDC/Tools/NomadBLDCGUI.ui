@@ -429,7 +429,7 @@ color:white</string>
        <property name="baseSize">
         <size>
          <width>0</width>
-         <height>500</height>
+         <height>600</height>
         </size>
        </property>
        <property name="focusPolicy">
@@ -447,102 +447,511 @@ color:white</string>
           <rect>
            <x>560</x>
            <y>10</y>
-           <width>411</width>
-           <height>441</height>
+           <width>431</width>
+           <height>641</height>
           </rect>
          </property>
          <property name="title">
           <string>Controller Configuration</string>
          </property>
-         <widget class="QWidget" name="formLayoutWidget_4">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>40</y>
-            <width>311</width>
-            <height>141</height>
-           </rect>
-          </property>
-          <layout class="QFormLayout" name="formLayout_4">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_13">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_20">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_21">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_22">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QLabel" name="controllerFrequencyLabel">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>290</y>
-            <width>206</width>
-            <height>17</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Controller Frequency: 20khz</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="pwmFrequencyLabel">
-          <property name="geometry">
-           <rect>
-            <x>80</x>
-            <y>260</y>
-            <width>206</width>
-            <height>17</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>PWM Frequency: 40khz</string>
-          </property>
-         </widget>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="7" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="title">
+             <string>Field Oriented Control</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_7">
+             <item row="7" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_6">
+               <property name="toolTip">
+                <string>Alpha current reference filter cooeficient</string>
+               </property>
+               <property name="prefix">
+                <string>Reference Filter Coefficient: </string>
+               </property>
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>3</number>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_3">
+               <property name="prefix">
+                <string>Loop Gain (Q Axis): </string>
+               </property>
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_5">
+               <property name="prefix">
+                <string>Integrator Gain (Q Axis): </string>
+               </property>
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QPushButton" name="pushButton_3">
+               <property name="text">
+                <string>Auto Compute Controller Gains</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_12">
+               <property name="prefix">
+                <string>Loop Bandwidth: </string>
+               </property>
+               <property name="suffix">
+                <string> hz</string>
+               </property>
+               <property name="decimals">
+                <number>2</number>
+               </property>
+               <property name="minimum">
+                <double>200.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>2000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>1000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_4">
+               <property name="prefix">
+                <string>Integrator Gain (D Axis): </string>
+               </property>
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_10">
+               <item>
+                <widget class="QDoubleSpinBox" name="phaseResistanceVal_17">
+                 <property name="maximumSize">
+                  <size>
+                   <width>200</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="prefix">
+                  <string>PWM Freq.: </string>
+                 </property>
+                 <property name="suffix">
+                  <string> hz</string>
+                 </property>
+                 <property name="decimals">
+                  <number>2</number>
+                 </property>
+                 <property name="maximum">
+                  <double>50000.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>40000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="polePairVal_2">
+                 <property name="toolTip">
+                  <string>Control Loop Frequency Divider</string>
+                 </property>
+                 <property name="prefix">
+                  <string>Loop Freq. Divider: </string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>4</number>
+                 </property>
+                 <property name="value">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_2">
+               <property name="prefix">
+                <string>Loop Gain (D Axis): </string>
+               </property>
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_7">
+               <property name="prefix">
+                <string>Overmodulation Percentage: </string>
+               </property>
+               <property name="suffix">
+                <string>%</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>150.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>100.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="title">
+             <string>Torque Control</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <item>
+                <widget class="QDoubleSpinBox" name="phaseResistanceVal_14">
+                 <property name="prefix">
+                  <string>Pos. Gain [Min]: </string>
+                 </property>
+                 <property name="suffix">
+                  <string/>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="phaseResistanceVal_13">
+                 <property name="prefix">
+                  <string>Pos. Gain [Max]: </string>
+                 </property>
+                 <property name="suffix">
+                  <string/>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="maximum">
+                  <double>500.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>500.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <item>
+                <widget class="QDoubleSpinBox" name="phaseResistanceVal_16">
+                 <property name="prefix">
+                  <string>Vel. Gain [Min]: </string>
+                 </property>
+                 <property name="suffix">
+                  <string/>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="phaseResistanceVal_15">
+                 <property name="prefix">
+                  <string>Vel. Gain [Max]: </string>
+                 </property>
+                 <property name="suffix">
+                  <string/>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="maximum">
+                  <double>5.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>5.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QGroupBox" name="groupBox_5">
+            <property name="title">
+             <string>Actuator Limits</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_8">
+             <item row="2" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_11">
+               <property name="prefix">
+                <string>Current Limit: </string>
+               </property>
+               <property name="suffix">
+                <string> A</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>40.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.500000000000000</double>
+               </property>
+               <property name="value">
+                <double>20.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_9">
+               <property name="prefix">
+                <string>Position Limit: </string>
+               </property>
+               <property name="suffix">
+                <string> rad</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="value">
+                <double>12.500000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_8">
+               <property name="prefix">
+                <string>Velocity Limit: </string>
+               </property>
+               <property name="suffix">
+                <string> rad/s</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="value">
+                <double>10.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QDoubleSpinBox" name="phaseResistanceVal_10">
+               <property name="prefix">
+                <string>Torque Limit: </string>
+               </property>
+               <property name="suffix">
+                <string> Nm</string>
+               </property>
+               <property name="decimals">
+                <number>2</number>
+               </property>
+               <property name="value">
+                <double>10.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
         </widget>
         <widget class="QWidget" name="">
          <property name="geometry">
           <rect>
            <x>10</x>
            <y>10</y>
-           <width>539</width>
+           <width>541</width>
            <height>434</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
+          <item row="2" column="0">
+           <widget class="QPushButton" name="saveConfigButton">
+            <property name="text">
+             <string>Save Configuration</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" rowspan="4">
+           <widget class="QGroupBox" name="encoderConfigGroupBox">
+            <property name="title">
+             <string>Encoder Configuration</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="4" column="0">
+              <spacer name="verticalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="0">
+              <widget class="QSpinBox" name="encoderCPRVal">
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="prefix">
+                <string>Counts Per Revolution: </string>
+               </property>
+               <property name="maximum">
+                <number>100000</number>
+               </property>
+               <property name="value">
+                <number>16384</number>
+               </property>
+               <property name="displayIntegerBase">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_8">
+               <item>
+                <widget class="QDoubleSpinBox" name="electricalOffsetVal">
+                 <property name="prefix">
+                  <string>Electrical Offset:     </string>
+                 </property>
+                 <property name="suffix">
+                  <string> rad</string>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="measureEncoderOffsetButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>25</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>M</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QDoubleSpinBox" name="mechanicalOffsetVal">
+                 <property name="prefix">
+                  <string>Mechanical Offset: </string>
+                 </property>
+                 <property name="suffix">
+                  <string> rad</string>
+                 </property>
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="zeroMechanicalOffsetButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>25</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Z</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QPushButton" name="encoderEccentricityMapButton">
+               <property name="text">
+                <string>View Eccentricity Map</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="loadConfigButton">
+            <property name="text">
+             <string>Load Configuration</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="calibrateButton">
+            <property name="text">
+             <string>Calibrate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="pushButton_5">
+            <property name="text">
+             <string>Reset Configuration</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0" colspan="2">
            <widget class="QGroupBox" name="motorConfigGroupBox">
             <property name="enabled">
@@ -753,19 +1162,6 @@ color:white</string>
                       </item>
                      </layout>
                     </item>
-                    <item row="2" column="0" colspan="2">
-                     <widget class="QDoubleSpinBox" name="calibCurrentVal">
-                      <property name="prefix">
-                       <string>Calibration Current: </string>
-                      </property>
-                      <property name="suffix">
-                       <string> A</string>
-                      </property>
-                      <property name="value">
-                       <double>15.000000000000000</double>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="1" column="0" colspan="2">
                      <widget class="QDoubleSpinBox" name="calibVoltageVal">
                       <property name="prefix">
@@ -779,6 +1175,19 @@ color:white</string>
                       </property>
                      </widget>
                     </item>
+                    <item row="2" column="0" colspan="2">
+                     <widget class="QDoubleSpinBox" name="calibCurrentVal">
+                      <property name="prefix">
+                       <string>Calibration Current: </string>
+                      </property>
+                      <property name="suffix">
+                       <string> A</string>
+                      </property>
+                      <property name="value">
+                       <double>15.000000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </item>
                  </layout>
@@ -787,142 +1196,6 @@ color:white</string>
               </widget>
              </item>
             </layout>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="loadConfigButton">
-            <property name="text">
-             <string>Load Configuration</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" rowspan="4">
-           <widget class="QGroupBox" name="encoderConfigGroupBox">
-            <property name="title">
-             <string>Encoder Configuration</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="4" column="0">
-              <spacer name="verticalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="0" column="0">
-              <widget class="QSpinBox" name="encoderCPRVal">
-               <property name="suffix">
-                <string/>
-               </property>
-               <property name="prefix">
-                <string>Counts Per Revolution: </string>
-               </property>
-               <property name="maximum">
-                <number>100000</number>
-               </property>
-               <property name="value">
-                <number>16384</number>
-               </property>
-               <property name="displayIntegerBase">
-                <number>10</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <layout class="QHBoxLayout" name="horizontalLayout_8">
-               <item>
-                <widget class="QDoubleSpinBox" name="electricalOffsetVal">
-                 <property name="prefix">
-                  <string>Electrical Offset:     </string>
-                 </property>
-                 <property name="suffix">
-                  <string> rad</string>
-                 </property>
-                 <property name="decimals">
-                  <number>4</number>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="measureEncoderOffsetButton">
-                 <property name="maximumSize">
-                  <size>
-                   <width>25</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>M</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="2" column="0">
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
-               <item>
-                <widget class="QDoubleSpinBox" name="mechanicalOffsetVal">
-                 <property name="prefix">
-                  <string>Mechanical Offset: </string>
-                 </property>
-                 <property name="suffix">
-                  <string> rad</string>
-                 </property>
-                 <property name="decimals">
-                  <number>4</number>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="zeroMechanicalOffsetButton">
-                 <property name="maximumSize">
-                  <size>
-                   <width>25</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Z</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="3" column="0">
-              <widget class="QPushButton" name="encoderEccentricityMapButton">
-               <property name="text">
-                <string>View Eccentricity Map</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="saveConfigButton">
-            <property name="text">
-             <string>Save Configuration</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="pushButton_5">
-            <property name="text">
-             <string>Reset Configuration</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QPushButton" name="calibrateButton">
-            <property name="text">
-             <string>Calibrate</string>
-            </property>
            </widget>
           </item>
          </layout>
@@ -1327,7 +1600,7 @@ color:white</string>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>600</height>
+         <height>300</height>
         </size>
        </property>
        <property name="baseSize">
