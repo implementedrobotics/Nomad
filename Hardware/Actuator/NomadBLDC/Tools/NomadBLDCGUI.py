@@ -104,6 +104,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.vel_spin.valueChanged.connect(self.SetTorqueSetPoint)
         self.torqueFF_spin.valueChanged.connect(self.SetTorqueSetPoint)
 
+        # Update Torques
+        self.KvVal.valueChanged.connect(self.UpdateTorqueOutput)
         self.gearRatioVal.valueChanged.connect(self.UpdateTorqueOutput)
 
         # Measurements
@@ -143,9 +145,6 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Callbacks
         self.nomad_dev.commands.set_logger_cb(self.UpdateLog)
-
-        # Default Splitter
-        self.mainSplitter.moveSplitter(700, 1)
 
         # Graphics View Test
 
@@ -197,6 +196,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
             # Load Configuration
             self.LoadConfiguration()
+
+            self.idProgressVal.setFormat(f"1.1 A")
+            self.idProgressVal.setValue(10)
+
 
         else: # Did not connect
             msgBox = QtWidgets.QMessageBox()
@@ -296,12 +299,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.KvVal.setValue(self.nomad_dev.motor_config.K_v)
             self.gearRatioVal.setValue(self.nomad_dev.motor_config.gear_ratio)
             self.KtMotorVal.setValue(self.nomad_dev.motor_config.K_t)
-            self.KtOutputVal.setValue(self.nomad_dev.motor_config.K_t_out)
+            self.KtOutputVal.setValue(self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)
             self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance)
-            self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d)
+            self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_q)
             self.phaseOrderCombo.setCurrentIndex(self.nomad_dev.motor_config.phase_order)
 
-            print(self.nomad_dev.motor_config.calibrated)
             # Encoder
             self.encoderCPRVal.setValue(self.nomad_dev.encoder_config.cpr)
             self.electricalOffsetVal.setValue(self.nomad_dev.encoder_config.offset_elec)
@@ -393,10 +395,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     
     def SetTorqueSetPoint(self):
         self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), self.torqueFF_spin.value()) 
-        self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value() * 6}")
-        self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / self.KtMotorVal.value()}")
+        self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
+        self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
         arm = .458
-        force = (self.torqueFF_spin.value() * 6) / arm
+        force = (self.torqueFF_spin.value()) / arm
         self.scaleValue.setText(f"{1000*(force/9.81)}")
 
     def AutoComputeControllerGains(self):
@@ -445,16 +447,15 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.disconnect()
         close_event.set()
 
-    #@pyqtSlot()
     def UpdateSlot(self, stats):
         if(stats is not None): # Update Stats
             time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
             self.uptimeLabel.setText(f"Up Time: " + time_str)
             self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.voltage_bus))
             self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
-            self.gateDriverTempLabel.setText(f"Gate Driver Temp: <b>101.2 C</b>")
-            self.fetTempLabel.setText("FET Temp: <b>28.3 C</b>")
-            self.motorTempLabel.setText("Motor Temp: <b>29.5 C</b>")
+            self.gateDriverTempLabel.setText("Gate Driver Temp: <b>{:0.4f}</b>".format(stats.driver_temp))
+            self.fetTempLabel.setText("FET Temp D: <b>{:0.4f}</b>".format(stats.fet_temp))
+            self.motorTempLabel.setText("Motor Temp Q: <b>{:0.4f}</b>".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
         
 

@@ -227,8 +227,9 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.control_status = motor_controller->GetControlMode();
         stats.voltage_bus = motor_controller->state_.Voltage_bus;
         stats.driver_temp = 60.2f;
-        stats.fet_temp = 100.0f;
-        stats.motor_temp = 40.0f;
+        stats.fet_temp = motor_controller->state_.V_q;
+        stats.motor_temp = motor_controller->state_.I_q;
+
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));

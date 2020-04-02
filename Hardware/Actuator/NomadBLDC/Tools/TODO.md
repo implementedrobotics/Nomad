@@ -10,5 +10,4 @@
 12. Add support for checking port still open
 13. Send mutex/locking
 15. Validate active connection to control button events that require a connection
-16. Compute Kt values on GUI side.  For now on change KV, or Gear Ratio
 17. Fault status checking
