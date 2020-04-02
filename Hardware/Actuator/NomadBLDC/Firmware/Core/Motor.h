@@ -46,6 +46,9 @@ public:
         float I_a;            // Phase A Currents
         float I_b;            // Phase B Currents
         float I_c;            // Phase C Currents
+        float V_d;            // Voltage (D Axis)
+        float V_q;            // Voltage (Q Axis)
+
         float theta_mech;     // Mechanical Position @ Output (Radians)
         float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
         float theta_mech_true;// Mechanical Position @ Output w/ Offset (Radians) 

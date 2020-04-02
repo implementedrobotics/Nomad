@@ -37,6 +37,7 @@ class MeasurementUpdater(QtCore.QRunnable, QtCore.QObject):
 # Background work signals
 class BackgroundUpdaterSignals(QtCore.QObject):
     updated = pyqtSignal(object)
+    updated_state = pyqtSignal(object)
 
 # Background worker class
 class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
@@ -45,7 +46,7 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
         super(BackgroundUpdater, self).__init__()
         self.nomad_dev = nomad_device
         self.signals = BackgroundUpdaterSignals()
-        self.period = 1
+        self.period = 0.5
         self.paused = False
     @pyqtSlot()
     def run(self):
@@ -59,9 +60,14 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
                 stats = self.nomad_dev.get_device_stats()
                 if(stats is not None):
                     self.signals.updated.emit(stats)
-                time.sleep(1)
+
+                state = self.nomad_dev.read_state()
+                if(state is not None):
+                    self.signals.updated_state.emit(state)
+
+                time.sleep(self.period)
             else:
-                time.sleep(1)
+                time.sleep(self.period)
             
             if(close_event.is_set()):
                 break
@@ -139,8 +145,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         
         # Start Updater
         self.updater = BackgroundUpdater(self.nomad_dev)
-        self.updater.period = 1 # Seconds
+        self.updater.period = 0.1 # Seconds
         self.updater.signals.updated.connect(self.UpdateSlot)
+        self.updater.signals.updated_state.connect(self.UpdateState)
+        
         self.threadpool.start(self.updater)
 
         # Callbacks
@@ -196,10 +204,6 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
             # Load Configuration
             self.LoadConfiguration()
-
-            self.idProgressVal.setFormat(f"1.1 A")
-            self.idProgressVal.setValue(10)
-
 
         else: # Did not connect
             msgBox = QtWidgets.QMessageBox()
@@ -458,6 +462,20 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.motorTempLabel.setText("Motor Temp Q: <b>{:0.4f}</b>".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
         
+    def UpdateState(self, state):
+        if(state is not None):
+            max_current = self.nomad_dev.controller_config.current_limit
+            I_d, I_q = self.nomad_dev.dq0(state.theta_elec, state.I_a, state.I_b, state.I_c)
+            print(I_q)
+           # print(state)
+            self.idProgressVal.setFormat("I_d: {:0.2f} A".format(I_d))
+            self.idProgressVal.setValue(abs(I_d/max_current)*100)
+
+            self.iqProgressVal.setFormat("I_q: {:0.2f} A".format(I_q))
+            self.iqProgressVal.setValue(abs(I_q/max_current)*100)
+
+
+            #print(state)
 
     def UpdateLog(self, log_info):
         

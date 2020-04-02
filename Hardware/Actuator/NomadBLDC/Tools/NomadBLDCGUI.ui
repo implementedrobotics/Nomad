@@ -674,7 +674,7 @@ color:white</string>
                        <string>Phase Resistance: </string>
                       </property>
                       <property name="suffix">
-                       <string> ohms</string>
+                       <string> mohms</string>
                       </property>
                       <property name="decimals">
                        <number>7</number>

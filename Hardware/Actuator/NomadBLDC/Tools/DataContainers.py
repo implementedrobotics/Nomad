@@ -165,6 +165,42 @@ class EncoderConfig:
         return EncoderConfig(unpacked[0], unpacked[1], unpacked[2], [*unpacked[3:]])
 
 @dataclass
+class MotorState:
+    #__fmt = "<16fI"
+    __packet : ClassVar[struct.Struct] = struct.Struct('<11f')
+    I_a: float = None
+    I_b: float = None
+    I_c: float = None
+    V_d: float = None
+    V_q: float = None
+    theta_mech: float = None
+    theta_mech_dot: float = None
+    theta_mech_true: float = None
+    theta_elec: float = None
+    theta_elec_dot: float = None
+    windings_temp: float = None
+
+
+    def pack(self):
+        return self.__packet.pack(self.I_a,
+        self.I_b,
+        self.I_c,
+        self.V_d,
+        self.V_q,
+        self.theta_mech,
+        self.theta_mech_dot,
+        self.theta_mech_true,
+        self.theta_elec,
+        self.theta_elec_dot,
+        self.windings_temp)
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = cls.__packet.unpack(data)
+        return MotorState(*unpacked)
+
+
+@dataclass
 class FloatMeasurement:
     __fmt = "<Bf"
     status: int = None

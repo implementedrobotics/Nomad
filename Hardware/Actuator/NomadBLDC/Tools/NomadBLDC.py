@@ -26,6 +26,7 @@ import sys
 import glob
 import time
 import struct
+import math
 from SerialHandler import SerialHandler
 from Commands import *
 from DataContainers import *
@@ -42,6 +43,8 @@ class NomadBLDC:
         self.motor_config = MotorConfig()
         self.encoder_config = EncoderConfig()
         self.controller_config = ControllerConfig()
+
+        self.motor_state = MotorState()
 
 
 
@@ -92,6 +95,20 @@ class NomadBLDC:
         if(self.motor_config is None or self.encoder_config is None or self.controller_config is None):
             return False
         return True
+    
+    def read_state(self):
+        if(not self.connected):
+            return False
+
+        self.motor_state = self.commands.read_state(self.transport)
+        #self.motor_config = load_config[0]
+        #self.controller_config = load_config[1]
+        #self.encoder_config = load_config[2]
+        return self.motor_state
+        #if(self.motor_state is None):
+        #    return False
+        #return True
+
 
     def calibrate_motor(self):
         if(not self.connected):
@@ -163,6 +180,16 @@ class NomadBLDC:
         if(self.connected):
             self.transport.close()
             self.connected = False
+
+    def dq0(self, theta, I_a, I_b, I_c):
+        cf = math.cos(theta)
+        sf = math.sin(theta)
+
+        d = 0.6666667 * (cf * I_a + (0.86602540378 * sf - 0.5 * cf) * I_b + (-0.86602540378 * sf - 0.5 * cf) * I_c)
+        q = 0.6666667 * (-sf * I_a - (-0.86602540378 * cf - 0.5 * sf) * I_b - (0.86602540378 * cf - 0.5 * sf) * I_c)
+        return (d, q)
+
+
 
 
 # # TODO: Verify compatible firmware

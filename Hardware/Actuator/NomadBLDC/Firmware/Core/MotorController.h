@@ -155,31 +155,31 @@ public:
 
     struct State_t
     {
-        float I_d;               // Measured Current (D Axis)
-        float I_q;               // Measured Current (Q Axis)
-        float I_d_filtered;      // Measured Current Filtered (D Axis)
-        float I_q_filtered;      // Measured Current Filtered (Q Axis)
-        float V_d;               // Voltage (D Axis)
-        float V_q;               // Voltage (Q Axis)
+        // Current Control
+        float I_d;                   // Transformed Current (D Axis)
+        float I_q;                   // Transformed Current (Q Axis)
+        float I_d_filtered;          // Measured Current Filtered (D Axis)
+        float I_q_filtered;          // Measured Current Filtered (Q Axis)
 
-        float I_d_ref;           // Current Reference (D Axis)
-        float I_q_ref;           // Current Reference (Q Axis)
-        float I_d_ref_filtered;  // Current Reference Filtered (D Axis)
-        float I_q_ref_filtered;  // Current Reference Filtered (Q Axis)
-        volatile float V_d_ref;           // Voltage Reference (D Axis)
-        volatile float V_q_ref;           // Voltage Reference (Q Axis)
-        volatile float Voltage_bus;       // Bus Voltage
+        float I_d_ref;               // Current Reference (D Axis)
+        float I_q_ref;               // Current Reference (Q Axis)
+        float I_d_ref_filtered;      // Current Reference Filtered (D Axis)
+        float I_q_ref_filtered;      // Current Reference Filtered (Q Axis)
+        float d_int;                 // Current Integral Error
+        float q_int;                 // Current Integral Error
+        volatile float V_d_ref;      // Voltage Reference (D Axis)
+        volatile float V_q_ref;      // Voltage Reference (Q Axis)
+        volatile float Voltage_bus;  // Bus Voltage
 
-        volatile float Pos_ref;           // Position Setpoint Reference
-        volatile float Vel_ref;           // Velocity Setpoint Reference
-        volatile float K_p;               // Position Gain N*m/rad
-        volatile float K_d;               // Velocity Gain N*m/rad/s
-        volatile float T_ff;              // Feed Forward Torque Value N*m
+        // Torque Control
+        volatile float Pos_ref;      // Position Setpoint Reference
+        volatile float Vel_ref;      // Velocity Setpoint Reference
+        volatile float K_p;          // Position Gain N*m/rad
+        volatile float K_d;          // Velocity Gain N*m/rad/s
+        volatile float T_ff;         // Feed Forward Torque Value N*m
 
-        uint32_t timeout;           // Keep up with number of controller timeouts for missed deadlines
-
-        float d_int;             // Current Integral Error
-        float q_int;             // Current Integral Error
+        // Timeouts
+        uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
     };
 
 

@@ -453,12 +453,14 @@ void MotorController::Reset()
 {
     SetModulationOutput(0.0f, 0.0f);
 
+    // Reset Motor
+    motor_->state_.V_d = 0.0f;
+    motor_->state_.V_q = 0.0f;
+
     state_.I_d = 0.0f;
     state_.I_q = 0.0f;
     state_.I_d_filtered = 0.0f;
     state_.I_q_filtered = 0.0f;
-    state_.V_d = 0.0f;
-    state_.V_q = 0.0f;
     state_.I_d_ref = 0.0f;
     state_.I_q_ref = 0.0f;
     state_.I_d_ref_filtered = 0.0f;
@@ -588,6 +590,8 @@ void MotorController::StartControlFSM()
                 LEDService::Instance().Off();
                 gate_driver_->Disable();
                 EnablePWM(false);
+
+                Reset(); // Reset Controller to Zero
             }
 
             osDelay(1);
@@ -756,7 +760,9 @@ void MotorController::DoMotorControl()
     NVIC_DisableIRQ(USART2_IRQn);
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-        SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
+        motor->state_.V_d = motor_controller->state_.V_d_ref;
+        motor->state_.V_q = motor_controller->state_.V_q_ref;
+        SetModulationOutput(motor->state_.theta_elec, motor->state_.V_d, motor->state_.V_q);
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
     {
@@ -798,21 +804,21 @@ void MotorController::CurrentControl()
     state_.q_int = fmaxf(fminf(state_.q_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
 
     //limit_norm(&controller->d_int, &controller->q_int, OVERMODULATION*controller->v_bus);
-    state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
-    state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
+    motor_->state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
+    motor_->state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
 
     //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
-    limit_norm(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
+    limit_norm(&motor_->state_.V_d, &motor_->state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
-    float dtc_d = state_.V_d / state_.Voltage_bus;
-    float dtc_q = state_.V_q / state_.Voltage_bus;
+    float dtc_d = motor_->state_.V_d / state_.Voltage_bus;
+    float dtc_q = motor_->state_.V_q / state_.Voltage_bus;
     LinearizeDTC(&dtc_d);
     LinearizeDTC(&dtc_q);
 
-    state_.V_d = dtc_d * state_.Voltage_bus;
-    state_.V_q = dtc_q * state_.Voltage_bus;
+    motor_->state_.V_d = dtc_d * state_.Voltage_bus;
+    motor_->state_.V_q = dtc_q * state_.Voltage_bus;
 
-    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, state_.V_d, state_.V_q);
+    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, motor_->state_.V_d, motor_->state_.V_q);
 }
 void MotorController::StartPWM()
 {

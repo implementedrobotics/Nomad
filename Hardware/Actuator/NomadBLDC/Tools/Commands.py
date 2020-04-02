@@ -77,7 +77,7 @@ class CommandID(IntEnum):
 
 class CommandHandler:
     def __init__(self):
-        self.timeout = 10
+        self.timeout = 11
 
         # Events
         self.device_info_received = threading.Event()
@@ -85,6 +85,11 @@ class CommandHandler:
         self.motor_config_received = threading.Event()
         self.controller_config_received = threading.Event()
         self.encoder_config_received = threading.Event()
+        
+        self.motor_state_received = threading.Event()
+        self.controller_state_received = threading.Event()
+        self.encoder_state_received = threading.Event()
+
         self.resistance_measurement_complete = threading.Event()
         self.inductance_measurement_complete = threading.Event()
         self.phase_order_measurement_complete = threading.Event()
@@ -220,6 +225,23 @@ class CommandHandler:
 
         return (self.motor_config, self.controller_config, self.encoder_config)
 
+    # Load Configuration
+    def read_state(self, transport):
+
+        ################ Load Motor Config
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_MOTOR_STATE, 0))
+        transport.send_packet(command_packet)
+
+        self.motor_state = None
+
+        # Wait for device response
+        self.motor_state_received.wait(0.2)
+        if(self.motor_state_received.is_set()):
+            self.motor_state_received.clear() # Clear Flag
+        ####################
+
+        return (self.motor_state)
+
     # Calibrate motor
     def calibrate_motor(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.CALIBRATE_MOTOR, 0))
@@ -267,7 +289,7 @@ class CommandHandler:
         transport.send_packet(command_packet)
 
         # Wait for device response
-        self.device_stats_received.wait(5)
+        self.device_stats_received.wait(0.2)
         if(self.device_stats_received.is_set()):
             self.device_stats_received.clear() # Clear Flag
             return self.device_stats
@@ -308,7 +330,6 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_MOTOR_CONFIG):
             self.motor_config = MotorConfig.unpack(packet[2:])
             self.motor_config_received.set()
-            print(self.motor_config)
         
         elif(comm_id == CommandID.READ_ENCODER_CONFIG):
             self.encoder_config = EncoderConfig.unpack(packet[2:])
@@ -318,6 +339,9 @@ class CommandHandler:
             self.controller_config = ControllerConfig.unpack(packet[2:])
             self.controller_config_received.set()
             
+        elif(comm_id == CommandID.READ_MOTOR_STATE):
+            self.motor_state = MotorState.unpack(packet[2:])
+            self.motor_state_received.set()
 
         elif(comm_id == CommandID.MEASURE_RESISTANCE):
             self.measurement = FloatMeasurement.unpack(packet[2:])

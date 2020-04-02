@@ -78,10 +78,6 @@ struct __attribute__((__packed__)) Position_config_packet_t
     uint8_t comm_id;                          // Command ID
     uint8_t packet_length;                    // Packet Length
     PositionSensorAS5x47::Config_t config;    // Position config
-    //float offset_elec;
-    //float offset_mech;
-    //int32_t cpr;
-    
 };
 
 struct __attribute__((__packed__)) Controller_config_packet_t
@@ -98,6 +94,14 @@ struct __attribute__((__packed__)) Motor_config_packet_t
     uint8_t packet_length;     // Packet Length
     Motor::Config_t config;    // Motor config
 };
+
+struct __attribute__((__packed__)) Motor_state_packet_t
+{
+    uint8_t comm_id;           // Command ID
+    uint8_t packet_length;     // Packet Length
+    Motor::State_t state;     // Motor config
+};
+
 
 struct __attribute__((__packed__)) Motor_setpoint_t
 {
@@ -227,7 +231,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.control_status = motor_controller->GetControlMode();
         stats.voltage_bus = motor_controller->state_.Voltage_bus;
         stats.driver_temp = 60.2f;
-        stats.fet_temp = motor_controller->state_.V_q;
+        stats.fet_temp = motor->state_.V_q;
         stats.motor_temp = motor_controller->state_.I_q;
 
 
@@ -374,6 +378,19 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Position_config_packet_t));
+        break;
+    }
+
+    // Read State
+    case COMM_READ_MOTOR_STATE:
+    {
+        Motor_state_packet_t packet;
+        packet.comm_id = COMM_READ_MOTOR_STATE;
+        packet.packet_length = sizeof(Motor::State_t);
+        packet.state = motor->state_;
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_state_packet_t));
         break;
     }
     // Write Configs
