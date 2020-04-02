@@ -12,3 +12,4 @@
 14. Refactor Measurement Routines
 16. Move voltage ADC timer reading to own timer
 18. Should make sure controller is in "IDLE" state before resaving configs.  Also should restart to be sure on save
+19. Gate driver fault checking and reporting
