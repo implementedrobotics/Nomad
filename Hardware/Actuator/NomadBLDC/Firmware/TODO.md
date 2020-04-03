@@ -12,4 +12,5 @@
 11. Move voltage ADC timer reading to own timer
 12. Should make sure controller is in "IDLE" state before resaving configs.  Also should restart to be sure on save
 13. Gate driver fault checking and reporting
+14. Software based current limits
 
