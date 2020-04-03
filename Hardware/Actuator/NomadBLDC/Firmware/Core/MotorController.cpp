@@ -810,10 +810,11 @@ void MotorController::CurrentControl()
     //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
     limit_norm(&motor_->state_.V_d, &motor_->state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
+    // TODO: Do we need this linearization?
     float dtc_d = motor_->state_.V_d / state_.Voltage_bus;
     float dtc_q = motor_->state_.V_q / state_.Voltage_bus;
-    LinearizeDTC(&dtc_d);
-    LinearizeDTC(&dtc_q);
+    //LinearizeDTC(&dtc_d);
+    //LinearizeDTC(&dtc_q);
 
     motor_->state_.V_d = dtc_d * state_.Voltage_bus;
     motor_->state_.V_q = dtc_q * state_.Voltage_bus;
@@ -1005,10 +1006,10 @@ void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
 void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 {
     float A, B, C;
-    float dtc_A, dtc_B, dtc_C = 0.5f;
+    //float dtc_A, dtc_B, dtc_C = 0.5f;
     ClarkeInverseTransform(v_alpha, v_beta, &A, &B, &C);
-    SVM(A, B, C, &dtc_A, &dtc_B, &dtc_C); // Space Vector Modulation
-    SetDuty(dtc_A, dtc_B, dtc_C);
+    SVM(A, B, C, &state_.dtc_A, &state_.dtc_B, &state_.dtc_C); // Space Vector Modulation
+    SetDuty(state_.dtc_A, state_.dtc_B, state_.dtc_C);
 }
 
 void MotorController::TorqueControl()

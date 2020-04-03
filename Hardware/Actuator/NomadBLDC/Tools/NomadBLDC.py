@@ -100,15 +100,14 @@ class NomadBLDC:
         if(not self.connected):
             return False
 
-        self.motor_state = self.commands.read_state(self.transport)
-        #self.motor_config = load_config[0]
-        #self.controller_config = load_config[1]
-        #self.encoder_config = load_config[2]
-        return self.motor_state
-        #if(self.motor_state is None):
-        #    return False
-        #return True
+        state_config = self.commands.read_state(self.transport)
+        self.motor_state = state_config[0]
+        self.controller_state = state_config[1]
+        self.encoder_state = state_config[2]
 
+        if(self.motor_state is None or self.controller_state is None or self.encoder_state is None):
+            return False
+        return True
 
     def calibrate_motor(self):
         if(not self.connected):

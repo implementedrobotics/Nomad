@@ -423,7 +423,7 @@ color:white</string>
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="configTab">
        <attribute name="title">
@@ -1409,7 +1409,7 @@ color:white</string>
           </rect>
          </property>
          <property name="maximum">
-          <double>3.000000000000000</double>
+          <double>10.000000000000000</double>
          </property>
          <property name="singleStep">
           <double>0.100000000000000</double>

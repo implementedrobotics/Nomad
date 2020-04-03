@@ -178,6 +178,11 @@ public:
         volatile float K_d;          // Velocity Gain N*m/rad/s
         volatile float T_ff;         // Feed Forward Torque Value N*m
 
+        // Duty Cycles
+        float dtc_A;                 // Duty Cycle for A phase
+        float dtc_B;                 // Duty Cycle for B phase
+        float dtc_C;                 // Duty Cycle for C phase
+
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
     };

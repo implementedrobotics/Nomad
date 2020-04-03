@@ -99,6 +99,11 @@ class CommandHandler:
         self.motor_config = None
         self.encoder_config = None
         self.controller_config = None
+        
+        self.motor_state = None
+        self.encoder_state = None
+        self.controller_state = None
+
         self.logger_cb = None
     
     def set_logger_cb(self, cb):
@@ -239,8 +244,32 @@ class CommandHandler:
         if(self.motor_state_received.is_set()):
             self.motor_state_received.clear() # Clear Flag
         ####################
+        
+        ################ Load Controller State
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_CONTROLLER_STATE, 0))
+        transport.send_packet(command_packet)
 
-        return (self.motor_state)
+        self.controller_state = None
+
+        # Wait for device response
+        self.controller_state_received.wait(0.2)
+        if(self.controller_state_received.is_set()):
+            self.controller_state_received.clear() # Clear Flag
+        ####################
+
+        ################ Load Encoder State
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_ENCODER_STATE, 0))
+        transport.send_packet(command_packet)
+
+        self.encoder_state = None
+
+        # Wait for device response
+        self.encoder_state_received.wait(0.2)
+        if(self.encoder_state_received.is_set()):
+            self.encoder_state_received.clear() # Clear Flag
+        ####################
+
+        return (self.motor_state, self.controller_state, self.encoder_state)
 
     # Calibrate motor
     def calibrate_motor(self, transport):
@@ -342,6 +371,17 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_MOTOR_STATE):
             self.motor_state = MotorState.unpack(packet[2:])
             self.motor_state_received.set()
+            #print(self.motor_state)
+        
+        elif(comm_id == CommandID.READ_CONTROLLER_STATE):
+            self.controller_state = ControllerState.unpack(packet[2:])
+            self.controller_state_received.set()
+            #print(self.controller_state)
+
+        elif(comm_id == CommandID.READ_ENCODER_STATE):
+            self.encoder_state = EncoderState.unpack(packet[2:])
+            self.encoder_state_received.set()
+            #print(self.encoder_state)
 
         elif(comm_id == CommandID.MEASURE_RESISTANCE):
             self.measurement = FloatMeasurement.unpack(packet[2:])

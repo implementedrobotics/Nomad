@@ -199,6 +199,86 @@ class MotorState:
         unpacked = cls.__packet.unpack(data)
         return MotorState(*unpacked)
 
+@dataclass
+class ControllerState:
+    __packet : ClassVar[struct.Struct] = struct.Struct('<21fI')
+    I_d: float = None
+    I_q: float = None
+    I_d_filt: float = None
+    I_q_filt: float = None
+    I_d_ref: float = None
+    I_q_ref: float = None
+    I_d_ref_filt: float = None
+    I_q_ref_filt: float = None
+    d_int: float = None
+    q_int: float = None
+    V_d_ref: float = None
+    V_q_ref: float = None
+    Voltage_bus: float = None
+    Pos_ref: float = None
+    Vel_ref: float = None
+    K_p: float = None
+    K_d: float = None
+    T_ff: float = None
+    dtc_A: float = None
+    dtc_B: float = None
+    dtc_C: float = None
+    timeout: int = None
+
+    def pack(self):
+        return self.__packet.pack(self.I_d,
+        self.I_q,
+        self.I_c,
+        self.I_d_filt,
+        self.I_q_filt,
+        self.I_d_ref,
+        self.I_q_ref,
+        self.I_d_ref_filt,
+        self.I_q_ref_filt,
+        self.d_int,
+        self.q_int,
+        self.V_d_ref,
+        self.V_q_ref,
+        self.Voltage_bus,
+        self.Pos_ref,
+        self.Vel_ref,
+        self.K_p,
+        self.K_d,
+        self.T_ff,
+        self.dtc_A,
+        self.dtc_B,
+        self.dtc_C,
+        self.timeout)
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = cls.__packet.unpack(data)
+        return ControllerState(*unpacked)
+
+@dataclass
+class EncoderState:
+    __packet : ClassVar[struct.Struct] = struct.Struct('<2i5f')
+    position_raw: int = None
+    num_rotations: int = None
+    position_elec: float = None
+    position_mech: float = None
+    velocity_elec: float = None
+    velocity_elec_filt: float = None
+    velocity_mech: float = None
+
+    def pack(self):
+        return self.__packet.pack(self.position_raw,
+        self.num_rotations,
+        self.position_elec,
+        self.position_mech,
+        self.velocity_elec,
+        self.velocity_elec_filt,
+        self.velocity_mech)
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = cls.__packet.unpack(data)
+        return EncoderState(*unpacked)
 
 @dataclass
 class FloatMeasurement:

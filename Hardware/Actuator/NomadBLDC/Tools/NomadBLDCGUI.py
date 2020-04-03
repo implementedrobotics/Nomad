@@ -398,10 +398,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.set_voltage_setpoint(0, v_q) 
     
     def SetTorqueSetPoint(self):
-        self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), self.torqueFF_spin.value()) 
+        self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), -self.torqueFF_spin.value()) 
         self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
         self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
-        arm = .458
+        arm = 0.490
         force = (self.torqueFF_spin.value()) / arm
         self.scaleValue.setText(f"{1000*(force/9.81)}")
 
@@ -463,10 +463,14 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
         
     def UpdateState(self, state):
-        if(state is not None):
+        if(state == True):
+            motor_state = self.nomad_dev.motor_state
+            controller_state = self.nomad_dev.controller_state
+            encoder_state = self.nomad_dev.encoder_state
+            #print(controller_state)
             max_current = self.nomad_dev.controller_config.current_limit
-            I_d, I_q = self.nomad_dev.dq0(state.theta_elec, state.I_a, state.I_b, state.I_c)
-            print(I_q)
+            I_d, I_q = self.nomad_dev.dq0(motor_state.theta_elec, motor_state.I_a, motor_state.I_b, motor_state.I_c)
+            #print(I_q)
            # print(state)
             self.idProgressVal.setFormat("I_d: {:0.2f} A".format(I_d))
             self.idProgressVal.setValue(abs(I_d/max_current)*100)
