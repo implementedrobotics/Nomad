@@ -1,0 +1,8 @@
+import sys
+from PyQt5.QtWidgets import QApplication
+import pyqtgraph as pg 
+
+app = QApplication(sys.argv)
+pg.plot(x = [0,1,2,3,4], y=[4,5,9,6,10])
+status = app.exec_()
+sys.exit(status)

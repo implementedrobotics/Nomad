@@ -29,7 +29,7 @@ float roundf(float x){
     }
     
 void limit_norm(float *x, float *y, float limit){
-    /// Scales the lenght of vector (x, y) to be <= limit ///
+    /// Scales the length of vector (x, y) to be <= limit ///
     float norm = sqrt(*x * *x + *y * *y);
     if(norm > limit){
         *x = *x * limit/norm;

@@ -32,6 +32,7 @@
 // Project Includes
 #include "mbed.h"
 #include "MotorController.h"
+#include "Logger.h"
 #include "../../math_ops.h"
 
 Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time),
@@ -49,13 +50,19 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.calib_current = 15.0f;
     config_.calib_voltage = 3.0f;
     config_.gear_ratio = 1.0f; // No Gearbox by default
-    config_.calibrated = false;
+    config_.calibrated = 0;
 
     // Update KV Calulations
     SetKV(K_v);
 
     // Setup Position Sensor
     rotor_sensor_ = new PositionSensorAS5x47(sample_time_, config_.num_pole_pairs);
+}
+
+void Motor::SetSampleTime(float sample_time)
+{
+    sample_time_ = sample_time;
+    rotor_sensor_->SetSampleTime(sample_time);
 }
 
 void Motor::Update()
@@ -107,13 +114,13 @@ bool Motor::Calibrate(MotorController *controller)
 
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
-    printf("\r\nCooling Down 3s...\r\n");
+    //printf("\r\nCooling Down 3s...\r\n");
     wait(3);
     
     // Offset Calibration
     CalibrateEncoderOffset(controller);
 
-    config_.calibrated = true; // Update Flag
+    config_.calibrated = 1; // Update Flag
     dirty_ = true;
 
     return true;
@@ -121,13 +128,17 @@ bool Motor::Calibrate(MotorController *controller)
 
 bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high)
 {
-    printf("\n\rMeasure Motor Inductance...\n\r");
+    //printf("\n\rMeasure Motor Inductance...\n\r");
 
     float test_voltages[2] = {voltage_low, voltage_high};
     float I_alpha[2] = {0.0f};
 
     static const int num_cycles = 3.0f / sample_time_; // Test runs for 3s;
 
+    measurement_t measurement;
+    measurement.f32 = 0.0f;
+
+    Logger::Instance().Print("[MOTOR] Measure Motor Inductance...\n");
     // Shutdown Phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
 
@@ -139,7 +150,9 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
             if (evt.status != osEventSignal)
             {
                 // motor->error = ERROR_PHASE_INDUCTANCE_MEASUREMENT_TIMEOUT;
-                printf("ERROR: Phase Inductance Measurement Timeout\n\r");
+                //printf("ERROR: Phase Inductance Measurement Timeout\n\r");
+                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
+                Logger::Instance().Print("ERROR: Phase Inductance Measurement Timeout\n");
                 return false;
             }
             if (i == 1) // When you step you are reading the previous step.  TODO: Make this Better!
@@ -161,20 +174,24 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
     // However, the discretisation in the current control loop inverts the same discrepancy
     float dI_by_dt = (I_alpha[1] - I_alpha[0]) / (sample_time_ * (float)num_cycles);
     float L = v_L / dI_by_dt;
-
+    measurement.f32 = L;
     // TODO: arbitrary values set for now
     if (L < 1e-6f || L > 500e-6f)
     {
         //motor->error = ERROR_PHASE_INDUCTANCE_OUT_OF_RANGE;
-        printf("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
+        //printf("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
+        //Logger::Instance().Print("Phase Inductance: %f Henries\n", L);
+        Logger::Instance().Print("ERROR: Inductance Measurement Out of Range: %f\n\r", L);
+        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
         return false;
     }
 
     // PMSM D/Q Inductance are the same.
     config_.phase_inductance_d = L;
     config_.phase_inductance_q = L;
-    printf("Phase Inductance: %f Henries\r\n", config_.phase_inductance_d);
 
+    Logger::Instance().Print("Phase Inductance: %f Henries\n", L);
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 
@@ -184,7 +201,13 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     static const int num_test_cycles = 3.0f / sample_time_; // Test runs for 3s
     float test_voltage = 0.0f;
 
-    printf("\n\rMeasure Motor Resistance...\n\r");
+    measurement_t measurement;
+    measurement.f32 = 0.0f;
+
+
+    Logger::Instance().Print("[MOTOR] Measure Motor Resistance...\n");
+    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+
 
     for (int i = 0; i < num_test_cycles; ++i)
     {
@@ -192,7 +215,9 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
         if (evt.status != osEventSignal)
         {
             // motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
-            printf("ERROR: Phase Resistance Measurement Timeout\n\r");
+            // Update Serial Interface
+            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
+            Logger::Instance().Print("ERROR: Phase Resistance Measurement Timeout\n");
             return false;
         }
 
@@ -209,25 +234,33 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     }
 
     float R = test_voltage / test_current;
+    measurement.f32 = R;
     if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f)
     {
-        // motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
-        printf("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
+        //motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
+        Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
+
+        // Update Serial Interface
+        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
+        config_.phase_resistance = R;
         return false;
     }
     config_.phase_resistance = R;
-    printf("Phase Resistance: %f ohms\r\n", config_.phase_resistance);
+    Logger::Instance().Print("Phase Resistance: %f ohms\n", config_.phase_resistance);
 
     // Shutdown the phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
 
     osDelay(200);
+
+    // Send Complete Feedback
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 
 bool Motor::OrderPhases(MotorController *controller)
 {
-    printf("\n\rRunning phase direction scan...\n\r");
+    Logger::Instance().Print("[MOTOR]: \n\rRunning phase direction scan...\n\r");
 
     float theta_start = 0;
     float theta_end = 0;
@@ -238,9 +271,13 @@ bool Motor::OrderPhases(MotorController *controller)
 
     config_.phase_order = 1;               // Reset Phase Order to Default
 
-    printf("Locking Rotor to D-Axis...\n\r");
+    // Feedback measurement
+    measurement_t measurement;
+    measurement.i32 = config_.phase_order;
+
+    //printf("Locking Rotor to D-Axis...\n\r");
     LockRotor(controller, rotor_lock_duration, test_voltage);
-    printf("Rotor stabilized.\n\r");
+    //printf("Rotor stabilized.\n\r");
 
     Update(); // Update State/Position Sensor
 
@@ -252,6 +289,9 @@ bool Motor::OrderPhases(MotorController *controller)
         if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
         {
             // TODO: Error
+            Logger::Instance().Print("[MOTOR]: \n\rPhase Direction Scan Timeout!\n\r");
+            // Send Complete Feedback
+            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
             return false;
         }
         // Set PWM Output
@@ -261,30 +301,39 @@ bool Motor::OrderPhases(MotorController *controller)
     }
     theta_end = state_.theta_mech_true;
 
-    printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
+    //printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
     if (theta_end - theta_start > 0)
     {
-        printf("Phase Order is CORRECT!\n\r");
+        Logger::Instance().Print("[MOTOR]: \n\rPhase Order CORRECT.\n\r");
+        //printf("Phase Order is CORRECT!\n\r");
         //rotor_sensor_->SetDirection(1);
         config_.phase_order = 1;
     }
     else
     {
         printf("Phase Order is INCORRECT!\n\r");
+        Logger::Instance().Print("[MOTOR]: \n\rPhase Order REVERSED.\n\r");
         //rotor_sensor_->SetDirection(-1);
         config_.phase_order = 0;
     }
+    measurement.i32 = config_.phase_order;
+    // Send Complete Feedback
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 
 bool Motor::CalibrateEncoderOffset(MotorController *controller)
 {
-    printf("\n\rRunning Encoder Offset/Eccentricity Calibration...\n\r");
+    Logger::Instance().Print("[MOTOR] Running Encoder Offset/Eccentricity Calibration......\n");
+
+
+    measurement_t elec_offset;
+    elec_offset.f32 = 0.0f;
 
     float rotor_lock_duration = 2.0f; // Rotor Lock Settling Time
     float *error_forward;  // Error Vector Forward Rotation
     float *error_backward; // Error Vector Backward Rotation
-    int32_t *lookup_table; // Lookup Table
+    int8_t *lookup_table; // Lookup Table
     int32_t *raw_forward;
     int32_t *raw_backward;
     float *error;
@@ -310,10 +359,10 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     //float cogging_current[window] = {0};
 
     const int32_t num_lookups = 128;
-    lookup_table = new int32_t[num_lookups]; // Clear the previous lookup table.
+    lookup_table = new int8_t[num_lookups]; // Clear the previous lookup table.
 
     // Zero Array.  Do this explicitly in case compilers vary
-    memset(lookup_table, 0, sizeof(int32_t)*num_lookups);
+    memset(lookup_table, 0, sizeof(int8_t)*num_lookups);
     rotor_sensor_->Reset();
     
     //rotor_sensor_->SetOffsetLUT(lookup_table);
@@ -331,24 +380,27 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     float theta_actual = 0;
     float test_voltage = config_.calib_current * config_.phase_resistance;
 
-    printf("Locking Rotor to D-Axis...\n\r");
+    //printf("Locking Rotor to D-Axis...\n\r");
 
     LockRotor(controller, rotor_lock_duration, test_voltage);
 
-    printf("Rotor stabilized.\n\r");
+    //printf("Rotor stabilized.\n\r");
     Update();   // Update State/Position Sensor
     osDelay(1); // Wait a ms
 
     // TODO: Cogging Current
 
-    printf("\n\rCalibrating Forwards Direction...\n\r");
+    //printf("\n\rCalibrating Forwards Direction...\n\r");
+    Logger::Instance().Print("[MOTOR] Calibrating Forwards Direction...\n");
     // Rotate Forward
     for (int32_t i = 0; i < num_samples; i++)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
-                 return false;
+                // Send Complete Feedback
+                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
+                return false;
             }
             theta_ref += delta;
             controller->SetModulationOutput(theta_ref, test_voltage, 0.0f);
@@ -369,9 +421,12 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     // Clear output
     //controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
 
-    printf("\r\nCooling Down 5s...\r\n");
-    wait(5); // 5 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
-    printf("\n\rCalibrating Backwards Direction...\n\r");
+
+    //printf("\r\nCooling Down 5s...\r\n");
+    //wait(5); // 5 Seconds.  Let Motor Cool a bit since we are running open loop.  Can get warm.
+    //printf("\n\rCalibrating Backwards Direction...\n\r");
+
+    Logger::Instance().Print("[MOTOR] Calibrating Backwards Direction...\n");
 
     // Rotate Backwards
     for (int32_t i = 0; i < num_samples; i++)
@@ -379,6 +434,8 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         for (int32_t j = 0; j < sub_samples; j++)
         {
             if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+                // Send Complete Feedback
+                CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
                  return false;
             }
             theta_ref -= delta;
@@ -410,6 +467,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         offset += 2 * PI;
 
     rotor_sensor_->SetElectricalOffset(offset); // Set Offset
+    elec_offset.f32 = offset;
 
     // Clear output
     controller->SetModulationOutput(theta_ref, 0.0f, 0.0f);
@@ -453,8 +511,9 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
 
     int32_t raw_offset = (raw_forward[0] + raw_backward[num_samples - 1]) / 2; //Insensitive to errors in this direction, so 2 points is plenty
 
-    printf("\n\r Encoder non-linearity compensation table\n\r");
-    printf(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
+    
+    //Logger::Instance().Print("\n\r Encoder non-linearity compensation table\n\r");
+    //Logger::Instance().Print(" Sample Number : Lookup Index : Lookup Value\n\r\n\r");
     for (int32_t i = 0; i < num_lookups; i++) // Build Lookup Table
     {
         int32_t index = (raw_offset >> 7) + i;
@@ -462,17 +521,18 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         {
             index -= num_lookups;
         }
-        lookup_table[index] = (int32_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
-        printf("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
+        lookup_table[index] = (int8_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
+        //Logger::Instance().Print("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
         //printf("%ld, %ld \n\r", i, lookup_table[index]);
-        wait(.001);
+        wait(.02);
     }
+
     // TODO: Not quite working. Need to fix.  For now don't compensate eccentricity
     rotor_sensor_->SetOffsetLUT(lookup_table); // Write Compensated Lookup Table
 
     //memcpy(controller->cogging, cogging_current, sizeof(controller->cogging));  //compensation doesn't actually work yet....
-    printf("\n\rEncoder Electrical Offset (rad) %f\n\r", offset);
-
+    //printf("\n\rEncoder Electrical Offset (rad) %f\n\r", offset);
+    Logger::Instance().Print("[MOTOR] Encoder Electrical Offset (rad) %f\n\r", offset);
     // Clear Memory
     delete[] error_forward; 
     delete[] error_backward;
@@ -482,6 +542,11 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     delete[] error;
     delete[] error_filtered;
 
+    // Shutdown the phases
+    controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Send Complete Feedback
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
     return true;
 }
 

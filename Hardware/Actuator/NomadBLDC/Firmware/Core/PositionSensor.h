@@ -42,8 +42,8 @@ public:
         float offset_elec;       // Electrical Position Offset (Radians)
         float offset_mech;       // Mechanical Position Offset (Radians)
         int32_t cpr;             // Sensor Counts Per Revolution
-        int32_t direction;       // Sensor Direction for Positive Rotation
-        int32_t offset_lut[128]; // Offset Lookup Table
+        //int32_t direction;       // Sensor Direction for Positive Rotation
+        int8_t offset_lut[128]; // Offset Lookup Table
     };
 
     PositionSensorAS5x47(float sample_time, uint32_t pole_pairs = 21, uint32_t cpr = 16384); // Constructor with some initial defaults.
@@ -51,19 +51,23 @@ public:
     void SetCPR(int32_t cpr);                     // Set Sensor Counts Per Revolution
     void SetElectricalOffset(float offset);       // Set Sensor Electrical Position Offset, Distance to A Axis (radians)
     void SetMechanicalOffset(float offset);       // Set Sensor Mechanical Position Offset, Output "zero" point (radians)
-    void SetOffsetLUT(int32_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
+    void SetOffsetLUT(int8_t lookup_table[128]); // Non-Linearity Lookup Table (Helps with position sensor installation offset)
     void SetPolePairs(uint32_t pole_pairs);       // Set Pole Pair Count for Electrical Position Calculations
     void SetDirection(int32_t direction);         // Sensor Direction
+    void SetSampleTime(float sample_time);        // Update controller sample rate
     void Reset();                                 // Reset position sensor to defaults, i.e. ignore any saved/restored settings
     void ZeroPosition(); // Zero Mechanical Position Offset
 
     inline int32_t GetCPR() { return config_.cpr;}
     inline int32_t GetRawPosition() { return position_raw_; }                                 // Get Sensor Raw Position (counts)
+    inline int32_t GetNumRotations() { return num_rotations_; }                 // Get number of sensor rotations
     inline float GetElectricalPosition() { return position_electrical_; }                    // Get Sensor Electrical Position w/ Offset, Distance to A Axis (radians)
     inline float GetMechanicalPosition() { return position_mechanical_; }                    // Get Sensor Mechanical Position w/ Offset, (radians)
     inline float GetMechanicalPositionTrue() { return (position_mechanical_ + config_.offset_mech); } // Get Sensor Real Mechanical Position without Offset, (radians)
     inline float GetElectricalVelocity() { return velocity_electrical_; }                    // Get Sensor Electrical Velocity (radians/sec)
+    inline float GetElectricalVelocityFiltered() { return velocity_electrical_filtered_ ; }                    // Get Sensor Electrical Velocity Filtered (radians/sec)
     inline float GetMechanicalVelocity() { return velocity_mechanical_ ; }                    // Get Sensor Mechanical Velocity (radians/sec)
+    
 
     void Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
     void Update(float Ts); // Update Position Sensor State w/ Sample Time (for velocity estimation)
