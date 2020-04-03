@@ -28,24 +28,24 @@
  * 
  */
 
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 0
-
 #define LED_PIN PC_5
 
 #include "mbed.h"
+#include "mbed_stats.h"
 #include "rtos.h"
 #include "Core/MotorController.h"
 #include "Core/LEDService.h"
 #include "Core/UserMenu.h"
+#include "Core/SerialHandler.h"
 #include "Core/FlashInterface.h"
 #include "Core/CANHandler.h"
+#include "Core/nomad_common.h"
+#include "Core/Logger.h"
 
 extern "C"
 {
     #include "Core/motor_controller_interface.h"
 }
-
 
 // Serial Handler
 Serial serial(PA_2, PA_3);
@@ -56,8 +56,10 @@ Serial serial(PA_2, PA_3);
 Thread control_task(osPriorityRealtime, 2048);
 
 // Debug/Print Thread
-Thread debug_task(osPriorityRealtime, 2048);
+//Thread debug_task(osPriorityRealtime, 2048);
 
+// Serial Communications Thread
+Thread comms_task(osPriorityNormal, 2048);
 
 // void enter_setup_state(void)
 // {
@@ -80,37 +82,6 @@ Thread debug_task(osPriorityRealtime, 2048);
 //     state_change = 0;
 // }
 
-/// Manage state machine with commands from serial terminal or configurator gui ///
-/// Called when data received over serial ///
-//void serial_interrupt(void)
-//{
-    // while (pc.readable())
-    // {
-    //     // else if (state == SETUP_MODE)
-    //     // {
-    //     //     if (c == 13)
-    //     //     {
-    //     //         switch (cmd_id)
-    //     //         {
-    //     //         case 'b':
-    //     //             I_BW = fmaxf(fminf(atof(cmd_val), 2000.0f), 100.0f);
-    //     //             break;
-    //     //         case 'l':
-    //     //             TORQUE_LIMIT = fmaxf(fminf(atof(cmd_val), 18.0f), 0.0f);
-    //     //             break;
-    //     //         }
-    //     // }
-    //     // else if (state == MOTOR_MODE)
-    //     // {
-    //     //     switch (c)
-    //     //     {
-    //     //     case 'd':
-    //     //         controller.i_q_ref = 0;
-    //     //         controller.i_d_ref = 0;
-    //     //     }
-    //     // }
-    // }
-//}
 
 int main()
 {
@@ -118,44 +89,59 @@ int main()
     LEDService::Instance().Init(LED_PIN);
     LEDService::Instance().Off();
 
-    serial.baud(921600); // set serial baud rate
+    // Set Baud Rate
+    serial.baud(115200);
+    
 
     // CAN Handler Init              //rx  //tx
     CANHandler *can = new CANHandler(PB_8, PB_9, 1000000);
 
-    printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
+    //printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
 
-    // Create Menus
-    MainMenu *main_menu = new MainMenu("Main Menu", 0x27, NULL, &enter_idle);
+    // // Create Menus
+    // MainMenu *main_menu = new MainMenu("Main Menu", 0x27, NULL, &enter_idle);
 
-    MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu, &enter_idle);
-    MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
-    MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
-    MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
-    MainMenu *show_config_mode = new MainMenu("Show Configuration", 'i', main_menu);
-    MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
-    MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
+    // MainMenu *motor_mode = new MainMenu("Motor Mode", 'm', main_menu, &enter_idle);
+    // MainMenu *calibrate_mode = new MainMenu("Calibrate Motor", 'c', main_menu);
+    // MainMenu *setup_mode = new MainMenu("Controller Setup", 's', main_menu);
+    // MainMenu *encoder_mode = new MainMenu("Encoder Setup", 'e', main_menu, &enter_idle);
+    // MainMenu *show_config_mode = new MainMenu("Show Configuration", 'i', main_menu);
+    // MainMenu *save_mode = new MainMenu("Write Configuration", 'w', main_menu, &save_configuration);
+    // MainMenu *restart_mode = new MainMenu("Restart System", 'r', main_menu, &reboot_system);
 
-    // Motor Mode
-    TorqueControlMenu *torque_mode = new TorqueControlMenu(" Torque Control Mode", 't', motor_mode, &start_torque_control);
-    MainMenu *current_mode = new MainMenu(" Current Control Mode", 'c', motor_mode, &start_current_control);
-    MainMenu *speed_mode = new MainMenu(" Speed Control Mode", 's', motor_mode, &start_speed_control);
-    MainMenu *voltage_mode = new MainMenu(" Voltage Control Mode", 'v', motor_mode, &start_voltage_control);
+    // // Motor Mode
+    // TorqueControlMenu *torque_mode = new TorqueControlMenu(" Torque Control Mode", 't', motor_mode, &start_torque_control);
+    // MainMenu *current_mode = new MainMenu(" Current Control Mode", 'c', motor_mode, &start_current_control);
+    // MainMenu *speed_mode = new MainMenu(" Speed Control Mode", 's', motor_mode, &start_speed_control);
+    // MainMenu *voltage_mode = new MainMenu(" Voltage Control Mode", 'v', motor_mode, &start_voltage_control);
 
-    MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
+    // MainMenu *measure_mode = new MainMenu(" Measure Motor Parameters", 'm', calibrate_mode, &measure_motor_parameters);
 
-    MainMenu *encoder_display_mode = new MainMenu(" Display Encoder Debug", 'd', encoder_mode, &show_encoder_debug);
-    MainMenu *encoder_zero_mode = new MainMenu(" Zero Encoder Mechanical Output", 'z', encoder_mode, &zero_encoder_offset);
+    // MainMenu *encoder_display_mode = new MainMenu(" Display Encoder Debug", 'd', encoder_mode, &show_encoder_debug);
+    // MainMenu *encoder_zero_mode = new MainMenu(" Zero Encoder Mechanical Output", 'z', encoder_mode, &zero_encoder_offset);
 
-    MainMenu *motor_config_show = new MainMenu(" Show Motor Configuration", 'm', show_config_mode, &show_motor_config);
-    MainMenu *controller_config_show = new MainMenu(" Show Controller Configuration", 'c', show_config_mode, &show_controller_config);
-    MainMenu *encoder_config_show = new MainMenu(" Show Encoder Configuration", 'e', show_config_mode, &show_encoder_config);
+    // MainMenu *motor_config_show = new MainMenu(" Show Motor Configuration", 'm', show_config_mode, &show_motor_config);
+    // MainMenu *controller_config_show = new MainMenu(" Show Controller Configuration", 'c', show_config_mode, &show_controller_config);
+    // MainMenu *encoder_config_show = new MainMenu(" Show Encoder Configuration", 'e', show_config_mode, &show_encoder_config);
 
-    NVIC_SetPriority(USART1_IRQn, 3); // Set Interrupt Priorities
+    NVIC_SetPriority(USART2_IRQn, 3); // Set Interrupt Priorities
 
-    UserMenu *user_menu = new UserMenu(&serial, main_menu);
-    user_menu->Show();
+    //UserMenu *user_menu = new UserMenu(&serial, main_menu);
+    //user_menu->Show();
+    SerialHandler *serial_handler = new SerialHandler(&serial);
 
+    //
+    //NVIC_DisableIRQ(USART1_IRQn);
+   // NVIC_DisableIRQ(USART2_IRQn);
+    //NVIC_DisableIRQ(USART3_IRQn);
+
+    //NVIC_DisableIRQ(UART4_IRQn);
+    //NVIC_DisableIRQ(UART5_IRQn);
+    //NVIC_DisableIRQ(USART6_IRQn);
+    // Start Logger
+    Logger::Instance();
+
+    Logger::Instance().Enable(true);
     // reset_observer(&observer); // Reset observer
 
     // printf(" ADC1 Offset: %d    ADC2 Offset: %d\n\r", controller.adc1_offset, controller.adc2_offset);
@@ -183,7 +169,11 @@ int main()
 
     control_task.start(motor_controller_thread_entry);
 
-    debug_task.start(debug_thread_entry);
+   // debug_task.start(debug_thread_entry);
+
+    comms_task.start(comms_thread_entry);
+
+    //printf("\n\r\n\r Implemented Robotics - Nomad BLDC v%d.%d Beta\n\r", VERSION_MAJOR, VERSION_MINOR);
     // TODO: Idle Task
 
 }

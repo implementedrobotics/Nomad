@@ -38,8 +38,13 @@ void debug_thread_entry();
 void current_measurement_cb();
 
 // UI Callbacks
-void measure_motor_parameters();
-void save_configuration();
+bool measure_motor_resistance();
+bool measure_motor_inductance();
+bool measure_motor_phase_order();
+bool measure_encoder_offset();
+
+bool measure_motor_parameters();
+bool save_configuration();
 void load_configuration();
 void restore_configuration();
 void reboot_system();
@@ -60,7 +65,7 @@ void set_control_mode(int mode);
 void set_controller_debug(bool debug);
 bool get_controller_debug();
 void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, float T_ff);
-
+void set_voltage_control_ref(float V_d, float V_q);
 
 #ifdef __cplusplus
 }
