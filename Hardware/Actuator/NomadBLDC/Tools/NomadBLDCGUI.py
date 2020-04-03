@@ -162,13 +162,33 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.graphicsView.setWindowTitle('pyqtgraph example: GraphicsLayout')
         self.graphicsView.setAntialiasing(True)
         self.graphicsView.setBackground('w')
-        self.graphicsView.enableMouse(False)
+        #self.graphicsView.enableMouse(False)
 
-        pg.setConfigOption('foreground', 'k')
-        test = layout.addPlot(title="Real Time Data Map")
+        #pg.setConfigOption('foreground', 'k')
+        test = layout.addPlot(title="Real Time Data Map", pen='r')
         test.showGrid(x=True, y=True)
-        test.setMouseEnabled(False)
+        #test.setMouseEnabled(False)
         test.setMenuEnabled(False)
+
+        self.dir = 1
+        self.duty = .5
+        self.data1 = np.zeros(500)
+        self.duty_width = int(self.duty * 500)
+
+        print(250-self.duty_width // 2)
+        print(self.duty_width)
+        duty_l = 250-self.duty_width // 2
+        self.data1[duty_l:duty_l + self.duty_width] = 1
+        #self.data1 = np.random.normal(size=500)
+        self.curve2 = test.plot(self.data1, pen='r')
+        self.sample_ptr1 = 0
+
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(self.UpdatePlots)
+        self.timer.start(50)
+
+
+
         #test.getAxis('left').setPen('b')
         #test.getAxis('bottom').setPen('b')
         #self.graphicsView.resize(800,600)
@@ -499,6 +519,34 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Autoscroll?
         if(self.autoScrollTerminalCheck.isChecked()):
             self.logTerminalEdit.ensureCursorVisible()
+
+    def UpdatePlots(self):
+            
+        if(self.nomad_dev.controller_state is None): 
+            return
+        self.duty = self.nomad_dev.controller_state.dtc_A #self.duty + 0.05 * self.dir #np.random.uniform(low=0.0, high=1.0)
+        if(self.duty is None):
+            return
+       # self.duty = min(self.duty, 0.8)
+       # if(self.duty >= 0.8):
+        #    self.dir = self.dir * -1
+            
+        self.data1 = np.zeros(500)
+        self.duty_width = int(self.duty * 500)
+
+        #print(250-self.duty_width // 2)
+        #print(self.duty_width)
+        #self.data1[250-self.duty_width // 2:self.duty_width] = 1
+        duty_l = 250-self.duty_width // 2
+        self.data1[duty_l:duty_l + self.duty_width] = 1
+
+        #self.data1[:-1] = self.data1[1:]  # shift data in the array one sample left
+                            # (see also: np.roll)
+        #self.data1[-1] = np.random.normal()
+
+        #self.sample_ptr1 += 1
+        self.curve2.setData(self.data1)
+        #self.curve2.setPos(self.sample_ptr1, 0)
 
 if __name__ == '__main__':
 

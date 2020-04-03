@@ -45,6 +45,8 @@ class NomadBLDC:
         self.controller_config = ControllerConfig()
 
         self.motor_state = MotorState()
+        self.controller_state = ControllerState()
+        self.encoder_state = EncoderState()
 
 
 
@@ -101,9 +103,18 @@ class NomadBLDC:
             return False
 
         state_config = self.commands.read_state(self.transport)
-        self.motor_state = state_config[0]
-        self.controller_state = state_config[1]
-        self.encoder_state = state_config[2]
+        if(state_config[0] is not None):
+            self.motor_state = state_config[0]
+
+        if(state_config[1] is not None):
+            self.controller_state = state_config[1]
+        
+        if(state_config[2] is not None):
+            self.encoder_state = state_config[2]
+
+
+        #self.controller_state = state_config[1]
+        #self.encoder_state = state_config[2]
 
         if(self.motor_state is None or self.controller_state is None or self.encoder_state is None):
             return False
