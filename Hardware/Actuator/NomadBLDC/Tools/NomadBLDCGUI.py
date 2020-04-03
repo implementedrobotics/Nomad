@@ -393,12 +393,12 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.enter_idle_mode()
 
     def SetVoltageSetPoint(self):
-        max_voltage = 5.0
+        max_voltage = 10.0
         v_q = max_voltage * self.voltageControlSlider.value()/1000.0
         self.nomad_dev.set_voltage_setpoint(0, v_q) 
     
     def SetTorqueSetPoint(self):
-        self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), -self.torqueFF_spin.value()) 
+        self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), self.torqueFF_spin.value()) 
         self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
         self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
         arm = 0.490
@@ -478,6 +478,16 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.iqProgressVal.setFormat("I_q: {:0.2f} A".format(I_q))
             self.iqProgressVal.setValue(abs(I_q/max_current)*100)
 
+            self.vdProgressVal.setFormat("V_d: {:0.2f} V".format(motor_state.V_d))
+            self.vdProgressVal.setValue(abs(motor_state.V_d/20.0)*100)
+
+            self.vqProgressVal.setFormat("V_q: {:0.2f} V".format(motor_state.V_q))
+            self.vqProgressVal.setValue(abs(motor_state.V_q/20.0)*100)
+
+
+            torque = (I_q * self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)
+            self.torqueProgressVal.setFormat("Torque: {:0.2f} N*m".format(torque))
+            self.torqueProgressVal.setValue(abs((torque)/(max_current*self.nomad_dev.motor_config.K_t*self.nomad_dev.motor_config.gear_ratio))*100)
 
             #print(state)
 
