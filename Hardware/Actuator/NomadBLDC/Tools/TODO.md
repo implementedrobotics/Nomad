@@ -12,3 +12,4 @@
 17. Fault status checking
 18. Load testing
 19. Thermal testing
+20. ZMQ for synchronization of threads

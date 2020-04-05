@@ -762,7 +762,13 @@ void MotorController::DoMotorControl()
     {
         motor->state_.V_d = motor_controller->state_.V_d_ref;
         motor->state_.V_q = motor_controller->state_.V_q_ref;
-        SetModulationOutput(motor->state_.theta_elec, motor->state_.V_d, motor->state_.V_q);
+        SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
+
+        // Update V_d/V_q
+        // TODO: Should probably have this more universal somewhere
+        dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
+        motor_->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
+        motor_->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
     {

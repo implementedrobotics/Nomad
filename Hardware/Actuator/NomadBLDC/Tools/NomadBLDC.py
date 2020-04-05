@@ -105,6 +105,7 @@ class NomadBLDC:
         state_config = self.commands.read_state(self.transport)
         if(state_config[0] is not None):
             self.motor_state = state_config[0]
+            #self.motor_state.I_a = 10
 
         if(state_config[1] is not None):
             self.controller_state = state_config[1]

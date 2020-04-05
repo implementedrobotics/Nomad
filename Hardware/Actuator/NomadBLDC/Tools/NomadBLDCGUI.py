@@ -6,12 +6,120 @@ import sys
 import time
 import threading
 import math
+import operator
 
 import numpy as np
 
 from NomadBLDC import NomadBLDC
 
 close_event = threading.Event()
+
+
+def getattr_nested(obj, nested_attr):
+    attrs = nested_attr.split(".")
+    ret = obj
+    for attr in attrs:
+            ret = getattr(ret, attr, None)
+            if ret is None:
+                return None
+    return ret
+
+class PlotData:
+    def __init__(self, size=500,default=0):
+        self.size = size
+        self.x = []
+        self.y = np.ones(size) * default
+        self.curve = None
+
+# Real Time Plotter
+class RealTimeDataPlotter:
+    def __init__(self, graphics_view):
+
+        self.max_data_pts = 500
+        self.enabled = True
+        self.plot_list = []
+        self.plot_data = [None] * self.max_data_pts
+        self.plot_items = {}
+
+        # Graphics View
+        self.layout = pg.GraphicsLayout(border=(100,100,100))
+        self.graphicsView = graphics_view
+        self.graphicsView.setCentralItem(self.layout)
+        self.graphicsView.show()
+        self.graphicsView.setAntialiasing(True)
+        self.graphicsView.setBackground('w')
+        pg.setConfigOption('antialias', True)
+        #self.graphicsView.enableMouse(False)
+
+        #self.dir = 1
+        self.duty = .5
+        self.data1 = np.zeros(10)
+        self.data2 = np.ones(10)
+        self.duty_width = int(self.duty * 500)
+
+        #print(250-self.duty_width // 2)
+        #print(self.duty_width)
+        duty_l = 250-self.duty_width // 2
+        self.data1[duty_l:duty_l + self.duty_width] = 1
+        #self.data1 = np.random.normal(size=500)
+       # self.curve2 = self.test.plot(self.data1, pen='r')
+       # self.curve1 = self.test.plot(self.data2, pen='b')
+       # self.test.clear()
+        #self.sample_ptr1 = 0
+
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(self.UpdatePlots)
+        self.timer.start(50)
+
+        #test.getAxis('left').setPen('b')
+        #test.getAxis('bottom').setPen('b')
+        #self.graphicsView.resize(800,600)
+
+    # TODO: Should be by index
+    def AddData(self, data, title='Title', row=0, col=0, pen='k', units=None, name=None, legend = False):
+        
+        plot_item = None
+        if(self.plot_items.get(f"{row}:{col}") is None):
+            # Not here.  Add it
+            plot_item = self.layout.addPlot(row=row, col=col, title=title)
+            plot_item.showGrid(x=True, y=True)
+            #plot_item.setMouseEnabled(False)
+            plot_item.setMenuEnabled(False)
+            plot_item.setLabel('left', '', units=units)
+            if(legend == True):
+                plot_item.addLegend()
+            # Update Dict
+            self.plot_items[f"{row}:{col}"] = plot_item
+        else:
+            plot_item = self.plot_items[f"{row}:{col}"]
+
+        
+        index = len(self.plot_list)
+        self.plot_data[index] = PlotData(size=500, default=0.0)
+        self.plot_data[index].curve = plot_item.plot(self.plot_data[index].y, pen=pen, name=name)
+        self.plot_list.append(data)
+
+    def UpdatePlots(self):
+
+        for idx, plot_item in enumerate(self.plot_list):
+            #print(getattr_nested(item[0], item[1]))
+            data_point = getattr_nested(plot_item[0], plot_item[1])
+            if(data_point is None or math.isnan(data_point)):
+                data_point = self.plot_data[idx].y[-1] # Copy in last data point, basically hold
+                continue
+                
+            self.plot_data[idx].y = np.roll(self.plot_data[idx].y, -1)
+            self.plot_data[idx].y[-1] = data_point
+            self.plot_data[idx].curve.setData(self.plot_data[idx].y)
+            #print(self.plot_data[idx].y)
+
+
+
+
+
+    def Clear(self):
+        self.plot_list.clear()
+        self.plot_locations.clear()
 
 # Background measurement signals
 class MeasurementUpdateSignals(QtCore.QObject):
@@ -32,7 +140,7 @@ class MeasurementUpdater(QtCore.QRunnable, QtCore.QObject):
         if(self.nomad_dev.connected):
             result = self.measure_fn()
             self.signals.completed.emit(result)
-            print(f"Result: {result}")
+            #print(f"Result: {result}")
 
 # Background work signals
 class BackgroundUpdaterSignals(QtCore.QObject):
@@ -143,9 +251,20 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.controllerFaultLabel.setText("")
         self.resetFaultButton.hide()
         
+        # Start Plotter Interface
+        self.rt_plotter = RealTimeDataPlotter(self.graphicsView)
+        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_a"), title='I(a)', row=0, col=0)
+        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_b"), title='I(b)', row=1, col=0)
+        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_c"), title='I(c)', row=2, col=0)
+
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_d"), title='D Axis Current', name='I(d)', units='A', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+
+
         # Start Updater
         self.updater = BackgroundUpdater(self.nomad_dev)
-        self.updater.period = 0.1 # Seconds
+        self.updater.period = 0.05 # Seconds
         self.updater.signals.updated.connect(self.UpdateSlot)
         self.updater.signals.updated_state.connect(self.UpdateState)
         
@@ -154,44 +273,6 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         # Callbacks
         self.nomad_dev.commands.set_logger_cb(self.UpdateLog)
 
-        # Graphics View Test
-
-        layout = pg.GraphicsLayout(border=(100,100,100))
-        self.graphicsView.setCentralItem(layout)
-        self.graphicsView.show()
-        self.graphicsView.setWindowTitle('pyqtgraph example: GraphicsLayout')
-        self.graphicsView.setAntialiasing(True)
-        self.graphicsView.setBackground('w')
-        #self.graphicsView.enableMouse(False)
-
-        #pg.setConfigOption('foreground', 'k')
-        test = layout.addPlot(title="Real Time Data Map", pen='r')
-        test.showGrid(x=True, y=True)
-        #test.setMouseEnabled(False)
-        test.setMenuEnabled(False)
-
-        self.dir = 1
-        self.duty = .5
-        self.data1 = np.zeros(500)
-        self.duty_width = int(self.duty * 500)
-
-        print(250-self.duty_width // 2)
-        print(self.duty_width)
-        duty_l = 250-self.duty_width // 2
-        self.data1[duty_l:duty_l + self.duty_width] = 1
-        #self.data1 = np.random.normal(size=500)
-        self.curve2 = test.plot(self.data1, pen='r')
-        self.sample_ptr1 = 0
-
-        self.timer = pg.QtCore.QTimer()
-        self.timer.timeout.connect(self.UpdatePlots)
-        self.timer.start(50)
-
-
-
-        #test.getAxis('left').setPen('b')
-        #test.getAxis('bottom').setPen('b')
-        #self.graphicsView.resize(800,600)
 
     def InitWindow(self):
         self.statusBar().showMessage('Not Connected')
@@ -224,6 +305,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
             # Load Configuration
             self.LoadConfiguration()
+            #print(self.nomad_dev.device_info[0])
 
         else: # Did not connect
             msgBox = QtWidgets.QMessageBox()
@@ -508,6 +590,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             torque = (I_q * self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)
             self.torqueProgressVal.setFormat("Torque: {:0.2f} N*m".format(torque))
             self.torqueProgressVal.setValue(abs((torque)/(max_current*self.nomad_dev.motor_config.K_t*self.nomad_dev.motor_config.gear_ratio))*100)
+
+          #  print(self.nomad_dev.motor_state)
+          #  print(item[1])
 
             #print(state)
 
