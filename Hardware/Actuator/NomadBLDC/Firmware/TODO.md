@@ -14,4 +14,6 @@
 13. Gate driver fault checking and reporting
 14. Software based current limits (RMS)
 15. Add Bus current
+16. Move V_d V_q back to controller state
+
 

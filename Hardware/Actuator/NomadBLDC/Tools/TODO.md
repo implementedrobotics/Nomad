@@ -1,15 +1,14 @@
 # PC/GUI TODO:
-5.  Change calibrate to valid configuration
-6.  Torque mode slider
-7.  Add timeouts to serial reads properly
-8.  Setup for more event based signalling
-9.  Add live plotting support
-10. Add Keep Alive Packet
-11. Put motor control modes in timed event/thread for Keep Alive
-12. Add support for checking port still open
-13. Send mutex/locking
-15. Validate active connection to control button events that require a connection
-17. Fault status checking
-18. Load testing
-19. Thermal testing
-20. ZMQ for synchronization of threads
+1.  Change calibrate to valid configuration
+2.  Torque mode slider
+3.  Add timeouts to serial reads properly
+4.  Setup for more event based signalling
+5. Add Keep Alive Packet
+6. Put motor control modes in timed event/thread for Keep Alive
+7. Add support for checking port still open
+8. Send mutex/locking
+9. Validate active connection to control button events that require a connection
+10. Fault status checking
+11. Load testing
+12. Thermal testing
+13. ZMQ for synchronization of threads
