@@ -65,7 +65,8 @@ void RMSCurrentLimiter::Reset()
 
 void RMSCurrentLimiter::AddCurrentSample(float sample)
 {
-    if (++sub_sample_idx_ >= num_sub_samples_)
+    //if (++sub_sample_idx_ >= num_sub_samples_)
+    if(sub_sample_idx_ % num_sub_samples_ == 0)
     {
         // Compute Average
         float I_avg = sub_sample_sum_ / num_sub_samples_;
