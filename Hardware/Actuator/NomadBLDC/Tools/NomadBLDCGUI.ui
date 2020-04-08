@@ -414,8 +414,11 @@ color:white</string>
          <property name="prefix">
           <string>Torque: </string>
          </property>
+         <property name="minimum">
+          <double>-20.000000000000000</double>
+         </property>
          <property name="maximum">
-          <double>10.000000000000000</double>
+          <double>20.000000000000000</double>
          </property>
          <property name="singleStep">
           <double>0.100000000000000</double>
@@ -1002,6 +1005,9 @@ color:white</string>
                     <property name="suffix">
                      <string> Nm/A</string>
                     </property>
+                    <property name="decimals">
+                     <number>3</number>
+                    </property>
                    </widget>
                   </item>
                   <item>
@@ -1014,6 +1020,9 @@ color:white</string>
                     </property>
                     <property name="suffix">
                      <string> Nm/A</string>
+                    </property>
+                    <property name="decimals">
+                     <number>3</number>
                     </property>
                    </widget>
                   </item>
@@ -1617,73 +1626,57 @@ color:white</string>
        <attribute name="title">
         <string>Logging</string>
        </attribute>
-       <widget class="QPushButton" name="pushButton">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>500</y>
-          <width>89</width>
-          <height>25</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Export...</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="autoScrollTerminalCheck">
-        <property name="geometry">
-         <rect>
-          <x>840</x>
-          <y>490</y>
-          <width>92</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Autoscroll</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="logTerminalEdit">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>230</y>
-          <width>1000</width>
-          <height>250</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>27</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>300</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>0</width>
-          <height>250</height>
-         </size>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="html">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+       <layout class="QGridLayout" name="gridLayout_16">
+        <item row="0" column="0" colspan="2">
+         <widget class="QTextEdit" name="logTerminalEdit">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>27</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>0</width>
+            <height>250</height>
+           </size>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="html">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>Export...</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="autoScrollTerminalCheck">
+          <property name="text">
+           <string>Autoscroll</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="developerTab">
        <attribute name="title">

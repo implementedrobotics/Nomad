@@ -113,10 +113,6 @@ class RealTimeDataPlotter:
             self.plot_data[idx].curve.setData(self.plot_data[idx].y)
             #print(self.plot_data[idx].y)
 
-
-
-
-
     def Clear(self):
         self.plot_list.clear()
         self.plot_locations.clear()
@@ -196,7 +192,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         super(NomadBLDCGUI, self).__init__()
         uic.loadUi("NomadBLDCGUI.ui", self) 
         self.InitWindow()
-        
+        self.idle = True
         # Thread Pool
         self.threadpool = QtCore.QThreadPool()
 
@@ -219,6 +215,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.torqueFF_spin.valueChanged.connect(self.SetTorqueSetPoint)
 
         # Update Torques
+        self.polePairVal.valueChanged.connect(self.UpdateTorqueOutput)
         self.KvVal.valueChanged.connect(self.UpdateTorqueOutput)
         self.gearRatioVal.valueChanged.connect(self.UpdateTorqueOutput)
 
@@ -234,7 +231,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.autoComputeGainsButton.clicked.connect(self.AutoComputeControllerGains)
 
         #self.resetConfigButton.clicked.connect(self.ResetConfiguration)
-        self.loadConfigButton.clicked.connect(self.LoadConfiguration)
+        self.loadConfigButton.clicked.connect(lambda: self.LoadConfiguration(True))
         self.saveConfigButton.clicked.connect(self.SaveConfiguration)
         self.connectInfoLabel.setText("Please plug in Nomad BLDC device and press Connect.")
         self.portInfoLabel.setText("")
@@ -308,7 +305,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.resetFaultButton.show()
 
             # Load Configuration
-            self.LoadConfiguration()
+            self.LoadConfiguration(False)
             #print(self.nomad_dev.device_info[0])
 
         else: # Did not connect
@@ -396,14 +393,21 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Reload config to display it.  This is kind of crap.  Should get a return from zero_mech fucntion.
         # Will do for now
-        self.LoadConfiguration()
+        self.LoadConfiguration(False)
 
     def UpdateTorqueOutput(self):
+
+        # sqrt(3) = 1.73205080757
+        flux_linkage = 60.0 / (1.73205080757 * self.KvVal.value() *  math.pi *  self.polePairVal.value() * 2)
+
+        K_t = flux_linkage * self.polePairVal.value() * 1.5
+
+        self.KtMotorVal.setValue(K_t)
         self.KtOutputVal.setValue(self.KtMotorVal.value() * self.gearRatioVal.value())
 
-    def LoadConfiguration(self):
+    def LoadConfiguration(self, show_confirm=True):
         # TODO: Error check and retry?
-        if(self.nomad_dev.load_configuration() is True):
+        if(self.nomad_dev.load_configuration() == True):
 
             # Motor
             self.polePairVal.setValue(self.nomad_dev.motor_config.num_pole_pairs)
@@ -444,8 +448,25 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.currentLimitVal.setValue(self.nomad_dev.controller_config.current_limit)
             self.torqueLimitVal.setValue(self.nomad_dev.controller_config.torque_limit)
 
+            if(show_confirm):
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setIcon(QtWidgets.QMessageBox.Information)
+                msgBox.setText("Configuration Loaded Successfully.")
+                msgBox.setWindowTitle("Nomad BLDC")
+                msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                msgBox.exec()
 
     def SaveConfiguration(self):
+
+        # Must be idle
+        if(self.idle != True): # Can only save when idle.  Will prevent blowups
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+            msgBox.setText("ERROR:  Controller must be IDLE to save.")
+            msgBox.setWindowTitle("Nomad BLDC")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.exec()
+            return
 
         # Update Motor Parameters
         self.nomad_dev.motor_config.num_pole_pairs = self.polePairVal.value()
@@ -488,7 +509,22 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.encoder_config.offset_elec = self.electricalOffsetVal.value()
         self.nomad_dev.encoder_config.offset_mech = self.mechanicalOffsetVal.value()
 
-        self.nomad_dev.save_configuration()
+        if(self.nomad_dev.save_configuration() != True):
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+            msgBox.setText("Configuration Save FAILED.")
+            msgBox.setWindowTitle("Nomad BLDC")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.exec()
+        else:
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Information)
+            msgBox.setText("Configuration Saved Successfully.\nPress OK to Reset")
+            msgBox.setWindowTitle("Nomad BLDC")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msgBox.exec()    
+            self.RestartDevice()
+
 
     def CalibrateDevice(self):
         self.nomad_dev.calibrate_motor()
@@ -574,6 +610,10 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.fetTempLabel.setText("FET Temp D: <b>{:0.4f}</b>".format(stats.fet_temp))
             self.motorTempLabel.setText("Motor Temp Q: <b>{:0.4f}</b>".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
+            if(stats.control_status == 0):
+                self.idle = True
+            else:
+                self.idle = False
         
     def UpdateState(self, state):
         if(state == True):

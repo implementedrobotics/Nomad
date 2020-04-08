@@ -248,10 +248,11 @@ public:
     Config_t config_; // Controller Configuration Parameters
     State_t state_;   // Controller State Struct
 
-        // PWM Variables
+    // PWM Variables
     uint16_t pwm_counter_period_ticks_;
     float controller_loop_freq_;
     float controller_update_period_;            // Controller Update Period (Seconds)
+    
 private:
 
     void DoMotorControl(); // Motor Control Loop

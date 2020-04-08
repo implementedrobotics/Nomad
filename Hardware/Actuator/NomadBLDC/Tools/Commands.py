@@ -94,6 +94,8 @@ class CommandHandler:
         self.inductance_measurement_complete = threading.Event()
         self.phase_order_measurement_complete = threading.Event()
         self.encoder_offset_measurement_complete = threading.Event()
+        self.write_flash_complete = threading.Event()
+        self.status = None
         self.measurement = None
         self.device_stats = None
         self.motor_config = None
@@ -189,6 +191,13 @@ class CommandHandler:
         # Tell controller to save the values to flash
         command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_FLASH, 0))
         transport.send_packet(command_packet)
+
+        # Wait for device response
+        self.write_flash_complete.wait(10)
+        if(self.write_flash_complete.is_set()):
+            self.write_flash_complete.clear() # Clear Flag
+            return self.status
+        return False
 
     # Load Configuration
     def load_configuration(self, transport):
@@ -399,6 +408,9 @@ class CommandHandler:
             self.measurement = FloatMeasurement.unpack(packet[2:])
             self.encoder_offset_measurement_complete.set()
 
+        elif(comm_id == CommandID.WRITE_FLASH):
+            self.status = bool(struct.unpack("<B", packet[2:])[0])
+            self.write_flash_complete.set()
 
 
 

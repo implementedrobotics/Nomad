@@ -842,6 +842,9 @@ void MotorController::CurrentControl()
     limit_norm(&motor_controller->state_.V_d, &motor_controller->state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
     // TODO: Do we need this linearization?
+    //float v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q)
+    //float dtc = v_ref / state_.Voltage_bus;
+
     float dtc_d = motor_controller->state_.V_d / state_.Voltage_bus;
     float dtc_q = motor_controller->state_.V_q / state_.Voltage_bus;
     //LinearizeDTC(&dtc_d);

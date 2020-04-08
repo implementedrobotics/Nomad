@@ -446,16 +446,22 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_WRITE_FLASH:
     {
         //Logger::Instance().Print("Writing\n");
-        bool status = save_configuration();
-        //Logger::Instance().Print("Write to Flash: %d", status);
-        // bool status = measure_motor_phase_order();
-        // Motor_config_packet_t packet;
-        // packet.comm_id = COMM_READ_MOTOR_CONFIG;
-        // packet.packet_length = sizeof(Motor::Config_t);
-        // packet.config = motor->config_;
+        bool status = false;
+        if(motor_controller->GetControlMode() == control_mode_type_t::IDLE_MODE)
+        {
+            status = save_configuration();
+        }
+        //bool status = save_configuration();
 
-        // // Send it
-        // hdlc_out.SendPacket((uint8_t *)&packet, sizeof(Motor_config_packet_t));
+        uint8_t buffer[3];
+        buffer[0] = COMM_WRITE_FLASH;
+        buffer[1] = 1;
+        buffer[2] = (uint32_t)status;
+
+        // Send it
+        hdlc_out.SendPacket((uint8_t *)&buffer, 3);
+
+        //Logger::Instance().Print("Write to Flash: %d", status);
         break;
     }
 
