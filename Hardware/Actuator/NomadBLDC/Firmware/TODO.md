@@ -12,8 +12,6 @@
 11. Move voltage ADC timer reading to own timer
 12. Should make sure controller is in "IDLE" state before resaving configs.  Also should restart to be sure on save
 13. Gate driver fault checking and reporting
-14. Software based current limits (RMS)
 15. Add Bus current
-16. Move V_d V_q back to controller state
-
+16. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
 
