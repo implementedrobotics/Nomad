@@ -1,4 +1,3 @@
-
 /*
  * RMSCurrentLimiter.cpp
  *
@@ -51,43 +50,54 @@ RMSCurrentLimiter::RMSCurrentLimiter(float continuous_current, float period, flo
     I_CONT_SQUARED = I_continuous * I_continuous;
     ONE_OVER_DT = 1.0f / d_t_;
     ONE_OVER_T = 1.0f / T_;
+
+    Reset();
 }
 
 void RMSCurrentLimiter::Reset()
 {
-    I_rms = 0.0f;
-    I_max = 0.0f;
+   // I_rms = 0.0f;
+   // I_max = I_continuous;
+
     sub_sample_idx_ = 0;
     sub_sample_sum_ = 0.0f;
     running_sum_ = 0.0f;
     sampling_window_->reset();
+
+    ComputeRMSCurrent();
+    ComputeMaxAllowableCurrent();
 }
 
 void RMSCurrentLimiter::AddCurrentSample(float sample)
 {
-    //if (++sub_sample_idx_ >= num_sub_samples_)
-    if(sub_sample_idx_ % num_sub_samples_ == 0)
+    //std::cout << "Adding: " << sample << std::endl;
+
+
+    // Update sub sample
+    sub_sample_sum_ += sample;
+    sub_sample_idx_++;
+    
+    if (sub_sample_idx_ >= num_sub_samples_) // Subsample average computed
     {
-        // Compute Average
+        // Compute sub sample current average
         float I_avg = sub_sample_sum_ / num_sub_samples_;
-        if (sampling_window_->full())
+        if (sampling_window_->full()) // Full?  Pop off and subtract from running average
         {
             running_sum_ -= sampling_window_->peak();
-            //std::cout << "i: " << i << " Buffer Full.  Removing: " << pop_value << std::endl;
         }
-        float sample_dt = (I_avg * I_avg) * d_t_;
-        running_sum_ += sample_dt;
-        sampling_window_->put(sample_dt);
 
+        float sample_dt = (I_avg * I_avg) * d_t_;
+        running_sum_ += sample_dt; // Update Running sum
+        sampling_window_->put(sample_dt); // Add value to RMS current window
+
+        // Compute RMS Values at current time step
         ComputeRMSCurrent();
         ComputeMaxAllowableCurrent();
 
+        // Reset sub sample datar
         sub_sample_sum_ = 0.0f;
         sub_sample_idx_ = 0;
     }
-
-    sub_sample_sum_ += sample;
-    sub_sample_idx_++;
 }
 
 float RMSCurrentLimiter::GetRMSCurrent()

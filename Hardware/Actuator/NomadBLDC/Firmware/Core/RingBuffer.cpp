@@ -26,14 +26,15 @@
 #include "RingBuffer.h"
 
 // C System Files
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
+//#include <math.h>
+//#include <stdio.h>
+//#include <string.h>
 
 // C++ System Files
-#include <iostream>
+//#include <iostream>
 
 // Project Includes
+#include "mbed.h"
 
 RingBuffer::RingBuffer(size_t buffer_size) : head_(0),
                                              tail_(0),
@@ -96,6 +97,7 @@ void RingBuffer::put(float val)
     //    head_ -= buffer_size_;
     if (++head_ >= buffer_size_)
         head_ = 0;
+    
     full_ = head_ == tail_;
 }
 float RingBuffer::peak()

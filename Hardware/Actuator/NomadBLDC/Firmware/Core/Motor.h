@@ -46,14 +46,17 @@ public:
         float I_a;            // Phase A Currents
         float I_b;            // Phase B Currents
         float I_c;            // Phase C Currents
-        float V_d;            // Voltage (D Axis)
-        float V_q;            // Voltage (Q Axis)
+
+        //float V_a;          // Phase A Voltage
+        //float V_b;          // Phase B Voltage
+        //float V_c;          // Phase C Voltage
 
         float theta_mech;     // Mechanical Position @ Output (Radians)
         float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
         float theta_mech_true;// Mechanical Position @ Output w/ Offset (Radians) 
         float theta_elec;     // Electrical Position @ Rotor (Radians)
         float theta_elec_dot; // Electrical Velocity @ Rotor (Radians/Sec)
+
         float windings_temp;  // Motor Windings Temperature (Degrees Celcius)
     };
 
@@ -61,18 +64,28 @@ public:
     struct Config_t
     {
         uint32_t num_pole_pairs;  // Pole Pairs of Motor (PAIRS)
+        float continuous_current_max; // Thermally calibrated Allowable Continuous Current (A)
+        float continuous_current_tau; // Time Constant for Continuous Current (Seconds)
         float phase_resistance;   // Phase Resistance (Ohms)
         float phase_inductance_d; // D Axis Phase Inductance (Henries)
         float phase_inductance_q; // Q Axis Phase Inductance (Henries)
+
+        // TODO: Just flux linkage?
         float K_v;                // Motor KV Rating (RPM/V)
         float flux_linkage;       // Rotor Flux Linkage (Webers)
         float K_t;                // Torque Constant (N*m/A)
+
+        // TOOD: No need to store this.  K_t * K_t_out
         float K_t_out;            // Torque Constant @ Output (N*m/A)
         // TODO: Custom override for torques if measured experimentally?
         float gear_ratio;         // Gear Box Ratio
         int32_t phase_order;      // Winding Phase Order
+
+        // TODO: Kill these 2 and pass in per calibration
         float calib_current;      // Calibration Current
         float calib_voltage;      // Calibration Voltage
+
+        // TODO: This has to be better
         int32_t calibrated;          // Calibrated
     };
 

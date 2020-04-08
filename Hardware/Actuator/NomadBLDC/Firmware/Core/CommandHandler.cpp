@@ -250,9 +250,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.control_status = motor_controller->GetControlMode();
         stats.voltage_bus = motor_controller->state_.Voltage_bus;
         stats.driver_temp = 60.2f;
-        stats.fet_temp = motor->state_.V_q;
-        stats.motor_temp = motor_controller->state_.I_q;
-
+        stats.fet_temp = 80.0f;
+        stats.motor_temp = 80.0f;
 
         // Send it
         hdlc_out.SendPacket((uint8_t *)&stats, sizeof(Device_stats_t));
@@ -333,7 +332,8 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         memcpy(&motor->config_, config, sizeof(Motor::Config_t));
 
 
-        //Logger::Instance().Print("Motor Config Write Test: %d\n", motor->config_.num_pole_pairs);
+       // Logger::Instance().Print("Motor Config Write Test: %f\n", motor->config_.phase_inductance_d);
+       // Logger::Instance().Print("Motor Config Write Test: %f\n", motor->config_.phase_inductance_q);
        // Logger::Instance().Print("Motor Config Write Test: %f\n", motor->config_.phase_resistance);
         break;
         // TODO: Return status
@@ -345,7 +345,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         MotorController::Config_t *config = (MotorController::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
         memcpy(&motor_controller->config_, config, sizeof(MotorController::Config_t));
 
-
+      //  Logger::Instance().Print("Controller Config Write Test: \n");
        // Logger::Instance().Print("Controller Config Write Test: %f\n", motor_controller->config_.pwm_freq);
        // Logger::Instance().Print("Controller Config Write Test: %f\n", motor_controller->config_.alpha);
         break;
@@ -445,8 +445,9 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     // Write Configs
     case COMM_WRITE_FLASH:
     {
+        //Logger::Instance().Print("Writing\n");
         bool status = save_configuration();
-        Logger::Instance().Print("Write to Flash: %d", status);
+        //Logger::Instance().Print("Write to Flash: %d", status);
         // bool status = measure_motor_phase_order();
         // Motor_config_packet_t packet;
         // packet.comm_id = COMM_READ_MOTOR_CONFIG;

@@ -12,3 +12,4 @@
 11. Load testing
 12. Thermal testing
 13. ZMQ for synchronization of threads
+14. Change KV needs to update Kt values

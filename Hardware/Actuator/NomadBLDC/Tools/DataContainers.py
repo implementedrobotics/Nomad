@@ -60,9 +60,10 @@ class DeviceInfo:
 
 @dataclass
 class MotorConfig:
-    #__fmt = "<I8fiffi"
-    __packet : ClassVar[struct.Struct] = struct.Struct('<I8fiffi')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<I10fiffi')
     num_pole_pairs: int = None
+    continuous_current_max: float = None
+    continuous_current_tau: float = None
     phase_resistance: float = None
     phase_inductance_d: float = None
     phase_inductance_q: float = None
@@ -78,6 +79,8 @@ class MotorConfig:
 
     def pack(self):
         return self.__packet.pack(self.num_pole_pairs,
+        self.continuous_current_max,
+        self.continuous_current_tau,
         self.phase_resistance,
         self.phase_inductance_d,
         self.phase_inductance_q,
@@ -167,12 +170,13 @@ class EncoderConfig:
 @dataclass
 class MotorState:
     #__fmt = "<16fI"
-    __packet : ClassVar[struct.Struct] = struct.Struct('<11f')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<9f')
     I_a: float = None
     I_b: float = None
     I_c: float = None
-    V_d: float = None
-    V_q: float = None
+    #V_a: float = None
+    #V_b: float = None
+    #V_c: float = None
     theta_mech: float = None
     theta_mech_dot: float = None
     theta_mech_true: float = None
@@ -185,8 +189,9 @@ class MotorState:
         return self.__packet.pack(self.I_a,
         self.I_b,
         self.I_c,
-        self.V_d,
-        self.V_q,
+        #self.V_a,
+        #self.V_b,
+        #self.V_c,
         self.theta_mech,
         self.theta_mech_dot,
         self.theta_mech_true,
@@ -201,7 +206,7 @@ class MotorState:
 
 @dataclass
 class ControllerState:
-    __packet : ClassVar[struct.Struct] = struct.Struct('<21fI')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<25fI')
     I_d: float = None
     I_q: float = None
     I_d_filt: float = None
@@ -212,6 +217,8 @@ class ControllerState:
     I_q_ref_filt: float = None
     d_int: float = None
     q_int: float = None
+    V_d: float = None
+    V_q: float = None
     V_d_ref: float = None
     V_q_ref: float = None
     Voltage_bus: float = None
@@ -223,6 +230,8 @@ class ControllerState:
     dtc_A: float = None
     dtc_B: float = None
     dtc_C: float = None
+    I_rms: float = None
+    I_max: float = None
     timeout: int = None
 
     def pack(self):
@@ -237,6 +246,8 @@ class ControllerState:
         self.I_q_ref_filt,
         self.d_int,
         self.q_int,
+        self.V_d,
+        self.V_q,
         self.V_d_ref,
         self.V_q_ref,
         self.Voltage_bus,

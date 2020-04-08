@@ -257,11 +257,14 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_b"), title='I(b)', row=1, col=0)
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_c"), title='I(c)', row=2, col=0)
 
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
 
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_max"), title='Max Current Demand', name='I(max)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('g', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_rms"), title='Motor RMS Current', name='I(rms)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
 
         # Start Updater
         self.updater = BackgroundUpdater(self.nomad_dev)
@@ -399,7 +402,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.KtOutputVal.setValue(self.KtMotorVal.value() * self.gearRatioVal.value())
 
     def LoadConfiguration(self):
-        if(self.nomad_dev.load_configuration() is not None):
+        # TODO: Error check and retry?
+        if(self.nomad_dev.load_configuration() is True):
 
             # Motor
             self.polePairVal.setValue(self.nomad_dev.motor_config.num_pole_pairs)
@@ -407,9 +411,12 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.gearRatioVal.setValue(self.nomad_dev.motor_config.gear_ratio)
             self.KtMotorVal.setValue(self.nomad_dev.motor_config.K_t)
             self.KtOutputVal.setValue(self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)
-            self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance)
-            self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_q)
+            self.phaseResistanceVal.setValue(self.nomad_dev.motor_config.phase_resistance*1e3)
+            #self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_d*1e6)
+            self.phaseInductanceVal.setValue(self.nomad_dev.motor_config.phase_inductance_q*1e6)
             self.phaseOrderCombo.setCurrentIndex(self.nomad_dev.motor_config.phase_order)
+            self.contCurrentVal.setValue(self.nomad_dev.motor_config.continuous_current_max)
+            self.thermalTauVal.setValue(self.nomad_dev.motor_config.continuous_current_tau)
 
             # Encoder
             self.encoderCPRVal.setValue(self.nomad_dev.encoder_config.cpr)
@@ -442,12 +449,15 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Update Motor Parameters
         self.nomad_dev.motor_config.num_pole_pairs = self.polePairVal.value()
+        self.nomad_dev.motor_config.continuous_current_max = self.contCurrentVal.value()
+        self.nomad_dev.motor_config.continuous_current_tau = self.thermalTauVal.value()
         self.nomad_dev.motor_config.K_v = self.KvVal.value()
         self.nomad_dev.motor_config.gear_ratio = self.gearRatioVal.value()
         self.nomad_dev.motor_config.K_t = self.KtMotorVal.value()
         self.nomad_dev.motor_config.K_t_out = self.KtOutputVal.value()
-        self.nomad_dev.motor_config.phase_resistance = self.phaseResistanceVal.value()
-        self.nomad_dev.motor_config.phase_inductance_d = self.phaseInductanceVal.value()
+        self.nomad_dev.motor_config.phase_resistance = self.phaseResistanceVal.value()*1e-3
+        self.nomad_dev.motor_config.phase_inductance_d = self.phaseInductanceVal.value()*1e-6
+        self.nomad_dev.motor_config.phase_inductance_q = self.phaseInductanceVal.value()*1e-6
         self.nomad_dev.motor_config.phase_order = self.phaseOrderCombo.currentIndex()
 
         #TODO: This should be based on the success of the calibration procedure.  
@@ -514,8 +524,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         control_loop_freq = pwm_freq / self.loopFreqDividerVal.value()
         control_loop_period = 1.0 / control_loop_freq
         current_bandwidth = self.loopBandwidthVal.value()
-        R_phase = self.phaseResistanceVal.value()
-        L_phase = self.phaseInductanceVal.value()
+        R_phase = self.phaseResistanceVal.value()*1e-3
+        L_phase = self.phaseInductanceVal.value()*1e-6
 
         crossover_freq = current_bandwidth * control_loop_period * 2 * math.pi
         k_i = 1 - math.exp(-R_phase * control_loop_period / L_phase)
@@ -581,11 +591,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.iqProgressVal.setFormat("I_q: {:0.2f} A".format(I_q))
             self.iqProgressVal.setValue(abs(I_q/max_current)*100)
 
-            self.vdProgressVal.setFormat("V_d: {:0.2f} V".format(motor_state.V_d))
-            self.vdProgressVal.setValue(abs(motor_state.V_d/20.0)*100)
+            self.vdProgressVal.setFormat("V_d: {:0.2f} V".format(controller_state.V_d))
+            self.vdProgressVal.setValue(abs(controller_state.V_d/20.0)*100)
 
-            self.vqProgressVal.setFormat("V_q: {:0.2f} V".format(motor_state.V_q))
-            self.vqProgressVal.setValue(abs(motor_state.V_q/20.0)*100)
+            self.vqProgressVal.setFormat("V_q: {:0.2f} V".format(controller_state.V_q))
+            self.vqProgressVal.setValue(abs(controller_state.V_q/20.0)*100)
 
 
             torque = (I_q * self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)

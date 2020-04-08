@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1442</width>
-    <height>750</height>
+    <width>1450</width>
+    <height>876</height>
    </rect>
   </property>
   <property name="font">
@@ -625,7 +625,7 @@ color:white</string>
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="configTab">
        <attribute name="title">
@@ -785,87 +785,6 @@ color:white</string>
                 <string>Parameters</string>
                </property>
                <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="0">
-                 <layout class="QVBoxLayout" name="verticalLayout">
-                  <item>
-                   <widget class="QSpinBox" name="polePairVal">
-                    <property name="prefix">
-                     <string>Pole Pairs: </string>
-                    </property>
-                    <property name="minimum">
-                     <number>1</number>
-                    </property>
-                    <property name="value">
-                     <number>21</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QSpinBox" name="KvVal">
-                    <property name="suffix">
-                     <string> RPM/V</string>
-                    </property>
-                    <property name="prefix">
-                     <string>Kv: </string>
-                    </property>
-                    <property name="maximum">
-                     <number>5000</number>
-                    </property>
-                    <property name="value">
-                     <number>100</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QDoubleSpinBox" name="gearRatioVal">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                    <property name="prefix">
-                     <string>Gear Ratio: </string>
-                    </property>
-                    <property name="suffix">
-                     <string> : 1</string>
-                    </property>
-                    <property name="minimum">
-                     <double>0.010000000000000</double>
-                    </property>
-                    <property name="value">
-                     <double>6.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QDoubleSpinBox" name="KtMotorVal">
-                    <property name="readOnly">
-                     <bool>true</bool>
-                    </property>
-                    <property name="prefix">
-                     <string>Kt Motor: </string>
-                    </property>
-                    <property name="suffix">
-                     <string> Nm/A</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QDoubleSpinBox" name="KtOutputVal">
-                    <property name="readOnly">
-                     <bool>true</bool>
-                    </property>
-                    <property name="prefix">
-                     <string>Kt Output: </string>
-                    </property>
-                    <property name="suffix">
-                     <string> Nm/A</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
                 <item row="0" column="1">
                  <layout class="QVBoxLayout" name="verticalLayout_3">
                   <item>
@@ -876,13 +795,13 @@ color:white</string>
                        <string>Phase Resistance: </string>
                       </property>
                       <property name="suffix">
-                       <string> mohms</string>
+                       <string> mΩ</string>
                       </property>
                       <property name="decimals">
-                       <number>7</number>
+                       <number>2</number>
                       </property>
                       <property name="singleStep">
-                       <double>0.005000000000000</double>
+                       <double>0.100000000000000</double>
                       </property>
                      </widget>
                     </item>
@@ -890,7 +809,7 @@ color:white</string>
                      <widget class="QPushButton" name="measurePhaseResistanceButton">
                       <property name="minimumSize">
                        <size>
-                        <width>88</width>
+                        <width>25</width>
                         <height>0</height>
                        </size>
                       </property>
@@ -921,13 +840,13 @@ color:white</string>
                        <string>Phase Inductance: </string>
                       </property>
                       <property name="suffix">
-                       <string> H</string>
+                       <string> mH</string>
                       </property>
                       <property name="decimals">
-                       <number>7</number>
+                       <number>1</number>
                       </property>
                       <property name="singleStep">
-                       <double>0.000500000000000</double>
+                       <double>0.100000000000000</double>
                       </property>
                      </widget>
                     </item>
@@ -1019,6 +938,113 @@ color:white</string>
                   </item>
                  </layout>
                 </item>
+                <item row="0" column="0">
+                 <layout class="QVBoxLayout" name="verticalLayout">
+                  <item>
+                   <widget class="QSpinBox" name="polePairVal">
+                    <property name="prefix">
+                     <string>Pole Pairs: </string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="value">
+                     <number>21</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="KvVal">
+                    <property name="suffix">
+                     <string> RPM/V</string>
+                    </property>
+                    <property name="prefix">
+                     <string>Kv: </string>
+                    </property>
+                    <property name="maximum">
+                     <number>5000</number>
+                    </property>
+                    <property name="value">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="gearRatioVal">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="prefix">
+                     <string>Gear Ratio: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> : 1</string>
+                    </property>
+                    <property name="minimum">
+                     <double>0.010000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>6.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="KtMotorVal">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="prefix">
+                     <string>Kt Motor: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> Nm/A</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="KtOutputVal">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="prefix">
+                     <string>Kt Output: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> Nm/A</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="contCurrentVal">
+                    <property name="prefix">
+                     <string>Cont. Current: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> A</string>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="thermalTauVal">
+                    <property name="prefix">
+                     <string>Thermal tau: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> s</string>
+                    </property>
+                    <property name="value">
+                     <double>0.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
                </layout>
               </widget>
              </item>
@@ -1058,391 +1084,401 @@ color:white</string>
           <property name="title">
            <string>Controller Configuration</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="7" column="0">
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
+          <layout class="QGridLayout" name="gridLayout_15">
            <item row="0" column="0">
-            <widget class="QGroupBox" name="groupBox_4">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="title">
-              <string>Field Oriented Control</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="7" column="0">
-               <widget class="QDoubleSpinBox" name="refFilterCoefficientVal">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="toolTip">
-                 <string>Alpha current reference filter cooeficient</string>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-                <property name="buttonSymbols">
-                 <enum>QAbstractSpinBox::NoButtons</enum>
-                </property>
-                <property name="prefix">
-                 <string>Reference Filter Coefficient: </string>
-                </property>
-                <property name="suffix">
-                 <string/>
-                </property>
-                <property name="decimals">
-                 <number>5</number>
-                </property>
-                <property name="minimum">
-                 <double>-100.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>100.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.005000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QDoubleSpinBox" name="loopGainQAxisVal">
-                <property name="prefix">
-                 <string>Loop Gain (Q Axis): </string>
-                </property>
-                <property name="suffix">
-                 <string/>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="singleStep">
-                 <double>0.010000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QDoubleSpinBox" name="integratorGainQAxisVal">
-                <property name="prefix">
-                 <string>Integrator Gain (Q Axis): </string>
-                </property>
-                <property name="suffix">
-                 <string/>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="singleStep">
-                 <double>0.010000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0">
-               <widget class="QPushButton" name="autoComputeGainsButton">
-                <property name="text">
-                 <string>Auto Compute Controller Gains</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QDoubleSpinBox" name="loopBandwidthVal">
-                <property name="prefix">
-                 <string>Loop Bandwidth: </string>
-                </property>
-                <property name="suffix">
-                 <string> hz</string>
-                </property>
-                <property name="decimals">
-                 <number>2</number>
-                </property>
-                <property name="minimum">
-                 <double>200.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>2000.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>1000.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QDoubleSpinBox" name="integratorGainDAxisVal">
-                <property name="prefix">
-                 <string>Integrator Gain (D Axis): </string>
-                </property>
-                <property name="suffix">
-                 <string/>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="singleStep">
-                 <double>0.010000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <item>
-                 <widget class="QDoubleSpinBox" name="pwmFreqVal">
-                  <property name="maximumSize">
-                   <size>
-                    <width>200</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
+            <layout class="QGridLayout" name="gridLayout_5">
+             <item row="0" column="0">
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="baseSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Field Oriented Control</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="0" column="0">
+                 <layout class="QGridLayout" name="gridLayout_7">
+                  <item row="0" column="0">
+                   <widget class="QDoubleSpinBox" name="pwmFreqVal">
+                    <property name="maximumSize">
+                     <size>
+                      <width>200</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="prefix">
+                     <string>PWM Freq.: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> hz</string>
+                    </property>
+                    <property name="decimals">
+                     <number>2</number>
+                    </property>
+                    <property name="maximum">
+                     <double>50000.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>1000.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>40000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QSpinBox" name="loopFreqDividerVal">
+                    <property name="toolTip">
+                     <string>Control Loop Frequency Divider</string>
+                    </property>
+                    <property name="prefix">
+                     <string>Loop Freq. Divider: </string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>4</number>
+                    </property>
+                    <property name="value">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="overmodulationPercentageVal">
+                    <property name="prefix">
+                     <string>Overmodulation Percentage: </string>
+                    </property>
+                    <property name="suffix">
+                     <string>%</string>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>150.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>100.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="loopBandwidthVal">
+                    <property name="prefix">
+                     <string>Loop Bandwidth: </string>
+                    </property>
+                    <property name="suffix">
+                     <string> hz</string>
+                    </property>
+                    <property name="decimals">
+                     <number>2</number>
+                    </property>
+                    <property name="minimum">
+                     <double>200.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>2000.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>1000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="loopGainDAxisVal">
+                    <property name="prefix">
+                     <string>Loop Gain (D Axis): </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="loopGainQAxisVal">
+                    <property name="prefix">
+                     <string>Loop Gain (Q Axis): </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="integratorGainDAxisVal">
+                    <property name="prefix">
+                     <string>Integrator Gain (D Axis): </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="integratorGainQAxisVal">
+                    <property name="prefix">
+                     <string>Integrator Gain (Q Axis): </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.010000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="7" column="0" colspan="2">
+                   <widget class="QDoubleSpinBox" name="refFilterCoefficientVal">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="toolTip">
+                     <string>Alpha current reference filter cooeficient</string>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="prefix">
+                     <string>Reference Filter Coefficient: </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>5</number>
+                    </property>
+                    <property name="minimum">
+                     <double>-100.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>100.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.005000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="0" colspan="2">
+                   <widget class="QPushButton" name="autoComputeGainsButton">
+                    <property name="text">
+                     <string>Auto Compute Controller Gains</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QGroupBox" name="groupBox_3">
+               <property name="title">
+                <string>Torque Control</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_6">
+                <item row="0" column="0">
+                 <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <item>
+                   <widget class="QDoubleSpinBox" name="posGainMinVal">
+                    <property name="prefix">
+                     <string>Pos. Gain [Min]: </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="posGainMaxVal">
+                    <property name="prefix">
+                     <string>Pos. Gain [Max]: </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>500.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>500.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="0">
+                 <layout class="QHBoxLayout" name="horizontalLayout_9">
+                  <item>
+                   <widget class="QDoubleSpinBox" name="velGainMinVal">
+                    <property name="prefix">
+                     <string>Vel. Gain [Min]: </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="velGainMaxVal">
+                    <property name="prefix">
+                     <string>Vel. Gain [Max]: </string>
+                    </property>
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                    <property name="maximum">
+                     <double>5.000000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>5.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QGroupBox" name="groupBox_5">
+               <property name="title">
+                <string>Actuator Limits</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_8">
+                <item row="0" column="0">
+                 <widget class="QDoubleSpinBox" name="velLimitVal">
                   <property name="prefix">
-                   <string>PWM Freq.: </string>
+                   <string>Velocity Limit: </string>
                   </property>
                   <property name="suffix">
-                   <string> hz</string>
+                   <string> rad/s</string>
+                  </property>
+                  <property name="decimals">
+                   <number>4</number>
+                  </property>
+                  <property name="value">
+                   <double>10.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QDoubleSpinBox" name="posLimitVal">
+                  <property name="prefix">
+                   <string>Position Limit: </string>
+                  </property>
+                  <property name="suffix">
+                   <string> rad</string>
+                  </property>
+                  <property name="decimals">
+                   <number>4</number>
+                  </property>
+                  <property name="value">
+                   <double>12.500000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QDoubleSpinBox" name="currentLimitVal">
+                  <property name="prefix">
+                   <string>Current Limit: </string>
+                  </property>
+                  <property name="suffix">
+                   <string> A</string>
+                  </property>
+                  <property name="decimals">
+                   <number>4</number>
+                  </property>
+                  <property name="maximum">
+                   <double>40.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.500000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>20.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QDoubleSpinBox" name="torqueLimitVal">
+                  <property name="prefix">
+                   <string>Torque Limit: </string>
+                  </property>
+                  <property name="suffix">
+                   <string> Nm</string>
                   </property>
                   <property name="decimals">
                    <number>2</number>
                   </property>
-                  <property name="maximum">
-                   <double>50000.000000000000000</double>
-                  </property>
-                  <property name="singleStep">
-                   <double>1000.000000000000000</double>
-                  </property>
                   <property name="value">
-                   <double>40000.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="loopFreqDividerVal">
-                  <property name="toolTip">
-                   <string>Control Loop Frequency Divider</string>
-                  </property>
-                  <property name="prefix">
-                   <string>Loop Freq. Divider: </string>
-                  </property>
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                  <property name="maximum">
-                   <number>4</number>
-                  </property>
-                  <property name="value">
-                   <number>1</number>
+                   <double>10.000000000000000</double>
                   </property>
                  </widget>
                 </item>
                </layout>
-              </item>
-              <item row="3" column="0">
-               <widget class="QDoubleSpinBox" name="loopGainDAxisVal">
-                <property name="prefix">
-                 <string>Loop Gain (D Axis): </string>
-                </property>
-                <property name="suffix">
-                 <string/>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="singleStep">
-                 <double>0.010000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QDoubleSpinBox" name="overmodulationPercentageVal">
-                <property name="prefix">
-                 <string>Overmodulation Percentage: </string>
-                </property>
-                <property name="suffix">
-                 <string>%</string>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="maximum">
-                 <double>150.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>100.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QGroupBox" name="groupBox_3">
-             <property name="title">
-              <string>Torque Control</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_6">
-              <item row="1" column="0">
-               <layout class="QHBoxLayout" name="horizontalLayout_7">
-                <item>
-                 <widget class="QDoubleSpinBox" name="posGainMinVal">
-                  <property name="prefix">
-                   <string>Pos. Gain [Min]: </string>
-                  </property>
-                  <property name="suffix">
-                   <string/>
-                  </property>
-                  <property name="decimals">
-                   <number>4</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="posGainMaxVal">
-                  <property name="prefix">
-                   <string>Pos. Gain [Max]: </string>
-                  </property>
-                  <property name="suffix">
-                   <string/>
-                  </property>
-                  <property name="decimals">
-                   <number>4</number>
-                  </property>
-                  <property name="maximum">
-                   <double>500.000000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>500.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item row="2" column="0">
-               <layout class="QHBoxLayout" name="horizontalLayout_9">
-                <item>
-                 <widget class="QDoubleSpinBox" name="velGainMinVal">
-                  <property name="prefix">
-                   <string>Vel. Gain [Min]: </string>
-                  </property>
-                  <property name="suffix">
-                   <string/>
-                  </property>
-                  <property name="decimals">
-                   <number>4</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="velGainMaxVal">
-                  <property name="prefix">
-                   <string>Vel. Gain [Max]: </string>
-                  </property>
-                  <property name="suffix">
-                   <string/>
-                  </property>
-                  <property name="decimals">
-                   <number>4</number>
-                  </property>
-                  <property name="maximum">
-                   <double>5.000000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>5.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QGroupBox" name="groupBox_5">
-             <property name="title">
-              <string>Actuator Limits</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_8">
-              <item row="2" column="0">
-               <widget class="QDoubleSpinBox" name="currentLimitVal">
-                <property name="prefix">
-                 <string>Current Limit: </string>
-                </property>
-                <property name="suffix">
-                 <string> A</string>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="maximum">
-                 <double>40.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.500000000000000</double>
-                </property>
-                <property name="value">
-                 <double>20.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QDoubleSpinBox" name="posLimitVal">
-                <property name="prefix">
-                 <string>Position Limit: </string>
-                </property>
-                <property name="suffix">
-                 <string> rad</string>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="value">
-                 <double>12.500000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QDoubleSpinBox" name="velLimitVal">
-                <property name="prefix">
-                 <string>Velocity Limit: </string>
-                </property>
-                <property name="suffix">
-                 <string> rad/s</string>
-                </property>
-                <property name="decimals">
-                 <number>4</number>
-                </property>
-                <property name="value">
-                 <double>10.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QDoubleSpinBox" name="torqueLimitVal">
-                <property name="prefix">
-                 <string>Torque Limit: </string>
-                </property>
-                <property name="suffix">
-                 <string> Nm</string>
-                </property>
-                <property name="decimals">
-                 <number>2</number>
-                </property>
-                <property name="value">
-                 <double>10.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>

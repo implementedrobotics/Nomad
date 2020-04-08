@@ -43,6 +43,8 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
 
     // Setup Default Configs
     config_.num_pole_pairs = pole_pairs;
+    config_.continuous_current_max = 20.0f; 
+    config_.continuous_current_tau = 60.0f;
     config_.phase_resistance = 0.0f;
     config_.phase_inductance_d = 0.0f;
     config_.phase_inductance_q = 0.0f;

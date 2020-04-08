@@ -65,6 +65,7 @@
 #include "rtos.h"
 #include "FastPWM.h"
 #include "Motor.h"
+#include "RMSCurrentLimiter.h"
 #include "../DRV8323/DRV.h"
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
@@ -165,8 +166,12 @@ public:
         float I_q_ref;               // Current Reference (Q Axis)
         float I_d_ref_filtered;      // Current Reference Filtered (D Axis)
         float I_q_ref_filtered;      // Current Reference Filtered (Q Axis)
+
         float d_int;                 // Current Integral Error
         float q_int;                 // Current Integral Error
+
+        float V_d;                   // Voltage (D Axis)
+        float V_q;                   // Voltage (Q Axis)
         volatile float V_d_ref;      // Voltage Reference (D Axis)
         volatile float V_q_ref;      // Voltage Reference (Q Axis)
         volatile float Voltage_bus;  // Bus Voltage
@@ -182,6 +187,10 @@ public:
         float dtc_A;                 // Duty Cycle for A phase
         float dtc_B;                 // Duty Cycle for B phase
         float dtc_C;                 // Duty Cycle for C phase
+
+        // RMS Limiting
+        float I_rms;                 // Motor RMS Current Value
+        float I_max;                 // Maximum Allowable Commanded Current in next Time Step
 
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
@@ -273,7 +282,7 @@ private:
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config
 
-
+    float rms_current_sample_period_;
 
     //float control_loop_period_;
 

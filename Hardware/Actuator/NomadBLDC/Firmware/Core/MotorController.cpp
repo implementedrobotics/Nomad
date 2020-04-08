@@ -45,6 +45,8 @@
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
+RMSCurrentLimiter *current_limiter = 0;
+
 // Globals
 static int32_t g_adc1_offset;
 static int32_t g_adc2_offset;
@@ -445,6 +447,8 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.pwm_freq = 40000.0f; // 40 khz
     config_.foc_ccl_divider = 1; // Default to not divide.  Current loops runs at same freq as PWM
 
+    // TODO: Parameter
+    rms_current_sample_period_ = 1.0f/10.0f;
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
@@ -452,10 +456,6 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
 void MotorController::Reset()
 {
     SetModulationOutput(0.0f, 0.0f);
-
-    // Reset Motor
-    motor_->state_.V_d = 0.0f;
-    motor_->state_.V_q = 0.0f;
 
     state_.I_d = 0.0f;
     state_.I_q = 0.0f;
@@ -470,6 +470,10 @@ void MotorController::Reset()
 
     state_.d_int = 0.0f;
     state_.q_int = 0.0f;
+
+    state_.V_d = 0.0f;
+    state_.V_q = 0.0f;
+
     state_.timeout = 0;
 
     state_.Pos_ref = 0.0f;
@@ -502,11 +506,11 @@ void MotorController::Init()
     control_mode_ = CALIBRATION_MODE; // Start in "Calibration" mode.
 
     // Compute Maximum Allowed Current
-    float margin = 0.90f;
+    float margin = 1.0f;
     float max_input = margin * 0.3f * SENSE_CONDUCTANCE;
     float max_swing = margin * 1.6f * SENSE_CONDUCTANCE * (1.0f / CURRENT_SENSE_GAIN);
     current_max_ = fminf(max_input, max_swing);
-
+    //Logger::Instance().Print("MAX: %f\n", current_max_);
     // TODO: Make sure this is in a valid range?
 
     // Setup Gate Driver
@@ -552,6 +556,13 @@ void MotorController::Init()
     // Default Mode Idle:
     control_mode_ = IDLE_MODE;
 
+    // Initialize RMS Current limiter
+    uint32_t sub_sample_count = rms_current_sample_period_/controller_update_period_;
+    current_limiter = new RMSCurrentLimiter(motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau, rms_current_sample_period_, sub_sample_count);
+    current_limiter->Reset();
+
+    current_limiter->AddCurrentSample(10.0f);
+    //Logger::Instance().Print("Count: %d.  %f to %f\n", sub_sample_count, motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau);
     control_initialized_ = true;
 
     // Set Singleton
@@ -701,6 +712,7 @@ void MotorController::StartControlFSM()
         case (FOC_VOLTAGE_MODE):
         case (FOC_TORQUE_MODE):
         case (FOC_SPEED_MODE):
+        {
             if (current_control_mode != control_mode_)
             {
                 current_control_mode = control_mode_;
@@ -728,8 +740,20 @@ void MotorController::StartControlFSM()
                 control_mode_ = ERROR_MODE;
                 continue;
             }
+
+            // Measure
+            // TODO: Transform to Id/Iq here?.  For now use last sample.  
+            // TOOD: Do this in the current control loop
+            // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
+            float I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+            // Update Current Limiter
+            current_limiter->AddCurrentSample(I_sample);
+            motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
+            motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
+
             DoMotorControl();
             break;
+        }
         // case (ENCODER_DEBUG):
         //     if (current_control_mode != control_mode_)
         //     {
@@ -760,15 +784,15 @@ void MotorController::DoMotorControl()
     NVIC_DisableIRQ(USART2_IRQn);
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-        motor->state_.V_d = motor_controller->state_.V_d_ref;
-        motor->state_.V_q = motor_controller->state_.V_q_ref;
+        motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
+        motor_controller->state_.V_q = motor_controller->state_.V_q_ref;
         SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
 
         // Update V_d/V_q
         // TODO: Should probably have this more universal somewhere
         dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
-        motor_->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
-        motor_->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
+        motor_controller->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
+        motor_controller->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
     {
@@ -792,7 +816,8 @@ void MotorController::CurrentControl()
     state_.I_d_ref_filtered = (1.0f - config_.alpha) * state_.I_d_ref_filtered + config_.alpha * state_.I_d_ref;
     state_.I_q_ref_filtered = (1.0f - config_.alpha) * state_.I_q_ref_filtered + config_.alpha * state_.I_q_ref;
 
-    limit_norm(&state_.I_d_ref, &state_.I_q_ref, config_.current_limit);
+    float curr_limit = min(motor_controller->state_.I_max, config_.current_limit);
+    limit_norm(&state_.I_d_ref, &state_.I_q_ref, curr_limit);
 
     // PI Controller
     float i_d_error = state_.I_d_ref - state_.I_d;
@@ -810,22 +835,22 @@ void MotorController::CurrentControl()
     state_.q_int = fmaxf(fminf(state_.q_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
 
     //limit_norm(&controller->d_int, &controller->q_int, OVERMODULATION*controller->v_bus);
-    motor_->state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
-    motor_->state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
+    motor_controller->state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
+    motor_controller->state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
 
     //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
-    limit_norm(&motor_->state_.V_d, &motor_->state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
+    limit_norm(&motor_controller->state_.V_d, &motor_controller->state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
     // TODO: Do we need this linearization?
-    float dtc_d = motor_->state_.V_d / state_.Voltage_bus;
-    float dtc_q = motor_->state_.V_q / state_.Voltage_bus;
+    float dtc_d = motor_controller->state_.V_d / state_.Voltage_bus;
+    float dtc_q = motor_controller->state_.V_q / state_.Voltage_bus;
     //LinearizeDTC(&dtc_d);
     //LinearizeDTC(&dtc_q);
 
-    motor_->state_.V_d = dtc_d * state_.Voltage_bus;
-    motor_->state_.V_q = dtc_q * state_.Voltage_bus;
+    motor_controller->state_.V_d = dtc_d * state_.Voltage_bus;
+    motor_controller->state_.V_q = dtc_q * state_.Voltage_bus;
 
-    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, motor_->state_.V_d, motor_->state_.V_q);
+    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, motor_controller->state_.V_d, motor_controller->state_.V_q);
 }
 void MotorController::StartPWM()
 {
