@@ -7,4 +7,6 @@
 5. Change CAN resistor value in schematic to 120 ohm
 6. Add AB input from encoder for optional quadruture input+incread encoder noise immunity from hall sensor noise
 7. Add 100nf decoupling to NRST pin for increades noise immunity.
-8. Change current sense resistor for more range?  Early thermal test indicate we could push higher peaks than 40A.
+8. Change current sense resistor to 0.5mOhm.  Early thermal test indicate we could push higher peaks than 40A.
+9. Verify capacity derating values at higher voltages
+10. Add thermistor for FET Temps
