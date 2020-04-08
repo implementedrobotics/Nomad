@@ -7,3 +7,4 @@
 5. Change CAN resistor value in schematic to 120 ohm
 6. Add AB input from encoder for optional quadruture input+incread encoder noise immunity from hall sensor noise
 7. Add 100nf decoupling to NRST pin for increades noise immunity.
+8. Change current sense resistor for more range?  Early thermal test indicate we could push higher peaks than 40A.
