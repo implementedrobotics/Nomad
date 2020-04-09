@@ -137,6 +137,13 @@ struct __attribute__((__packed__)) Motor_torque_setpoint_t
     float tau_ff;              // Torque Feed Forward
 };
 
+
+struct __attribute__((__packed__)) Motor_current_setpoint_t
+{
+    float i_d;                 // I_d Setpoint
+    float i_q;                 // I_q Setpoint
+};
+
 struct __attribute__((__packed__)) Log_command_t
 {
     uint8_t comm_id;           // Command ID
@@ -250,7 +257,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.control_status = motor_controller->GetControlMode();
         stats.voltage_bus = motor_controller->state_.Voltage_bus;
         stats.driver_temp = 60.2f;
-        stats.fet_temp = 80.0f;
+        stats.fet_temp = motor_controller->state_.I_rms;
         stats.motor_temp = 80.0f;
 
         // Send it
@@ -260,6 +267,11 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_CALIB_MOTOR:
     {
         measure_motor_parameters();
+        break;
+    }
+    case COMM_ENABLE_CURRENT_CONTROL:
+    {
+        start_current_control();
         break;
     }
     case COMM_ENABLE_VOLTAGE_CONTROL:
@@ -284,6 +296,12 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         //Logger::Instance().Print("Controller Period: %f\n", motor_controller->controller_update_period_);
         //Logger::Instance().Print("Let's GO Period:\n");
         reboot_system();
+        break;
+    }
+    case COMM_CURRENT_SETPOINT:
+    {
+        Motor_current_setpoint_t *sp = (Motor_current_setpoint_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        set_current_control_ref(sp->i_d, sp->i_q);
         break;
     }
     case COMM_VOLTAGE_SETPOINT:

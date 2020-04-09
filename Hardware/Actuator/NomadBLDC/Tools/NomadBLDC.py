@@ -133,6 +133,11 @@ class NomadBLDC:
         
         return self.commands.restart_device(self.transport)
 
+    def start_current_control(self):
+        if(not self.connected):
+            return False
+        return self.commands.start_current_control(self.transport)
+
     def start_voltage_control(self):
         if(not self.connected):
             return False
@@ -150,6 +155,11 @@ class NomadBLDC:
             return False
 
         return self.commands.enter_idle_mode(self.transport)
+
+    def set_current_setpoint(self, i_d, i_q):
+        if(not self.connected):
+            return False
+        return self.commands.set_current_setpoint(self.transport, i_d, i_q)
 
     def set_voltage_setpoint(self, v_d, v_q):
         if(not self.connected):

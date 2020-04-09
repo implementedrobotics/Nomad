@@ -140,7 +140,11 @@ void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, 
     motor_controller->state_.Vel_ref = Vel_des;
     motor_controller->state_.T_ff = T_ff;
 }
-
+void set_current_control_ref(float I_d, float I_q)
+{
+    motor_controller->state_.I_d_ref = I_d;
+    motor_controller->state_.I_q_ref = I_q;
+}
 void set_voltage_control_ref(float V_d, float V_q)
 {
     motor_controller->state_.V_d_ref = V_d;

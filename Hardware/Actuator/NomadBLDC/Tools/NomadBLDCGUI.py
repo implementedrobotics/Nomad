@@ -14,6 +14,12 @@ from NomadBLDC import NomadBLDC
 
 close_event = threading.Event()
 
+def isfloat(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False
 
 def getattr_nested(obj, nested_attr):
     attrs = nested_attr.split(".")
@@ -175,7 +181,83 @@ class BackgroundUpdater(QtCore.QRunnable, QtCore.QObject):
             
             if(close_event.is_set()):
                 break
+
+import serial
+
+# Torque Calibrater Class
+class TorqueCalibrater(QtCore.QRunnable, QtCore.QObject):
+    
+    def __init__(self, nomad_device, arm_length=0.5, num_steps=24, start_current=1.0, end_current=25):
+        super(TorqueCalibrater, self).__init__()
+        self.nomad_dev = nomad_device
+        self.serial = serial.Serial(port="/dev/ttyACM1", baudrate=9600, timeout=1)
+        self.arm_length = arm_length
+        self.num_steps = num_steps
+        self.start_current = start_current
+        self.end_current = end_current
+        self.torques = []
+        self.currents = []
+        #self.signals = BackgroundUpdaterSignals()
+        #self.period = 0.5
+        #self.paused = False
+
+    @pyqtSlot()
+    def run(self):
+
+        self.nomad_dev.start_current_control()
+        time.sleep(2)
+        print("In Current Control")
+        for i in range(self.num_steps+1):
+            step_current = self.start_current + i/self.num_steps * (self.end_current-self.start_current)
+
+            # Settle for 2 seconds
+            time.sleep(2)
+            print(step_current)
+
+            self.nomad_dev.set_current_setpoint(0.0, step_current*-1) 
+            time.sleep(1)
+            self.nomad_dev.set_current_setpoint(0.0, step_current*-1) 
+            time.sleep(1)
+            test = self.read_scale(5)
+            self.currents.append(step_current)
+            self.torques.append(self.arm_length * test)
+
+            print(f"Got: {test}")
+        print(self.currents)
+        print(self.torques)
+        #print(self.torques/self.currents)
+        self.nomad_dev.enter_idle_mode()
+        x_arr = np.array(self.currents)
+        y_arr = np.array(self.torques)
+        Kt = y_arr/x_arr
+        print(Kt)
+        print(np.mean(Kt))
+
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')
+        pg.setConfigOption('antialias', True)
         
+        pw = pg.plot(x=x_arr, y=y_arr, pen='k', symbolBrush=(255,0,0), symbolPen='k')#, symbol='o')  # plot x vs y in red
+        pw.showGrid(x=True, y=True)
+        #pw.setMouseEnabled(False)
+        pw.setMenuEnabled(False)
+
+        pw.setLabel('left', 'Torque', 'N*m')
+        pw.setLabel('bottom', 'Current', 'A')
+
+
+    def read_scale(self, num_samples):
+        i = 0
+        total_sum = 0
+        while i < num_samples:
+            self.serial.write(b'r')
+            data = self.serial.readline().decode()
+            if(isfloat(data) == False):
+                continue
+            total_sum = total_sum + float(data)
+            i = i + 1
+        return total_sum / num_samples
+
 # Progress Dialog
 class NomadBasicProgressDialog(QtWidgets.QDialog):
     def __init__(self, parentWindow=None):
@@ -239,6 +321,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.firmwareInfoLabel.setText("")
         self.uptimeLabel.setText("")
         self.restartButton.hide()
+
+        # Dev Settings
+        self.loadTestStart.clicked.connect(self.DoLoadTest)
 
         # Clear Status
         self.gateDriverTempLabel.setText("")
@@ -533,10 +618,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.restart_device() 
     
     def StartVoltageControl(self):
-        self.nomad_dev.start_voltage_control()
+        self.nomad_dev.start_current_control()
     
     def StartTorqueControl(self):
         self.nomad_dev.start_torque_control()
+    
+    def StartCurrentControl(self):
+        self.nomad_dev.start_current_control()
 
     def EnterIdleMode(self):
         self.nomad_dev.enter_idle_mode()
@@ -683,6 +771,15 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         #self.sample_ptr1 += 1
         self.curve2.setData(self.data1)
         #self.curve2.setPos(self.sample_ptr1, 0)
+    def DoLoadTest(self):
+        print("Load Test")
+        self.EnterIdleMode()
+        time.sleep(2)
+
+        t_calc = TorqueCalibrater(self.nomad_dev)
+        self.threadpool.start(t_calc)
+
+        # Connect to Scale
 
 if __name__ == '__main__':
 

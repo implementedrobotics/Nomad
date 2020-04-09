@@ -65,11 +65,11 @@ class CommandID(IntEnum):
     # Device Control Commands
     DEVICE_RESTART = 24
     DEVICE_ABORT   = 25
-
     
     # Set Points
     SEND_VOLTAGE_SETPOINT = 26
-    SEND_TORQUE_SETPOINT = 27
+    SEND_CURRENT_SETPOINT = 27
+    SEND_TORQUE_SETPOINT = 28
 
     # Status
     LOGGING_OUTPUT = 100
@@ -292,6 +292,12 @@ class CommandHandler:
         transport.send_packet(command_packet)
         return True
 
+    # Current Control Mode
+    def start_current_control(self, transport):
+        command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_CURRENT_CONTROL, 0))
+        transport.send_packet(command_packet)
+        return True
+
     # Voltage Control Mode
     def start_voltage_control(self, transport):
         command_packet = bytearray(struct.pack("<BB", CommandID.ENABLE_VOLTAGE_CONTROL, 0))
@@ -310,8 +316,13 @@ class CommandHandler:
         transport.send_packet(command_packet)
         return True
 
+    def set_current_setpoint(self, transport, i_d, i_q):
+        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_CURRENT_SETPOINT, 8, i_d, i_q))
+        transport.send_packet(command_packet)
+        return True
+
     def set_voltage_setpoint(self, transport, v_d, v_q):
-        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_VOLTAGE_SETPOINT, 8, v_d, v_q))
+        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_CURRENT_SETPOINT, 8, 5.0, 0.6))
         transport.send_packet(command_packet)
         return True
         
@@ -340,7 +351,7 @@ class CommandHandler:
         transport.send_packet(command_packet)
 
         # Wait for device response
-        self.device_info_received.wait(5)
+        self.device_info_received.wait(2)
         if(self.device_info_received.is_set()):
             self.device_info_received.clear() # Clear Flag
             return self.device_info

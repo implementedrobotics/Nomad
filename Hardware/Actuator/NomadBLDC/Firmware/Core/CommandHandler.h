@@ -81,7 +81,8 @@ public:
 
         // Set points
         COMM_VOLTAGE_SETPOINT = 26,
-        COMM_TORQUE_SETPOINT = 27,
+        COMM_CURRENT_SETPOINT = 27,
+        COMM_TORQUE_SETPOINT = 28,
 
         COMM_LOGGING_OUTPUT = 100,
         COMM_CALIB_MOTOR = 101,
