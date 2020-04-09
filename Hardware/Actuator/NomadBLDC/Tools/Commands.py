@@ -322,7 +322,7 @@ class CommandHandler:
         return True
 
     def set_voltage_setpoint(self, transport, v_d, v_q):
-        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_CURRENT_SETPOINT, 8, 5.0, 0.6))
+        command_packet = bytearray(struct.pack("<BBff", CommandID.SEND_VOLTAGE_SETPOINT, 8, v_d, v_q))
         transport.send_packet(command_packet)
         return True
         
