@@ -13,3 +13,5 @@
 11. Change +5V buck converter from DRV to +3.3V (Update feedback resistor network)
 12. Change CAN chip to a 3.3V FD CAN variant (https://www.ti.com/store/ti/en/p/product/?p=TCAN334GDCNT)
 13. Remove USB
+14. Change out FETs to more power efficient but lower voltage: CSD88584Q5DC
+
