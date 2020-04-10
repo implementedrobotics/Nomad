@@ -8,7 +8,7 @@
 6. Add AB input from encoder for optional quadruture input+incread encoder noise immunity from hall sensor noise
 7. Add 100nf decoupling to NRST pin for increades noise immunity.
 8. Change current sense resistor to 0.5mOhm.  Early thermal test indicate we could push higher peaks than 40A.
-9. Verify capacity derating values at higher voltages
+9. Verify capacitor derating values at higher voltages
 10. Add thermistor for FET Temps
 11. Change +5V buck converter from DRV to +3.3V (Update feedback resistor network)
 12. Change CAN chip to a 3.3V FD CAN variant (https://www.ti.com/store/ti/en/p/product/?p=TCAN334GDCNT)
