@@ -531,7 +531,13 @@ void MotorController::Init()
     wait_us(100);
     gate_driver_->write_CSACR(0x0, 0x1, 0x0, CSA_GAIN_40, 0x0, 0x0, 0x0, 0x0, SEN_LVL_1_0);
     wait_us(100);
-    gate_driver_->write_OCPCR(TRETRY_4MS, DEADTIME_200NS, OCP_RETRY, OCP_DEG_8US, VDS_LVL_1_88);
+    gate_driver_->write_OCPCR(TRETRY_4MS, DEADTIME_100NS, OCP_LATCH, OCP_DEG_4US, VDS_LVL_0_2);
+    wait_us(100);
+    gate_driver_->write_HSR(0x3, IDRIVEP_HS_260MA, IDRIVEN_HS_520MA);
+    wait_us(100);
+    gate_driver_->write_LSR(0x1, TDRIVE_1000NS, IDRIVEP_LS_260MA, IDRIVEN_LS_520MA); // Possibly could be 500ns TDRIVE?
+    wait_us(100);
+
 
     // Load Configuration
     load_configuration();

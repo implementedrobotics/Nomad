@@ -324,7 +324,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         # Dev Settings
         self.loadTestStart.clicked.connect(self.DoLoadTest)
-
+        self.thermalTestButton.clicked.connect(self.DoThermalTest)
         # Clear Status
         self.gateDriverTempLabel.setText("")
         self.fetTempLabel.setText("")
@@ -339,14 +339,14 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_b"), title='I(b)', row=1, col=0)
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_c"), title='I(c)', row=2, col=0)
 
-        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
-        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
-        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
-        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
-
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_max"), title='Max Current Demand', name='I(max)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('g', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_rms"), title='Motor RMS Current', name='I(rms)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
         self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_max"), title='Max Current Demand', name='I(max)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('g', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_rms"), title='Motor RMS Current', name='I(rms)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
 
         # Start Updater
         self.updater = BackgroundUpdater(self.nomad_dev)
@@ -618,7 +618,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.restart_device() 
     
     def StartVoltageControl(self):
-        self.nomad_dev.start_current_control()
+        self.nomad_dev.start_voltage_control()
     
     def StartTorqueControl(self):
         self.nomad_dev.start_torque_control()
@@ -780,6 +780,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.threadpool.start(t_calc)
 
         # Connect to Scale
+    def DoThermalTest(self):
+        print("Thermal Test")
+        self.nomad_dev.start_current_control()
+        self.nomad_dev.set_current_setpoint(0, 12) 
+
 
 if __name__ == '__main__':
 

@@ -106,14 +106,13 @@ bool HDLCHandler::SendPacket(uint8_t *packet, uint32_t length)
         return false;
     }
 
-    //Serial *serial = SerialHandler::GetSerial();
     // Compute CRC16 for Packet
     frame_chksum_ = CRC16::Compute(packet, length);
-    //printf("Got Checksum: %d\n\r", frame_chksum_);
+
 
     uint32_t buffer_offset = 0;
     transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY;
-    //serial->putc(FRAME_BOUNDARY);
+
     // Process and Escape Packet
     for (uint32_t i = 0; i < length; i++)
     {
@@ -121,24 +120,17 @@ bool HDLCHandler::SendPacket(uint8_t *packet, uint32_t length)
         if ((data == FRAME_BOUNDARY) || (data == CONTROL_ESCAPE))
         {
             transmit_buffer_[buffer_offset++] = CONTROL_ESCAPE;
-            //serial->putc(CONTROL_ESCAPE);
             transmit_buffer_[buffer_offset++] = data ^ ESCAPE_INVERT;
-            //serial->putc(data ^ ESCAPE_INVERT);
         }
         else // Not Escaped
         {
             transmit_buffer_[buffer_offset++] = data;
-            //serial->putc(data);
         }
     }
-    //memcpy(transmit_buffer_+buffer_offset, (uint8_t *)(packet), sizeof(uint8_t) * length);
-    //buffer_offset += length;
     memcpy(transmit_buffer_ + buffer_offset, (uint8_t *)(&frame_chksum_), sizeof(uint16_t));
-    //serial->putc(frame_chksum_ & 0xFF);
-    //serial->putc((frame_chksum_>>8) & 0xFF);
+
     buffer_offset += 2;
     transmit_buffer_[buffer_offset++] = FRAME_BOUNDARY;
-    //serial->putc(FRAME_BOUNDARY);
     for (uint32_t i = 0; i < buffer_offset; i++) // Write the buffer
     {
         SerialHandler::GetSerial()->putc(transmit_buffer_[i]);
