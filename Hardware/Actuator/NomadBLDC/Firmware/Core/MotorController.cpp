@@ -755,7 +755,8 @@ void MotorController::StartControlFSM()
             // TODO: Transform to Id/Iq here?.  For now use last sample.  
             // TOOD: Do this in the current control loop
             // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-            float I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+            static float I_sample = 0.0f;
+            arm_sqrt_f32(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q, &I_sample);
             // Update Current Limiter
             current_limiter->AddCurrentSample(I_sample);
             motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
