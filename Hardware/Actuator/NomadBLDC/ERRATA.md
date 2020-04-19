@@ -16,3 +16,4 @@
 14. Change out FETs to more power efficient but lower voltage: CSD88584Q5DC
 15. Current layout makes heatsinking a bit problematic.  Ceramic Caps in FET area are taller than the FETs making it impossible to heatsink across all FETs.
 16. PWM lines are inverted at DRV8323 inputs.  A<->C
+17. If possible move PWM Timers to TIM8 from TIM1
