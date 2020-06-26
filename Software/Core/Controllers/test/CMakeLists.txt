@@ -11,6 +11,9 @@ set(ZEROMQ_TEST_LIBS zmq pthread)
 set(TASK_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/task_node_test.cpp)
 set(TASK_TEST_LIBS Plotting Controllers OperatorInterface zcm)
 
+set(TELEOP_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/teleop_test.cpp)
+set(TELEOP_TEST_LIBS Plotting Controllers OperatorInterface zcm)
+
 # Definitions
 add_definitions(-D_GNU_SOURCE)
 
@@ -22,3 +25,6 @@ target_link_libraries(zmq_test ${ZEROMQ_TEST_LIBS} )
 
 add_executable(thread_task ${TASK_TEST_SOURCES})
 target_link_libraries(thread_task ${TASK_TEST_LIBS} )
+
+add_executable(teleop_test ${TELEOP_TEST_SOURCES})
+target_link_libraries(teleop_test ${TELEOP_TEST_LIBS} )

@@ -34,66 +34,58 @@
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/int32_vec_t.hpp>
 
 // TODO: Evaluate the need for the class... Could be handled all in the Trajectory Generator.  But if latency permits this is a good intermediate layer to handle translation of network/gamepad calls etc.
 // Also this a good place to put test trajectory setpoints since we don't have a remote control UI yet.
 namespace OperatorInterface
 {
-namespace Teleop
-{
-class RemoteTeleop : public Realtime::RealTimeTaskNode
-{
-
-public:
-    enum OutputPort
+    namespace Teleop
     {
-        SETPOINT = 0 // Desired Setpoint
-    };
+        class RemoteTeleop : public Realtime::RealTimeTaskNode
+        {
 
-    enum InputPort
-    {
-        REMOTE = 0,    // Remote
-    };
+        public:
+            enum OutputPort
+            {
+                MODE = 0,    // Desired Mode
+                SETPOINT = 1 // Desired Setpoint
+            };
 
-    enum Idx
-    {
-        X_DOT = 0,
-        Y_DOT = 1,
-        YAW_DOT = 2,
-        Z_COM = 3
-    };
+            enum Idx
+            {
+                X_DOT = 0,
+                Y_DOT = 1,
+                YAW_DOT = 2,
+                Z_COM = 3
+            };
 
-    // Base Class Remote Teleop Task Node
-    // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    RemoteTeleop(const std::string &name = "Remote_Teleop",
-                   const long rt_period = 10000,
-                   const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
+            // Base Class Remote Teleop Task Node
+            // name = Task Name
+            // stack_size = Task Thread Stack Size
+            // rt_priority = Task Thread Priority
+            // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+            // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+            RemoteTeleop(const std::string &name = "Remote_Teleop",
+                         const long rt_period = 10000,
+                         const unsigned int rt_priority = Realtime::Priority::MEDIUM,
+                         const int rt_core_id = -1,
+                         const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-protected:
-    // Overriden Run Function
-    virtual void Run();
+        protected:
+            // Overriden Run Function
+            virtual void Run();
 
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
+            // Pre-Run Setup Routine.  Setup any one time initialization here.
+            virtual void Setup();
 
-    // (Output) State Estimate
-    double_vec_t output_setpoint_;
+            // (Output) State Estimate
+            double_vec_t output_setpoint_;
 
-    // (Output) State Estimate
-    double_vec_t output_mode_;
-
-
-
-
-
-};
-} // namespace Teleop
+            // (Output) State Estimate
+            int32_vec_t output_mode_;
+        };
+    } // namespace Teleop
 } // namespace OperatorInterface
 
 #endif // NOMAD_OPERATORINTERFACE_REMOTETELEOP_H_

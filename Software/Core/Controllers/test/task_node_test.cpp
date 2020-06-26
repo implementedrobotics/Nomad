@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     scope.SetStackSize(8192 * 1024);
     scope.SetTaskPriority(Realtime::Priority::LOWEST);
     scope.SetTaskFrequency(freq1); // 50 HZ
-    scope.SetCoreAffinity(4);
+    scope.SetCoreAffinity(2);
     scope.ConnectInput(Plotting::PlotterTaskNode::PORT_1, convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
     scope.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Locomotion::ConvexMPC::U);
     scope.Start();
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     scope2.SetStackSize(8192 * 1024);
     scope2.SetTaskPriority(Realtime::Priority::LOWEST);
     scope2.SetTaskFrequency(freq1); // 50 HZ
-    scope2.SetCoreAffinity(4);
+    scope2.SetCoreAffinity(2);
     scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
     scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
     scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X_DOT);

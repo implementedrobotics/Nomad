@@ -218,7 +218,7 @@ int RealTimeTaskNode::Start(void *task_param)
         return thread_status_;
     }
 
-    // TODO: Back of RT Priority until PREEMPT Kernel.
+    // TODO: Back off RT Priority until PREEMPT Kernel.
     // Set Scheduler Policy to RT(SCHED_FIFO)
     // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
     // if (thread_status_)

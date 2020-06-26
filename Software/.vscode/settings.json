@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.zcm": "c",
         "array": "cpp",
         "*.tcc": "cpp",
         "cctype": "cpp",
@@ -58,6 +59,13 @@
         "thread": "cpp",
         "dense": "cpp",
         "core": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "algorithm": "cpp",
+        "iterator": "cpp",
+        "map": "cpp",
+        "memory_resource": "cpp",
+        "random": "cpp",
+        "set": "cpp",
+        "string": "cpp"
     }
 }
