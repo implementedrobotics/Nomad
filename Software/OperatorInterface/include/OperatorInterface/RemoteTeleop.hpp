@@ -85,6 +85,13 @@ protected:
     // (Output) State Estimate
     double_vec_t output_setpoint_;
 
+    // (Output) State Estimate
+    double_vec_t output_mode_;
+
+
+
+
+
 };
 } // namespace Teleop
 } // namespace OperatorInterface
