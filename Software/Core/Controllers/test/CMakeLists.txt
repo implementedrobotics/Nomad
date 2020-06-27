@@ -1,6 +1,7 @@
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/OperatorInterface/include")
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Plotting/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Common/include")
 
 set(CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/qp_solver_test.cpp)
 set(CONTROLLER_TEST_LIBS qpOASES OptimalControl)
@@ -12,7 +13,7 @@ set(TASK_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/task_node_test
 set(TASK_TEST_LIBS Plotting Controllers OperatorInterface zcm)
 
 set(TELEOP_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/teleop_test.cpp)
-set(TELEOP_TEST_LIBS Plotting Controllers OperatorInterface zcm)
+set(TELEOP_TEST_LIBS Plotting Controllers OperatorInterface Common zcm)
 
 # Definitions
 add_definitions(-D_GNU_SOURCE)

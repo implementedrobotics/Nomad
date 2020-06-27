@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 3.10)
 
 set(COMMON_SOURCES ${PROJECT_SOURCE_DIR}/Common/src/FiniteStateMachine.cpp
+${PROJECT_SOURCE_DIR}/Common/src/State.cpp
+${PROJECT_SOURCE_DIR}/Common/src/TransitionEvent.cpp
 )
 
 set(COMMON_LIBS Realtime pthread rt)

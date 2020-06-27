@@ -59,7 +59,46 @@ namespace OperatorInterface
 
         protected:
             std::shared_ptr<GamepadInterface> gamepad_;
+            std::string name_;
         };
+
+        // Transitions
+        class ButtonEvent : public GamepadTransitionEvent
+        {
+        public:
+            
+            enum EventType
+            {
+                EVENT_PRESSED = 0,
+                EVENT_RELEASED = 1
+            };
+
+            // Base Class Transition Event
+            // name = Transition Event name
+            ButtonEvent(const std::string &name, 
+            GamepadInterface::ButtonType button, 
+            EventType event, 
+            std::shared_ptr<GamepadInterface> gamepad) : GamepadTransitionEvent(name, gamepad), button_(button), event_(event)
+            {
+            }
+
+            // Stop state machine and cleans up
+            bool Triggered()
+            {
+                // if (control_DATA_->control_mode_ == req_mode_)
+                // {
+                //     std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
+                //     return true;
+                // }
+                return false;
+            };
+
+        protected:
+            GamepadInterface::ButtonType button_;
+            EventType event_;
+        };
+
+
     } // namespace Teleop
 } // namespace OperatorInterface
 #endif // NOMAD_GAMEPADTELEOPFSM_H_

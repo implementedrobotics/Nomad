@@ -35,6 +35,7 @@
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 #include <OperatorInterface/GamepadInterface.hpp>
+#include <OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 
@@ -87,7 +88,11 @@ namespace OperatorInterface
             // (Output) State Estimate
             int32_vec_t output_mode_;
 
+            // Gamepad Interface
             std::shared_ptr<GamepadInterface> gamepad_;
+
+            // Finite State Machine to handle gamepad state
+            std::unique_ptr<GamepadTeleopFSM> gamepad_FSM_;
         };
     } // namespace Teleop
 } // namespace OperatorInterface

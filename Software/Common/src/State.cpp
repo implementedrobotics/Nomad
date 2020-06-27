@@ -29,21 +29,22 @@
 // Third Party Includes
 
 // Project Include Files
-#include <State.hpp>
-
-    State::State(const std::string &name, std::size_t id) 
-    : name_(name), 
-    id_(id)
-    {
-      // Nothing to do
-    }
-
-    void State::Setup() 
+#include <Common/State.hpp>
+namespace Common
+{
+    State::State(const std::string &name, std::size_t id)
+        : name_(name),
+          id_(id)
     {
         // Nothing to do
     }
 
-    void State::Enter(double current_time) 
+    void State::Setup()
+    {
+        // Nothing to do
+    }
+
+    void State::Enter(double current_time)
     {
         start_time_ = current_time;
     }
@@ -59,21 +60,22 @@
     bool State::ReadyToTransition()
     {
         // Loop transition maps for active events and then start transition
-        for (auto transition: transition_map_) 
+        for (auto transition : transition_map_)
         {
             TransitionEventPtr event = transition.first;
-            if(event->Triggered())
+            if (event->Triggered())
             {
                 next_state_ = transition.second;
                 return true;
             }
-        }   
+        }
         return false;
     }
 
     // Next State to transition to
-    const StatePtr& State::NextState() const
+    const StatePtr &State::NextState() const
     {
         return next_state_;
     }
 
+} // namespace Common

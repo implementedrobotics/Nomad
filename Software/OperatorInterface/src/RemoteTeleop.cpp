@@ -74,6 +74,9 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
     // Create Gamepad Object
     // TODO: Needs to be a parameter for game pad device
     gamepad_ = std::make_shared<GamepadInterface>("/dev/input/js0");
+
+    // Create FSM for game pad state
+    gamepad_FSM_ = std::make_unique<GamepadTeleopFSM>(gamepad_);
 }
 
 void RemoteTeleop::Run()
@@ -81,8 +84,8 @@ void RemoteTeleop::Run()
     // Joystick/Keyboard Code Here
     gamepad_->Poll();
 
-     if(gamepad_->IsPressed(GamepadInterface::BUTTON_A))
-         std::cout << "A Button Pressed: " << std::endl;
+    // if(gamepad_->IsPressed(GamepadInterface::BUTTON_A))
+    //     std::cout << "A Button Pressed: " << std::endl;
 
     // std::cout << "Axis Value: " << gamepad_.GetValue(GamepadInterface::ANALOG_LEFT_TRIGGER) << std::endl;
     // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_LEFT) << std::endl;

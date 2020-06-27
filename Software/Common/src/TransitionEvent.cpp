@@ -29,11 +29,13 @@
 // Third Party Includes
 
 // Project Include Files
-#include <State.hpp>
-
-TransitionEvent::TransitionEvent(const std::string &name)
-    : name_(name)
+#include <Common/State.hpp>
+namespace Common
 {
-  // Nothing to do
-}
+    TransitionEvent::TransitionEvent(const std::string &name)
+        : name_(name)
+    {
+        // Nothing to do
+    }
 
+} // namespace Common

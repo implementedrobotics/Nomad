@@ -3,9 +3,10 @@ cmake_minimum_required (VERSION 3.10)
 
 set(OPERATOR_INTERFACE_SOURCES ${PROJECT_SOURCE_DIR}/OperatorInterface/src/RemoteTeleop.cpp
 ${PROJECT_SOURCE_DIR}/OperatorInterface/src/GamepadInterface.cpp
+${PROJECT_SOURCE_DIR}/OperatorInterface/src/GamepadTeleopFSM/GamepadTeleopFSM.cpp
 )
 
-set(OPERATOR_INTERFACE_LIBS Realtime pthread rt zmq)
+set(OPERATOR_INTERFACE_LIBS Realtime pthread rt zmq Common)
 
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
