@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.10)
 set(OPERATOR_INTERFACE_SOURCES ${PROJECT_SOURCE_DIR}/OperatorInterface/src/RemoteTeleop.cpp
 ${PROJECT_SOURCE_DIR}/OperatorInterface/src/GamepadInterface.cpp
 ${PROJECT_SOURCE_DIR}/OperatorInterface/src/GamepadTeleopFSM/GamepadTeleopFSM.cpp
+${PROJECT_SOURCE_DIR}/OperatorInterface/src/GamepadTeleopFSM/States/GamepadState.cpp
 )
 
 set(OPERATOR_INTERFACE_LIBS Realtime pthread rt zmq Common)

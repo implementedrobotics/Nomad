@@ -45,6 +45,9 @@ namespace OperatorInterface
             // Base Class Gamepad Teleop FSM
             GamepadTeleopFSM(std::shared_ptr<GamepadInterface> gamepad);
 
+            // Run an iteration of the state machine
+            bool Run(double dt);
+
         protected:
             //Helper function to create state machine
             void _CreateFSM();
@@ -66,7 +69,6 @@ namespace OperatorInterface
         class ButtonEvent : public GamepadTransitionEvent
         {
         public:
-            
             enum EventType
             {
                 EVENT_PRESSED = 0,
@@ -75,27 +77,62 @@ namespace OperatorInterface
 
             // Base Class Transition Event
             // name = Transition Event name
-            ButtonEvent(const std::string &name, 
-            GamepadInterface::ButtonType button, 
-            EventType event, 
-            std::shared_ptr<GamepadInterface> gamepad) : GamepadTransitionEvent(name, gamepad), button_(button), event_(event)
+            ButtonEvent(const std::string &name,
+                        GamepadInterface::ButtonType button,
+                        EventType event,
+                        std::shared_ptr<GamepadInterface> gamepad) : GamepadTransitionEvent(name, gamepad), button_(button), event_(event)
             {
             }
 
             // Stop state machine and cleans up
             bool Triggered()
             {
-                // if (control_DATA_->control_mode_ == req_mode_)
-                // {
-                //     std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
-                //     return true;
-                // }
-                return false;
+                if (event_ == EventType::EVENT_PRESSED && gamepad_->IsPressed(button_))
+                {
+                     std::cout << "Event PRESSED ID: " << name_ << " is SET!" << std::endl;
+                     return true;
+                }
+                else if (event_ == EventType::EVENT_RELEASED && gamepad_->IsReleased(button_))
+                {
+                     std::cout << "Event RELEASED ID: " << name_ << " is SET!" << std::endl;
+                     return true;
+                }
+                else
+                    return false;
             };
 
         protected:
             GamepadInterface::ButtonType button_;
             EventType event_;
+        };
+
+
+        class DPadEvent : public GamepadTransitionEvent
+        {
+        public:
+
+            // Base Class Transition Event
+            // name = Transition Event name
+            DPadEvent(const std::string &name,
+                        GamepadInterface::DPadType dpad_event,
+                        std::shared_ptr<GamepadInterface> gamepad) : GamepadTransitionEvent(name, gamepad), dpad_event_(dpad_event)
+            {
+            }
+
+            // Stop state machine and cleans up
+            bool Triggered()
+            {
+                if (gamepad_->GetDPadState(dpad_event_))
+                {
+                     std::cout << "Event PRESSED ID: " << name_ << " is SET!" << std::endl;
+                     return true;
+                }
+                else
+                    return false;
+            };
+
+        protected:
+            GamepadInterface::DPadType dpad_event_;
         };
 
 
