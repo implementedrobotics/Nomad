@@ -30,9 +30,11 @@
 // C++ System Files
 #include <iostream>
 #include <string>
+#include <memory>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
+#include <OperatorInterface/GamepadInterface.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 
@@ -84,6 +86,8 @@ namespace OperatorInterface
 
             // (Output) State Estimate
             int32_vec_t output_mode_;
+
+            std::shared_ptr<GamepadInterface> gamepad_;
         };
     } // namespace Teleop
 } // namespace OperatorInterface

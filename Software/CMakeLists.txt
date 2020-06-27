@@ -16,6 +16,9 @@ add_subdirectory(Core/OptimalControl)
 add_subdirectory(Core/Systems)
 add_subdirectory(Core/Nomad)
 
+# Core Library
+add_subdirectory(Common)
+
 # Communications Library
 add_subdirectory(Communications)
 

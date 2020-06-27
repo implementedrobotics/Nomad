@@ -70,11 +70,25 @@ RemoteTeleop::RemoteTeleop(const std::string &name,
     output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
     output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
     output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Z_COM, "Z_COM");
+
+    // Create Gamepad Object
+    // TODO: Needs to be a parameter for game pad device
+    gamepad_ = std::make_shared<GamepadInterface>("/dev/input/js0");
 }
 
 void RemoteTeleop::Run()
 {
     // Joystick/Keyboard Code Here
+    gamepad_->Poll();
+
+     if(gamepad_->IsPressed(GamepadInterface::BUTTON_A))
+         std::cout << "A Button Pressed: " << std::endl;
+
+    // std::cout << "Axis Value: " << gamepad_.GetValue(GamepadInterface::ANALOG_LEFT_TRIGGER) << std::endl;
+    // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_LEFT) << std::endl;
+    // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_RIGHT) << std::endl;
+    // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_UP) << std::endl;
+    // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_DOWN) << std::endl;
 
     // TODO: FSM Here to handle input modes
     output_mode_.data[0] = 1; // Mode Type
@@ -89,11 +103,13 @@ void RemoteTeleop::Run()
     bool send_status = GetOutputPort(OutputPort::MODE)->Send(output_mode_);
     bool send_status2 = GetOutputPort(OutputPort::SETPOINT)->Send(output_setpoint_);
 
-    std::cout << "SENDING STUFF: " << send_status << " and " << send_status2 << std::endl;
+  //  std::cout << "SENDING STUFF: " << send_status << " and " << send_status2 << std::endl;
 }
 
 void RemoteTeleop::Setup()
 {
+    
+    //gamepad_.OpenDevice("/dev/input/js0");
     // TODO: Autobind NON-NULL output port
     GetOutputPort(OutputPort::MODE)->Bind();
     GetOutputPort(OutputPort::SETPOINT)->Bind();

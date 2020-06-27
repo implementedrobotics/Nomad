@@ -22,82 +22,186 @@
  */
 
 // Primary Include
-#include <OperatorInterface/RemoteTeleop.hpp>
+#include <OperatorInterface/GamepadInterface.hpp>
 
 // C System Includes
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
 
 // C++ System Includes
 #include <iostream>
 #include <string>
-#include <sstream>
+#include <cstring>
 
 // Third-Party Includes
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
-
 
 namespace OperatorInterface
 {
 
-namespace Teleop
-{
-RemoteTeleop::RemoteTeleop(const std::string &name,
-                               const long rt_period,
-                               unsigned int rt_priority,
-                               const int rt_core_id,
-                               const unsigned int stack_size) : 
-                               Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
-{
-    //////// Create Messages
-    // Desired Mode Type Message
-    output_mode_.length = 1;
-    output_mode_.data.resize(output_mode_.length);
+    namespace Teleop
+    {
 
-    // Desired Setpoint Type Message
-    output_setpoint_.length = 4;
-    output_setpoint_.data.resize(output_setpoint_.length);
+        GamepadInterface::GamepadInterface() : is_open_(false), fd_(-1)
+        {
+            Reset();
+        }
+        GamepadInterface::GamepadInterface(const std::string &device) : is_open_(false), fd_(-1), device_(device)
+        {
+            OpenDevice(device_);
+        }
 
-    // Create Ports
-    // Setpoint MODE Port
-    output_port_map_[OutputPort::MODE] = std::make_shared<Realtime::Port>("MODE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::INT32, 1, rt_period);
-    output_port_map_[OutputPort::MODE]->SetSignalLabel(0, "MODE");
+        GamepadInterface::~GamepadInterface()
+        {
+            if (is_open_)
+            {
+                close(fd_);
+            }
+        }
 
-    // Setpoint OUTPUT Port
-    // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    output_port_map_[OutputPort::SETPOINT] =  std::make_shared<Realtime::Port>("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
-    output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::X_DOT, "X_DOT");
-    output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
-    output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
-    output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Z_COM, "Z_COM");
-}
+        void GamepadInterface::OpenDevice(const std::string &device)
+        {
+            device_ = device;
+            Reset();
+            // Close any already open devices
+            if(is_open_)
+            {
+                close(fd_);  
+            }
+            std::cout << "[GamepadInterface]: Opening Gamepad Device: " << device_ << std::endl;
 
-void RemoteTeleop::Run()
-{
-    // Joystick/Keyboard Code Here
+            // Open Joystick w/ Non blocking
+            fd_ = open(device_.c_str(), O_RDONLY | O_NONBLOCK);
 
-    // TODO: FSM Here to handle input modes
-    output_mode_.data[0] = 1; // Mode Type
+            if (fd_ != -1)
+                is_open_ = true;
 
-    // Get Input (Remote)
-    output_setpoint_.data[Idx::X_DOT] = 1.0;  // x_dot
-    output_setpoint_.data[Idx::Y_DOT] = 0.0;    // y_dot
-    output_setpoint_.data[Idx::YAW_DOT] = 0.0;  // yaw_dot
-    output_setpoint_.data[Idx::Z_COM] = 0.5;    // z_comt
+            if (!is_open_)
+            {
+                std::cout << "[GamepadInterface]: ERROR opening Gamepad Device: " << device_ << std::endl;
+                return;
+            }
 
-    // Publish Messages
-    bool send_status = GetOutputPort(OutputPort::MODE)->Send(output_mode_);
-    bool send_status2 = GetOutputPort(OutputPort::SETPOINT)->Send(output_setpoint_);
+            std::cout << "[GamepadInterface]: Successfully opened Gamepad Device: " << device_ << std::endl;
+            
+            Poll();
+        }
 
-    std::cout << "SENDING STUFF: " << send_status << " and " << send_status2 << std::endl;
-}
+        void GamepadInterface::Poll()
+        {
+            while (read(fd_, &js_event_, sizeof(struct js_event)) == sizeof(struct js_event))
+            {
+                switch (js_event_.type)
+                {
 
-void RemoteTeleop::Setup()
-{
-    // TODO: Autobind NON-NULL output port
-    GetOutputPort(OutputPort::MODE)->Bind();
-    GetOutputPort(OutputPort::SETPOINT)->Bind();
-}
+                case JS_EVENT_BUTTON:
+                    buttons_[js_event_.number].pressed = js_event_.value ? true : false;
+                    buttons_[js_event_.number].released = js_event_.value ? false : true;
+                    break;
 
-} // namespace Teleop
+                case JS_EVENT_AXIS:
+                    // Map Trigger from 0 to 1
+                    if(js_event_.number == AxisType::ANALOG_LEFT_TRIGGER || js_event_.number == AxisType::ANALOG_RIGHT_TRIGGER)
+                    {
+                        axis_[js_event_.number].value = (float)(js_event_.value + MAX_AXES_VALUE)/(2*MAX_AXES_VALUE);
+                    }
+                    else if(js_event_.number == DPadType::D_PAD_LEFT_RIGHT) // Map DPAD Axis
+                    {
+                        if(js_event_.value == 0)
+                        {
+                            dpad_.left = false;
+                            dpad_.right = false;
+                        }
+                        else if (js_event_.value < 0)
+                        {
+                            dpad_.left = true;
+                            dpad_.right = false;
+                        }
+                        else 
+                        {
+                            dpad_.left = false;
+                            dpad_.right = true;
+                        }
+                    } 
+                    else if(js_event_.number == DPadType::D_PAD_UP_DOWN) // Map DPAD Axis
+                    {
+                        if(js_event_.value == 0)
+                        {
+                            dpad_.up = false;
+                            dpad_.down = false;
+                        }
+                        else if (js_event_.value < 0)
+                        {
+                            dpad_.up = true;
+                            dpad_.down = false;
+                        }
+                        else 
+                        {
+                            dpad_.up = false;
+                            dpad_.down = true;
+                        }
+                    }
+                    else // Map everything else from -1.0 to 1.0
+                        axis_[js_event_.number].value = (float)js_event_.value/MAX_AXES_VALUE;
+                    break;
+
+                default:
+                    // Do Nothing for Events
+                    break;
+                }
+            }
+        }
+
+        GamepadInterface::ButtonState GamepadInterface::GetButtonState(ButtonType button)
+        {
+            return buttons_[button];
+        }
+
+        GamepadInterface::AxisState GamepadInterface::GetAxisState(AxisType axis)
+        {
+            return axis_[axis];
+        }
+
+        bool GamepadInterface::GetDPadState(DPadType dpad)
+        {
+
+            switch (dpad)
+            {
+            case DPadType::D_PAD_LEFT:
+                return dpad_.left;
+            case DPadType::D_PAD_RIGHT:
+                return dpad_.right;
+            case DPadType::D_PAD_UP:
+                return dpad_.up;
+            case DPadType::D_PAD_DOWN:
+                return dpad_.down;
+            default:
+                return false;
+            }
+        }
+
+        bool GamepadInterface::IsPressed(ButtonType button)
+        {
+            return buttons_[button].pressed;
+        }
+
+        bool GamepadInterface::IsReleased(ButtonType button)
+        {
+            return buttons_[button].released;
+        }
+
+        float GamepadInterface::GetValue(AxisType axis)
+        {
+            return axis_[axis].value;
+        }
+
+        void GamepadInterface::Reset()
+        {
+            std::memset(&axis_, 0, sizeof(AxisState)*NUM_AXES);
+            std::memset(&buttons_, 0, sizeof(ButtonState)*NUM_BUTTONS);
+            std::memset(&dpad_, 0, sizeof(DPadState));
+        }
+    } // namespace Teleop
 } // namespace OperatorInterface

@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
     // Run for 10 Seconds
     int j = 0;
-    while (j < 10)
+    while (j < 50)
     {    
 
         usleep(1e6);
