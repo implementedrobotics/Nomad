@@ -15,6 +15,9 @@ set(TASK_TEST_LIBS Plotting Controllers OperatorInterface zcm)
 set(TELEOP_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/teleop_test.cpp)
 set(TELEOP_TEST_LIBS Plotting Controllers OperatorInterface Common zcm)
 
+set(LEG_CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/leg_controller_test.cpp)
+set(LEG_CONTROLLER_TEST_LIBS Controllers Common zcm)
+
 # Definitions
 add_definitions(-D_GNU_SOURCE)
 
@@ -29,3 +32,6 @@ target_link_libraries(thread_task ${TASK_TEST_LIBS} )
 
 add_executable(teleop_test ${TELEOP_TEST_SOURCES})
 target_link_libraries(teleop_test ${TELEOP_TEST_LIBS} )
+
+add_executable(legcontroller_test ${LEG_CONTROLLER_TEST_SOURCES})
+target_link_libraries(legcontroller_test ${LEG_CONTROLLER_TEST_LIBS} )

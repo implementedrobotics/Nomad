@@ -35,6 +35,10 @@
 #include <Eigen/Dense>
 #include <Communications/Messages/double_vec_t.hpp>
 
+#include <dart/dynamics/Skeleton.hpp>
+#include <dart/dynamics/BodyNode.hpp>
+#include <dart/dynamics/DegreeOfFreedom.hpp>
+
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 
@@ -47,13 +51,14 @@ class LegController : public Realtime::RealTimeTaskNode
 
 public:
 
+    // TODO: Evaluate breaking these down into single message type, LegControllerSetpoint_t, LegControllerState_t etc
     enum OutputPort
     {
         TORQUE_FF_OUT = 0,      // Torque Feed Forward Desired
         JOINT_POSITION_OUT = 1, // Joint Position Desired
         JOINT_VELOCITY_OUT = 2, // Joint Velocity Desired
-        JOINT_K_P_OUT = 3,      // Joint P-Gain
-        JOINT_K_D_OUT = 4,      // Joint D-Gain
+        K_P_JOINT_OUT = 3,      // Joint P-Gain
+        K_D_JOINT_OUT = 4,      // Joint D-Gain
 
         FOOT_POSITION_OUT = 5,  // Foot Position State
         FOOT_VELOCITY_OUT = 6,  // Foot Velocity State
@@ -69,10 +74,11 @@ public:
         JOINT_VELOCITY = 3,
         FOOT_POSITION = 4,
         FOOT_VELOCITY = 5,
-        CARTESIAN_K_P = 6,
-        CARTESIAN_K_D = 7,
-        JOINT_K_P = 8,
-        JOINT_K_D = 9,
+        K_P_JOINT = 6,
+        K_D_JOINT = 7,
+        K_P_CARTESIAN = 8,
+        K_D_CARTESIAN = 9,
+
         NUM_INPUTS = 10
     };
     // FL = 0, FR = 1, RL = 2, RR = 3
@@ -89,6 +95,10 @@ public:
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 
+
+    // Load Dart Skeleton from URDF
+    void LoadFromURDF(const std::string &urdf);
+
 protected:
     // Overriden Run Function
     virtual void Run();
@@ -99,11 +109,40 @@ protected:
     // Number of legs
     unsigned int num_legs_;
 
+    // Number of dofs per each leg
+    unsigned int num_dofs_;
+
+    // Total number of dofs
+    unsigned int total_dofs_;
+
     // Input (Messages)
     double_vec_t input_desired_[NUM_INPUTS];
 
     // Output (Messages)
     double_vec_t outputs_[NUM_OUTPUTS];
+
+    // TODO: Set these at compile time?
+    Eigen::VectorXd torque_ff_out_;
+    Eigen::VectorXd q_out_;
+    Eigen::VectorXd q_d_out_;
+
+    Eigen::MatrixXd k_P_joint_;
+    Eigen::MatrixXd k_D_joint_;
+
+    Eigen::MatrixXd k_P_cartesian_;
+    Eigen::MatrixXd k_D_cartesian_;
+
+    Eigen::VectorXd foot_pos_;
+    Eigen::VectorXd foot_vel_;
+
+    // Jacobian Matrix
+    Eigen::MatrixXd J_; 
+
+    // Dart Helpers
+    dart::dynamics::SkeletonPtr robot_;
+
+    void ResetState();
+
 };
 } // namespace Locomotion
 } // namespace Controllers
