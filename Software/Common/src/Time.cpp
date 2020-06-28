@@ -1,5 +1,5 @@
 /*
- * Time.hpp
+ * Time.cpp
  *
  *  Created on: August 9, 2019
  *      Author: Quincy Jones
@@ -21,15 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_SYSTEMS_TIME_H
-#define NOMAD_SYSTEMS_TIME_H
+// Primary Include
+#include <Common/Time.hpp>
 
-// 
-#include <Systems/DynamicalSystem.hpp>
+// C System Includes
 
-// C System Files
-
-// C++ System Files
+// C++ System Includes
 #include <iostream>
 #include <string>
 #include <chrono>
@@ -37,25 +34,27 @@
 // Third Party Includes
 
 // Project Include Files
+
 namespace Systems
 {
+    Time::Time()
+    {
+        start_ = std::chrono::high_resolution_clock::now();
+    }
+    Time::~Time()
+    {
+        end_ = std::chrono::high_resolution_clock::now();
+        duration_ = end_ -  start_;
 
-class Time
-{
-    public:
+        std::cout << "Timer Took: " << duration_.count() << "us" << std::endl;
+    }
+    uint64_t Time::GetTime()
+    {
+        static auto start_time = std::chrono::high_resolution_clock::now(); 
 
-        // Constructor
-        Time();
-        ~Time();
+        auto time_now = std::chrono::high_resolution_clock::now(); 
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+        return duration.count();
+    }
 
-        static uint64_t GetTime();
-    protected:
-
-        std::chrono::time_point<std::chrono::system_clock> start_;
-        std::chrono::time_point<std::chrono::system_clock> end_;
-
-        std::chrono::duration<double> duration_;
-
-};
 }
-#endif // NOMAD_SYSTEMS_TIME_H

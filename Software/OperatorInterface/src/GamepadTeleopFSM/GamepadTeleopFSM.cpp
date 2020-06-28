@@ -84,7 +84,7 @@ namespace OperatorInterface
             off->AddTransitionEvent(start_event, idle);
             idle->AddTransitionEvent(up_event, stand);
 
-            // // Add the state to the FSM
+            // Add the stated to the FSM
             AddState(off);
             AddState(idle);
             AddState(stand);

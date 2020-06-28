@@ -14,6 +14,7 @@ include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
 include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
+include_directories("${PROJECT_SOURCE_DIR}/Common/include")
 
 add_library(Controllers STATIC ${CONTROLLERS_SOURCES})
 target_link_libraries(Controllers ${CONTROLLERS_LIBS})
