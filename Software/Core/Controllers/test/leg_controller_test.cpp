@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     urdf.append("/Robot/Nomad.urdf");
 
     std::cout << "Load: " << urdf << std::endl;
+    leg_controller_node.LoadFromURDF(urdf);
 
     leg_controller_node.SetStackSize(1024 * 1024); // 1MB
     leg_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);

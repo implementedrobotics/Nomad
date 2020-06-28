@@ -53,17 +53,23 @@ namespace Controllers
                                      const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
                                                                       num_legs_(4), num_dofs_(3)
         {
-            // Member Variables
+            // Member Variables //
             total_dofs_ = num_legs_ * num_dofs_;
 
+            // PD Gain Variables
             k_P_cartesian_ = Eigen::MatrixXd(total_dofs_, total_dofs_);
             k_D_cartesian_ = Eigen::MatrixXd(total_dofs_, total_dofs_);
             k_P_joint_ = Eigen::MatrixXd(total_dofs_, total_dofs_);
             k_D_joint_ = Eigen::MatrixXd(total_dofs_, total_dofs_);
 
+            // Foot Position Variable
             foot_pos_ = Eigen::VectorXd::Zero(total_dofs_);
             foot_vel_ = Eigen::VectorXd::Zero(total_dofs_);
-            // Create Messages
+
+            // Jacobian Variable (Linear)
+            J_ = Eigen::MatrixXd(num_legs_ * 3, total_dofs_);
+
+            // Create Input/Output Messages
             outputs_[OutputPort::TORQUE_FF_OUT].length = total_dofs_;
             outputs_[OutputPort::TORQUE_FF_OUT].data.resize(total_dofs_);
 
@@ -145,7 +151,6 @@ namespace Controllers
 
         void LegController::Run()
         {
-           // std::cout << "RUNNING!: " << std::endl;
             // Zero Force Outputs
             Eigen::VectorXd tau_output = Eigen::VectorXd::Zero(total_dofs_);
             Eigen::VectorXd force_output = Eigen::VectorXd::Zero(total_dofs_);
@@ -158,7 +163,6 @@ namespace Controllers
             // Reset State, Zero Inputs, and Force/Torque outputs
             ResetState();
 
-            //std::cout << "RESET!: " << std::endl;
             // Loop and read
             // TODO: Really want to change this to a single message
             for (int i = 0; i < NUM_INPUTS; i++) // Read all of our inputs
@@ -166,18 +170,11 @@ namespace Controllers
                 GetInputPort(i)->Receive(input_desired_[i]);
             }
 
-            //std::cout << "Receive Input!: " << std::endl;
             // Setup Vars
-
-           // std::cout << "Got: " << input_desired_[InputPort::TORQUE_FF].data.data() << std::endl;
-            
-            std::cout << " TESTING " << std::endl;
             // Read any Feed Forwards
             tau_output = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::TORQUE_FF].data.data(), total_dofs_);
             force_output = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::FORCE_FF].data.data(), total_dofs_);
 
-             std::cout << " POST MAP " << std::endl;
-            //std::cout << "TA: " << tau_output << std::endl;
             // Gains
             k_P_cartesian_ = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::K_P_CARTESIAN].data.data(), total_dofs_).asDiagonal();
             k_D_cartesian_ = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::K_D_CARTESIAN].data.data(), total_dofs_).asDiagonal();
@@ -188,18 +185,15 @@ namespace Controllers
             foot_pos_desired = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::FOOT_POSITION].data.data(), total_dofs_);
             foot_vel_desired = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::FOOT_VELOCITY].data.data(), total_dofs_);
 
-    std::cout << "NOW" << std::endl;
             // Compute Forces
             force_output += k_P_cartesian_ * (foot_pos_desired - foot_pos_);
             force_output += k_D_cartesian_ * (foot_vel_desired - foot_vel_);
 
-            std::cout << "NOW2" << std::endl;
             Eigen::VectorXd force_to_tau = J_.transpose() * force_output;
 
             // Add Feed Forward Forces to Torque Feed Forwards
             // TODO: Need to compute Jacobian
             tau_output += (J_.transpose() * force_output);
-            std::cout << "END2" << std::endl;
 
             // Sync Vectors
 
@@ -235,7 +229,7 @@ namespace Controllers
             // Publish State
             //bool send_status = GetOutputPort(OutputPort::STATE_HAT)->Send(output_state_);
 
-            std::cout << "[LegController]: Publishing: " << std::endl; //output_state_.data[Idx::X] << " Send: " << send_status << std::endl;
+           // std::cout << "[LegController]: Publishing: " << std::endl; //output_state_.data[Idx::X] << " Send: " << send_status << std::endl;
         }
 
         void LegController::Setup()
