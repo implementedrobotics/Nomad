@@ -56,6 +56,8 @@ namespace OperatorInterface
         protected:
             // Data pointer to controller data pointer
             std::shared_ptr<GamepadInterface> gamepad_;
+
+            
         };
 
         class OffState : public GamepadState

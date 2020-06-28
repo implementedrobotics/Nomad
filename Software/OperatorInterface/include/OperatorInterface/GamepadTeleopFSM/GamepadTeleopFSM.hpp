@@ -48,11 +48,16 @@ namespace OperatorInterface
             // Run an iteration of the state machine
             bool Run(double dt);
 
+            // Return Mode from Active State
+            
+            // 
         protected:
             //Helper function to create state machine
             void _CreateFSM();
 
             std::shared_ptr<GamepadInterface> gamepad_;
+            
+
         };
 
         class GamepadTransitionEvent : public Common::TransitionEvent
