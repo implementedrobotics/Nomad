@@ -8,7 +8,7 @@ ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ReferenceTrajectoryGen.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/LegController.cpp
 )
 
-set(CONTROLLERS_LIBS OptimalControl Systems pthread rt zcm dart dart-gui dart-utils-urdf dart-gui-osg)
+set(CONTROLLERS_LIBS OptimalControl Systems Robot pthread rt zcm dart)
 
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
@@ -16,6 +16,7 @@ include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
 include_directories("${PROJECT_SOURCE_DIR}/Common/include")
+include_directories("${PROJECT_SOURCE_DIR}/Robot/Nomad/include")
 
 #set(required_components utils-urdf gui-osg)
 #set(required_libraries dart dart-gui dart-utils-urdf dart-gui-osg)

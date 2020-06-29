@@ -66,6 +66,9 @@
         "memory_resource": "cpp",
         "random": "cpp",
         "set": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "object": "cpp",
+        "operationthread": "cpp",
+        "stats": "cpp"
     }
 }

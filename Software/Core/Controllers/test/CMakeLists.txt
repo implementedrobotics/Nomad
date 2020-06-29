@@ -2,6 +2,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/OperatorInterface/include")
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Plotting/include")
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Common/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Robot/Nomad/include")
 
 set(CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/qp_solver_test.cpp)
 set(CONTROLLER_TEST_LIBS qpOASES OptimalControl)
@@ -16,7 +17,7 @@ set(TELEOP_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/teleop_test.
 set(TELEOP_TEST_LIBS Plotting Controllers OperatorInterface Common zcm)
 
 set(LEG_CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/leg_controller_test.cpp)
-set(LEG_CONTROLLER_TEST_LIBS Controllers Common zcm)
+set(LEG_CONTROLLER_TEST_LIBS Controllers Common Robot zcm)
 
 # Definitions
 add_definitions(-D_GNU_SOURCE)

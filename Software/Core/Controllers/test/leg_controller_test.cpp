@@ -3,6 +3,7 @@
 #include <Controllers/LegController.hpp>
 #include <Systems/NomadPlant.hpp>
 #include <Common/Time.hpp>
+#include <Nomad/NomadRobot.hpp>
 
 #include <memory>
 
@@ -37,9 +38,10 @@ int main(int argc, char *argv[])
     urdf.append("/Robot/Nomad.urdf");
 
     std::cout << "Load: " << urdf << std::endl;
-    leg_controller_node.LoadFromURDF(urdf);
+    dart::dynamics::SkeletonPtr robot = Robot::Nomad::NomadRobot::Load(urdf);
 
-    leg_controller_node.SetStackSize(1024 * 1024); // 1MB
+    leg_controller_node.SetRobotSkeleton(robot->cloneSkeleton());
+    leg_controller_node.SetStackSize(1024 * 1024); // 1MB   
     leg_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     leg_controller_node.SetTaskFrequency(freq1); // 50 HZ
     //leg_controller_node.SetCoreAffinity(-1);

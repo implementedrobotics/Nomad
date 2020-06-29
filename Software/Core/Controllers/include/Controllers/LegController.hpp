@@ -95,9 +95,8 @@ public:
                    const int rt_core_id = -1,
                    const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-
-    // Load Dart Skeleton from URDF
-    void LoadFromURDF(const std::string &urdf);
+    // Set Dart Robot Skeleton
+    void SetRobotSkeleton(dart::dynamics::SkeletonPtr robot);
 
 protected:
     // Overriden Run Function

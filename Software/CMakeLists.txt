@@ -10,13 +10,14 @@ set(NOMAD_VERSION_MINOR 1)
 #add_library(QuickStart STATIC ${SOURCES})
 #enable_testing()
 
+# Core Library
 add_subdirectory(Core/Physics)
 add_subdirectory(Core/Controllers)
 add_subdirectory(Core/OptimalControl)
 add_subdirectory(Core/Systems)
 add_subdirectory(Core/Nomad)
 
-# Core Library
+# Common Library
 add_subdirectory(Common)
 
 # Communications Library
@@ -25,11 +26,14 @@ add_subdirectory(Communications)
 # Operator Interface
 add_subdirectory(OperatorInterface)
 
-# Realtime Interface
+# Realtime Library
 add_subdirectory(Realtime)
 
-# Plotting Interface
+# Plotting Library
 add_subdirectory(Plotting)
+
+# Robot Library
+add_subdirectory(Robot)
 
 #IF(BUILD_SIMULATION)
 # Simulation(Optional)

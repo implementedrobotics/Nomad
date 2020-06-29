@@ -230,6 +230,10 @@ namespace Controllers
             //bool send_status = GetOutputPort(OutputPort::STATE_HAT)->Send(output_state_);
 
            // std::cout << "[LegController]: Publishing: " << std::endl; //output_state_.data[Idx::X] << " Send: " << send_status << std::endl;
+
+           // Update State
+           //J_ = robot_->getLinearJacobian(foot, body);
+           
         }
 
         void LegController::Setup()
@@ -276,32 +280,9 @@ namespace Controllers
             //std::fill(outputs_[OutputPort::JOINT_VELOCITY_OUT].data.begin(), input_desired_[OutputPort::JOINT_VELOCITY_OUT].data.end(), 0);
         }
 
-        void LegController::LoadFromURDF(const std::string &urdf)
+        void LegController::SetRobotSkeleton(dart::dynamics::SkeletonPtr robot)
         {
-            dart::utils::DartLoader loader;
-            robot_ = loader.parseSkeleton(urdf);
-
-            // Rename the floating base dofs
-            robot_->getDof(0)->setName("omega_x");
-            robot_->getDof(1)->setName("omega_y");
-            robot_->getDof(2)->setName("omega_z");
-            robot_->getDof(3)->setName("base_x");
-            robot_->getDof(4)->setName("base_y");
-            robot_->getDof(5)->setName("base_z");
-
-            // Set position limits enforcement
-            robot_->getJoint("j_kfe_FL")->setPositionLimitEnforced(true);
-            robot_->getJoint("j_kfe_FR")->setPositionLimitEnforced(true);
-            robot_->getJoint("j_kfe_RL")->setPositionLimitEnforced(true);
-            robot_->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
-
-            int i = 0;
-            for (auto dof : robot_->getDofs())
-            {
-                std::cout << "DOF: " << i++ << " : " << dof->getName() << std::endl;
-            }
-
-            std::cout << "Mass: " << robot_->getMass() << std::endl;
+            robot_ = robot;
         }
     } // namespace Locomotion
 } // namespace Controllers
