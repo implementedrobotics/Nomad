@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.10)
 
 set(CONTROLLERS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/src/StateEstimator.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ConvexMPC.cpp
+${PROJECT_SOURCE_DIR}/Core/Controllers/src/PrimaryControl.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/GaitScheduler.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ReferenceTrajectoryGen.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/LegController.cpp

@@ -6,13 +6,13 @@
 
 #include <zcm/zcm_coretypes.h>
 
-#ifndef __generic_vec_t_hpp__
-#define __generic_vec_t_hpp__
+#ifndef __generic_msg_t_hpp__
+#define __generic_msg_t_hpp__
 
 #include <vector>
 
 
-class generic_vec_t
+class generic_msg_t
 {
     public:
         int64_t    timestamp;
@@ -29,7 +29,7 @@ class generic_vec_t
         /**
          * Destructs a message properly if anything inherits from it
         */
-        virtual ~generic_vec_t() {}
+        virtual ~generic_msg_t() {}
 
         /**
          * Encode a message into binary form.
@@ -66,7 +66,7 @@ class generic_vec_t
         inline static int64_t getHash();
 
         /**
-         * Returns "generic_vec_t"
+         * Returns "generic_msg_t"
          */
         inline static const char* getTypeName();
 
@@ -77,7 +77,7 @@ class generic_vec_t
         inline static uint64_t _computeHash(const __zcm_hash_ptr* p);
 };
 
-int generic_vec_t::encode(void* buf, uint32_t offset, uint32_t maxlen) const
+int generic_msg_t::encode(void* buf, uint32_t offset, uint32_t maxlen) const
 {
     uint32_t pos = 0;
     int thislen;
@@ -92,7 +92,7 @@ int generic_vec_t::encode(void* buf, uint32_t offset, uint32_t maxlen) const
     return pos;
 }
 
-int generic_vec_t::decode(const void* buf, uint32_t offset, uint32_t maxlen)
+int generic_msg_t::decode(const void* buf, uint32_t offset, uint32_t maxlen)
 {
     uint32_t pos = 0;
     int thislen;
@@ -108,23 +108,23 @@ int generic_vec_t::decode(const void* buf, uint32_t offset, uint32_t maxlen)
     return pos;
 }
 
-uint32_t generic_vec_t::getEncodedSize() const
+uint32_t generic_msg_t::getEncodedSize() const
 {
     return 8 + _getEncodedSizeNoHash();
 }
 
-int64_t generic_vec_t::getHash()
+int64_t generic_msg_t::getHash()
 {
     static int64_t hash = _computeHash(NULL);
     return hash;
 }
 
-const char* generic_vec_t::getTypeName()
+const char* generic_msg_t::getTypeName()
 {
-    return "generic_vec_t";
+    return "generic_msg_t";
 }
 
-int generic_vec_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) const
+int generic_msg_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) const
 {
     uint32_t pos = 0;
     int thislen;
@@ -149,7 +149,7 @@ int generic_vec_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) co
     return pos;
 }
 
-int generic_vec_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen)
+int generic_msg_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen)
 {
     uint32_t pos = 0;
     int thislen;
@@ -175,7 +175,7 @@ int generic_vec_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxl
     return pos;
 }
 
-uint32_t generic_vec_t::_getEncodedSizeNoHash() const
+uint32_t generic_msg_t::_getEncodedSizeNoHash() const
 {
     uint32_t enc_size = 0;
     enc_size += __int64_t_encoded_array_size(NULL, 1);
@@ -186,9 +186,9 @@ uint32_t generic_vec_t::_getEncodedSizeNoHash() const
     return enc_size;
 }
 
-uint64_t generic_vec_t::_computeHash(const __zcm_hash_ptr*)
+uint64_t generic_msg_t::_computeHash(const __zcm_hash_ptr*)
 {
-    uint64_t hash = (uint64_t)0x8b8c72b9a4d71a89LL;
+    uint64_t hash = (uint64_t)0x8b9007b962d5cd89LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

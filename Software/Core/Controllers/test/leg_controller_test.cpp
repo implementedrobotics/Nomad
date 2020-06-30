@@ -1,6 +1,7 @@
 #include <Realtime/RealTimeTask.hpp>
 #include <Communications/Port.hpp>
 #include <Controllers/LegController.hpp>
+#include <Controllers/PrimaryControl.hpp>
 #include <Systems/NomadPlant.hpp>
 #include <Common/Time.hpp>
 #include <Nomad/NomadRobot.hpp>
@@ -30,6 +31,18 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
 
+    // FSM Task
+    Controllers::FSM::PrimaryControl primary_controller_node("Primary_Controller");
+
+    primary_controller_node.SetStackSize(1024 * 1024); // 1MB   
+    primary_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    primary_controller_node.SetTaskFrequency(freq1); // 50 HZ
+    //leg_controller_node.SetCoreAffinity(-1);
+    primary_controller_node.SetPortOutput(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND,
+                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.fsm.leg_cmd");
+    primary_controller_node.Start();
+
+
     // Leg Controller Task
     Controllers::Locomotion::LegController leg_controller_node("Leg_Controller");
 
@@ -45,24 +58,12 @@ int main(int argc, char *argv[])
     leg_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     leg_controller_node.SetTaskFrequency(freq1); // 50 HZ
     //leg_controller_node.SetCoreAffinity(-1);
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::TORQUE_FF_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.torque_ff");
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::JOINT_POSITION_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.joint_pos");
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::JOINT_VELOCITY_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.joint_vel");
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::K_P_JOINT_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.k_p_joint");
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::K_D_JOINT_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.k_d_joint");
+    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::SERVO_COMMAND,
+                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.servo_cmd");
 
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::FOOT_POSITION_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.foot_pos");
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::FOOT_VELOCITY_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.foot_vel");
-    leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::JACOBIAN_OUT,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.output.jacobian");
-    
+
+    Realtime::Port::Map(leg_controller_node.GetInputPort(Controllers::Locomotion::LegController::InputPort::LEG_COMMAND),
+                        primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
     leg_controller_node.Start();
 
 

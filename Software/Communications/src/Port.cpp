@@ -36,6 +36,7 @@
 
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
+#include <Communications/Messages/generic_msg_t.hpp>
 
 namespace Realtime
 {
@@ -57,6 +58,11 @@ Port::Port(const std::string &name, Direction direction, DataType data_type, int
         else if (data_type == DataType::INT32)
         {
             PortHandler<int32_vec_t> *handler = new PortHandler<int32_vec_t>(queue_size_);
+            handler_ = (void *)handler;
+        }
+        else if (data_type == DataType::BYTE)
+        {
+            PortHandler<generic_msg_t> *handler = new PortHandler<generic_msg_t>(queue_size_);
             handler_ = (void *)handler;
         }
     }
@@ -159,6 +165,10 @@ bool Port::Connect()
     else if (data_type_ == DataType::INT32)
     {
         auto subs = context_->subscribe(channel_, &PortHandler<int32_vec_t>::HandleMessage, static_cast<PortHandler<int32_vec_t> *>(handler_));
+    }
+    else if (data_type_ == DataType::BYTE)
+    {
+        auto subs = context_->subscribe(channel_, &PortHandler<generic_msg_t>::HandleMessage, static_cast<PortHandler<generic_msg_t> *>(handler_));
     }
     else
     {

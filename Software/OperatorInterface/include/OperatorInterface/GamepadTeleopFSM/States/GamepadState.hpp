@@ -42,8 +42,7 @@ namespace OperatorInterface
         class GamepadState : public Common::State
         {
         public:
-            // Base Class NomadState
-            // control_DATA = State Machine data container
+            // Base Class GamepadState
             GamepadState(const std::string &name, std::size_t id) : Common::State(name, id)
             {
             }
@@ -56,8 +55,6 @@ namespace OperatorInterface
         protected:
             // Data pointer to controller data pointer
             std::shared_ptr<GamepadInterface> gamepad_;
-
-            
         };
 
         class OffState : public GamepadState
