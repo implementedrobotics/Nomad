@@ -36,12 +36,6 @@
 #include <Common/FiniteStateMachine.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
 
-namespace Robot
-{
-    namespace Nomad
-    {
-        namespace FSM
-        {
             typedef enum
             {
                 OFF = 0,
@@ -54,12 +48,18 @@ namespace Robot
                 ESTOP = 7
             } CONTROL_MODE;
 
+namespace Robot
+{
+    namespace Nomad
+    {
+        namespace FSM
+        {
             // Finite State Machine Class
             class NomadControlFSM : public Common::FiniteStateMachine
             {
             public:
                 // Base Class Gamepad Teleop FSM
-                NomadControlFSM(std::shared_ptr<NomadControlData> data);
+                NomadControlFSM(/*std::shared_ptr<NomadControlData> data*/);
 
                 // Run an iteration of the state machine
                 bool Run(double dt);
@@ -101,7 +101,7 @@ namespace Robot
                 // Stop state machine and cleans up
                 bool Triggered()
                 {
-                    if (data_->control_mode_ == req_mode_)
+                    if (data_->control_mode == req_mode_)
                     {
                         std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
                         return true;

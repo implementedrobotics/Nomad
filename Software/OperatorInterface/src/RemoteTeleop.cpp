@@ -35,6 +35,7 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
+#include <Common/Time.hpp>
 
 namespace OperatorInterface
 {
@@ -79,18 +80,6 @@ namespace OperatorInterface
 
         void RemoteTeleop::Run()
         {
-            // Joystick/Keyboard Code Here
-            //gamepad_->Poll();
-
-            // if(gamepad_->IsPressed(GamepadInterface::BUTTON_A))
-            //     std::cout << "A Button Pressed: " << std::endl;
-
-            // std::cout << "Axis Value: " << gamepad_.GetValue(GamepadInterface::ANALOG_LEFT_TRIGGER) << std::endl;
-            // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_LEFT) << std::endl;
-            // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_RIGHT) << std::endl;
-            // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_UP) << std::endl;
-            // std::cout << "State: " << gamepad_.GetDPadState(GamepadInterface::D_PAD_DOWN) << std::endl;
-
             // Run FSM
             gamepad_FSM_->Run(0);
 
@@ -115,7 +104,7 @@ namespace OperatorInterface
             //gamepad_.OpenDevice("/dev/input/js0");
 
             // Start FSM
-            gamepad_FSM_->Start(0.001);
+            gamepad_FSM_->Start(Systems::Time::GetTime());
 
             // TODO: Autobind NON-NULL output port
             GetOutputPort(OutputPort::MODE)->Bind();

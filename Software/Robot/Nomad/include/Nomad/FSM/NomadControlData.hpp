@@ -44,7 +44,7 @@ namespace Robot
             // Struct to hold relevant control data
             struct NomadControlData
             {
-                CONTROL_MODE control_mode_;
+                int control_mode;
 
                 // Outputs Etc
             };
