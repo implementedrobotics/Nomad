@@ -47,6 +47,7 @@ namespace OperatorInterface
         void OffState::Enter(double current_time)
         {
             std::cout << "Entering Off State" << std::endl;
+            current_mode_ = ControlMode::OFF;
         }
 
 
@@ -62,6 +63,7 @@ namespace OperatorInterface
         void IdleState::Enter(double current_time)
         {
             std::cout << "Entering Idle State" << std::endl;
+            current_mode_ = ControlMode::IDLE;
         }
 
 
@@ -76,7 +78,23 @@ namespace OperatorInterface
         void StandState::Enter(double current_time)
         {
             std::cout << "Entering Stand State" << std::endl;
+            current_mode_ = ControlMode::STAND;
         }
+
+        SitState::SitState() : GamepadState("SIT", 3)
+        {
+        }
+        void SitState::Run(double dt)
+        {
+            //std::cout << "Sit Running" << std::endl;
+            // Set mode to stand
+        }
+        void SitState::Enter(double current_time)
+        {
+            std::cout << "Entering Sit State" << std::endl;
+            current_mode_ = ControlMode::SIT;
+        }
+
 
     } // namespace Teleop
 } // namespace OperatorInterface

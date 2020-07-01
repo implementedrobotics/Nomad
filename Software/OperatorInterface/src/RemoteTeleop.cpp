@@ -95,7 +95,7 @@ namespace OperatorInterface
             gamepad_FSM_->Run(0);
 
             // Get Mode from FSM
-            output_mode_.data[0] = 1; // Mode Type
+            output_mode_.data[0] = gamepad_FSM_->GetMode(); // Mode Type
 
             // Get Input (Remote)
             output_setpoint_.data[Idx::X_DOT] = 1.0;   // x_dot

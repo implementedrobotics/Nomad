@@ -49,6 +49,7 @@ namespace OperatorInterface
             bool Run(double dt);
 
             // Return Mode from Active State
+            int GetMode();
             
             // 
         protected:
@@ -57,7 +58,6 @@ namespace OperatorInterface
 
             std::shared_ptr<GamepadInterface> gamepad_;
             
-
         };
 
         class GamepadTransitionEvent : public Common::TransitionEvent

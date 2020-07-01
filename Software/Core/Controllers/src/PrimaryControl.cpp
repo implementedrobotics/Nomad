@@ -63,12 +63,8 @@ PrimaryControl::PrimaryControl(const std::string &name,
     memset(&leg_controller_cmd_, 0, sizeof(Controllers::Locomotion::leg_controller_cmd_t));
 
     // Create Ports
-
     // Primary Controller Input Port
     ///input_port_map_[InputPort::LEG_COMMAND] = std::make_shared<Realtime::Port>("LEG_COMMAND", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
-
-    // Primary Controller Input Port
-    //input_port_map_[InputPort::IMU] = std::make_shared<Realtime::Port>("IMU", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
 
     // Primary Controller Output Ports
     output_port_map_[OutputPort::LEG_COMMAND] = std::make_shared<Realtime::Port>("LEG_COMMAND", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
@@ -85,17 +81,13 @@ void PrimaryControl::Run()
     // }
 
     // 
-    leg_controller_cmd_.force_ff[0] = 10.0;
-
     // Copy command to message
-    memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(sizeof(Controllers::Locomotion::leg_controller_cmd_t)));
+    memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(Controllers::Locomotion::leg_controller_cmd_t));
 
-    leg_command_msg_.data[0] = 100;
-    std::cout << "FDFDFDS " << leg_command_msg_.data[0] << std::endl;
     // Publish Leg Command
     bool send_status = GetOutputPort(OutputPort::LEG_COMMAND)->Send(leg_command_msg_);
     
-    std::cout << "[PrimaryControl]: Publishing: " << leg_controller_cmd_.force_ff[0] << " Send: " << send_status << std::endl;
+    //std::cout << "[PrimaryControl]: Publishing: Send: " << send_status << std::endl;
 }
 
 void PrimaryControl::Setup()

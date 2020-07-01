@@ -60,6 +60,12 @@ namespace OperatorInterface
             // Now run base FSM code
             return FiniteStateMachine::Run(dt);
         }
+
+        int GamepadTeleopFSM::GetMode()
+        {
+            return std::static_pointer_cast<GamepadState>(current_state_)->GetMode();
+        }
+
         void GamepadTeleopFSM::_CreateFSM()
         {
             std::cout << "[GamepadTeleopFSM]: Creating FSM" << std::endl;
@@ -77,17 +83,25 @@ namespace OperatorInterface
             std::shared_ptr<StandState> stand = std::make_shared<StandState>();
             stand->SetGamepadInterface(gamepad_);
 
+            // Sit
+            std::shared_ptr<SitState> sit = std::make_shared<SitState>();
+            sit->SetGamepadInterface(gamepad_);
+
             std::shared_ptr<ButtonEvent> start_event = std::make_shared<ButtonEvent>("START BUTTON", GamepadInterface::BUTTON_START, ButtonEvent::EVENT_PRESSED, gamepad_);
             std::shared_ptr<DPadEvent> up_event = std::make_shared<DPadEvent>("UP BUTTON", GamepadInterface::DPadType::D_PAD_UP, gamepad_);
+            std::shared_ptr<DPadEvent> down_event = std::make_shared<DPadEvent>("DOWN BUTTON", GamepadInterface::DPadType::D_PAD_DOWN, gamepad_);
 
             // Setup Transitions
             off->AddTransitionEvent(start_event, idle);
             idle->AddTransitionEvent(up_event, stand);
+            stand->AddTransitionEvent(down_event, sit);
+            sit->AddTransitionEvent(up_event, stand);
 
             // Add the stated to the FSM
             AddState(off);
             AddState(idle);
             AddState(stand);
+            AddState(sit);
 
             // Set Initials State
             SetInitialState(off);

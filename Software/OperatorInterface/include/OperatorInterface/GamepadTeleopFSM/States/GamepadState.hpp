@@ -42,6 +42,14 @@ namespace OperatorInterface
         class GamepadState : public Common::State
         {
         public:
+            enum ControlMode
+            {
+                OFF = 0,
+                IDLE = 1,
+                STAND = 2,
+                SIT = 3
+            };
+
             // Base Class GamepadState
             GamepadState(const std::string &name, std::size_t id) : Common::State(name, id)
             {
@@ -52,9 +60,15 @@ namespace OperatorInterface
                 gamepad_ = gamepad;
             }
 
+            int GetMode()
+            {
+                return current_mode_;
+            }
+
         protected:
             // Data pointer to controller data pointer
             std::shared_ptr<GamepadInterface> gamepad_;
+            int current_mode_;
         };
 
         class OffState : public GamepadState
@@ -104,6 +118,27 @@ namespace OperatorInterface
 
         public:
             StandState();
+
+            // Called upon a state change and we enter this state
+            // current_time = current robot/controller time
+            void Enter(double current_time);
+
+            // // current_time = current robot/controller time
+            // // Called upon a state change and we are exiting this state
+            // void Exit(double current_time);
+
+            // Logic to run each iteration of the state machine run
+            // dt = time step for this iteration
+            void Run(double dt);
+
+        protected:
+        };
+
+        class SitState : public GamepadState
+        {
+
+        public:
+            SitState();
 
             // Called upon a state change and we enter this state
             // current_time = current robot/controller time
