@@ -110,7 +110,7 @@ namespace Controllers
             tau_output = Eigen::Map<Eigen::VectorXd>(leg_controller_cmd_.torque_ff, total_dofs_);
             force_output = Eigen::Map<Eigen::VectorXd>(leg_controller_cmd_.force_ff, total_dofs_);
 
-            std::cout << "FF: " << force_output << std::endl;
+            //std::cout << "FF: " << force_output << std::endl;
             //     // Gains
             //     k_P_cartesian_ = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::K_P_CARTESIAN].data.data(), total_dofs_).asDiagonal();
             //     k_D_cartesian_ = Eigen::Map<Eigen::VectorXd>(input_desired_[InputPort::K_D_CARTESIAN].data.data(), total_dofs_).asDiagonal();

@@ -69,6 +69,7 @@
         "string": "cpp",
         "object": "cpp",
         "operationthread": "cpp",
-        "stats": "cpp"
+        "stats": "cpp",
+        "image": "cpp"
     }
 }

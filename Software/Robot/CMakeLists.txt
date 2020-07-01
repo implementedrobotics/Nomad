@@ -13,4 +13,4 @@ target_link_libraries(Robot ${ROBOT_LIBS})
 #add_test(QuickStartTest test_main COMMAND test_main)
 
 # TODO: Make Options "Build Test/Examples etc"
-#add_subdirectory(Nomad/test)
+add_subdirectory(Nomad/test)
