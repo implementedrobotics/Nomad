@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.10)
 set(ROBOT_SOURCES ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControlFSM.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadRobot.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControl.cpp
+${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadDynamics.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OffState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/IdleState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/StandState.cpp
