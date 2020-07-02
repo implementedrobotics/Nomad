@@ -45,12 +45,12 @@ namespace Robot
             }
             void OffState::Run(double dt)
             {
-                std::cout << "Off Running" << std::endl;
+               // std::cout << "Off Running" << std::endl;
                 // Set mode to idle
             }
             void OffState::Enter(double current_time)
             {
-                std::cout << "Entering Off State" << std::endl;
+                std::cout << "Entering Off State!!!!" << std::endl;
                // current_mode_ = ControlMode::OFF;
             }
         } // namespace FSM

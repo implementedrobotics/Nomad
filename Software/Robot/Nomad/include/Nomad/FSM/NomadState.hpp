@@ -32,7 +32,7 @@
 
 // Project Include Files
 #include <Common/State.hpp>
-
+#include <Nomad/FSM/NomadControlData.hpp>
 namespace Robot
 {
     namespace Nomad
@@ -48,11 +48,17 @@ namespace Robot
                 {
                 }
 
+                void SetControllerData(std::shared_ptr<NomadControlData> data)
+                {
+                    data_ = data;
+                }
+
             protected:
                 // Data pointer to controller data pointer
+                std::shared_ptr<NomadControlData> data_;
             };
 
         } // namespace FSM
-    } // namespace Nomad
+    }     // namespace Nomad
 } // namespace Robot
 #endif // NOMAD_FSM_NOMADSTATE_H_

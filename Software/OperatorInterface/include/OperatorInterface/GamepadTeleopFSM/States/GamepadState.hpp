@@ -46,8 +46,14 @@ namespace OperatorInterface
             {
                 OFF = 0,
                 IDLE = 1,
-                STAND = 2,
-                SIT = 3
+                PASSIVE = 2,
+                STAND = 3,
+                SIT = 4,
+                BALANCE = 5,
+                LOCOMOTION = 6,
+                JUMP = 7,
+                ESTOP = 8
+
             };
 
             // Base Class GamepadState

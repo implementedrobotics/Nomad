@@ -33,10 +33,11 @@
 //#include <OperatorInterface/GamepadTeleopFSM/States/GamepadState.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
 #include <Nomad/FSM/OffState.hpp>
+#include <Nomad/FSM/IdleState.hpp>
+#include <Nomad/FSM/StandState.hpp>
 
 //#include <TransitionEvent.h>
-//#include <StandState.h>
-//#include <IdleState.h>
+
 
 namespace Robot
 {
@@ -75,34 +76,33 @@ namespace Robot
                 ///////////////////////// Define Our States
                 // Off
                 std::shared_ptr<OffState> off = std::make_shared<OffState>();
-                
+                off->SetControllerData(data_);
 
-                // // Idle
-                // std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
-                // idle->SetGamepadInterface(gamepad_);
+                // Idle
+                std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
+                idle->SetControllerData(data_);
 
-                // // Stand
-                // std::shared_ptr<StandState> stand = std::make_shared<StandState>();
-                // stand->SetGamepadInterface(gamepad_);
+                // Stand
+                std::shared_ptr<StandState> stand = std::make_shared<StandState>();
+                stand->SetControllerData(data_);
 
                 // // Sit
                 // std::shared_ptr<SitState> sit = std::make_shared<SitState>();
                 // sit->SetGamepadInterface(gamepad_);
 
-                // std::shared_ptr<ButtonEvent> start_event = std::make_shared<ButtonEvent>("START BUTTON", GamepadInterface::BUTTON_START, ButtonEvent::EVENT_PRESSED, gamepad_);
-                // std::shared_ptr<DPadEvent> up_event = std::make_shared<DPadEvent>("UP BUTTON", GamepadInterface::DPadType::D_PAD_UP, gamepad_);
-                // std::shared_ptr<DPadEvent> down_event = std::make_shared<DPadEvent>("DOWN BUTTON", GamepadInterface::DPadType::D_PAD_DOWN, gamepad_);
+                std::shared_ptr<CommandModeEvent> transition_idle = std::make_shared<CommandModeEvent>("IDLE TRANSITION", CONTROL_MODE::IDLE, data_);
+                std::shared_ptr<CommandModeEvent> transition_stand = std::make_shared<CommandModeEvent>("STAND TRANSITION", CONTROL_MODE::STAND, data_);
 
-                // // Setup Transitions
-                // off->AddTransitionEvent(start_event, idle);
-                // idle->AddTransitionEvent(up_event, stand);
+                // Setup Transitions
+                off->AddTransitionEvent(transition_idle, idle);
+                idle->AddTransitionEvent(transition_stand, stand);
                 // stand->AddTransitionEvent(down_event, sit);
                 // sit->AddTransitionEvent(up_event, stand);
 
                 // Add the stated to the FSM
                 AddState(off);
-                // AddState(idle);
-                // AddState(stand);
+                AddState(idle);
+                AddState(stand);
                 // AddState(sit);
 
                 // Set Initials State

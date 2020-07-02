@@ -1,7 +1,8 @@
+
 /*
- * StandState.hpp
+ * GamepadTeleopFSM.cpp
  *
- *  Created on: July 1, 2020
+ *  Created on: June 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,44 +22,37 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_CONTROL_STANDSTATE_H_
-#define NOMAD_CONTROL_STANDSTATE_H_
-
 // C System Files
 
 // C++ System Files
+#include <iostream>
 
 // Third Party Includes
 
 // Project Include Files
-#include <Nomad/FSM/NomadState.hpp>
+
+#include <Nomad/FSM/StandState.hpp>
 
 namespace Robot
 {
     namespace Nomad
     {
-
         namespace FSM
         {
-            class StandState : public NomadState
+
+            StandState::StandState() : NomadState("STAND", 2)
             {
-
-            public:
-                StandState();
-
-                // Called upon a state change and we enter this state
-                // current_time = current robot/controller time
-                void Enter(double current_time);
-
-                // // current_time = current robot/controller time
-                // // Called upon a state change and we are exiting this state
-                // void Exit(double current_time);
-
-                // Logic to run each iteration of the state machine run
-                // dt = time step for this iteration
-                void Run(double dt);
-            };
+            }
+            void StandState::Run(double dt)
+            {
+               // std::cout << "Stand Running" << std::endl;
+                // Set mode to idle
+            }
+            void StandState::Enter(double current_time)
+            {
+                std::cout << "Entering Stand State!!!" << std::endl;
+               // current_mode_ = ControlMode::OFF;
+            }
         } // namespace FSM
     }     // namespace Nomad
 } // namespace Robot
-#endif // NOMAD_CONTROL_STANDSTATE_H_

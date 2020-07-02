@@ -99,6 +99,7 @@ namespace Robot
                 // Stop state machine and cleans up
                 bool Triggered()
                 {
+                       //s std::cout << "Check: " << data_->control_mode << std::endl;
                     if (data_->control_mode == req_mode_)
                     {
                         std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
