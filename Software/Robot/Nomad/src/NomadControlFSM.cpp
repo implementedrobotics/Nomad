@@ -1,7 +1,7 @@
 /*
- * NomadControlFSM.cpp
+ * GamepadTeleopFSM.cpp
  *
- *  Created on: July 1, 2020
+ *  Created on: June 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -29,7 +29,14 @@
 // Third Party Includes
 
 // Project Include Files
+//#include <OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
+//#include <OperatorInterface/GamepadTeleopFSM/States/GamepadState.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
+#include <Nomad/FSM/OffState.hpp>
+
+//#include <TransitionEvent.h>
+//#include <StandState.h>
+//#include <IdleState.h>
 
 namespace Robot
 {
@@ -37,74 +44,69 @@ namespace Robot
     {
         namespace FSM
         {
-
-            // // Transition Events For States
-            // NomadTransitionEvent::NomadTransitionEvent(const std::string &name, std::shared_ptr<NomadControlData> control_data)
-            //     : TransitionEvent(name), control_DATA_(control_data)
-            // {
-            //     control_DATA_ = control_data;
-            // }
-
-            // // Transitions
-            // class CommandRequestEvent : public NomadTransitionEvent
-            // {
-            // public:
-            //     // Base Class Transition Event
-            //     // name = Transition Event name
-            //     CommandRequestEvent(const std::string &name, CONTROL_MODE mode, std::shared_ptr<NomadControlData> control_data) : NomadTransitionEvent(name, control_data), req_mode_(mode)
-            //     {
-            //     }
-
-            //     // Stop state machine and cleans up
-            //     bool Triggered()
-            //     {
-            //         if (control_DATA_->control_mode_ == req_mode_)
-            //         {
-            //             std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
-            //             return true;
-            //         }
-            //         return false;
-            //     };
-
-            // protected:
-            //     CONTROL_MODE req_mode_;
-            // };
-
-            NomadControlFSM::NomadControlFSM(/*std::shared_ptr<NomadControlData> data*/) : Common::FiniteStateMachine("Nomad Control FSM")//, data_(data)
+            // Transition Events For States
+            NomadControlTransitionEvent::NomadControlTransitionEvent(const std::string &name, std::shared_ptr<NomadControlData> data)
+                : TransitionEvent(name), data_(data)
             {
+                data_ = data;
+            }
+
+            NomadControlFSM::NomadControlFSM() : FiniteStateMachine("Nomad Primary Control FSM")
+            {
+                // Create Data Pointer
+                data_ = std::make_unique<Robot::Nomad::FSM::NomadControlData>();
                 _CreateFSM();
+            }
+            bool NomadControlFSM::Run(double dt)
+            {
+                // Now run base FSM code
+                return FiniteStateMachine::Run(dt);
+            }
+
+            const std::shared_ptr<NomadControlData> &NomadControlFSM::GetData() const
+            {
+                return data_;
             }
 
             void NomadControlFSM::_CreateFSM()
             {
-                // //nomad_control_FSM_ = std::make_unique<NomadPrimaryControlFSM>();
-                // std::cout << "Creating FSM in NPCFSM" << std::endl;
+                std::cout << "[NomadControlFSM]: Creating FSM" << std::endl;
 
-                // ///////////////////////// Define Our States
+                ///////////////////////// Define Our States
+                // Off
+                std::shared_ptr<OffState> off = std::make_shared<OffState>();
+                
+
                 // // Idle
                 // std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
-                // idle->SetControllerData(control_DATA_);
+                // idle->SetGamepadInterface(gamepad_);
 
                 // // Stand
                 // std::shared_ptr<StandState> stand = std::make_shared<StandState>();
-                // stand->SetControllerData(control_DATA_);
+                // stand->SetGamepadInterface(gamepad_);
 
-                // std::shared_ptr<CommandRequestEvent> transitionStand = std::make_shared<CommandRequestEvent>("STAND TRANSITION", CONTROL_MODE::STAND, control_DATA_);
-                // std::shared_ptr<CommandRequestEvent> transitionIdle = std::make_shared<CommandRequestEvent>("IDLE TRANSITION", CONTROL_MODE::IDLE, control_DATA_);
+                // // Sit
+                // std::shared_ptr<SitState> sit = std::make_shared<SitState>();
+                // sit->SetGamepadInterface(gamepad_);
+
+                // std::shared_ptr<ButtonEvent> start_event = std::make_shared<ButtonEvent>("START BUTTON", GamepadInterface::BUTTON_START, ButtonEvent::EVENT_PRESSED, gamepad_);
+                // std::shared_ptr<DPadEvent> up_event = std::make_shared<DPadEvent>("UP BUTTON", GamepadInterface::DPadType::D_PAD_UP, gamepad_);
+                // std::shared_ptr<DPadEvent> down_event = std::make_shared<DPadEvent>("DOWN BUTTON", GamepadInterface::DPadType::D_PAD_DOWN, gamepad_);
 
                 // // Setup Transitions
-                // idle->AddTransitionEvent(transitionStand, stand);
-                // stand->AddTransitionEvent(transitionIdle, idle);
+                // off->AddTransitionEvent(start_event, idle);
+                // idle->AddTransitionEvent(up_event, stand);
+                // stand->AddTransitionEvent(down_event, sit);
+                // sit->AddTransitionEvent(up_event, stand);
 
-                // // Add the state to the FSM
+                // Add the stated to the FSM
+                AddState(off);
                 // AddState(idle);
                 // AddState(stand);
+                // AddState(sit);
 
-                // // Set Initials State
-                // SetInitialState(idle);
-
-                // // Start the state machine
-                // //Start();
+                // Set Initials State
+                SetInitialState(off);
             }
         } // namespace FSM
     }     // namespace Nomad

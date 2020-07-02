@@ -1,9 +1,7 @@
-
-
 /*
- * PrimaryControlFSM.h
+ * GamepadTeleopFSM.h
  *
- *  Created on: July 1, 2020
+ *  Created on: June 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -23,19 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_FSM_NOMADCONTROLFSM_H_
-#define NOMAD_FSM_NOMADCONTROLFSM_H_
+#ifndef ROBOT_NOMAD_NOMADCONTROLFSM_H_
+#define ROBOT_NOMAD_NOMADCONTROLFSM_H_
 
 // C System Files
 
 // C++ System Files
-#include <iostream>
+
 // Third Party Includes
 
 // Project Include Files
 #include <Common/FiniteStateMachine.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
 
+namespace Robot
+{
+    namespace Nomad
+    {
+        namespace FSM
+        {
             typedef enum
             {
                 OFF = 0,
@@ -48,31 +52,25 @@
                 ESTOP = 7
             } CONTROL_MODE;
 
-namespace Robot
-{
-    namespace Nomad
-    {
-        namespace FSM
-        {
             // Finite State Machine Class
             class NomadControlFSM : public Common::FiniteStateMachine
             {
             public:
                 // Base Class Gamepad Teleop FSM
-                NomadControlFSM(/*std::shared_ptr<NomadControlData> data*/);
+                NomadControlFSM();
 
                 // Run an iteration of the state machine
                 bool Run(double dt);
 
                 // Return Mode from Active State
-                CONTROL_MODE GetMode();
+                const std::shared_ptr<NomadControlData> &GetData() const;
 
                 //
             protected:
                 //Helper function to create state machine
-                void _CreateFSM();
+                void
+                _CreateFSM();
 
-                // CONTROL DATA
                 std::shared_ptr<NomadControlData> data_;
             };
 
@@ -115,4 +113,4 @@ namespace Robot
         } // namespace FSM
     }     // namespace Nomad
 } // namespace Robot
-#endif // NOMAD_FSM_PRIMARYCONTROLFSM_H_
+#endif // ROBOT_NOMAD_NOMADCONTROLFSM_H_

@@ -1,8 +1,8 @@
 
 /*
- * NomadControlData.h
+ * GamepadTeleopFSM.cpp
  *
- *  Created on: June 21, 2020
+ *  Created on: June 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,18 +22,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_CONTROLDATA_H_
-#define NOMAD_CONTROLDATA_H_
-
 // C System Files
 
 // C++ System Files
+#include <iostream>
 
 // Third Party Includes
-#include <Eigen/Dense>
 
 // Project Include Files
-//#include <Nomad/FSM/NomadControlFSM.hpp>
+
+#include <Nomad/FSM/OffState.hpp>
 
 namespace Robot
 {
@@ -41,14 +39,20 @@ namespace Robot
     {
         namespace FSM
         {
-            // Struct to hold relevant control data
-            struct NomadControlData
-            {
-                int control_mode;
 
-                // Outputs Etc
-            };
+            OffState::OffState() : NomadState("OFF", 0)
+            {
+            }
+            void OffState::Run(double dt)
+            {
+                std::cout << "Off Running" << std::endl;
+                // Set mode to idle
+            }
+            void OffState::Enter(double current_time)
+            {
+                std::cout << "Entering Off State" << std::endl;
+               // current_mode_ = ControlMode::OFF;
+            }
         } // namespace FSM
     }     // namespace Nomad
 } // namespace Robot
-#endif // NOMAD_CONTROLDATA_H_

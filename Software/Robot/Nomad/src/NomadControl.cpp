@@ -73,7 +73,7 @@ namespace Robot
                 output_port_map_[OutputPort::LEG_COMMAND] = std::make_shared<Realtime::Port>("LEG_COMMAND", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
 
                 // Create FSM
-                //nomad_control_FSM_ = std::make_shared<Robot::Nomad::FSM::NomadControlFSM >(nomad_control_DATA_);
+                nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();
 
             }
 
@@ -88,7 +88,9 @@ namespace Robot
                 // }
                 bool receive = GetInputPort(InputPort::CONTROL_MODE)->Receive(control_mode_msg_);
 
-                //
+                // Run FSM
+                nomad_control_FSM_->Run(0);
+
                 // Copy command to message
                 memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
 
@@ -104,6 +106,10 @@ namespace Robot
                 bool connect = GetInputPort(InputPort::CONTROL_MODE)->Connect();
 
                 bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
+
+                // Start FSM
+                nomad_control_FSM_->Start(Systems::Time::GetTime());
+
                 std::cout << "[NomadControl]: "
                           << "Nomad Conrol FSM Publisher Running!: " << binded << std::endl;
             }

@@ -5,10 +5,10 @@ include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Commo
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Robot/Nomad/include")
 
 set(NOMAD_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Robot/Nomad/test/nomad_test.cpp)
-set(NOMAD_TEST_LIBS Realtime Communications OperatorInterface Common Robot)
+set(NOMAD_TEST_LIBS Realtime Communications OperatorInterface Robot Common)
 
 # Definitions
-add_definitions(-D_GNU_SOURCE)
+#add_definitions(-D_GNU_SOURCE)
 
 add_executable(nomad_test ${NOMAD_TEST_SOURCES})
 target_link_libraries(nomad_test ${NOMAD_TEST_LIBS} )

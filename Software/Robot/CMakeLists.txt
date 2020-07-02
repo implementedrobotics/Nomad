@@ -1,9 +1,11 @@
 
 cmake_minimum_required (VERSION 3.10)
 
-set(ROBOT_SOURCES ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadRobot.cpp
+set(ROBOT_SOURCES ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControlFSM.cpp
+${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadRobot.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControl.cpp
-${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControlFSM.cpp
+${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OffState.cpp
+
 )
 
 set(ROBOT_LIBS Common Communications Realtime Controllers dart dart-utils-urdf)

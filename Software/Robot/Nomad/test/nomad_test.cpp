@@ -39,28 +39,26 @@ int main(int argc, char *argv[])
     teleop_node.SetTaskFrequency(freq1); // 50 HZ
     //teleop_node.SetCoreAffinity(-1);
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE,
-                              Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.mode");
+                              Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode");
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
                               Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
                               
     teleop_node.Start();
 
-    std::shared_ptr<Robot::Nomad::FSM::NomadControlFSM> test = std::make_shared<Robot::Nomad::FSM::NomadControlFSM >();
+    // FSM Task
+    Robot::Nomad::Controllers::NomadControl nomad_controller_node("Nomad_Controller");
 
-    // // FSM Task
-    // Robot::Nomad::Controllers::NomadControl nomad_controller_node("Nomad_Controller");
+    nomad_controller_node.SetStackSize(1024 * 1024); // 1MB   
+    nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    nomad_controller_node.SetTaskFrequency(freq1); // 50 HZ
+    //nomad_controller_node.SetCoreAffinity(-1);
+    nomad_controller_node.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
+                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
-    // nomad_controller_node.SetStackSize(1024 * 1024); // 1MB   
-    // nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // nomad_controller_node.SetTaskFrequency(freq1); // 50 HZ
-    // //nomad_controller_node.SetCoreAffinity(-1);
-    // nomad_controller_node.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
-    //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
+    Realtime::Port::Map(nomad_controller_node.GetInputPort(Robot::Nomad::Controllers::NomadControl::InputPort::CONTROL_MODE),
+                        teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
 
-    // Realtime::Port::Map(nomad_controller_node.GetInputPort(Robot::Nomad::Controllers::NomadControl::InputPort::CONTROL_MODE),
-    //                     teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
-
-    // nomad_controller_node.Start();
+    nomad_controller_node.Start();
 
 
     // Print Threads
@@ -83,7 +81,7 @@ int main(int argc, char *argv[])
   //  ref_generator_node.Stop();
    // convex_mpc_node.Stop();
    // estimator_node.Stop();
-    teleop_node.Stop();
+   // teleop_node.Stop();
 
   //  scope.DumpCSV("test.csv");
     //scope2.DumpCSV("test2.csv");
