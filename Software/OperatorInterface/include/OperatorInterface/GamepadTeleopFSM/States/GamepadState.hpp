@@ -53,7 +53,6 @@ namespace OperatorInterface
                 LOCOMOTION = 6,
                 JUMP = 7,
                 ESTOP = 8
-
             };
 
             // Base Class GamepadState

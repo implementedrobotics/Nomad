@@ -115,7 +115,7 @@ namespace Robot
                 nomad_control_FSM_->Start(Systems::Time::GetTime());
 
                 std::cout << "[NomadControl]: "
-                          << "Nomad Conrol FSM Publisher Running!: " << binded << std::endl;
+                          << "Nomad Control FSM Publisher Running!: " << binded << std::endl;
             }
         } // namespace Controllers
     }     // namespace Nomad
