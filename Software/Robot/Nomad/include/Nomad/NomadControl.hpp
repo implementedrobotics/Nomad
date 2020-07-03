@@ -64,7 +64,7 @@ namespace Robot
                     NUM_INPUTS = 1
                 };
 
-                // Base Class State Estimator Task Node
+                // Base Class Nomad Control Task Node
                 // name = Task Name
                 // stack_size = Task Thread Stack Size
                 // rt_priority = Task Thread Priority

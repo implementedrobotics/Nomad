@@ -56,66 +56,141 @@ namespace Robot
                                          const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
 
-                // // Create Input/Output Messages
-                // leg_command_msg_.length = sizeof(::Controllers::Locomotion::leg_controller_cmd_t);
-                // leg_command_msg_.data.resize(leg_command_msg_.length);
+                // Matrix pre setup
+                J_legs_ = Eigen::MatrixXd(12, 18);
 
-                // control_mode_msg_.length = 1;
-                // control_mode_msg_.data.resize(control_mode_msg_.length);
+                // Create Output Messages
+                // Full State Output Message
+                nomad_full_state_msg_.length = sizeof(nomad_full_state_t);
+                nomad_full_state_msg_.data.resize(nomad_full_state_msg_.length);
 
-                // memset(&leg_controller_cmd_, 0, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
+                // Intialize to 'zero' state
+                memset(&full_state_, 0, sizeof(nomad_full_state_t));
+                std::cout << "Lenghth: " <<  nomad_full_state_msg_.length << std::endl;
+                // Create Ports
+                // Primary Controller Input Port
+                //input_port_map_[InputPort::CONTROL_MODE] = std::make_shared<Realtime::Port>("CONTROL_MODE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::INT32, 1, rt_period_);
 
-                // // Create Ports
-                // // Primary Controller Input Port
-                // input_port_map_[InputPort::CONTROL_MODE] = std::make_shared<Realtime::Port>("CONTROL_MODE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::INT32, 1, rt_period_);
-
-                // // Primary Controller Output Ports
-                // output_port_map_[OutputPort::LEG_COMMAND] = std::make_shared<Realtime::Port>("LEG_COMMAND", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
-
-                // // Create FSM
-                // nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();
+                // Primary Controller Output Ports
+                output_port_map_[OutputPort::FULL_STATE] = std::make_shared<Realtime::Port>("FULL_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
             }
 
             void NomadDynamics::Run()
             {
-                // // Get Control Inputs, Modes, Trajectory etc
-                // // bool imu_recv = GetInputPort(InputPort::IMU)->Receive(x_hat_in_); // Receive Setpoint
-                // // if (!imu_recv)
-                // // {
-                // //     std::cout << "[NomadControl]: Receive Buffer Empty!" << std::endl;
-                // //     return;
-                // // }
-                // bool receive = GetInputPort(InputPort::CONTROL_MODE)->Receive(control_mode_msg_);
+                // Get Control Inputs, Modes, Trajectory etc
+                // bool imu_recv = GetInputPort(InputPort::IMU)->Receive(x_hat_in_); // Receive Setpoint
+                // if (!imu_recv)
+                // {
+                //     std::cout << "[NomadControl]: Receive Buffer Empty!" << std::endl;
+                //     return;
+                // }
 
-                // // Update Data
-                // nomad_control_FSM_->GetData()->control_mode = control_mode_msg_.data[0];
+                // Read Inputs
+                // 1) Body State (State Estimator)
+                // 2) Leg State (Plant Bridge Output)
 
-                // // Run FSM
-                // nomad_control_FSM_->Run(0);
+                //bool receive = GetInputPort(InputPort::BODY_STATE)->Receive(control_mode_msg_);
+                //bool receive = GetInputPort(InputPort::LEG_STATE)->Receive(control_mode_msg_);
+            
+                //robot_->setPositions()
+                // Update Dynamics State
+                robot_->computeForwardKinematics();
+                robot_->computeForwardDynamics();
+                
 
-                // // Get Desired Force Output to send out of leg controller
-                // // Copy command to message
-                // memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
 
-                // // Publish Leg Command
-                // bool send_status = GetOutputPort(OutputPort::LEG_COMMAND)->Send(leg_command_msg_);
+               // std::cout << " Start " << std::endl;
+                
+                // Setup our Jacobian
+                // TODO: How to put this in the loop? Block Operation?
+                J_legs_ << robot_->getLinearJacobian(foot_body_[0], hip_base_body_[0]),
+                robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1]),
+                robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2]),
+                robot_->getLinearJacobian(foot_body_[3], hip_base_body_[3]);
 
-                // //std::cout << "[NomadControl]: Publishing: Send: " << send_status << " : " <<  receive << std::endl;
+                // Copy Data over for our Full Robot State Message
+                
+                Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, 12, NUM_TOTAL_DOFS) = J_legs_;
+                Eigen::Map<Eigen::VectorXd>(full_state_.q, NUM_TOTAL_DOFS) = robot_->getPositions();
+                Eigen::Map<Eigen::VectorXd>(full_state_.q_dot, NUM_TOTAL_DOFS) = robot_->getVelocities();
+                Eigen::Map<Eigen::MatrixXd>(full_state_.M, NUM_TOTAL_DOFS, NUM_TOTAL_DOFS) = robot_->getMassMatrix();
+                Eigen::Map<Eigen::VectorXd>(full_state_.b, NUM_TOTAL_DOFS) = robot_->getCoriolisForces();
+                Eigen::Map<Eigen::VectorXd>(full_state_.g, NUM_TOTAL_DOFS) = robot_->getGravityForces();
+                Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, 12) = (J_legs_ * robot_->getVelocities());
+
+                // Compute Foot Positions
+                for(int i = 0; i < NUM_LEGS; i++)
+                {
+                    // Foot Position
+                    Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos[i*3], 3) = foot_body_[i]->getTransform(hip_base_body_[i]).translation();
+                }
+
+
+                //std::cout << "VELS: " << robot_->getVelocities() << std::endl;
+                //std::cout << "Size: " << (J_legs_ * robot_->getVelocities()) << std::endl;
+                //std::cout << "Row: " << (J_legs_ * robot_->getVelocities()).rows() << std::endl;
+                //std::cout << "Col: " << (J_legs_ * robot_->getVelocities()).cols() << std::endl;
+               // std::cout << std::setprecision (3) << std::fixed << "Jacobian: " << " [" << J_legs_.rows() << " , " << J_legs_.cols() << "]:" << std::endl << J_legs_ << std::endl;
+               // std::cout << " End " << std::endl;
+                
+
+                //memcpy(full_state_.b, robot_->getCoriolisForces().data(), sizeof(double) * robot_->getCoriolisForces().size());
+
+                //full_state_.b = robot_->getCoriolisForces();
+                //full_state_.g = robot_->getGravityForces();
+                // Copy Full State to Output Message
+                memcpy(nomad_full_state_msg_.data.data(), &full_state_, sizeof(nomad_full_state_t));
+                // Publish Leg Command
+               // bool send_status = GetOutputPort(OutputPort::FULL_STATE)->Send(nomad_full_state_msg_);
+
+                //std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
             }
 
             void NomadDynamics::Setup()
             {
-                // // Connect Input Ports
-                // bool connect = GetInputPort(InputPort::CONTROL_MODE)->Connect();
+                // Connect Input Ports
+                //bool connect = GetInputPort(InputPort::CONTROL_MODE)->Connect();
 
-                // bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
+                bool outputs_bound = true;
+                for (int i = 0; i < NUM_OUTPUTS; i++) // Bind all of our output ports
+                {
+                    if (!GetOutputPort(i)->Bind())
+                    {
+                        outputs_bound = false;
+                    }
+                }
 
-                // // Start FSM
-                // nomad_control_FSM_->Start(Systems::Time::GetTime());
-
-                // std::cout << "[NomadControl]: "
-                //           << "Nomad Conrol FSM Publisher Running!: " << binded << std::endl;
+                std::cout << "[NomadDynamics]: "
+                          << "Nomad Dynamics  Publisher Running!: " << outputs_bound << std::endl;
             }
+
+            void NomadDynamics::SetRobotSkeleton(dart::dynamics::SkeletonPtr robot)
+            {
+                robot_ = robot;
+
+                // Update Body Pointer for Floating Base Body
+                base_body_ = robot_->getBodyNode("base_link");
+
+                // Update Body Pointers for Hip Base(s)
+                hip_base_body_[LegIdx::FRONT_LEFT] = robot_->getBodyNode("b_haa_motor_FL");
+                hip_base_body_[LegIdx::FRONT_RIGHT] = robot_->getBodyNode("b_haa_motor_FR");
+                hip_base_body_[LegIdx::REAR_LEFT] = robot_->getBodyNode("b_haa_motor_RL");
+                hip_base_body_[LegIdx::REAR_RIGHT] = robot_->getBodyNode("b_haa_motor_RR");
+
+                // Update Body Pointers for Foot Bodie(s)
+                foot_body_[LegIdx::FRONT_LEFT] = robot_->getBodyNode("b_foot_FL");
+                foot_body_[LegIdx::FRONT_RIGHT] = robot_->getBodyNode("b_foot_FR");
+                foot_body_[LegIdx::REAR_LEFT] = robot_->getBodyNode("b_foot_RL");
+                foot_body_[LegIdx::REAR_RIGHT] = robot_->getBodyNode("b_foot_RR");
+
+
+                // Update DOF Pointers in skeleton
+                for(int i = 0; i < DOFIdx::NUM_TOTAL_DOFS; i++)
+                {
+                    DOF_[i] = robot_->getDof(i);
+                }
+            }
+
         } // namespace Dynamics
     }     // namespace Nomad
 } // namespace Robot

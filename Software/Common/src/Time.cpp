@@ -46,7 +46,7 @@ namespace Systems
         end_ = std::chrono::high_resolution_clock::now();
         duration_ = end_ -  start_;
 
-        std::cout << "Timer Took: " << duration_.count() << "us" << std::endl;
+        std::cout << "Timer Took: " << duration_.count()*1e6 << "uS" << std::endl;
     }
     uint64_t Time::GetTime()
     {

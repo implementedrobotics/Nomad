@@ -6,6 +6,7 @@
 #include <Common/Time.hpp>
 #include <Nomad/NomadRobot.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
+#include <Nomad/NomadDynamics.hpp>
 
 #include <memory>
 
@@ -23,7 +24,7 @@ int main(int argc, char *argv[])
     // }
 
     // Task Periods.
-    int freq1 = 50;
+    int freq1 = 1;
     // int freq2 = 100;
 
     // Create Manager Class Instance Singleton.
@@ -31,6 +32,30 @@ int main(int argc, char *argv[])
     // And thus tries to allocate memory inside the thread heap.
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
+
+    // Start Dynamics
+    // Leg Controller Task
+    Robot::Nomad::Dynamics::NomadDynamics nomad_dynamics_node("Nomad_Dynamics_Handler");
+
+    // Load DART from URDF
+    std::string urdf = std::getenv("NOMAD_RESOURCE_PATH");
+    urdf.append("/Robot/Nomad.urdf");
+
+    std::cout << "Load: " << urdf << std::endl;
+    dart::dynamics::SkeletonPtr robot = Robot::Nomad::NomadRobot::Load(urdf);
+
+    nomad_dynamics_node.SetRobotSkeleton(robot->cloneSkeleton());
+    nomad_dynamics_node.SetStackSize(1024 * 1024); // 1MB   
+    nomad_dynamics_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    nomad_dynamics_node.SetTaskFrequency(freq1); // 50 HZ
+    //nomad_dynamics_node.SetCoreAffinity(-1);
+    // nomad_dynamics_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::SERVO_COMMAND,
+    //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.servo_cmd");
+
+
+    // Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Controllers::Locomotion::LegController::InputPort::LEG_COMMAND),
+    //                     primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
+    nomad_dynamics_node.Start();
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");

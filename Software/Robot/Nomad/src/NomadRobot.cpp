@@ -53,9 +53,9 @@ namespace Robot
             dart::dynamics::SkeletonPtr robot = loader.parseSkeleton(urdf);
 
             // Rename the floating base dofs
-            robot->getDof(0)->setName("omega_x");
-            robot->getDof(1)->setName("omega_y");
-            robot->getDof(2)->setName("omega_z");
+            robot->getDof(0)->setName("theta_x");
+            robot->getDof(1)->setName("theta_y");
+            robot->getDof(2)->setName("theta_z");
             robot->getDof(3)->setName("base_x");
             robot->getDof(4)->setName("base_y");
             robot->getDof(5)->setName("base_z");
