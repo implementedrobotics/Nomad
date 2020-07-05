@@ -57,7 +57,14 @@ namespace Robot
             {
 
                 // Matrix pre setup
-                J_legs_ = Eigen::MatrixXd(12, 18);
+                J_legs_ = Eigen::MatrixXd(kNumActuatedDofs, kNumTotalDofs);
+
+                // Selection MAtrices
+                S_f_ = Eigen::MatrixXd::Zero(kNumFloatingDofs, kNumTotalDofs);
+                S_f_.block(0, 0, kNumFloatingDofs, kNumTotalDofs).setIdentity();
+
+                S_j_ = Eigen::MatrixXd::Zero(kNumActuatedDofs, kNumTotalDofs);
+                S_j_.block(0, kNumFloatingDofs, kNumActuatedDofs, kNumActuatedDofs).setIdentity();
 
                 // Create Output Messages
                 // Full State Output Message
@@ -66,7 +73,7 @@ namespace Robot
 
                 // Intialize to 'zero' state
                 memset(&full_state_, 0, sizeof(nomad_full_state_t));
-                std::cout << "Lenghth: " <<  nomad_full_state_msg_.length << std::endl;
+
                 // Create Ports
                 // Primary Controller Input Port
                 //input_port_map_[InputPort::CONTROL_MODE] = std::make_shared<Realtime::Port>("CONTROL_MODE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::INT32, 1, rt_period_);
@@ -91,48 +98,44 @@ namespace Robot
 
                 //bool receive = GetInputPort(InputPort::BODY_STATE)->Receive(control_mode_msg_);
                 //bool receive = GetInputPort(InputPort::LEG_STATE)->Receive(control_mode_msg_);
-            
+
                 //robot_->setPositions()
                 // Update Dynamics State
                 robot_->computeForwardKinematics();
                 robot_->computeForwardDynamics();
-                
 
+                // std::cout << " Start " << std::endl;
 
-               // std::cout << " Start " << std::endl;
-                
                 // Setup our Jacobian
                 // TODO: How to put this in the loop? Block Operation?
                 J_legs_ << robot_->getLinearJacobian(foot_body_[0], hip_base_body_[0]),
-                robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1]),
-                robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2]),
-                robot_->getLinearJacobian(foot_body_[3], hip_base_body_[3]);
+                    robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1]),
+                    robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2]),
+                    robot_->getLinearJacobian(foot_body_[3], hip_base_body_[3]);
 
                 // Copy Data over for our Full Robot State Message
-                
-                Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, 12, NUM_TOTAL_DOFS) = J_legs_;
-                Eigen::Map<Eigen::VectorXd>(full_state_.q, NUM_TOTAL_DOFS) = robot_->getPositions();
-                Eigen::Map<Eigen::VectorXd>(full_state_.q_dot, NUM_TOTAL_DOFS) = robot_->getVelocities();
-                Eigen::Map<Eigen::MatrixXd>(full_state_.M, NUM_TOTAL_DOFS, NUM_TOTAL_DOFS) = robot_->getMassMatrix();
-                Eigen::Map<Eigen::VectorXd>(full_state_.b, NUM_TOTAL_DOFS) = robot_->getCoriolisForces();
-                Eigen::Map<Eigen::VectorXd>(full_state_.g, NUM_TOTAL_DOFS) = robot_->getGravityForces();
-                Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, 12) = (J_legs_ * robot_->getVelocities());
+
+                //Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, kNumActuatedDofs, kNumTotalDofs) = J_legs_;
+                Eigen::Map<Eigen::VectorXd>(full_state_.q, kNumTotalDofs) = robot_->getPositions();
+                Eigen::Map<Eigen::VectorXd>(full_state_.q_dot, kNumTotalDofs) = robot_->getVelocities();
+                Eigen::Map<Eigen::MatrixXd>(full_state_.M, kNumTotalDofs, kNumTotalDofs) = robot_->getMassMatrix();
+                Eigen::Map<Eigen::VectorXd>(full_state_.b, kNumTotalDofs) = robot_->getCoriolisForces();
+                Eigen::Map<Eigen::VectorXd>(full_state_.g, kNumTotalDofs) = robot_->getGravityForces();
+                // //Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, kNumActuatedDofs) = (S_j_ * J_legs_ * robot_->getVelocities());
 
                 // Compute Foot Positions
-                for(int i = 0; i < NUM_LEGS; i++)
+                for (int i = 0; i < NUM_LEGS; i++)
                 {
                     // Foot Position
-                    Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos[i*3], 3) = foot_body_[i]->getTransform(hip_base_body_[i]).translation();
+                    Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos[i * 3], 3) = foot_body_[i]->getTransform(hip_base_body_[i]).translation();
                 }
-
 
                 //std::cout << "VELS: " << robot_->getVelocities() << std::endl;
                 //std::cout << "Size: " << (J_legs_ * robot_->getVelocities()) << std::endl;
                 //std::cout << "Row: " << (J_legs_ * robot_->getVelocities()).rows() << std::endl;
                 //std::cout << "Col: " << (J_legs_ * robot_->getVelocities()).cols() << std::endl;
-               // std::cout << std::setprecision (3) << std::fixed << "Jacobian: " << " [" << J_legs_.rows() << " , " << J_legs_.cols() << "]:" << std::endl << J_legs_ << std::endl;
-               // std::cout << " End " << std::endl;
-                
+                // std::cout << std::setprecision (3) << std::fixed << "Jacobian: " << " [" << J_legs_.rows() << " , " << J_legs_.cols() << "]:" << std::endl << J_legs_ << std::endl;
+                // std::cout << " End " << std::endl;
 
                 //memcpy(full_state_.b, robot_->getCoriolisForces().data(), sizeof(double) * robot_->getCoriolisForces().size());
 
@@ -141,7 +144,7 @@ namespace Robot
                 // Copy Full State to Output Message
                 memcpy(nomad_full_state_msg_.data.data(), &full_state_, sizeof(nomad_full_state_t));
                 // Publish Leg Command
-               // bool send_status = GetOutputPort(OutputPort::FULL_STATE)->Send(nomad_full_state_msg_);
+                // bool send_status = GetOutputPort(OutputPort::FULL_STATE)->Send(nomad_full_state_msg_);
 
                 //std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
             }
@@ -183,9 +186,8 @@ namespace Robot
                 foot_body_[LegIdx::REAR_LEFT] = robot_->getBodyNode("b_foot_RL");
                 foot_body_[LegIdx::REAR_RIGHT] = robot_->getBodyNode("b_foot_RR");
 
-
                 // Update DOF Pointers in skeleton
-                for(int i = 0; i < DOFIdx::NUM_TOTAL_DOFS; i++)
+                for (int i = 0; i < DOFIdx::NUM_TOTAL_DOFS; i++)
                 {
                     DOF_[i] = robot_->getDof(i);
                 }

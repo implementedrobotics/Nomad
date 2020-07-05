@@ -47,19 +47,24 @@ namespace Robot
     namespace Nomad
     {
         namespace Dynamics
+
         {
+            constexpr int kNumTotalDofs = 18;
+            constexpr int kNumActuatedDofs = 12;
+            constexpr int kNumFloatingDofs = 6;
+
             // TODO: Move to a standard hear for all custom tops
             struct nomad_full_state_t
             {
-                double q[18];        // Robot Position State
-                double q_dot[18];    // Robot Velocity State
-                double foot_pos[12]; // Foot Position State
-                double foot_vel[12]; // Foot Velocity State
+                double q[kNumTotalDofs];        // Robot Position State
+                double q_dot[kNumTotalDofs];    // Robot Velocity State
+                double foot_pos[kNumActuatedDofs]; // Foot Position State
+                double foot_vel[kNumActuatedDofs]; // Foot Velocity State
 
-                double M[18 * 18];   // Mass Inertia Matrix
-                double g[18];        // Gravity Terms Vector
-                double b[18];        // Coriolis Terms Vector
-                double J_c[12 * 18]; // Contact Jacobian
+                double M[kNumTotalDofs * kNumTotalDofs];   // Mass Inertia Matrix
+                double g[kNumTotalDofs];        // Gravity Terms Vector
+                double b[kNumTotalDofs];        // Coriolis Terms Vector
+                double J_c[3 * 4 * kNumTotalDofs]; // Contact Jacobian
             };
 
             class NomadDynamics : public Realtime::RealTimeTaskNode
@@ -182,7 +187,10 @@ namespace Robot
                 // Full Stacked Leg Jacobian
                 Eigen::MatrixXd J_legs_;
 
+                // Selector Matrices
+                Eigen::MatrixXd S_j_; // Actuated Joint Selection Matrix
 
+                Eigen::MatrixXd S_f_; // Floating Base Selection Matrix
             };
         } // namespace Dynamics
     }     // namespace Nomad
