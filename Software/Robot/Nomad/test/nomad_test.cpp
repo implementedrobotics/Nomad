@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     teleop_node.SetTaskFrequency(freq1); // 50 HZ
     //teleop_node.SetCoreAffinity(-1);
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE,
-                              Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode");
+                              Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode2");
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
                               Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
                               

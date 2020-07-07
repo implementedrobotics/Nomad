@@ -57,7 +57,7 @@ namespace Robot
             {
 
                 // Matrix pre setup
-                J_legs_ = Eigen::MatrixXd(kNumActuatedDofs, kNumTotalDofs);
+                J_legs_ = Eigen::MatrixXd(3 * kNumContacts, kNumTotalDofs);
 
                 // Selection MAtrices
                 S_f_ = Eigen::MatrixXd::Zero(kNumFloatingDofs, kNumTotalDofs);
@@ -108,6 +108,7 @@ namespace Robot
 
                 // Setup our Jacobian
                 // TODO: How to put this in the loop? Block Operation?
+                // TODO: All foot positions/velocities and jacobians are in the hip frame.  Should we make these world frame?
                 J_legs_ << robot_->getLinearJacobian(foot_body_[0], hip_base_body_[0]),
                     robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1]),
                     robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2]),
@@ -115,13 +116,13 @@ namespace Robot
 
                 // Copy Data over for our Full Robot State Message
 
-                //Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, kNumActuatedDofs, kNumTotalDofs) = J_legs_;
+                Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, 3 * kNumContacts, kNumTotalDofs) = J_legs_;
                 Eigen::Map<Eigen::VectorXd>(full_state_.q, kNumTotalDofs) = robot_->getPositions();
                 Eigen::Map<Eigen::VectorXd>(full_state_.q_dot, kNumTotalDofs) = robot_->getVelocities();
                 Eigen::Map<Eigen::MatrixXd>(full_state_.M, kNumTotalDofs, kNumTotalDofs) = robot_->getMassMatrix();
                 Eigen::Map<Eigen::VectorXd>(full_state_.b, kNumTotalDofs) = robot_->getCoriolisForces();
                 Eigen::Map<Eigen::VectorXd>(full_state_.g, kNumTotalDofs) = robot_->getGravityForces();
-                // //Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, kNumActuatedDofs) = (S_j_ * J_legs_ * robot_->getVelocities());
+                Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, kNumActuatedDofs) = (J_legs_.rightCols(12) * robot_->getVelocities().tail(12));
 
                 // Compute Foot Positions
                 for (int i = 0; i < NUM_LEGS; i++)

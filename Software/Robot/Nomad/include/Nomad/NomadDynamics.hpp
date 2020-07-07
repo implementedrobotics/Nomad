@@ -52,6 +52,7 @@ namespace Robot
             constexpr int kNumTotalDofs = 18;
             constexpr int kNumActuatedDofs = 12;
             constexpr int kNumFloatingDofs = 6;
+            constexpr int kNumContacts = 4;
 
             // TODO: Move to a standard hear for all custom tops
             struct nomad_full_state_t
@@ -64,7 +65,7 @@ namespace Robot
                 double M[kNumTotalDofs * kNumTotalDofs];   // Mass Inertia Matrix
                 double g[kNumTotalDofs];        // Gravity Terms Vector
                 double b[kNumTotalDofs];        // Coriolis Terms Vector
-                double J_c[3 * 4 * kNumTotalDofs]; // Contact Jacobian
+                double J_c[3 * kNumContacts * kNumTotalDofs]; // Contact Jacobian
             };
 
             class NomadDynamics : public Realtime::RealTimeTaskNode
