@@ -80,9 +80,9 @@ namespace Robot
 
                 enum InputPort
                 {
-                    BODY_STATE = 0, // Estimated Body State from Fused State Estimate
-                    LEG_STATE = 1,  // Leg State (q, q_dot)
-                    NUM_INPUTS = 2
+                    BODY_STATE_HAT = 0, // Estimated Body State from Fused State Estimate
+                    //JOINT_STATE = 1,  // Joint State (q, q_dot)
+                    NUM_INPUTS = 1
                 };
 
                 // Indexing for leg order in array
@@ -118,13 +118,12 @@ namespace Robot
                 // Indexing for state vector offsets
                 enum DOFIdx
                 {
-                    // TODO: Reconfigure these indices
-                    BODY_X = 3,     // Body X Position
-                    BODY_Y = 4,     // Body Y Position
-                    BODY_Z = 5,     // Body Z Position
                     BODY_PHI = 0,   // Body Roll
                     BODY_THETA = 1, // Body Pitch
                     BODY_PSI = 2,   // Body Yaw
+                    BODY_X = 3,     // Body X Position
+                    BODY_Y = 4,     // Body Y Position
+                    BODY_Z = 5,     // Body Z Position
                     HAA_FL = 6,     // Front Left Leg Hip Ab/Ad Joint State
                     HFE_FL = 7,     // Front Left Leg Hip Flexion/Extension Joint State
                     KFE_FL = 8,     // Front Left Leg Knee Flexion/Extension Joint State
@@ -162,11 +161,17 @@ namespace Robot
                 // Pre-Run Setup Routine.  Setup any one time initialization here.
                 virtual void Setup();
 
-                // Input
-                generic_msg_t leg_state_msg_;
-                ::Controllers::Locomotion::leg_controller_cmd_t leg_state_;
+                // (Input) Joint State
+                //generic_msg_t leg_state_msg_;
+                //::Controllers::Locomotion::leg_controller_cmd_t leg_state_;
+                
+                // (Input) Actuated Joint State Estimate
+                double_vec_t joint_state_in_;
 
-                // Output
+                // (Input) CoM State
+                double_vec_t com_state_in_;
+
+                // (Output) Full Robot State
                 generic_msg_t nomad_full_state_msg_;
                 nomad_full_state_t full_state_;
 

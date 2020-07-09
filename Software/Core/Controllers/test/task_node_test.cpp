@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     estimator_node.SetTaskFrequency(freq2); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT,
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT,
                                  Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
 
     //Reference Trajectory Generator
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
-                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
     // Map Setpoint Output to Trajectory Reference Generator Input
     Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT),
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
     // Map State Estimator Output to Trajectory Reference Input
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT),
-                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
     // Map Reference Trajectory Output to Trajectory Reference Input of MPC
     Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY),
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     scope2.SetTaskPriority(Realtime::Priority::LOWEST);
     scope2.SetTaskFrequency(freq1); // 50 HZ
     scope2.SetCoreAffinity(2);
-    scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::STATE_HAT));
+    scope2.ConnectInput(Plotting::PlotterTaskNode::PORT_1, estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
     scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X);
     scope2.AddPlotVariable(Plotting::PlotterTaskNode::PORT_1, Controllers::Estimators::StateEstimator::X_DOT);
     scope2.Start();
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     //Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES),
     // convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
 
-    Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU),
+    Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU_DATA),
                         GAZEBO_IMU);
 
     //nomad.Start();

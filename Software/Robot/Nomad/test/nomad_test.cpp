@@ -7,6 +7,7 @@
 #include <Nomad/NomadRobot.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
 #include <Nomad/NomadDynamics.hpp>
+#include <Controllers/StateEstimator.hpp>
 
 #include <memory>
 
@@ -57,6 +58,22 @@ int main(int argc, char *argv[])
     //                     primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
     nomad_dynamics_node.Start();
 
+
+    // State Estimators
+    Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
+    estimator_node.SetStackSize(1024 * 1024); // 1MB
+    estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    estimator_node.SetTaskFrequency(freq1); // 1000 HZ
+    //estimator_node.SetCoreAffinity(1);
+    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT,
+                                 Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+
+
+    Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Robot::Nomad::Dynamics::NomadDynamics::BODY_STATE_HAT),
+                       estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::BODY_STATE_HAT));
+
+    estimator_node.Start();
+
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
     teleop_node.SetStackSize(1024 * 1024); // 1MB
@@ -83,7 +100,7 @@ int main(int argc, char *argv[])
     Realtime::Port::Map(nomad_controller_node.GetInputPort(Robot::Nomad::Controllers::NomadControl::InputPort::CONTROL_MODE),
                         teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
 
-    nomad_controller_node.Start();
+    //nomad_controller_node.Start();
 
 
     // Print Threads
