@@ -8,6 +8,7 @@ ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadDynamics.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OffState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/IdleState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/StandState.cpp
+${PROJECT_SOURCE_DIR}/Robot/Nomad/src/SimulationInterface.cpp
 
 )
 

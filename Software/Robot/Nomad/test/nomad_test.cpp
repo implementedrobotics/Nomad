@@ -8,7 +8,7 @@
 #include <Nomad/FSM/NomadControlFSM.hpp>
 #include <Nomad/NomadDynamics.hpp>
 #include <Controllers/StateEstimator.hpp>
-
+#include <Nomad/Interface/SimulationInterface.hpp>
 #include <memory>
 
 #include <unistd.h>
@@ -101,6 +101,9 @@ int main(int argc, char *argv[])
                         teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
 
     //nomad_controller_node.Start();
+
+
+    Robot::Nomad::Interface::SimulationInterface nomad_simulation_interface("Simulation Interface");
 
 
     // Print Threads
