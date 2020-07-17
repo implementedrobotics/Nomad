@@ -1,0 +1,685 @@
+<?xml version="1.0" ?>
+<robot name="Nomad">
+<link name="base_link">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.0"/>
+    <mass value="2.199914"/>
+    <inertia ixx="0.024541" ixy="0.0" ixz="-0.0" iyy="0.058446" iyz="0.0" izz="0.069168"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/base_link.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/base_link.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_hfe_motor_FL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.048378000000000004 0.004376999999999992 0.00043"/>
+    <mass value="0.287587"/>
+    <inertia ixx="0.00028" ixy="-1.2e-05" ixz="2.7e-05" iyy="0.000474" iyz="-2.5e-05" izz="0.000361"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.217 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_FL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.217 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_FL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_hfe_motor_FR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.048378000000000004 -0.004376999999999992 0.00043"/>
+    <mass value="0.287587"/>
+    <inertia ixx="0.00028" ixy="1.2e-05" ixz="3.9e-05" iyy="0.000474" iyz="-4.3e-05" izz="0.000361"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.217 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_FR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.217 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_FR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_hfe_motor_RL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.048378000000000004 0.004376999999999992 0.00043"/>
+    <mass value="0.287587"/>
+    <inertia ixx="0.00028" ixy="1.2e-05" ixz="-3.9e-05" iyy="0.000474" iyz="4.3e-05" izz="0.000361"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.217 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_RL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.217 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_RL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_hfe_motor_RR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.048378000000000004 -0.004376999999999992 0.00043"/>
+    <mass value="0.287587"/>
+    <inertia ixx="0.00028" ixy="-1.2e-05" ixz="-2.7e-05" iyy="0.000474" iyz="2.5e-05" izz="0.000361"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.217 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_RR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.217 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_hfe_motor_RR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_kfe_motor_FL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0025120000000000142 0.03773399999999999 0.000193"/>
+    <mass value="0.302439"/>
+    <inertia ixx="0.000376" ixy="-1.9e-05" ixz="1e-05" iyy="0.000433" iyz="-1e-05" izz="0.00035"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.275 -0.0945 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_FL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.275 -0.0945 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_FL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_kfe_motor_RL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0025119999999999587 0.03773399999999999 0.000193"/>
+    <mass value="0.302439"/>
+    <inertia ixx="0.000376" ixy="-1.9e-05" ixz="-2.3e-05" iyy="0.000433" iyz="2.2e-05" izz="0.00035"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.275 -0.0945 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_RL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.275 -0.0945 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_RL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_kfe_motor_RR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0025119999999999587 -0.03773399999999999 0.000193"/>
+    <mass value="0.302443"/>
+    <inertia ixx="0.000376" ixy="1.9e-05" ixz="-1e-05" iyy="0.000433" iyz="6e-06" izz="0.00035"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.275 0.0945 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_RR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.275 0.0945 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_RR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_kfe_motor_FR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0025120000000000142 -0.03773399999999999 0.000193"/>
+    <mass value="0.302443"/>
+    <inertia ixx="0.000376" ixy="1.9e-05" ixz="2.2e-05" iyy="0.000433" iyz="-2.6e-05" izz="0.00035"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.275 0.0945 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_FR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.275 0.0945 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_kfe_motor_FR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_upper_leg_FL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.014425000000000021 0.008508999999999989 -0.09162"/>
+    <mass value="0.287189"/>
+    <inertia ixx="0.001927" ixy="-5e-06" ixz="-0.0025" iyy="0.002044" iyz="0.002289" izz="0.000187"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.275 -0.1585 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_FL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.275 -0.1585 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_FL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_upper_leg_RL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.014424999999999966 0.008508999999999989 -0.09162"/>
+    <mass value="0.287189"/>
+    <inertia ixx="0.001927" ixy="-5e-06" ixz="0.011972" iyy="0.002044" iyz="-0.012183" izz="0.000187"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.275 -0.1585 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_RL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.275 -0.1585 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_RL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_upper_leg_RR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.01442199999999999 -0.008508999999999989 -0.091615"/>
+    <mass value="0.287204"/>
+    <inertia ixx="0.001927" ixy="5e-06" ixz="0.003259" iyy="0.002044" iyz="-0.003394" izz="0.000187"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.275 0.1585 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_RR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.275 0.1585 0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_RR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_upper_leg_FR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.014422000000000046 -0.008508999999999989 -0.091615"/>
+    <mass value="0.287204"/>
+    <inertia ixx="0.001927" ixy="5e-06" ixz="-0.011212" iyy="0.002044" iyz="0.011078" izz="0.000187"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.275 0.1585 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_FR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.275 0.1585 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_upper_leg_FR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_lower_leg_FL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.011621999999999966 0.010860000000000009 0.036905999999999994"/>
+    <mass value="0.100275"/>
+    <inertia ixx="0.000321" ixy="-0.0" ixz="-0.002587" iyy="0.000348" iyz="0.002504" izz="3.5e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.27482 -0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_FL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.27482 -0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_FL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_lower_leg_RL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.011621999999999966 0.010860000000000009 0.036905999999999994"/>
+    <mass value="0.100275"/>
+    <inertia ixx="0.000321" ixy="-0.0" ixz="0.009165" iyy="0.000348" iyz="-0.009249" izz="3.5e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.27518 -0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_RL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.27518 -0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_RL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_lower_leg_FR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.011621999999999966 -0.011140000000000011 0.036905999999999994"/>
+    <mass value="0.100275"/>
+    <inertia ixx="0.000321" ixy="-0.0" ixz="-0.00966" iyy="0.000348" iyz="0.009577" izz="3.5e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.27482 0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_FR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.27482 0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_FR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_lower_leg_RR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.011621999999999966 -0.011140000000000011 0.036905999999999994"/>
+    <mass value="0.100275"/>
+    <inertia ixx="0.000321" ixy="-0.0" ixz="0.002092" iyy="0.000348" iyz="-0.002176" izz="3.5e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.27518 0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_RR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.27518 0.1545 0.25"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_lower_leg_RR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_haa_motor_FR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.016982999999999998 0.0 0.000541"/>
+    <mass value="0.228197"/>
+    <inertia ixx="0.000337" ixy="-0.0" ixz="3.3e-05" iyy="0.000229" iyz="-3e-05" izz="0.000234"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.215 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_FR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.215 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_FR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_haa_motor_FL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.016982999999999998 0.0 0.000541"/>
+    <mass value="0.228197"/>
+    <inertia ixx="0.000337" ixy="0.0" ixz="1.6e-05" iyy="0.000229" iyz="-1.3e-05" izz="0.000234"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.215 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_FL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.215 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_FL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_haa_motor_RL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.016982999999999998 0.0 0.000541"/>
+    <mass value="0.228197"/>
+    <inertia ixx="0.000337" ixy="-0.0" ixz="-3.3e-05" iyy="0.000229" iyz="3e-05" izz="0.000234"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.215 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_RL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.215 -0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_RL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_haa_motor_RR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.016982999999999998 0.0 0.000541"/>
+    <mass value="0.228197"/>
+    <inertia ixx="0.000337" ixy="0.0" ixz="-1.6e-05" iyy="0.000229" iyz="1.3e-05" izz="0.000234"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.215 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_RR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.215 0.07 -0.0"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_haa_motor_RR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_foot_FL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.012203999999999993 0.0 0.020465000000000004"/>
+    <mass value="0.076864"/>
+    <inertia ixx="3.2e-05" ixy="0.0" ixz="-0.000173" iyy="4.4e-05" iyz="0.000162" izz="1.9e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.333933 -0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_FL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.333933 -0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_FL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_foot_FR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.012203999999999993 0.0 0.020465000000000004"/>
+    <mass value="0.076864"/>
+    <inertia ixx="3.2e-05" ixy="-0.0" ixz="-0.000489" iyy="4.4e-05" iyz="0.000478" izz="1.9e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.333933 0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_FR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.333933 0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_FR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_foot_RR__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.01220400000000002 0.0 0.020465000000000004"/>
+    <mass value="0.076864"/>
+    <inertia ixx="3.2e-05" ixy="0.0" ixz="3.7e-05" iyy="4.4e-05" iyz="-4.7e-05" izz="1.9e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.216067 0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_RR__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.216067 0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_RR__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<link name="b_foot_RL__1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.01220400000000002 0.0 0.020465000000000004"/>
+    <mass value="0.076864"/>
+    <inertia ixx="3.2e-05" ixy="-0.0" ixz="0.000353" iyy="4.4e-05" iyz="-0.000363" izz="1.9e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.216067 -0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_RL__1.stl"/>
+    </geometry>
+    <material name="silver">
+      <color rgba="1 0 0 1"/>
+    </material>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.216067 -0.1655 0.03289"/>
+    <geometry>
+      <mesh filename="package://Nomad/bin_stl/b_foot_RL__1.stl"/>
+    </geometry>
+  </collision>
+</link>
+<joint name="j_haa_FL" type="continuous">
+  <origin rpy="0 0 0" xyz="0.002 0.0 0.0"/>
+  <parent link="b_haa_motor_FL__1"/>
+  <child link="b_hfe_motor_FL__1"/>
+  <axis xyz="0.01 0.0 0.0"/>
+</joint>
+<joint name="j_haa_FR" type="continuous">
+  <origin rpy="0 0 0" xyz="0.002 0.0 0.0"/>
+  <parent link="b_haa_motor_FR__1"/>
+  <child link="b_hfe_motor_FR__1"/>
+  <axis xyz="0.01 0.0 -0.0"/>
+</joint>
+<joint name="j_haa_RL" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.002 0.0 0.0"/>
+  <parent link="b_haa_motor_RL__1"/>
+  <child link="b_hfe_motor_RL__1"/>
+  <axis xyz="-0.01 -0.0 -0.0"/>
+</joint>
+<joint name="j_haa_RR" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.002 0.0 0.0"/>
+  <parent link="b_haa_motor_RR__1"/>
+  <child link="b_hfe_motor_RR__1"/>
+  <axis xyz="-0.01 -0.0 -0.0"/>
+</joint>
+<joint name="j_hfe_FL" type="continuous">
+  <origin rpy="0 0 0" xyz="0.058 0.0245 0.0"/>
+  <parent link="b_hfe_motor_FL__1"/>
+  <child link="b_kfe_motor_FL__1"/>
+  <axis xyz="-0.0 0.01 0.0"/>
+</joint>
+<joint name="j_hfe_RL" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.058 0.0245 -0.0"/>
+  <parent link="b_hfe_motor_RL__1"/>
+  <child link="b_kfe_motor_RL__1"/>
+  <axis xyz="-0.0 -0.01 0.0"/>
+</joint>
+<joint name="j_hfe_RR" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.058 -0.0245 -0.0"/>
+  <parent link="b_hfe_motor_RR__1"/>
+  <child link="b_kfe_motor_RR__1"/>
+  <axis xyz="0.0 -0.01 -0.0"/>
+</joint>
+<joint name="j_hfe_FR" type="continuous">
+  <origin rpy="0 0 0" xyz="0.058 -0.0245 0.0"/>
+  <parent link="b_hfe_motor_FR__1"/>
+  <child link="b_kfe_motor_FR__1"/>
+  <axis xyz="0.0 0.01 0.0"/>
+</joint>
+<joint name="j_hfe_to_shoulder_FL" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0 0.064 0.0"/>
+  <parent link="b_kfe_motor_FL__1"/>
+  <child link="b_upper_leg_FL__1"/>
+</joint>
+<joint name="j_hfe_to_shoulder_RL" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0 0.064 0.0"/>
+  <parent link="b_kfe_motor_RL__1"/>
+  <child link="b_upper_leg_RL__1"/>
+</joint>
+<joint name="j_hfe_to_shoulder_RR" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0 -0.064 0.0"/>
+  <parent link="b_kfe_motor_RR__1"/>
+  <child link="b_upper_leg_RR__1"/>
+</joint>
+<joint name="j_hfe_to_shoulder_FR" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0 -0.064 0.0"/>
+  <parent link="b_kfe_motor_FR__1"/>
+  <child link="b_upper_leg_FR__1"/>
+</joint>
+<joint name="j_kfe_FL" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.00018 -0.004 -0.25"/>
+  <parent link="b_upper_leg_FL__1"/>
+  <child link="b_lower_leg_FL__1"/>
+  <axis xyz="0.0 -0.01 0.0"/>
+</joint>
+<joint name="j_kfe_RL" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.00018 -0.004 -0.25"/>
+  <parent link="b_upper_leg_RL__1"/>
+  <child link="b_lower_leg_RL__1"/>
+  <axis xyz="-0.0 -0.01 -0.0"/>
+</joint>
+<joint name="j_kfe_FR" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.00018 0.004 -0.25"/>
+  <parent link="b_upper_leg_FR__1"/>
+  <child link="b_lower_leg_FR__1"/>
+  <axis xyz="-0.0 -0.01 -0.0"/>
+</joint>
+<joint name="j_kfe_RR" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.00018 0.004 -0.25"/>
+  <parent link="b_upper_leg_RR__1"/>
+  <child link="b_lower_leg_RR__1"/>
+  <axis xyz="0.0 -0.01 0.0"/>
+</joint>
+<joint name="j_base_link_haa_FR" type="fixed">
+  <origin rpy="0 0 0" xyz="0.215 -0.07 0.0"/>
+  <parent link="base_link"/>
+  <child link="b_haa_motor_FR__1"/>
+</joint>
+<joint name="j_base_link_haa_FL" type="fixed">
+  <origin rpy="0 0 0" xyz="0.215 0.07 0.0"/>
+  <parent link="base_link"/>
+  <child link="b_haa_motor_FL__1"/>
+</joint>
+<joint name="j_base_link_haa_RL" type="fixed">
+  <origin rpy="0 0 0" xyz="-0.215 0.07 0.0"/>
+  <parent link="base_link"/>
+  <child link="b_haa_motor_RL__1"/>
+</joint>
+<joint name="j_base_link_haa_RR" type="fixed">
+  <origin rpy="0 0 0" xyz="-0.215 -0.07 0.0"/>
+  <parent link="base_link"/>
+  <child link="b_haa_motor_RR__1"/>
+</joint>
+<joint name="j_knee_to_foot_FL" type="fixed">
+  <origin rpy="0 0 0" xyz="0.059113 0.011 0.21711"/>
+  <parent link="b_lower_leg_FL__1"/>
+  <child link="b_foot_FL__1"/>
+</joint>
+<joint name="j_knee_to_foot_FR" type="fixed">
+  <origin rpy="0 0 0" xyz="0.059113 -0.011 0.21711"/>
+  <parent link="b_lower_leg_FR__1"/>
+  <child link="b_foot_FR__1"/>
+</joint>
+<joint name="j_knee_to_foot_RR" type="fixed">
+  <origin rpy="0 0 0" xyz="0.059113 -0.011 0.21711"/>
+  <parent link="b_lower_leg_RR__1"/>
+  <child link="b_foot_RR__1"/>
+</joint>
+<joint name="j_knee_to_foot_RL" type="fixed">
+  <origin rpy="0 0 0" xyz="0.059113 0.011 0.21711"/>
+  <parent link="b_lower_leg_RL__1"/>
+  <child link="b_foot_RL__1"/>
+</joint>
+</robot>

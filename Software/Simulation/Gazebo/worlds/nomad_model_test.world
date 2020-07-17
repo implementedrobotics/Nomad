@@ -1,19 +1,32 @@
 <?xml version="1.0"?> 
 <sdf version="1.4">
   <world name="default">
+  <!-- World Parameters -->
+        <gravity>0 0 0</gravity>
+        <!-- Physics Parameters -->
+        <physics type="ode">
+            <max_step_size>0.001</max_step_size>
+            <real_time_factor>1</real_time_factor>
+            <real_time_update_rate>1000</real_time_update_rate>
+            <ode>
+                <solver>
+                    <type>world</type>
+                </solver>
+            </ode>
+        </physics>
 
     <!-- Ground Plane -->
-    <include>
+    <!-- <include>
       <uri>model://ground_plane</uri>
-    </include>
+    </include> -->
 
     <include>
       <uri>model://sun</uri>
     </include>
 
-    <model name="box">
+    <!-- <model name="box">
       <pose>0 0 0.5 0 0 0</pose>
-      <link name="link">
+      <link name="base_link">
         <collision name="collision">
           <geometry>
             <box>
@@ -29,9 +42,13 @@
             </box>
           </geometry>
         </visual>
-      </link>
+      </link> 
 
-      <plugin name="nomad_model" filename="libnomad_model.so"/>
-    </model>        
+    </model>  -->      
+          <include>
+        <uri>model://Nomad</uri>
+        <pose>0 0 .5 0 0 0</pose>
+        <plugin name="nomad_model" filename="libnomad_model.so"/>
+      </include>
   </world>
 </sdf>

@@ -74,7 +74,7 @@ namespace gazebo
         {
             // Apply a small linear velocity to the model.
             //this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
-            this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(current_force_, 0, 0));
+            //this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(current_force_, 0, 0));
             //printf("Force: :%f\n", current_force_);
 
             double_vec_t tx_msg;
@@ -91,6 +91,7 @@ namespace gazebo
             tx_msg.data[3] = this->model->GetLink("base_link")->WorldCoGLinearVel()[0];
 
             //printf("PUBLISH: %f/%f\n",tx_msg.data[0],tx_msg.data[1]);
+
             // Publish
             int rc = pub_context_->publish("nomad.imu", &tx_msg);
         }
