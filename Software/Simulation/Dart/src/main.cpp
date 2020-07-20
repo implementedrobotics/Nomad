@@ -11,7 +11,11 @@
 
 #include <vector>
 
+#include <Communications/Messages/double_vec_t.hpp>
 #include "../include/NomadRobot.h"
+
+// Third Party Includes
+#include <zcm/zcm-cpp.hpp>
 
  using namespace dart::dynamics;
  using namespace dart::simulation;
@@ -87,6 +91,16 @@ SkeletonPtr CreateGround()
   return ground;
 }
 
+        void OnMsg(const zcm::ReceiveBuffer* rbuf,
+                           const std::string& chan,
+                           const double_vec_t *msg)
+        {
+            //printf("Received message on channel \"%s\":\n", chan.c_str());
+            //printf("Num: %lu\tU: %f", msg->sequence_num, msg->data[0]);
+
+            std::cout << "test" << std::endl;
+        }
+
 int main(int argc, char *argv[])
 {
 
@@ -108,6 +122,25 @@ int main(int argc, char *argv[])
 
   g_nomad->LoadFromURDF(urdf);
   g_nomad->SetInitialPose();
+
+  // Start PUblisher
+  std::unique_ptr<zcm::ZCM> context_;
+
+        std::unique_ptr<zcm::ZCM> pub_context_;
+    
+        uint64_t sequence_num_;
+
+            context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+
+            printf("Hello Nomad Model Connecting!\n");
+            auto subs = context_->subscribe("nomad.imu", &OnMsg, this);
+            context_->start();
+
+            printf("Started Nomad Model!\n");
+
+            // TODO: Publish state back
+            pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+
 
   // Create osg world node
   ::osg::ref_ptr<NomadSimWorldNode> node = new NomadSimWorldNode(g_world, g_nomad);
