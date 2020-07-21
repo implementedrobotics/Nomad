@@ -10,8 +10,8 @@ set(required_libraries dart dart-utils-urdf dart-gui-osg osg osgViewer zcm)
 
 #find_package(DART 6.9.0 REQUIRED COMPONENTS ${required_components} CONFIG)
 
-include_directories("${PROJECT_SOURCE_DIR}/Simulation/Dart/include")
+include_directories("${PROJECT_SOURCE_DIR}/Simulation")
 include_directories("${PROJECT_SOURCE_DIR}/Communications/include")
 
 add_executable(nomad_simulator ${NOMAD_CONTROLLER_SOURCES})
-target_link_libraries(nomad_simulator ${required_libraries})
+target_link_libraries(nomad_simulator PUBLIC ${required_libraries})

@@ -26,6 +26,7 @@
 // C++ System Files
 
 // Third Party Includes
+#include <dart/dynamics/Skeleton.hpp>
 #include <dart/utils/urdf/DartLoader.hpp>
 #include <dart/dynamics/DegreeOfFreedom.hpp>
 #include <dart/gui/osg/osg.hpp>
@@ -42,12 +43,10 @@ NomadRobot::NomadRobot(const dart::simulation::WorldPtr world)
 
 void NomadRobot::ProcessInputs()
 {
-
 }
 
 void NomadRobot::Run(double dt)
 {
-
 }
 
 void NomadRobot::SendOutputs()
@@ -56,12 +55,29 @@ void NomadRobot::SendOutputs()
 
 void NomadRobot::UpdateState()
 {
-
 }
 void NomadRobot::Reset()
 {
-
 }
+Eigen::Quaterniond NomadRobot::GetBodyOrientation() const
+{
+    dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
+
+    Eigen::Quaterniond body_orientation;
+    body_orientation = base_link->getWorldTransform().rotation();
+    return body_orientation;
+}
+Eigen::Vector3d NomadRobot::GetAngularAcceleration() const
+{
+    dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
+    return base_link->getAngularAcceleration(dart::dynamics::Frame::World(), base_link);
+}
+Eigen::Vector3d NomadRobot::GetLinearAcceleration() const
+{
+    dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
+    return base_link->getLinearAcceleration(dart::dynamics::Frame::World(), base_link);
+}
+
 void NomadRobot::LoadFromURDF(const std::string &urdf)
 {
     dart::utils::DartLoader loader;
@@ -82,7 +98,7 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
     robot_->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
 
     int i = 0;
-    for(auto dof:robot_->getDofs())
+    for (auto dof : robot_->getDofs())
     {
         std::cout << "DOF: " << i++ << " : " << dof->getName() << std::endl;
     }
@@ -96,12 +112,13 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
     // Add to world
     world_->addSkeleton(robot_);
 
-	std::cout << "Mass Matrix: " << robot_->getMassMatrix() << std::endl;
+    std::cout << "Mass Matrix: " << robot_->getMassMatrix() << std::endl;
     std::cout << "Mass: " << robot_->getMass() << std::endl;
 }
 
 void NomadRobot::SetInitialPose()
 {
+   // robot_->getDof("omega_x")->setPosition(M_PI_2);
     robot_->getDof("base_z")->setPosition(0.2);
     robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
     robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);

@@ -53,6 +53,10 @@ public:
   void SetInitialPose();
   void Reset();
 
+  Eigen::Quaterniond GetBodyOrientation() const;
+  Eigen::Vector3d GetAngularAcceleration() const;
+  Eigen::Vector3d GetLinearAcceleration() const;
+
   const dart::dynamics::SkeletonPtr& Skeleton(){return robot_;}
 
 protected:

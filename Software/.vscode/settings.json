@@ -70,6 +70,8 @@
         "object": "cpp",
         "operationthread": "cpp",
         "stats": "cpp",
-        "image": "cpp"
+        "image": "cpp",
+        "billboard": "cpp",
+        "light": "cpp"
     }
 }

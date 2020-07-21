@@ -37,5 +37,6 @@ add_subdirectory(Robot)
 
 #IF(BUILD_SIMULATION)
 # Simulation(Optional)
-add_subdirectory(Simulation)
+add_subdirectory(Simulation/Dart)
+add_subdirectory(Simulation/Gazebo)
 #ENDIF()
