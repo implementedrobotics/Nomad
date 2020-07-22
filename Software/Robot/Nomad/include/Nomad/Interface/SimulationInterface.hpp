@@ -71,13 +71,14 @@ namespace Robot
                     JOINT_STATE = 0,   // Joint State Estimate from Plant
                     IMU_STATE = 1,     // IMU State from Sensors
                     GROUND_TRUTH = 2,  // Ground Truth Plant State from Sim
-                    NUM_OUTPUTS = 3
+                    NUM_OUTPUTS = 0
                 };
 
                 enum InputPort
                 {
                     JOINT_CONTROL = 0, // Control Message for Servo
-                    NUM_INPUTS = 1
+                    IMU_READ = 1,
+                    NUM_INPUTS = 2
                 };
 
                 // Plant Simulation Task Node
@@ -101,6 +102,7 @@ namespace Robot
 
                 // Input
                 generic_msg_t joint_control_msg_;
+                double_vec_t imu_read_msg_;
 
                 // Output
                 generic_msg_t joint_state_msg_;

@@ -34,6 +34,15 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
 
+
+    // Plant Inputs
+
+    const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
+
+    std::shared_ptr<Realtime::Port> SIM_IMU = std::make_shared<Realtime::Port>("SIM_IMU", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 10, 10);
+    SIM_IMU->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.imu");
+
+
     // Start Dynamics
     // Leg Controller Task
     Robot::Nomad::Dynamics::NomadDynamics nomad_dynamics_node("Nomad_Dynamics_Handler");
@@ -56,7 +65,7 @@ int main(int argc, char *argv[])
 
     // Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Controllers::Locomotion::LegController::InputPort::LEG_COMMAND),
     //                     primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
-    nomad_dynamics_node.Start();
+   // nomad_dynamics_node.Start();
 
 
     // State Estimators
@@ -72,7 +81,7 @@ int main(int argc, char *argv[])
     Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Robot::Nomad::Dynamics::NomadDynamics::BODY_STATE_HAT),
                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::BODY_STATE_HAT));
 
-    estimator_node.Start();
+   // estimator_node.Start();
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
@@ -85,7 +94,7 @@ int main(int argc, char *argv[])
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
                               Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
                               
-    teleop_node.Start();
+    //teleop_node.Start();
 
     // FSM Task
     Robot::Nomad::Controllers::NomadControl nomad_controller_node("Nomad_Controller");
@@ -104,7 +113,17 @@ int main(int argc, char *argv[])
 
 
     Robot::Nomad::Interface::SimulationInterface nomad_simulation_interface("Simulation Interface");
+    nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB   
+    nomad_simulation_interface.SetTaskPriority(Realtime::Priority::MEDIUM);
+    nomad_simulation_interface.SetTaskFrequency(freq1); // 50 HZ
+    //nomad_simulation_interface.SetCoreAffinity(-1);
+   // nomad_simulation_interface.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
+   //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
+    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::IMU_READ),
+                        SIM_IMU);
+                        
+    nomad_simulation_interface.Start();
 
     // Print Threads
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();

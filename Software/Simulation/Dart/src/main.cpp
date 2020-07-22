@@ -93,6 +93,7 @@ public:
     imu_msg.sequence_num = sequence_num_++;
     Eigen::Quaterniond body_orientation = nomad_->GetBodyOrientation();
 
+    // Orientation
     imu_msg.data[0] = body_orientation.x();
     imu_msg.data[1] = body_orientation.y();
     imu_msg.data[2] = body_orientation.z();
@@ -100,10 +101,11 @@ public:
 
     Eigen::Vector3d accel = nomad_->GetLinearAcceleration();
     Eigen::Vector3d angular = nomad_->GetAngularAcceleration();
+    // Accelerometer
     imu_msg.data[4] = accel[0];
     imu_msg.data[5] = accel[1];
     imu_msg.data[6] = accel[2];
-
+    // Gyro
     imu_msg.data[7] = angular[0];
     imu_msg.data[8] = angular[1];
     imu_msg.data[9] = angular[2];

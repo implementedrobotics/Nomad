@@ -54,10 +54,29 @@ namespace Robot
                                                      const int rt_core_id,
                                                      const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
+                // Create Ports
+
+                input_port_map_[InputPort::JOINT_CONTROL] = std::make_shared<Realtime::Port>("JOINT_CONTROL", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 12, rt_period_);
+
+                // Referenence Input Port
+                input_port_map_[InputPort::IMU_READ] = std::make_shared<Realtime::Port>("IMU_READ", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 10, rt_period_);
+
+                //output_port_map_[OutputPort::FORCES] = std::make_shared<Realtime::Port>("FORCES", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_inputs_, rt_period_);
             }
 
             void SimulationInterface::Run()
             {
+                // Read Command
+                bool success = GetInputPort(InputPort::IMU_READ)->Receive(imu_read_msg_);
+                if(success)
+                {
+                    std::cout << "GOT: " << imu_read_msg_.data[6] << std::endl;
+                }
+                else
+                {
+                    std::cout << "NO DATA!!!!" << std::endl;
+                }
+                
             }
 
             void SimulationInterface::Setup()

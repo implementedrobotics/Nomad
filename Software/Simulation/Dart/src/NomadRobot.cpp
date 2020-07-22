@@ -97,11 +97,11 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
     robot_->getJoint("j_kfe_RL")->setPositionLimitEnforced(true);
     robot_->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
 
-    int i = 0;
-    for (auto dof : robot_->getDofs())
-    {
-        std::cout << "DOF: " << i++ << " : " << dof->getName() << std::endl;
-    }
+    // int i = 0;
+    // for (auto dof : robot_->getDofs())
+    // {
+    //     std::cout << "DOF: " << i++ << " : " << dof->getName() << std::endl;
+    // }
 
     // i = 0;
     // for(auto dof:robot_->getBodyNodes())
@@ -112,8 +112,8 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
     // Add to world
     world_->addSkeleton(robot_);
 
-    std::cout << "Mass Matrix: " << robot_->getMassMatrix() << std::endl;
-    std::cout << "Mass: " << robot_->getMass() << std::endl;
+    //std::cout << "Mass Matrix: " << robot_->getMassMatrix() << std::endl;
+    //std::cout << "Mass: " << robot_->getMass() << std::endl;
 }
 
 void NomadRobot::SetInitialPose()
