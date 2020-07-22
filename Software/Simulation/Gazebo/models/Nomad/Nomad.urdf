@@ -19,13 +19,13 @@
     <mass value="2.199913990617033"/>
     <inertia ixx="0.024540687238520268" ixy="2.9762304620824154e-16" ixz="5.608252282660633e-17" iyy="0.05844621109763673" iyz="-6.286427378647408e-17" izz="0.06916812540146272"/>
   </inertial>
-  <!-- <visual>
+  <visual>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <geometry>
       <mesh filename="package://Nomad/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="orange"/>
-  </visual> -->
+  </visual>
   <collision>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <geometry>
@@ -155,13 +155,13 @@
     <mass value="0.30243979231772933"/>
     <inertia ixx="0.00037578882069899677" ixy="-1.8585922474462918e-05" ixz="-2.0050372480908577e-06" iyy="0.00043307576818706756" iyz="1.4300959327523297e-06" izz="0.00034988475762854493"/>
   </inertial>
-  <!-- <visual>
+  <visual>
     <origin rpy="0 0 0" xyz="-0.275 -0.0945 -0.0"/>
     <geometry>
       <mesh filename="package://Nomad/meshes/b_kfe_motor_FL.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
-  </visual> -->
+  </visual>
   <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.275 -0.0945 -0.0"/>
     <geometry>
@@ -277,7 +277,7 @@
     </geometry>
   </collision> -->
             <collision>
-    <origin rpy="0 0 0" xyz="0 0 -.125"/>
+    <origin rpy="0 .1 0" xyz="-.02 .0053 -.125"/>
     <geometry>
         <box size=".05 .030 .25"/>
     </geometry>
@@ -303,6 +303,12 @@
       <mesh filename="package://Nomad/meshes/b_upper_leg_RL.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision> -->
+              <collision>
+    <origin rpy="0 .1 0" xyz="-.02 .0053 -.125"/>
+    <geometry>
+        <box size=".05 .030 .25"/>
+    </geometry>
+</collision>
 </link>
 
 <link name="b_upper_leg_RR">
@@ -318,6 +324,12 @@
     </geometry>
     <material name="silver"/>
   </visual>
+              <collision>
+    <origin rpy="0 .1 0" xyz="-.02 -.0053 -.125"/>
+    <geometry>
+        <box size=".05 .030 .25"/>
+    </geometry>
+</collision>
   <!-- <collision>
     <origin rpy="0 0 0" xyz="0.275 0.1585 0.0"/>
     <geometry>
@@ -339,6 +351,12 @@
     </geometry>
     <material name="silver"/>
   </visual>
+              <collision>
+    <origin rpy="0 .1 0" xyz="-.02 -.0053 -.125"/>
+    <geometry>
+        <box size=".05 .030 .25"/>
+    </geometry>
+</collision>
   <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.275 0.1585 -0.0"/>
     <geometry>
@@ -367,9 +385,9 @@
     </geometry>
   </collision> -->
               <collision>
-    <origin rpy="0 .20 0" xyz=".05 0 .125"/>
+    <origin rpy="0 .24 0" xyz=".042 0.0095 .13"/>
     <geometry>
-        <cylinder radius="0.02" length="0.250"/>
+        <cylinder radius="0.01" length="0.260"/>
     </geometry>
 </collision>
 </link>
@@ -393,6 +411,13 @@
       <mesh filename="package://Nomad/meshes/b_lower_leg_RL.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision> -->
+
+                <collision>
+    <origin rpy="0 .24 0" xyz=".042 0.0095 .13"/>
+    <geometry>
+        <cylinder radius="0.01" length="0.260"/>
+    </geometry>
+</collision>
 </link>
 
 <link name="b_lower_leg_FR">
@@ -414,6 +439,13 @@
       <mesh filename="package://Nomad/meshes/b_lower_leg_FR.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision> -->
+
+                <collision>
+    <origin rpy="0 .24 0" xyz=".042 -0.0095 .13"/>
+    <geometry>
+        <cylinder radius="0.01" length="0.260"/>
+    </geometry>
+</collision>
 </link>
 
 <link name="b_lower_leg_RR">
@@ -435,6 +467,13 @@
       <mesh filename="package://Nomad/meshes/b_lower_leg_RR.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision> -->
+
+                <collision>
+    <origin rpy="0 .24 0" xyz=".042 -0.0095 .13"/>
+    <geometry>
+        <cylinder radius="0.01" length="0.260"/>
+    </geometry>
+</collision>
 </link>
 
 <link name="b_haa_motor_FR">

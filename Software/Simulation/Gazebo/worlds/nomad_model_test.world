@@ -4,9 +4,9 @@
   <!-- World Parameters -->
         <gravity>0 0 -9.81</gravity>
 	<!-- Physics Parameters -->
-	<physics type="ode" update_rate="100">
+	<physics type="bullet" update_rate="1000">
   	<ode>
-	  <solver type="quick" dt="0.01" iters="1" sor="1.3" />
+	  <solver type="world" dt="0.001" iters="10" sor="1.3" />
             </ode>
         </physics>
 
