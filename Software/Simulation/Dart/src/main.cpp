@@ -145,7 +145,7 @@ SkeletonPtr CreateGround()
   ShapePtr groundShape = std::make_shared<BoxShape>(Eigen::Vector3d(4, 4, thickness));
   auto shapeNode = body->createShapeNodeWith<VisualAspect, CollisionAspect, DynamicsAspect>(groundShape);
 
-  shapeNode->getVisualAspect()->setColor(dart::Color::L    std::cout << "GOT WOrld : " << base_link->getLinearAcceleration() << std::endl;ightGray());
+  shapeNode->getVisualAspect()->setColor(dart::Color::LightGray());
 
   Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
   tf.translation() = Eigen::Vector3d(0, 0, -thickness / 2.0);
