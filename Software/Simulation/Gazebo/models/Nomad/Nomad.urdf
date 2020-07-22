@@ -277,9 +277,9 @@
     </geometry>
   </collision> -->
             <collision>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 0" xyz="0 0 -.125"/>
     <geometry>
-        <cylinder radius="0.14" length="1.075"/>
+        <box size=".05 .030 .25"/>
     </geometry>
 </collision>
 </link>
@@ -366,6 +366,12 @@
       <mesh filename="package://Nomad/meshes/b_lower_leg_FL.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision> -->
+              <collision>
+    <origin rpy="0 .20 0" xyz=".05 0 .125"/>
+    <geometry>
+        <cylinder radius="0.02" length="0.250"/>
+    </geometry>
+</collision>
 </link>
 
 <link name="b_lower_leg_RL">
