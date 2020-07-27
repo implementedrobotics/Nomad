@@ -82,9 +82,18 @@ public:
 
   void PublishState()
   {
+    int pos_offset = 0;
+    int vel_offset = 12;
+    int tau_offset = 24;
+
     double_vec_t imu_msg;
     imu_msg.length = 10;
     imu_msg.data.resize(imu_msg.length);
+
+    double_vec_t joint_state_msg;
+    joint_state_msg.length = 12*3;
+    joint_state_msg.data.resize(joint_state_msg.length);
+
 
     uint64_t time_now = sequence_num_++;
 
@@ -100,15 +109,60 @@ public:
     imu_msg.data[3] = body_orientation.w();
 
     Eigen::Vector3d accel = nomad_->GetLinearAcceleration();
-    Eigen::Vector3d angular = nomad_->GetAngularAcceleration();
+    Eigen::Vector3d angular = nomad_->GetAngularVelocity();
+
     // Accelerometer
     imu_msg.data[4] = accel[0];
     imu_msg.data[5] = accel[1];
     imu_msg.data[6] = accel[2];
+
     // Gyro
     imu_msg.data[7] = angular[0];
     imu_msg.data[8] = angular[1];
     imu_msg.data[9] = angular[2];
+
+    Eigen::VectorXd joint_pos = nomad_->Skeleton()->getPositions();
+    Eigen::VectorXd joint_vel = nomad_->Skeleton()->getVelocities();
+    Eigen::VectorXd joint_tau = nomad_->Skeleton()->getForces();
+
+    joint_state_msg.data[pos_offset + 0] = joint_pos[6];
+    joint_state_msg.data[pos_offset + 1] = joint_pos[7];
+    joint_state_msg.data[pos_offset + 2] = joint_pos[8];
+    joint_state_msg.data[pos_offset + 3] = joint_pos[9];
+    joint_state_msg.data[pos_offset + 4] = joint_pos[10];
+    joint_state_msg.data[pos_offset + 5] = joint_pos[11];
+    joint_state_msg.data[pos_offset + 6] = joint_pos[12];
+    joint_state_msg.data[pos_offset + 7] = joint_pos[13];
+    joint_state_msg.data[pos_offset + 8] = joint_pos[14];
+    joint_state_msg.data[pos_offset + 9] = joint_pos[15];
+    joint_state_msg.data[pos_offset + 10] = joint_pos[16];
+    joint_state_msg.data[pos_offset + 11] = joint_pos[17];
+
+    joint_state_msg.data[vel_offset + 0] = joint_vel[6];
+    joint_state_msg.data[vel_offset + 1] = joint_vel[7];
+    joint_state_msg.data[vel_offset + 2] = joint_vel[8];
+    joint_state_msg.data[vel_offset + 3] = joint_vel[9];
+    joint_state_msg.data[vel_offset + 4] = joint_vel[10];
+    joint_state_msg.data[vel_offset + 5] = joint_vel[11];
+    joint_state_msg.data[vel_offset + 6] = joint_vel[12];
+    joint_state_msg.data[vel_offset + 7] = joint_vel[13];
+    joint_state_msg.data[vel_offset + 8] = joint_vel[14];
+    joint_state_msg.data[vel_offset + 9] = joint_vel[15];
+    joint_state_msg.data[vel_offset + 10] = joint_vel[16];
+    joint_state_msg.data[vel_offset + 11] = joint_vel[17];
+
+    joint_state_msg.data[tau_offset + 0] = joint_tau[6];
+    joint_state_msg.data[tau_offset + 1] = joint_tau[7];
+    joint_state_msg.data[tau_offset + 2] = joint_tau[8];
+    joint_state_msg.data[tau_offset + 3] = joint_tau[9];
+    joint_state_msg.data[tau_offset + 4] = joint_tau[10];
+    joint_state_msg.data[tau_offset + 5] = joint_tau[11];
+    joint_state_msg.data[tau_offset + 6] = joint_tau[12];
+    joint_state_msg.data[tau_offset + 7] = joint_tau[13];
+    joint_state_msg.data[tau_offset + 8] = joint_tau[14];
+    joint_state_msg.data[tau_offset + 9] = joint_tau[15];
+    joint_state_msg.data[tau_offset + 10] = joint_tau[16];
+    joint_state_msg.data[tau_offset + 11] = joint_tau[17];
 
     //std::cout << "Got :" << accel << std::endl;
     //std::cout << "Got Angular :" << angular << std::endl;
@@ -120,6 +174,8 @@ public:
 
     // TODO: Publish Pose
     // TODO: Publish Joint Config
+
+    rc = pub_context_->publish("nomad.joint_state", &joint_state_msg);
   }
 
 protected:
@@ -202,7 +258,7 @@ int main(int argc, char *argv[])
                                                  ::osg::Vec3(0.0f, 0.707f, 0.707f), false);
 
   viewer.setCameraManipulator(viewer.getCameraManipulator());
-
+  viewer.simulate(true);
   viewer.run();
 
   return 0;

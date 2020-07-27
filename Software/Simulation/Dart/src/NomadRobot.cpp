@@ -78,6 +78,12 @@ Eigen::Vector3d NomadRobot::GetLinearAcceleration() const
     return base_link->getLinearAcceleration(dart::dynamics::Frame::World(), base_link);
 }
 
+Eigen::Vector3d NomadRobot::GetAngularVelocity() const
+{
+    dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
+    return base_link->getAngularVelocity(dart::dynamics::Frame::World(), base_link);
+}
+
 void NomadRobot::LoadFromURDF(const std::string &urdf)
 {
     dart::utils::DartLoader loader;

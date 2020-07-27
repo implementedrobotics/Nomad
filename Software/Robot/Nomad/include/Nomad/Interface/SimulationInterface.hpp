@@ -55,12 +55,20 @@ namespace Robot
                 double k_d_joint[12]; // D Gains (Joint)
             };
 
-            struct joint_state_cmd_t
+            struct joint_state_t
             {
-                double torque_hat[12]; // Torque Estimate
                 double q_hat[12];      // Joint Position Estimate
                 double q_dot_hat[12];  // Joint Velocity Estimate
+                double torque_hat[12]; // Torque Estimate
             };
+
+            struct imu_state_t
+            {
+                double orientation[4]; // Orientation Quaternion
+                double accel[3];       // Linear Acceleration
+                double omega[3];       // Angular Velocity
+            };
+
 
             class SimulationInterface : public Realtime::RealTimeTaskNode
             {
@@ -71,14 +79,15 @@ namespace Robot
                     JOINT_STATE = 0,   // Joint State Estimate from Plant
                     IMU_STATE = 1,     // IMU State from Sensors
                     GROUND_TRUTH = 2,  // Ground Truth Plant State from Sim
-                    NUM_OUTPUTS = 0
+                    NUM_OUTPUTS = 2
                 };
 
                 enum InputPort
                 {
                     JOINT_CONTROL = 0, // Control Message for Servo
                     IMU_READ = 1,
-                    NUM_INPUTS = 2
+                    JOINT_STATE_READ = 2,
+                    NUM_INPUTS = 3
                 };
 
                 // Plant Simulation Task Node
@@ -103,13 +112,15 @@ namespace Robot
                 // Input
                 generic_msg_t joint_control_msg_;
                 double_vec_t imu_read_msg_;
+                double_vec_t joint_state_read_msg_;
 
                 // Output
                 generic_msg_t joint_state_msg_;
                 generic_msg_t imu_state_msg_;
                 generic_msg_t ground_truth_msg_;
 
-                joint_state_cmd_t joint_state_;
+                joint_state_t joint_state_;
+                imu_state_t imu_state_;
             };
         } // namespace Interface
     }     // namespace Nomad

@@ -54,29 +54,67 @@ namespace Robot
                                                      const int rt_core_id,
                                                      const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
-                // Create Ports
 
+                // IMU Messages
+                imu_state_msg_.length = sizeof(imu_state_t);
+                imu_state_msg_.data.resize(imu_state_msg_.length);
+
+                // Intialize to 'zero' state
+                memset(&imu_state_, 0, sizeof(imu_state_t));
+
+                // Joint State Messages
+                joint_state_msg_.length = sizeof(joint_state_t);
+                joint_state_msg_.data.resize(joint_state_msg_.length);
+
+                // Intialize to 'zero' state
+                memset(&joint_state_, 0, sizeof(joint_state_t));
+
+                // Create Ports
                 input_port_map_[InputPort::JOINT_CONTROL] = std::make_shared<Realtime::Port>("JOINT_CONTROL", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 12, rt_period_);
 
                 // Referenence Input Port
                 input_port_map_[InputPort::IMU_READ] = std::make_shared<Realtime::Port>("IMU_READ", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 10, rt_period_);
+                input_port_map_[InputPort::JOINT_STATE_READ] = std::make_shared<Realtime::Port>("JOINT_STATE_READ", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 36, rt_period_);
 
-                //output_port_map_[OutputPort::FORCES] = std::make_shared<Realtime::Port>("FORCES", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_inputs_, rt_period_);
+                // Outputs
+                output_port_map_[OutputPort::IMU_STATE] = std::make_shared<Realtime::Port>("IMU_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
+                output_port_map_[OutputPort::JOINT_STATE] = std::make_shared<Realtime::Port>("JOINT_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
             }
 
             void SimulationInterface::Run()
             {
-                // Read Command
-                bool success = GetInputPort(InputPort::IMU_READ)->Receive(imu_read_msg_);
-                if(success)
-                {
-                    std::cout << "GOT: " << imu_read_msg_.data[6] << std::endl;
-                }
-                else
-                {
-                    std::cout << "NO DATA!!!!" << std::endl;
-                }
-                
+                // // Read Command
+                // bool success = GetInputPort(InputPort::IMU_READ)->Receive(imu_read_msg_);
+                // if (success)
+                // {
+                //     std::cout << "GOT: " << imu_read_msg_.data[6] << std::endl;
+
+                //     // Translate to output messages
+                //     imu_state_.orientation[0] = imu_read_msg_.data[0];
+                //     imu_state_.orientation[1] = imu_read_msg_.data[1];
+                //     imu_state_.orientation[2] = imu_read_msg_.data[2];
+                //     imu_state_.orientation[3] = imu_read_msg_.data[3];
+
+                //     memcpy(imu_state_msg_.data.data(), &imu_state_, sizeof(imu_state_t));
+                // }
+                // else
+                // {
+                //     std::cout << "NO DATA!!!!" << std::endl;
+                // }
+
+                // success = GetInputPort(InputPort::JOINT_STATE_READ)->Receive(joint_state_read_msg_);
+                // if (success)
+                // {
+                //     std::cout << "GOT: " << joint_state_read_msg_.data[0] << std::endl;
+                // }
+                // else
+                // {
+                //     std::cout << "NO DATA!!!!" << std::endl;
+                // }
+                // std::cout << imu_state_msg_.length << std::endl;
+
+                // Publish
+                bool send_status = GetOutputPort(OutputPort::IMU_STATE)->Send(imu_state_msg_);
             }
 
             void SimulationInterface::Setup()

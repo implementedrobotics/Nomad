@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance();
     Realtime::PortManager::Instance();
 
-
     // Plant Inputs
 
     const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
@@ -42,6 +41,8 @@ int main(int argc, char *argv[])
     std::shared_ptr<Realtime::Port> SIM_IMU = std::make_shared<Realtime::Port>("SIM_IMU", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 10, 10);
     SIM_IMU->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.imu");
 
+    std::shared_ptr<Realtime::Port> JOINT_STATE = std::make_shared<Realtime::Port>("SIM_JOINT_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 36, 10);
+    JOINT_STATE->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.joint_state");
 
     // Start Dynamics
     // Leg Controller Task
@@ -55,18 +56,16 @@ int main(int argc, char *argv[])
     dart::dynamics::SkeletonPtr robot = Robot::Nomad::NomadRobot::Load(urdf);
 
     nomad_dynamics_node.SetRobotSkeleton(robot->cloneSkeleton());
-    nomad_dynamics_node.SetStackSize(1024 * 1024); // 1MB   
+    nomad_dynamics_node.SetStackSize(1024 * 1024); // 1MB
     nomad_dynamics_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     nomad_dynamics_node.SetTaskFrequency(freq1); // 50 HZ
     //nomad_dynamics_node.SetCoreAffinity(-1);
     // nomad_dynamics_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::SERVO_COMMAND,
     //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.servo_cmd");
 
-
     // Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Controllers::Locomotion::LegController::InputPort::LEG_COMMAND),
     //                     primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
-   // nomad_dynamics_node.Start();
-
+    // nomad_dynamics_node.Start();
 
     // State Estimators
     Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
@@ -77,11 +76,10 @@ int main(int argc, char *argv[])
     estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT,
                                  Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
 
-
     Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Robot::Nomad::Dynamics::NomadDynamics::BODY_STATE_HAT),
-                       estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::BODY_STATE_HAT));
+                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::BODY_STATE_HAT));
 
-   // estimator_node.Start();
+    // estimator_node.Start();
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
@@ -93,36 +91,39 @@ int main(int argc, char *argv[])
                               Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode2");
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
                               Realtime::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
-                              
+
     //teleop_node.Start();
 
     // FSM Task
     Robot::Nomad::Controllers::NomadControl nomad_controller_node("Nomad_Controller");
 
-    nomad_controller_node.SetStackSize(1024 * 1024); // 1MB   
+    nomad_controller_node.SetStackSize(1024 * 1024); // 1MB
     nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
     nomad_controller_node.SetTaskFrequency(freq1); // 50 HZ
     //nomad_controller_node.SetCoreAffinity(-1);
     nomad_controller_node.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
-                                      Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
+                                        Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
     Realtime::Port::Map(nomad_controller_node.GetInputPort(Robot::Nomad::Controllers::NomadControl::InputPort::CONTROL_MODE),
                         teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
 
     //nomad_controller_node.Start();
 
-
     Robot::Nomad::Interface::SimulationInterface nomad_simulation_interface("Simulation Interface");
-    nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB   
+    nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB
     nomad_simulation_interface.SetTaskPriority(Realtime::Priority::MEDIUM);
     nomad_simulation_interface.SetTaskFrequency(freq1); // 50 HZ
     //nomad_simulation_interface.SetCoreAffinity(-1);
-   // nomad_simulation_interface.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
-   //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
+    // nomad_simulation_interface.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
+    //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
     Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::IMU_READ),
                         SIM_IMU);
-                        
+
+    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::JOINT_STATE_READ),
+                        JOINT_STATE);
+
+
     nomad_simulation_interface.Start();
 
     // Print Threads
@@ -134,21 +135,21 @@ int main(int argc, char *argv[])
     // Run for 10 Seconds
     int j = 0;
     while (j < 50)
-    {    
+    {
 
         usleep(1e6);
         j++;
     }
     //nomad.Stop();
-   // scope.Stop();
-   // scope2.Stop();
-  //  ref_generator_node.Stop();
-   // convex_mpc_node.Stop();
-   // estimator_node.Stop();
-   // teleop_node.Stop();
+    // scope.Stop();
+    // scope2.Stop();
+    //  ref_generator_node.Stop();
+    // convex_mpc_node.Stop();
+    // estimator_node.Stop();
+    // teleop_node.Stop();
 
-  //  scope.DumpCSV("test.csv");
+    //  scope.DumpCSV("test.csv");
     //scope2.DumpCSV("test2.csv");
-   // scope.RenderPlot();
+    // scope.RenderPlot();
     //scope2.RenderPlot();
 }
