@@ -812,7 +812,7 @@
 </joint>
 
 <joint name="j_base_link_haa_RR" type="fixed">
-  <origin rpy="0 0 0" xyz="-0.215 -0.07world 0.0"/>
+  <origin rpy="0 0 0" xyz="-0.215 -0.07 0.0"/>
   <parent link="base_link"/>
   <child link="b_haa_motor_RR"/>
 </joint>

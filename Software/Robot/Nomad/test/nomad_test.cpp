@@ -9,6 +9,7 @@
 #include <Nomad/NomadDynamics.hpp>
 #include <Controllers/StateEstimator.hpp>
 #include <Nomad/Interface/SimulationInterface.hpp>
+#include <Nomad/Estimators/FusedLegKinematicsStateEstimator.hpp>
 #include <memory>
 
 #include <unistd.h>
@@ -16,7 +17,6 @@
 
 int main(int argc, char *argv[])
 {
-
     //https://rt.wiki.kernel.org/index.php/Threaded_RT-application_with_memory_locking_and_stack_handling_example
     // if (mlockall(MCL_CURRENT | MCL_FUTURE) == -1)
     // {
@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 
     // Task Periods.
     int freq1 = 1;
+    int hi_freq = 50;
     // int freq2 = 100;
 
     // Create Manager Class Instance Singleton.
@@ -35,14 +36,45 @@ int main(int argc, char *argv[])
     Realtime::PortManager::Instance();
 
     // Plant Inputs
-
     const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
 
     std::shared_ptr<Realtime::Port> SIM_IMU = std::make_shared<Realtime::Port>("SIM_IMU", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 10, 10);
-    SIM_IMU->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.imu");
+    SIM_IMU->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.sim.imu_state");
 
     std::shared_ptr<Realtime::Port> JOINT_STATE = std::make_shared<Realtime::Port>("SIM_JOINT_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 36, 10);
-    JOINT_STATE->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.joint_state");
+    JOINT_STATE->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.sim.joint_state");
+
+    std::shared_ptr<Realtime::Port> CHEATER_POSE = std::make_shared<Realtime::Port>("SIM_CHEATER_POSE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 6, 10);
+    CHEATER_POSE->SetTransport(Realtime::Port::TransportType::UDP, sim_url, "nomad.sim.cheater_pose");
+
+
+
+    // Simulator Interface Task Setup
+    Robot::Nomad::Interface::SimulationInterface nomad_simulation_interface("Simulation Interface");
+    nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB
+    nomad_simulation_interface.SetTaskPriority(Realtime::Priority::MEDIUM);
+    nomad_simulation_interface.SetTaskFrequency(hi_freq); // 50 HZ
+    //nomad_simulation_interface.SetCoreAffinity(-1);
+    nomad_simulation_interface.SetPortOutput(Robot::Nomad::Interface::SimulationInterface::IMU_STATE,
+                                             Realtime::Port::TransportType::INPROC, "inproc", "nomad.imu");
+
+    nomad_simulation_interface.SetPortOutput(Robot::Nomad::Interface::SimulationInterface::JOINT_STATE,
+                                             Realtime::Port::TransportType::INPROC, "inproc", "nomad.joint_state");
+
+    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::IMU_READ),
+                        SIM_IMU);
+
+    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::JOINT_STATE_READ),
+                        JOINT_STATE);
+
+    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::CHEATER_POSE_READ),
+                        CHEATER_POSE);
+
+
+
+
+
+
 
     // Start Dynamics
     // Leg Controller Task
@@ -52,7 +84,7 @@ int main(int argc, char *argv[])
     std::string urdf = std::getenv("NOMAD_RESOURCE_PATH");
     urdf.append("/Robot/Nomad.urdf");
 
-    std::cout << "Load: " << urdf << std::endl;
+    //std::cout << "Load: " << urdf << std::endl;
     dart::dynamics::SkeletonPtr robot = Robot::Nomad::NomadRobot::Load(urdf);
 
     nomad_dynamics_node.SetRobotSkeleton(robot->cloneSkeleton());
@@ -67,19 +99,31 @@ int main(int argc, char *argv[])
     //                     primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
     // nomad_dynamics_node.Start();
 
-    // State Estimators
-    Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
+
+
+
+
+    // State Estimator Task
+    Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator estimator_node("Estimator_Task");
     estimator_node.SetStackSize(1024 * 1024); // 1MB
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    estimator_node.SetTaskFrequency(freq1); // 1000 HZ
+    estimator_node.SetTaskFrequency(hi_freq); // 1000 HZ
     //estimator_node.SetCoreAffinity(1);
-    estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT,
-                                 Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+    estimator_node.SetPortOutput(Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT,
+                                 Realtime::Port::TransportType::INPROC, "inproc", "nomad.com.state");
 
     Realtime::Port::Map(nomad_dynamics_node.GetInputPort(Robot::Nomad::Dynamics::NomadDynamics::BODY_STATE_HAT),
-                        estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::BODY_STATE_HAT));
+                        estimator_node.GetOutputPort(Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator::BODY_STATE_HAT));
 
-    // estimator_node.Start();
+
+    Realtime::Port::Map(estimator_node.GetInputPort(Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator::InputPort::IMU_DATA),
+                        nomad_simulation_interface.GetOutputPort(Robot::Nomad::Interface::SimulationInterface::IMU_STATE));
+                        
+
+    estimator_node.Start();
+
+
+
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
@@ -94,12 +138,16 @@ int main(int argc, char *argv[])
 
     //teleop_node.Start();
 
+
+
+
+
     // FSM Task
     Robot::Nomad::Controllers::NomadControl nomad_controller_node("Nomad_Controller");
 
     nomad_controller_node.SetStackSize(1024 * 1024); // 1MB
     nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    nomad_controller_node.SetTaskFrequency(freq1); // 50 HZ
+    nomad_controller_node.SetTaskFrequency(hi_freq); // 50 HZ
     //nomad_controller_node.SetCoreAffinity(-1);
     nomad_controller_node.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
                                         Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
@@ -109,19 +157,12 @@ int main(int argc, char *argv[])
 
     //nomad_controller_node.Start();
 
-    Robot::Nomad::Interface::SimulationInterface nomad_simulation_interface("Simulation Interface");
-    nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB
-    nomad_simulation_interface.SetTaskPriority(Realtime::Priority::MEDIUM);
-    nomad_simulation_interface.SetTaskFrequency(freq1); // 50 HZ
-    //nomad_simulation_interface.SetCoreAffinity(-1);
-    // nomad_simulation_interface.SetPortOutput(Robot::Nomad::Controllers::NomadControl::OutputPort::LEG_COMMAND,
-    //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
-    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::IMU_READ),
-                        SIM_IMU);
 
-    Realtime::Port::Map(nomad_simulation_interface.GetInputPort(Robot::Nomad::Interface::SimulationInterface::InputPort::JOINT_STATE_READ),
-                        JOINT_STATE);
+
+
+
+
 
 
     nomad_simulation_interface.Start();
@@ -140,6 +181,7 @@ int main(int argc, char *argv[])
         usleep(1e6);
         j++;
     }
+
     //nomad.Stop();
     // scope.Stop();
     // scope2.Stop();

@@ -69,52 +69,85 @@ namespace Robot
                 // Intialize to 'zero' state
                 memset(&joint_state_, 0, sizeof(joint_state_t));
 
+                pose_ground_truth_msg_.length = 6;
+                pose_ground_truth_msg_.data.resize(pose_ground_truth_msg_.length);
+                memset(&joint_state_, 0, sizeof(joint_state_t));
+
                 // Create Ports
                 input_port_map_[InputPort::JOINT_CONTROL] = std::make_shared<Realtime::Port>("JOINT_CONTROL", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 12, rt_period_);
 
                 // Referenence Input Port
                 input_port_map_[InputPort::IMU_READ] = std::make_shared<Realtime::Port>("IMU_READ", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 10, rt_period_);
                 input_port_map_[InputPort::JOINT_STATE_READ] = std::make_shared<Realtime::Port>("JOINT_STATE_READ", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 36, rt_period_);
+                input_port_map_[InputPort::CHEATER_POSE_READ] = std::make_shared<Realtime::Port>("CHEATER_POSE_READ", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 6, rt_period_);
 
                 // Outputs
                 output_port_map_[OutputPort::IMU_STATE] = std::make_shared<Realtime::Port>("IMU_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
                 output_port_map_[OutputPort::JOINT_STATE] = std::make_shared<Realtime::Port>("JOINT_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
+                output_port_map_[OutputPort::GROUND_TRUTH] = std::make_shared<Realtime::Port>("CHEATER_POSE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 6, rt_period_);
+
             }
 
             void SimulationInterface::Run()
             {
-                // // Read Command
-                // bool success = GetInputPort(InputPort::IMU_READ)->Receive(imu_read_msg_);
-                // if (success)
-                // {
-                //     std::cout << "GOT: " << imu_read_msg_.data[6] << std::endl;
+                
+                // Read Any Input Commands
 
-                //     // Translate to output messages
-                //     imu_state_.orientation[0] = imu_read_msg_.data[0];
-                //     imu_state_.orientation[1] = imu_read_msg_.data[1];
-                //     imu_state_.orientation[2] = imu_read_msg_.data[2];
-                //     imu_state_.orientation[3] = imu_read_msg_.data[3];
 
-                //     memcpy(imu_state_msg_.data.data(), &imu_state_, sizeof(imu_state_t));
-                // }
-                // else
-                // {
-                //     std::cout << "NO DATA!!!!" << std::endl;
-                // }
+                // Read Plant State
+                if(GetInputPort(InputPort::IMU_READ)->Receive(imu_read_msg_))
+                {
+                    // Translate to output messages
+                    imu_state_.orientation[0] = imu_read_msg_.data[0];
+                    imu_state_.orientation[1] = imu_read_msg_.data[1];
+                    imu_state_.orientation[2] = imu_read_msg_.data[2];
+                    imu_state_.orientation[3] = imu_read_msg_.data[3];
 
-                // success = GetInputPort(InputPort::JOINT_STATE_READ)->Receive(joint_state_read_msg_);
-                // if (success)
-                // {
-                //     std::cout << "GOT: " << joint_state_read_msg_.data[0] << std::endl;
-                // }
-                // else
-                // {
-                //     std::cout << "NO DATA!!!!" << std::endl;
-                // }
-                // std::cout << imu_state_msg_.length << std::endl;
+                    imu_state_.accel[0] = imu_read_msg_.data[4];
+                    imu_state_.accel[1] = imu_read_msg_.data[5];
+                    imu_state_.accel[2] = imu_read_msg_.data[6];
 
-                // Publish
-                bool send_status = GetOutputPort(OutputPort::IMU_STATE)->Send(imu_state_msg_);
+                    imu_state_.omega[0] = imu_read_msg_.data[7];
+                    imu_state_.omega[1] = imu_read_msg_.data[8];
+                    imu_state_.omega[2] = imu_read_msg_.data[9];
+
+                    memcpy(imu_state_msg_.data.data(), &imu_state_, sizeof(imu_state_t));
+                }
+
+                if (GetInputPort(InputPort::JOINT_STATE_READ)->Receive(joint_state_read_msg_))
+                {
+                    for(int i = 0; i < 12; i++)
+                    {
+                        joint_state_.q_hat[i] = joint_state_read_msg_.data[i];
+                    }
+
+                    for(int i = 0; i < 12; i++)
+                    {
+                        joint_state_.q_dot_hat[i] = joint_state_read_msg_.data[i+12];
+                    }
+
+                    for(int i = 0; i < 12; i++)
+                    {
+                        joint_state_.torque_hat[i] = joint_state_read_msg_.data[i+24];
+                    }
+
+                    memcpy(joint_state_msg_.data.data(), &joint_state_, sizeof(joint_state_t));
+                }
+
+                if (GetInputPort(InputPort::CHEATER_POSE_READ)->Receive(cheater_pose_read_msg_))
+                {
+                    pose_ground_truth_msg_.data[0] = cheater_pose_read_msg_.data[0];
+                    pose_ground_truth_msg_.data[1] = cheater_pose_read_msg_.data[1];
+                    pose_ground_truth_msg_.data[2] = cheater_pose_read_msg_.data[2];
+                    pose_ground_truth_msg_.data[3] = cheater_pose_read_msg_.data[3];
+                    pose_ground_truth_msg_.data[4] = cheater_pose_read_msg_.data[4];
+                    pose_ground_truth_msg_.data[5] = cheater_pose_read_msg_.data[5];
+                }
+
+                // Publish Output
+                GetOutputPort(OutputPort::IMU_STATE)->Send(imu_state_msg_);
+                GetOutputPort(OutputPort::JOINT_STATE)->Send(joint_state_msg_);
+                GetOutputPort(OutputPort::GROUND_TRUTH)->Send(pose_ground_truth_msg_);
             }
 
             void SimulationInterface::Setup()

@@ -33,11 +33,11 @@
 
 // Third Party Includes
 #include <Eigen/Dense>
-#include <Communications/Messages/double_vec_t.hpp>
-#include <Communications/Messages/int32_vec_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/int32_vec_t.hpp>
 
 namespace Controllers
 {
@@ -49,14 +49,17 @@ class StateEstimator : public Realtime::RealTimeTaskNode
 public:
     enum OutputPort
     {
-        BODY_STATE_HAT = 0 // State Estimate
+        BODY_STATE_HAT = 0, // State Estimate
+        NUM_OUTPUTS = 1
     };
 
     enum InputPort
     {
         IMU_DATA = 0,    // IMU Sensor Input
         JOINT_STATE = 1, // Joint State for Leg Kinematics Input
-        VISUAL_ODOM = 2 // Visual Odometry Sensor Input
+        VISUAL_ODOM = 2, // Visual Odometry Sensor Input
+        CHEATER_POSE = 3, // Ground Truth Pose Data
+        NUM_INPUTS = 4
     };
 
     // TODO: Move to a State class
@@ -105,6 +108,9 @@ protected:
 
     // (Input) IMU Estimate
     double_vec_t imu_data_in_;
+
+    // (Input) Ground Truth Pose Estimate
+    //double_vec_t imu_data_in_;
 
     // (Output) State Estimate
     double_vec_t com_state_out_;

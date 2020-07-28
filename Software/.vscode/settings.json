@@ -72,6 +72,7 @@
         "stats": "cpp",
         "image": "cpp",
         "billboard": "cpp",
-        "light": "cpp"
+        "light": "cpp",
+        "readerwriter": "cpp"
     }
 }

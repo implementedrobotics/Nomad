@@ -33,12 +33,16 @@
 
 // Third Party Includes
 #include <Eigen/Dense>
+
+
+// Project Includes
+#include <Realtime/RealTimeTask.hpp>
+#include <Nomad/NomadTypes.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
 
-// Project Includes
-#include <Realtime/RealTimeTask.hpp>
+using namespace Robot::Nomad::Types;
 
 namespace Robot
 {
@@ -46,30 +50,6 @@ namespace Robot
     {
         namespace Interface
         {
-            struct joint_control_cmd_t
-            {
-                double torque_ff[12]; // Torque Feedforward
-                double q[12];         // Joint Position
-                double q_d[12];       // Joint Velocity
-                double k_p_joint[12]; // P Gains (Joint)
-                double k_d_joint[12]; // D Gains (Joint)
-            };
-
-            struct joint_state_t
-            {
-                double q_hat[12];      // Joint Position Estimate
-                double q_dot_hat[12];  // Joint Velocity Estimate
-                double torque_hat[12]; // Torque Estimate
-            };
-
-            struct imu_state_t
-            {
-                double orientation[4]; // Orientation Quaternion
-                double accel[3];       // Linear Acceleration
-                double omega[3];       // Angular Velocity
-            };
-
-
             class SimulationInterface : public Realtime::RealTimeTaskNode
             {
 
@@ -79,7 +59,7 @@ namespace Robot
                     JOINT_STATE = 0,   // Joint State Estimate from Plant
                     IMU_STATE = 1,     // IMU State from Sensors
                     GROUND_TRUTH = 2,  // Ground Truth Plant State from Sim
-                    NUM_OUTPUTS = 2
+                    NUM_OUTPUTS = 3
                 };
 
                 enum InputPort
@@ -87,7 +67,8 @@ namespace Robot
                     JOINT_CONTROL = 0, // Control Message for Servo
                     IMU_READ = 1,
                     JOINT_STATE_READ = 2,
-                    NUM_INPUTS = 3
+                    CHEATER_POSE_READ = 3,
+                    NUM_INPUTS = 4
                 };
 
                 // Plant Simulation Task Node
@@ -113,11 +94,12 @@ namespace Robot
                 generic_msg_t joint_control_msg_;
                 double_vec_t imu_read_msg_;
                 double_vec_t joint_state_read_msg_;
+                double_vec_t cheater_pose_read_msg_;
 
                 // Output
                 generic_msg_t joint_state_msg_;
                 generic_msg_t imu_state_msg_;
-                generic_msg_t ground_truth_msg_;
+                double_vec_t pose_ground_truth_msg_;
 
                 joint_state_t joint_state_;
                 imu_state_t imu_state_;

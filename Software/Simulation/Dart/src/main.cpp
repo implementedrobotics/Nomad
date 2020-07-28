@@ -94,12 +94,25 @@ public:
     joint_state_msg.length = 12*3;
     joint_state_msg.data.resize(joint_state_msg.length);
 
+    double_vec_t cheater_pos_msg;
+    cheater_pos_msg.length = 6;
+    cheater_pos_msg.data.resize(cheater_pos_msg.length);
 
     uint64_t time_now = sequence_num_++;
 
+    // Cheater Orientation
+    cheater_pos_msg.timestamp = time_now;
+    cheater_pos_msg.sequence_num = sequence_num_;
+    cheater_pos_msg.data[0] = nomad_->Skeleton()->getDof(0)->getPosition();
+    cheater_pos_msg.data[1] = nomad_->Skeleton()->getDof(1)->getPosition();
+    cheater_pos_msg.data[2] = nomad_->Skeleton()->getDof(2)->getPosition();
+    cheater_pos_msg.data[3] = nomad_->Skeleton()->getDof(3)->getPosition();
+    cheater_pos_msg.data[4] = nomad_->Skeleton()->getDof(4)->getPosition();
+    cheater_pos_msg.data[5] = nomad_->Skeleton()->getDof(5)->getPosition();
+
     //
     imu_msg.timestamp = time_now;
-    imu_msg.sequence_num = sequence_num_++;
+    imu_msg.sequence_num = sequence_num_;
     Eigen::Quaterniond body_orientation = nomad_->GetBodyOrientation();
 
     // Orientation
@@ -124,6 +137,9 @@ public:
     Eigen::VectorXd joint_pos = nomad_->Skeleton()->getPositions();
     Eigen::VectorXd joint_vel = nomad_->Skeleton()->getVelocities();
     Eigen::VectorXd joint_tau = nomad_->Skeleton()->getForces();
+
+    joint_state_msg.timestamp = time_now;
+    joint_state_msg.sequence_num = sequence_num_;
 
     joint_state_msg.data[pos_offset + 0] = joint_pos[6];
     joint_state_msg.data[pos_offset + 1] = joint_pos[7];
@@ -164,18 +180,18 @@ public:
     joint_state_msg.data[tau_offset + 10] = joint_tau[16];
     joint_state_msg.data[tau_offset + 11] = joint_tau[17];
 
+    sequence_num_++;
     //std::cout << "Got :" << accel << std::endl;
     //std::cout << "Got Angular :" << angular << std::endl;
 
     //std::cout << "RPY: " << mat.eulerAngles(0,1,2) << std::endl;
 
     // Publish
-    int rc = pub_context_->publish("nomad.imu", &imu_msg);
+    int rc = pub_context_->publish("nomad.sim.imu_state", &imu_msg);
 
-    // TODO: Publish Pose
-    // TODO: Publish Joint Config
+    rc = pub_context_->publish("nomad.sim.joint_state", &joint_state_msg);
 
-    rc = pub_context_->publish("nomad.joint_state", &joint_state_msg);
+    rc = pub_context_->publish("nomad.sim.cheater_pose", &cheater_pos_msg);
   }
 
 protected:
