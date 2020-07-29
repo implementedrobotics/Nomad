@@ -87,6 +87,7 @@ namespace Robot
 
                 // State Estimate Input Port
                 input_port_map_[InputPort::IMU_DATA] = std::make_shared<Realtime::Port>("IMU_DATA", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
+                input_port_map_[InputPort::JOINT_STATE] = std::make_shared<Realtime::Port>("JOINT_STATE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
 
                 // State Estimate Output Port
                 output_port_map_[OutputPort::BODY_STATE_HAT] = port;
@@ -95,17 +96,16 @@ namespace Robot
             void FusedLegKinematicsStateEstimator::Run()
             {
                 // Estimate State
-                bool imu_recv = GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_in_); // Receive IMU Data
-                if (!imu_recv)
-                 {
-                     std::cout << "[FusedLegKinematicsStateEstimator]: Receive Buffer Empty!" << std::endl;
-                     return;
-                }
-                else
+                if (GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_in_))
                 {
                     imu_state_t imu_data;
                     memcpy(&imu_data, imu_data_in_.data.data(), sizeof(imu_state_t));
-                    std::cout << imu_data.accel[2] << std::endl;
+                }
+
+                if (GetInputPort(InputPort::IMU_DATA)->Receive(joint_state_in_))
+                {
+                    joint_state_t joint_data;
+                    memcpy(&joint_data, joint_state_in_.data.data(), sizeof(joint_state_t));
                 }
                 
 
@@ -136,7 +136,7 @@ namespace Robot
                 // Publish State
                 bool send_status = GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_out_);
 
-                std::cout << "[FusedLegKinematicsStateEstimator]: Publishing: " << com_state_out_.data[Idx::X] << " Send: " << send_status << std::endl;
+                //std::cout << "[FusedLegKinematicsStateEstimator]: Publishing: " << com_state_out_.data[Idx::X] << " Send: " << send_status << std::endl;
             }
 
             void FusedLegKinematicsStateEstimator::Setup()
@@ -144,6 +144,7 @@ namespace Robot
 
                 // Connect Input Ports
                 bool connect = GetInputPort(InputPort::IMU_DATA)->Connect(); // State Estimate
+                connect = GetInputPort(InputPort::JOINT_STATE)->Connect(); // State Estimate
 
                 GetOutputPort(OutputPort::BODY_STATE_HAT)->Bind();
                 std::cout << "[FusedLegKinematicsStateEstimator]: "

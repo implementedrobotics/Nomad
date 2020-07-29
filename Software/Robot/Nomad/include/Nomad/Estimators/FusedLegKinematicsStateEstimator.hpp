@@ -1,7 +1,7 @@
 /*
  * FusedLegKinematicsStateEstimator.hpp
  *
- *  Created on: July 13, 2019
+ *  Created on: July 28, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>

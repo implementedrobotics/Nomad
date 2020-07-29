@@ -118,6 +118,9 @@ int main(int argc, char *argv[])
 
     Realtime::Port::Map(estimator_node.GetInputPort(Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator::InputPort::IMU_DATA),
                         nomad_simulation_interface.GetOutputPort(Robot::Nomad::Interface::SimulationInterface::IMU_STATE));
+
+    Realtime::Port::Map(estimator_node.GetInputPort(Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator::InputPort::JOINT_STATE),
+                        nomad_simulation_interface.GetOutputPort(Robot::Nomad::Interface::SimulationInterface::JOINT_STATE));
                         
 
     estimator_node.Start();
