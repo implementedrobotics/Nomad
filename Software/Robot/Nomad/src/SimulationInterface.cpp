@@ -41,6 +41,7 @@
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Common/Time.hpp>
 
+
 namespace Robot
 {
     namespace Nomad
@@ -74,6 +75,10 @@ namespace Robot
                 memset(&joint_state_, 0, sizeof(joint_state_t));
 
                 // Create Ports
+
+                input_port_map_[InputPort::IMU_READ] = Realtime::Port::Create<imu_data_t>("IMU_READ", Realtime::Port::Direction::INPUT, rt_period_);
+
+
                 input_port_map_[InputPort::JOINT_CONTROL] = std::make_shared<Realtime::Port>("JOINT_CONTROL", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 12, rt_period_);
 
                 // Referenence Input Port

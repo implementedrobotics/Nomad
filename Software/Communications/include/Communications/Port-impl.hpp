@@ -26,12 +26,28 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include <memory>
 #include <iostream>
 #include <chrono>
 
 
 namespace Realtime
 {
+
+template< typename T>
+std::shared_ptr<Port> Port::Create(const std::string &name, Direction direction, int period)
+{
+    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>(name, direction, period);
+    port->_CreateHandler<T>();
+    return port;
+}
+
+template< typename T>
+void Port::_CreateHandler()
+{
+    handler_ = (void *)(new PortHandler<T>(queue_size_));
+}
+
 
 template <class T>
 PortHandler<T>::PortHandler(int queue_size) : queue_size_(queue_size)

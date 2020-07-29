@@ -71,6 +71,14 @@ Port::Port(const std::string &name, Direction direction, DataType data_type, int
     }
 }
 
+Port::Port(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0)
+{
+    queue_size_ = 1;
+    transport_type_ = TransportType::INPROC;
+    transport_url_ = "inproc"; // TODO: Noblock?
+}
+
+
 // TODO: Clear Handler Memory Etc,
 Port::~Port()
 {

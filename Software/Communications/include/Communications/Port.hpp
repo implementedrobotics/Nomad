@@ -71,7 +71,11 @@ public:
     };
 
     Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period);
+    Port(const std::string &name, Direction direction, int period);
     ~Port();
+
+    template< typename T>
+    static std::shared_ptr<Port> Create(const std::string &name, Direction direction, int period);
 
     Port::DataType GetDataType();
     int GetDimension() { return dimension_; }
@@ -147,6 +151,12 @@ protected:
 
     // Pointer to Handler
     void *handler_;
+
+private:
+    
+    template <class T>
+    void _CreateHandler();
+
 };
 
 template <class T>

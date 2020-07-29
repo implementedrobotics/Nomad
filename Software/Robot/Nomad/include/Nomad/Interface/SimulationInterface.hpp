@@ -41,6 +41,7 @@
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
+#include <Nomad/MessageTypes/imu_data_t.hpp>
 
 using namespace Robot::Nomad::Types;
 
@@ -91,6 +92,7 @@ namespace Robot
                 virtual void Setup();
 
                 // Input
+                imu_data_t imu_data_;
                 generic_msg_t joint_control_msg_;
                 double_vec_t imu_read_msg_;
                 double_vec_t joint_state_read_msg_;
