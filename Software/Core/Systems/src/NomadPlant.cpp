@@ -162,7 +162,7 @@ void NomadPlant::Run()
 void NomadPlant::Setup()
 {
     // Connect Input Ports
-    GetInputPort(InputPort::FORCES)->Connect(); // Forces
+    //GetInputPort(InputPort::FORCES)->Connect(); // Forces
 
     // Bind Output Ports
     //GetOutputPort(OutputPort::STATE)->Bind(); // Optimal Force Output

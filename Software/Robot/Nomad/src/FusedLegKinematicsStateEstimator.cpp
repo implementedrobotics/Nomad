@@ -37,10 +37,8 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Communications/Messages/double_vec_t.hpp>
 #include <Common/Time.hpp>
 
-using namespace Robot::Nomad::Types;
 namespace Robot
 {
     namespace Nomad
@@ -54,58 +52,33 @@ namespace Robot
                                            const long rt_period,
                                            unsigned int rt_priority,
                                            const int rt_core_id,
-                                           const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                                                                            num_states_(12)
+                                           const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
 
-                // Create Messages
-                com_state_out_.length = num_states_;
-                com_state_out_.data.resize(num_states_);
-
-                // Create Ports
-                // State Estimate Output Port
-                // TODO: Independent port speeds.  For now all ports will be same speed as task node
-                std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>("BODY_STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
-
-                port->SetSignalLabel(Idx::PHI, "Roll");
-                port->SetSignalLabel(Idx::THETA, "Pitch");
-                port->SetSignalLabel(Idx::PSI, "Yaw");
-
-                port->SetSignalLabel(Idx::X, "X");
-                port->SetSignalLabel(Idx::Y, "Y");
-                port->SetSignalLabel(Idx::Z, "Z");
-
-                port->SetSignalLabel(Idx::W_X, "Angular Roll Rate");
-                port->SetSignalLabel(Idx::W_Y, "Angular Pitch Rate");
-                port->SetSignalLabel(Idx::W_Z, "Angular Yaw Rate");
-
-                port->SetSignalLabel(Idx::X_DOT, "X_DOT");
-                port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
-                port->SetSignalLabel(Idx::Z_DOT, "Z_DOT");
-
-                // port->SetSignalLabel(Idx::GRAVITY, "Gravity");
-
+                
                 // State Estimate Input Port
-                input_port_map_[InputPort::IMU_DATA] = std::make_shared<Realtime::Port>("IMU_DATA", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
-                input_port_map_[InputPort::JOINT_STATE] = std::make_shared<Realtime::Port>("JOINT_STATE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
+                input_port_map_[InputPort::IMU_DATA] = Realtime::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
+                input_port_map_[InputPort::JOINT_STATE] = Realtime::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
+                input_port_map_[InputPort::COM_STATE] = Realtime::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
 
                 // State Estimate Output Port
-                output_port_map_[OutputPort::BODY_STATE_HAT] = port;
+                output_port_map_[OutputPort::BODY_STATE_HAT] = Realtime::Port::CreateOutput("BODY_STATE_HAT", rt_period_);
             }
 
             void FusedLegKinematicsStateEstimator::Run()
             {
                 // Estimate State
-                if (GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_in_))
+                if (GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_))
                 {
-                    imu_state_t imu_data;
-                    memcpy(&imu_data, imu_data_in_.data.data(), sizeof(imu_state_t));
                 }
 
-                if (GetInputPort(InputPort::IMU_DATA)->Receive(joint_state_in_))
+                if (GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
                 {
-                    joint_state_t joint_data;
-                    memcpy(&joint_data, joint_state_in_.data.data(), sizeof(joint_state_t));
+                }
+
+                if (GetInputPort(InputPort::COM_STATE)->Receive(com_state_))
+                {
+                    //std::cout << "GOT COM STATE: " << com_state_.pos[2] << std::endl;
                 }
                 
 
@@ -113,21 +86,21 @@ namespace Robot
                 //std::cout << "[StateEstimator]: Received: " << x_hat_in_.sequence_num <<  std::endl;
 
                 // Compute State Estimate
-                Eigen::VectorXd body_hat = Eigen::VectorXd::Ones(num_states_);
+                // Eigen::VectorXd body_hat = Eigen::VectorXd::Ones(num_states_);
 
-                // Update State
-                com_state_out_.data[Idx::PHI] = body_hat[0];    // Roll Orientation
-                com_state_out_.data[Idx::THETA] = body_hat[1];  // Pitch Orientation
-                com_state_out_.data[Idx::PSI] = body_hat[2];    // Yaw Orientation
-                com_state_out_.data[Idx::X] = body_hat[3];      // X Position
-                com_state_out_.data[Idx::Y] = body_hat[4];      // Y Position
-                com_state_out_.data[Idx::Z] = body_hat[5];      // Z Position
-                com_state_out_.data[Idx::W_X] = body_hat[6];    // Roll Rate
-                com_state_out_.data[Idx::W_Y] = body_hat[7];    // Pitch Rate
-                com_state_out_.data[Idx::W_Z] = body_hat[8];    // Yaw Rate
-                com_state_out_.data[Idx::X_DOT] = body_hat[9];  // X Velocity
-                com_state_out_.data[Idx::Y_DOT] = body_hat[10]; // Y Velocity
-                com_state_out_.data[Idx::Z_DOT] = body_hat[11]; // Z Velocity
+                // // Update State
+                // com_state_out_.data[Idx::PHI] = body_hat[0];    // Roll Orientation
+                // com_state_out_.data[Idx::THETA] = body_hat[1];  // Pitch Orientation
+                // com_state_out_.data[Idx::PSI] = body_hat[2];    // Yaw Orientation
+                // com_state_out_.data[Idx::X] = body_hat[3];      // X Position
+                // com_state_out_.data[Idx::Y] = body_hat[4];      // Y Position
+                // com_state_out_.data[Idx::Z] = body_hat[5];      // Z Position
+                // com_state_out_.data[Idx::W_X] = body_hat[6];    // Roll Rate
+                // com_state_out_.data[Idx::W_Y] = body_hat[7];    // Pitch Rate
+                // com_state_out_.data[Idx::W_Z] = body_hat[8];    // Yaw Rate
+                // com_state_out_.data[Idx::X_DOT] = body_hat[9];  // X Velocity
+                // com_state_out_.data[Idx::Y_DOT] = body_hat[10]; // Y Velocity
+                // com_state_out_.data[Idx::Z_DOT] = body_hat[11]; // Z Velocity
 
                 // output_state_.data[Idx::GRAVITY] = x_hat_[12]; // Gravity
 
@@ -142,13 +115,9 @@ namespace Robot
             void FusedLegKinematicsStateEstimator::Setup()
             {
 
-                // Connect Input Ports
-                bool connect = GetInputPort(InputPort::IMU_DATA)->Connect(); // State Estimate
-                connect = GetInputPort(InputPort::JOINT_STATE)->Connect(); // State Estimate
-
                 GetOutputPort(OutputPort::BODY_STATE_HAT)->Bind();
                 std::cout << "[FusedLegKinematicsStateEstimator]: "
-                          << "State Estimator Publisher Running!: " << connect << std::endl;
+                           << "State Estimator Publisher Running!: " << std::endl;
             }
         } // namespace Estimators
     }     // namespace Nomad

@@ -36,10 +36,9 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Communications/Messages/double_vec_t.hpp>
-#include <Communications/Messages/int32_vec_t.hpp>
-#include <Communications/Messages/generic_msg_t.hpp>
-#include <Nomad/NomadTypes.hpp>
+#include <Nomad/MessageTypes/imu_data_t.hpp>
+#include <Nomad/MessageTypes/com_state_t.hpp>
+#include <Nomad/MessageTypes/joint_state_t.hpp>
 
 namespace Robot
 {
@@ -62,26 +61,8 @@ namespace Robot
                     IMU_DATA = 0,     // IMU Sensor Input
                     JOINT_STATE = 1,  // Joint State for Leg Kinematics Input
                     VISUAL_ODOM = 2,  // Visual Odometry Sensor Input
-                    CHEATER_POSE = 3, // Ground Truth Pose Data
+                    COM_STATE = 3, // Ground Truth Pose Data
                     NUM_INPUTS = 4
-                };
-
-                // TODO: Move to a State class
-                enum Idx
-                {
-                    PHI = 0,    // Body Orientation (Roll)
-                    THETA = 1,  // Body Orientation (Pitch)
-                    PSI = 2,    // Body Orientation (Yaw)
-                    X = 3,      // Body Position (X)
-                    Y = 4,      // Body Position (Y)
-                    Z = 5,      // Body Position (Z)
-                    W_X = 6,    // Angular Vel (Roll)
-                    W_Y = 7,    // Angular Vel (Pitch)
-                    W_Z = 8,    // Angular Vel (Yaw)
-                    X_DOT = 9,  // Body Velocity (X)
-                    Y_DOT = 10, // Body Velocity (Y)
-                    Z_DOT = 11, // Body Velocity (Z)
-                    //GRAVITY = 12 // Augmented Gravity
                 };
 
                 // Base Class State Estimator Task Node
@@ -103,25 +84,21 @@ namespace Robot
                 // Pre-Run Setup Routine.  Setup any one time initialization here.
                 virtual void Setup();
 
-                // Number of states
-                unsigned int num_states_;
-
                 // (Input) Actuated Joint State Estimate
-                // double_vec_t joint_state_in_;
-                generic_msg_t joint_state_in_;
+                joint_state_t joint_state_;
 
-                // (Input) IMU Estimate
-                //double_vec_t imu_data_in_;
-                generic_msg_t imu_data_in_;
+                // (Input) IMU State
+                imu_data_t imu_data_;
 
-                // (Input) Ground Truth Pose Estimate
-                //double_vec_t imu_data_in_;
+                // (Input) COM State Input
+                com_state_t com_state_;
 
-                // (Output) State Estimate
-                double_vec_t com_state_out_;
+                // (Output) COM State Output
+                com_state_t com_state_out_;
 
                 // (Output) Contact Estimate
-                int32_vec_t contact_state_out_;
+                //int32_vec_t contact_state_out_;
+                
             };
         } // namespace Estimators
     }     // namespace Nomad

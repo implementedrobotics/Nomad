@@ -75,7 +75,8 @@ public:
     ~Port();
 
     template< typename T>
-    static std::shared_ptr<Port> Create(const std::string &name, Direction direction, int period);
+    static std::shared_ptr<Port> CreateInput(const std::string &name, int period);
+    static std::shared_ptr<Port> CreateOutput(const std::string &name, int period);
 
     Port::DataType GetDataType();
     int GetDimension() { return dimension_; }
@@ -97,6 +98,7 @@ public:
     static bool Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output);
 
     // Connect Port
+    template <class T>
     bool Connect();
 
     // Bind Port
@@ -145,6 +147,9 @@ protected:
     // Using ZeroCM for thread sync and message passing
     // Context
     std::shared_ptr<zcm::ZCM> context_;
+
+    // Has port been connected?
+    bool started_;
 
     // Sequence Number:
     uint64_t sequence_num_;

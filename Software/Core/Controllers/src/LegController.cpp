@@ -179,10 +179,10 @@ namespace Controllers
             bool inputs_connected = true;
             for (int i = 0; i < NUM_INPUTS; i++) // Connect all of our input ports
             {
-                if (!GetInputPort(i)->Connect())
-                {
-                    inputs_connected = false;
-                }
+                // if (!GetInputPort(i)->Connect())
+                // {
+                //     inputs_connected = false;
+                // }
             }
 
             bool outputs_bound = true;

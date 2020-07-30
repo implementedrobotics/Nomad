@@ -41,7 +41,7 @@
 namespace Realtime
 {
 
-Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension)
+Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension), started_(false)
 {
     queue_size_ = 1;
     transport_type_ = TransportType::INPROC;
@@ -71,13 +71,19 @@ Port::Port(const std::string &name, Direction direction, DataType data_type, int
     }
 }
 
-Port::Port(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0)
+Port::Port(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0), started_(false)
 {
     queue_size_ = 1;
     transport_type_ = TransportType::INPROC;
     transport_url_ = "inproc"; // TODO: Noblock?
 }
 
+
+std::shared_ptr<Port> Port::CreateOutput(const std::string &name, int period)
+{
+    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>(name, Direction::OUTPUT, period);
+    return port;
+}
 
 // TODO: Clear Handler Memory Etc,
 Port::~Port()
@@ -133,62 +139,6 @@ bool Port::Bind()
         std::cout << "[PORT:BIND]: ERROR: Invalid Transport Type!" << std::endl;
         return false;
     }
-    return true;
-}
-
-bool Port::Connect()
-{
-    // Reset and Clear Reference
-    context_.reset();
-
-    // Setup Contexts
-    if (transport_type_ == TransportType::INPROC)
-    {
-        context_ = PortManager::Instance()->GetInprocContext();
-    }
-    else if (transport_type_ == TransportType::IPC)
-    {
-        context_ = std::make_shared<zcm::ZCM>("ipc");
-    }
-    else if (transport_type_ == TransportType::UDP)
-    {
-        context_ = std::make_shared<zcm::ZCM>(transport_url_);
-    }
-    else if (transport_type_ == TransportType::SERIAL)
-    {
-        context_ = std::make_shared<zcm::ZCM>(transport_url_);
-    }
-    else
-    {
-        std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
-    }
-
-    // Now Subscribe
-    // TODO: Save subs somewhere for unsubscribe
-    // TODO: Switch Types
-    if (data_type_ == DataType::DOUBLE)
-    {
-        auto subs = context_->subscribe(channel_, &PortHandler<double_vec_t>::HandleMessage, static_cast<PortHandler<double_vec_t> *>(handler_));
-    }
-    else if (data_type_ == DataType::INT32)
-    {
-        auto subs = context_->subscribe(channel_, &PortHandler<int32_vec_t>::HandleMessage, static_cast<PortHandler<int32_vec_t> *>(handler_));
-    }
-    else if (data_type_ == DataType::BYTE)
-    {
-        auto subs = context_->subscribe(channel_, &PortHandler<generic_msg_t>::HandleMessage, static_cast<PortHandler<generic_msg_t> *>(handler_));
-    }
-    else
-    {
-        std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
-        return false;
-    }
-
-    if(transport_type_ != TransportType::INPROC)
-    {
-        context_->start();
-    }
-
     return true;
 }
 

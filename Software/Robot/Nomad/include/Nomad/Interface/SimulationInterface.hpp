@@ -34,16 +34,12 @@
 // Third Party Includes
 #include <Eigen/Dense>
 
-
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Nomad/NomadTypes.hpp>
-#include <Communications/Messages/double_vec_t.hpp>
-#include <Communications/Messages/int32_vec_t.hpp>
-#include <Communications/Messages/generic_msg_t.hpp>
 #include <Nomad/MessageTypes/imu_data_t.hpp>
-
-using namespace Robot::Nomad::Types;
+#include <Nomad/MessageTypes/com_state_t.hpp>
+#include <Nomad/MessageTypes/joint_state_t.hpp>
+#include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
 
 namespace Robot
 {
@@ -57,19 +53,19 @@ namespace Robot
             public:
                 enum OutputPort
                 {
-                    JOINT_STATE = 0,   // Joint State Estimate from Plant
-                    IMU_STATE = 1,     // IMU State from Sensors
-                    GROUND_TRUTH = 2,  // Ground Truth Plant State from Sim
+                    JOINT_STATE_OUT = 0,   // Joint State Estimate from Plant
+                    IMU_STATE_OUT = 1,     // IMU State from Sensors
+                    COM_STATE_OUT = 2,    // Ground Truth Body Pose State from Sim
                     NUM_OUTPUTS = 3
                 };
 
                 enum InputPort
                 {
-                    JOINT_CONTROL = 0, // Control Message for Servo
-                    IMU_READ = 1,
-                    JOINT_STATE_READ = 2,
-                    CHEATER_POSE_READ = 3,
-                    NUM_INPUTS = 4
+                    JOINT_CONTROL_CMD_IN = 0, // Control Message for Servo -> Sim
+                    IMU_STATE_IN = 1,         // IMU State <- Sim
+                    JOINT_STATE_IN = 2,       // Joint State <- Sim
+                    COM_STATE_IN = 3,        // POse State <- Sim
+                    NUM_INPUTS = 4      
                 };
 
                 // Plant Simulation Task Node
@@ -90,21 +86,12 @@ namespace Robot
 
                 // Pre-Run Setup Routine.  Setup any one time initialization here.
                 virtual void Setup();
-
-                // Input
+                
+                // Messages
                 imu_data_t imu_data_;
-                generic_msg_t joint_control_msg_;
-                double_vec_t imu_read_msg_;
-                double_vec_t joint_state_read_msg_;
-                double_vec_t cheater_pose_read_msg_;
-
-                // Output
-                generic_msg_t joint_state_msg_;
-                generic_msg_t imu_state_msg_;
-                double_vec_t pose_ground_truth_msg_;
-
+                com_state_t com_state_;
                 joint_state_t joint_state_;
-                imu_state_t imu_state_;
+                joint_control_cmd_t joint_command_;
             };
         } // namespace Interface
     }     // namespace Nomad

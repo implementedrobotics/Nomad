@@ -107,7 +107,7 @@ namespace Robot
             void NomadControl::Setup()
             {
                 // Connect Input Ports
-                bool connect = GetInputPort(InputPort::CONTROL_MODE)->Connect();
+                //bool connect = GetInputPort(InputPort::CONTROL_MODE)->Connect();
 
                 bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
 

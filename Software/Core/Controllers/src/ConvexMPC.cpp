@@ -150,8 +150,8 @@ void ConvexMPC::Run()
 void ConvexMPC::Setup()
 {
     // Connect Input Ports
-    GetInputPort(InputPort::STATE_HAT)->Connect();            // State Estimate
-    GetInputPort(InputPort::REFERENCE_TRAJECTORY)->Connect(); // Reference Trajectory
+    //GetInputPort(InputPort::STATE_HAT)->Connect();            // State Estimate
+    //GetInputPort(InputPort::REFERENCE_TRAJECTORY)->Connect(); // Reference Trajectory
 
     // Bind Output Ports
     GetOutputPort(OutputPort::FORCES)->Bind(); // Optimal Force Output

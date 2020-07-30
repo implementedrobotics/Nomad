@@ -88,7 +88,7 @@ void PlotterTaskNode::Setup()
         if (input == nullptr)
             continue;
 
-        input->Connect();
+        //input->Connect();
     }
 }
 

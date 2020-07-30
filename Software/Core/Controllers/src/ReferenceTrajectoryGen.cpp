@@ -145,10 +145,10 @@ void ReferenceTrajectoryGenerator::Setup()
 {
 
     // State Estimate INPUT
-    GetInputPort(InputPort::STATE_HAT)->Connect();
+    //GetInputPort(InputPort::STATE_HAT)->Connect();
 
     // Setpoint INPUT
-    GetInputPort(InputPort::SETPOINT)->Connect();
+    //GetInputPort(InputPort::SETPOINT)->Connect();
 
     // Reference OUTPUT
     GetOutputPort(OutputPort::REFERENCE)->Bind();

@@ -134,11 +134,11 @@ namespace Controllers
         {
 
             // Connect Input Ports
-            bool connect = GetInputPort(InputPort::IMU_DATA)->Connect(); // State Estimate
+            //bool connect = GetInputPort(InputPort::IMU_DATA)->Connect(); // State Estimate
 
             GetOutputPort(OutputPort::BODY_STATE_HAT)->Bind();
-            std::cout << "[StateEstimator]: "
-                      << "State Estimator Publisher Running!: " << connect << std::endl;
+            //std::cout << "[StateEstimator]: "
+             //         << "State Estimator Publisher Running!: " << connect << std::endl;
         }
 
     } // namespace Estimators
