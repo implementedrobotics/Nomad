@@ -21,7 +21,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #ifndef NOMAD_REALTIME_REALTIMETASK_H_
 #define NOMAD_REALTIME_REALTIMETASK_H_
 
@@ -43,167 +42,175 @@
 
 namespace Realtime
 {
-enum Priority
-{
-    LOWEST = 99,
-    LOW = 80,
-    MEDIUM = 50,
-    HIGH = 20,
-    HIGHEST = 1
-};
-
-class RealTimeTaskNode
-{
-    friend class RealTimeTaskManager;
-
-public:
-    static const int MAX_PORTS = 16;
-    // Base Class Real Time Task Node
-    // name = Task Name
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_priority = Task Thread Priority -> Priority::MEDIUM,
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    // stack_size = Task Thread Stack Size -> PTHREAD_STACK_MIN
-    RealTimeTaskNode(const std::string &name,
-                     const long rt_period,
-                     const unsigned int rt_priority,
-                     const int rt_core_id,
-                     const unsigned int stack_size);
-
-    ~RealTimeTaskNode();
-
-    // Task Start
-    int Start(void *task_param = NULL);
-
-    // Task Stop
-    void Stop();
-
-    bool IsCancelled() const
+    enum Priority
     {
-        return thread_cancel_event_;
-    }
+        LOWEST = 99,
+        LOW = 80,
+        MEDIUM = 50,
+        HIGH = 20,
+        HIGHEST = 1
+    };
 
-    // Set Task Name
-    void SetTaskName(const std::string &name) { task_name_ = name; }
+    class RealTimeTaskNode
+    {
+        friend class RealTimeTaskManager;
 
-    // Set Stack Size
-    void SetStackSize(const size_t stack_size) { stack_size_ = stack_size; }
+    public:
+        static const int MAX_PORTS = 16;
+        // Base Class Real Time Task Node
+        // name = Task Name
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_priority = Task Thread Priority -> Priority::MEDIUM,
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        // stack_size = Task Thread Stack Size -> PTHREAD_STACK_MIN
+        RealTimeTaskNode(const std::string &name,
+                         const long rt_period,
+                         const unsigned int rt_priority,
+                         const int rt_core_id,
+                         const unsigned int stack_size);
 
-    // Set Task Priority
-    void SetTaskPriority(const unsigned int priority) { rt_priority_ = priority; }
+        ~RealTimeTaskNode();
 
-    // Set Task Frequency (Convenience to set a "rate" in HZ)
-    void SetTaskFrequency(const unsigned int freqeuncy_hz);
+        // Task Start
+        int Start(void *task_param = NULL);
 
-    // Set Task Period (Microseconds)
-    void SetTaskPeriod(const long period) { rt_period_ = period; }
+        // Task Stop
+        void Stop();
 
-    // Set CPU Core Affinity
-    void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
+        bool IsCancelled() const
+        {
+            return thread_cancel_event_;
+        }
 
-    // Get Output Port
-    std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
+        // Set Task Name
+        void SetTaskName(const std::string &name) { task_name_ = name; }
 
-    // Get Input Port
-    std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
+        // Set Stack Size
+        void SetStackSize(const size_t stack_size) { stack_size_ = stack_size; }
 
-    // Set Transport Configuration for Port
-    void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
+        // Set Task Priority
+        void SetTaskPriority(const unsigned int priority) { rt_priority_ = priority; }
 
-protected:
+        // Set Task Frequency (Convenience to set a "rate" in HZ)
+        void SetTaskFrequency(const unsigned int freqeuncy_hz);
 
-    // Override Me for thread function
-    virtual void Run() = 0;
+        // Set Task Period (Microseconds)
+        void SetTaskPeriod(const long period) { rt_period_ = period; }
 
-    // Setup function called prior to run loop.  Put any setup/initialization here, i.e. socket setup, pub sub etc.
-    virtual void Setup() = 0;
+        // Set CPU Core Affinity
+        void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
-    // Input Port Map
-    std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
+        // Get Output Port
+        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
 
-    // Output Port Map
-    std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
+        // Get Input Port
+        std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
 
-    // Task Name
-    std::string task_name_;
+        // Set Transport Configuration for Port
+        void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
 
-    // Stack Size
-    size_t stack_size_;
+    protected:
+        // Override Me for thread function
+        virtual void Run() = 0;
 
-    // Task Priority (0 to 99)
-    unsigned int rt_priority_;
+        // Setup function called prior to run loop.  Put any setup/initialization here, i.e. socket setup, pub sub etc.
+        virtual void Setup() = 0;
 
-    // Task Period (microseconds)
-    long rt_period_;
+        // Input Port Map
+        std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
 
-    // Task CPU Affinboolity/CoreID
-    int rt_core_id_;
+        // Output Port Map
+        std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
 
-    // Thread ID
-    pthread_t thread_id_;
+        // Task Name
+        std::string task_name_;
 
-    // Process ID
-    pid_t process_id_;
+        // Stack Size
+        size_t stack_size_;
 
-    // Thread Status
-    int thread_status_;
+        // Task Priority (0 to 99)
+        unsigned int rt_priority_;
 
-    // Task Parameter
-    void *task_param_;
+        // Task Period (microseconds)
+        long rt_period_;
 
-    // Cancellation Signal
-    std::atomic_bool thread_cancel_event_;
+        // Task CPU Affinboolity/CoreID
+        int rt_core_id_;
 
-private:
+        // Thread ID
+        pthread_t thread_id_;
 
-    // STATIC Task Delay (More accurate but uses a busy wait)
-    static long int TaskDelay(long int microseconds); // Usuful for tight timings or periods below 1000us
+        // Process ID
+        pid_t process_id_;
 
-    // Static Task Sleep (Less accurate but less resource intensive) // Useful for sotter timings and periods > 1000us
-    static long int TaskSleep(long int microseconds);
+        // Thread Status
+        int thread_status_;
 
-    // STATIC Member Task Run
-    static void *RunTask(void *task_instance);
+        // Task Parameter
+        void *task_param_;
 
-};
+        // Cancellation Signal
+        std::atomic_bool thread_cancel_event_;
 
-class RealTimeTaskManager
-{
+    private:
+        // STATIC Task Delay (More accurate but uses a busy wait)
+        static long int TaskDelay(long int microseconds); // Usuful for tight timings or periods below 1000us
 
-public:
+        // Static Task Sleep (Less accurate but less resource intensive) // Useful for sotter timings and periods > 1000us
+        static long int TaskSleep(long int microseconds);
 
-    // Base Class Real Time Task Manager
-    RealTimeTaskManager();
+        // STATIC Member Task Run
+        static void *RunTask(void *task_instance);
+    };
 
-    // STATIC Singleton Instance
-    static RealTimeTaskManager *Instance();
+    class RealTimeTaskManager
+    {
+        friend class RealTimeTaskNode;
+    public:
+        // Base Class Real Time Task Manager
+        RealTimeTaskManager();
 
-    // Number of CPU Cores available in the system
-    int GetCPUCount() { return cpu_count_; }
+        // STATIC Singleton Instance
+        static RealTimeTaskManager *Instance();
 
-    // Add Task to the Manager
-    bool AddTask(RealTimeTaskNode *task);
+        // Number of CPU Cores available in the system
+        int GetCPUCount() { return cpu_count_; }
 
-    // End Task and Shutdown
-    bool EndTask(RealTimeTaskNode *task);
+        // Add Task to the Manager
+        bool AddTask(RealTimeTaskNode *task);
 
-    // End Task and Shutdown
-    bool EndTask(const std::string &name);
+        // End Task and Shutdown
+        bool EndTask(RealTimeTaskNode *task);
 
-    // Print the currently active task lists
-    void PrintActiveTasks();
+        // End Task and Shutdown
+        bool EndTask(const std::string &name);
 
-private:
+        // Print the currently active task lists
+        void PrintActiveTasks();
 
-    // Singleton Instance
-    static RealTimeTaskManager *manager_instance_;
+        // Sets up malloc and pagefault behavior for RT threads
+        static bool EnableRTMemory(const unsigned int memory_size);
 
-    // Vector to hold running tasks.  Assumed to not be THAT many running task.  Hence the std::vector
-    std::vector<RealTimeTaskNode *> task_map_;
+    private:
 
-    // Max numbers of CPUs
-    int cpu_count_;
-};
+        // Get any current/new page faults.  Ideally this should be zero if RT thread is properly configured
+        static void GetActivePageFaults(int &hard_faults, int &soft_faults, bool print_faults);
+
+        // Touch full thread stack to make sure nothing page faults.
+        static bool CheckThreadStackFaults(const unsigned int stack_size);
+
+        // Touch full thread stack to make sure nothing page faults.
+        static bool ReserveMemory(const unsigned int malloc_buffer_size);
+
+        // Singleton Instance
+        static RealTimeTaskManager *manager_instance_;
+
+        // Vector to hold running tasks.  Assumed to not be THAT many running task.  Hence the std::vector
+        std::vector<RealTimeTaskNode *> task_map_;
+
+        // Max numbers of CPUs
+        int cpu_count_;
+    };
 } // namespace Realtime
 
 #endif // NOMAD_REALTIME_REALTIMETASK_H_
