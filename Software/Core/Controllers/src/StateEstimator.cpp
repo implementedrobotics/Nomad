@@ -63,7 +63,7 @@ namespace Controllers
             // Create Ports
             // State Estimate Output Port
             // TODO: Independent port speeds.  For now all ports will be same speed as task node
-            std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>("BODY_STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
+            std::shared_ptr<Communications::Port> port = std::make_shared<Communications::Port>("BODY_STATE_HAT", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period);
 
             port->SetSignalLabel(Idx::PHI, "Roll");
             port->SetSignalLabel(Idx::THETA, "Pitch");
@@ -84,7 +84,7 @@ namespace Controllers
             // port->SetSignalLabel(Idx::GRAVITY, "Gravity");
 
             // State Estimate Input Port
-            input_port_map_[InputPort::IMU_DATA] = std::make_shared<Realtime::Port>("IMU_DATA", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
+            input_port_map_[InputPort::IMU_DATA] = std::make_shared<Communications::Port>("IMU_DATA", Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period_);
 
             // State Estimate Output Port
             output_port_map_[OutputPort::BODY_STATE_HAT] = port;

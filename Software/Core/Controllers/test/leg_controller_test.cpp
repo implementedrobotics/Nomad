@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     // Must make sure this is done before any thread tries to access.
     // And thus tries to allocate memory inside the thread heap.
     Realtime::RealTimeTaskManager::Instance();
-    Realtime::PortManager::Instance();
+    Communications::PortManager::Instance();
 
     // // FSM Task
     // Controllers::FSM::PrimaryControl primary_controller_node("Primary_Controller");
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     // primary_controller_node.SetTaskFrequency(freq1); // 50 HZ
     // //leg_controller_node.SetCoreAffinity(-1);
     // primary_controller_node.SetPortOutput(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND,
-    //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.fsm.leg_cmd");
+    //                                   Communications::Port::TransportType::INPROC, "inproc", "nomad.controllers.fsm.leg_cmd");
     // primary_controller_node.Start();
 
 
@@ -58,10 +58,10 @@ int main(int argc, char *argv[])
     // leg_controller_node.SetTaskFrequency(freq1); // 50 HZ
     // //leg_controller_node.SetCoreAffinity(-1);
     // leg_controller_node.SetPortOutput(Controllers::Locomotion::LegController::OutputPort::SERVO_COMMAND,
-    //                                   Realtime::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.servo_cmd");
+    //                                   Communications::Port::TransportType::INPROC, "inproc", "nomad.controllers.leg.servo_cmd");
 
 
-    // Realtime::Port::Map(leg_controller_node.GetInputPort(Controllers::Locomotion::LegController::InputPort::LEG_COMMAND),
+    // Communications::Port::Map(leg_controller_node.GetInputPort(Controllers::Locomotion::LegController::InputPort::LEG_COMMAND),
     //                     primary_controller_node.GetOutputPort(Controllers::FSM::PrimaryControl::OutputPort::LEG_COMMAND));
     // leg_controller_node.Start();
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
     // Start Inproc Context Process Thread
-    Realtime::PortManager::Instance()->GetInprocContext()->start();
+    Communications::PortManager::Instance()->GetInprocContext()->start();
 
     // Run for 10 Seconds
     int j = 0;

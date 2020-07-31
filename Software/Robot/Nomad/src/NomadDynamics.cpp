@@ -76,11 +76,11 @@ namespace Robot
 
                 // Create Ports
                 // Primary Controller Input Port
-                input_port_map_[InputPort::BODY_STATE_HAT] = Realtime::Port::CreateInput<com_state_t>("BODY_STATE_HAT", rt_period_);
-                input_port_map_[InputPort::JOINT_STATE] = Realtime::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
+                input_port_map_[InputPort::BODY_STATE_HAT] = Communications::Port::CreateInput<com_state_t>("BODY_STATE_HAT", rt_period_);
+                input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
 
                 // Primary Controller Output Ports
-                output_port_map_[OutputPort::FULL_STATE] = std::make_shared<Realtime::Port>("FULL_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
+                output_port_map_[OutputPort::FULL_STATE] = std::make_shared<Communications::Port>("FULL_STATE", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::BYTE, 1, rt_period);
             }
 
             void NomadDynamics::Run()

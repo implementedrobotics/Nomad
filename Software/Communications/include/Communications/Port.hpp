@@ -38,7 +38,7 @@
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
 
-namespace Realtime
+namespace Communications
 {
 class Port
 {
@@ -230,7 +230,7 @@ private:
 };
 
 
-} // namespace Realtime
+} // namespace Communications
 
 #include <Communications/Port-impl.hpp>
 #endif // NOMAD_REALTIME_PORT_H_

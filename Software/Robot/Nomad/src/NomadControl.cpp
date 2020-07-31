@@ -67,10 +67,10 @@ namespace Robot
 
                 // Create Ports
                 // Primary Controller Input Port
-                input_port_map_[InputPort::CONTROL_MODE] = std::make_shared<Realtime::Port>("CONTROL_MODE", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::INT32, 1, rt_period_);
+                input_port_map_[InputPort::CONTROL_MODE] = std::make_shared<Communications::Port>("CONTROL_MODE", Communications::Port::Direction::INPUT, Communications::Port::DataType::INT32, 1, rt_period_);
 
                 // Primary Controller Output Ports
-                output_port_map_[OutputPort::LEG_COMMAND] = std::make_shared<Realtime::Port>("LEG_COMMAND", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
+                output_port_map_[OutputPort::LEG_COMMAND] = std::make_shared<Communications::Port>("LEG_COMMAND", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::BYTE, 1, rt_period);
 
                 // Create FSM
                 nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();

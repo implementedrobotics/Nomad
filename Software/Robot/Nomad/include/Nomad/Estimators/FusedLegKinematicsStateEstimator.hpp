@@ -91,8 +91,8 @@ namespace Robot
                 // (Input) IMU State
                 imu_data_t imu_data_;
 
-                // (Input) COM State Input
-                com_state_t com_state_;
+                // (Input) COM State Input (Absolute Externally Measured(Vive Tracker) or Sim)
+                com_state_t com_state_in;
 
                 // (Output) COM State Output
                 com_state_t com_state_out_;

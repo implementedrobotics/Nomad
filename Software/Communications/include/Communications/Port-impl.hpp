@@ -31,13 +31,13 @@
 #include <chrono>
 
 
-namespace Realtime
+namespace Communications
 {
 
 template< typename T>
 std::shared_ptr<Port> Port::CreateInput(const std::string &name, int period)
 {
-    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>(name, Direction::INPUT, period);
+    std::shared_ptr<Communications::Port> port = std::make_shared<Communications::Port>(name, Direction::INPUT, period);
     port->_CreateHandler<T>();
     return port;
 }

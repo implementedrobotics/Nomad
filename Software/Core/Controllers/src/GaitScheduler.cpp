@@ -54,7 +54,7 @@
 
 //     // Gait Scheduler Output Ports
 //     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-//     Realtime::Port *port = new Realtime::Port("CONTACT_STATE", ctx, "gait/contact", rt_period);
+//     Communications::Port *port = new Communications::Port("CONTACT_STATE", ctx, "gait/contact", rt_period);
 //     output_port_map_[OutputPort::CONTACT_STATE] = port;
 // }
 

@@ -55,17 +55,17 @@ namespace Robot
 
                 // Create Ports
                 // Sim Inputs
-                input_port_map_[InputPort::IMU_STATE_IN] = Realtime::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
-                input_port_map_[InputPort::JOINT_STATE_IN] = Realtime::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
-                input_port_map_[InputPort::COM_STATE_IN] = Realtime::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
+                input_port_map_[InputPort::IMU_STATE_IN] = Communications::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
+                input_port_map_[InputPort::JOINT_STATE_IN] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
+                input_port_map_[InputPort::COM_STATE_IN] = Communications::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
 
                 // Control Inputs
-                input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Realtime::Port::CreateInput<joint_control_cmd_t>("JOINT_CONTROL", rt_period_);
+                input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port::CreateInput<joint_control_cmd_t>("JOINT_CONTROL", rt_period_);
 
                 // Outputs
-                output_port_map_[OutputPort::IMU_STATE_OUT] = Realtime::Port::CreateOutput("IMU_STATE", rt_period_);
-                output_port_map_[OutputPort::JOINT_STATE_OUT] = Realtime::Port::CreateOutput("JOINT_STATE", rt_period_);
-                output_port_map_[OutputPort::COM_STATE_OUT] = Realtime::Port::CreateOutput("POSE_STATE", rt_period_);
+                output_port_map_[OutputPort::IMU_STATE_OUT] = Communications::Port::CreateOutput("IMU_STATE", rt_period_);
+                output_port_map_[OutputPort::JOINT_STATE_OUT] = Communications::Port::CreateOutput("JOINT_STATE", rt_period_);
+                output_port_map_[OutputPort::COM_STATE_OUT] = Communications::Port::CreateOutput("POSE_STATE", rt_period_);
             }
 
             void SimulationInterface::Run()

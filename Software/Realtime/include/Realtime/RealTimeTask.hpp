@@ -102,13 +102,13 @@ public:
     void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
     // Get Output Port
-    std::shared_ptr<Port> GetOutputPort(const int port_id) const;
+    std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
 
     // Get Input Port
-    std::shared_ptr<Port> GetInputPort(const int port_id) const;
+    std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
 
     // Set Transport Configuration for Port
-    void SetPortOutput(const int port_id, const Port::TransportType transport, const std::string &transport_url, const std::string &channel);
+    void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
 
 protected:
 
@@ -119,10 +119,10 @@ protected:
     virtual void Setup() = 0;
 
     // Input Port Map
-    std::shared_ptr<Port> input_port_map_[MAX_PORTS];
+    std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
 
     // Output Port Map
-    std::shared_ptr<Port> output_port_map_[MAX_PORTS];
+    std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
 
     // Task Name
     std::string task_name_;

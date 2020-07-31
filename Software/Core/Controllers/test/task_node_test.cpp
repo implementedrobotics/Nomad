@@ -40,10 +40,10 @@ int main(int argc, char *argv[])
     // Must make sure this is done before any thread tries to access.
     // And thus tries to allocate memory inside the thread heap.
     Realtime::RealTimeTaskManager::Instance();
-    Realtime::PortManager::Instance();
+    Communications::PortManager::Instance();
 
-    std::shared_ptr<Realtime::Port> GAZEBO_IMU = std::make_shared<Realtime::Port>("GAZEBO_IMU", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 2, 10);
-    GAZEBO_IMU->SetTransport(Realtime::Port::TransportType::UDP, gazebo_url, "nomad.imu");
+    std::shared_ptr<Communications::Port> GAZEBO_IMU = std::make_shared<Communications::Port>("GAZEBO_IMU", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, 2, 10);
+    GAZEBO_IMU->SetTransport(Communications::Port::TransportType::UDP, gazebo_url, "nomad.imu");
 
     // Remote Teleop Task
     OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     teleop_node.SetTaskFrequency(freq1); // 50 HZ
     //teleop_node.SetCoreAffinity(-1);
     teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
-                              Realtime::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
+                              Communications::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
     teleop_node.Start();
 
     // State Estimator
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskFrequency(freq2); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
     estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT,
-                                 Realtime::Port::TransportType::INPROC, "inproc", "nomad.state");
+                                 Communications::Port::TransportType::INPROC, "inproc", "nomad.state");
 
     //Reference Trajectory Generator
     Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
@@ -71,14 +71,14 @@ int main(int argc, char *argv[])
     ref_generator_node.SetTaskFrequency(freq1); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
     ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE,
-                                     Realtime::Port::TransportType::INPROC, "inproc", "nomad.reference");
+                                     Communications::Port::TransportType::INPROC, "inproc", "nomad.reference");
 
     // Map State Estimator Output to Trajectory Reference Input
-    Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
+    Communications::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
                         estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
     // Map Setpoint Output to Trajectory Reference Generator Input
-    Realtime::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT),
+    Communications::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT),
                         teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
     ref_generator_node.Start();
 
@@ -89,14 +89,14 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(freq1); // 50 HZ
     convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Realtime::Port::TransportType::UDP, gazebo_url, "nomad.forces");
+    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Communications::Port::TransportType::UDP, gazebo_url, "nomad.forces");
 
     // Map State Estimator Output to Trajectory Reference Input
-    Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT),
+    Communications::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT),
                         estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
     // Map Reference Trajectory Output to Trajectory Reference Input of MPC
-    Realtime::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY),
+    Communications::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY),
                         ref_generator_node.GetOutputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE));
 
     convex_mpc_node.Start();
@@ -136,12 +136,12 @@ int main(int argc, char *argv[])
     // nomad.SetTaskPriority(Realtime::Priority::HIGH);
     // nomad.SetTaskFrequency(freq2); // 1000 HZ
     // nomad.SetCoreAffinity(3);
-    // nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
+    // nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Communications::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
 
-    //Realtime::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES),
+    //Communications::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES),
     // convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
 
-    Realtime::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU_DATA),
+    Communications::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU_DATA),
                         GAZEBO_IMU);
 
     //nomad.Start();
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
 
     // Start Inproc Context Process Thread
-    Realtime::PortManager::Instance()->GetInprocContext()->start();
+    Communications::PortManager::Instance()->GetInprocContext()->start();
 
     // Run for 10 Seconds
     int j = 0;
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
     // nomad.SetTaskPriority(Realtime::Priority::HIGH);
     // nomad.SetTaskFrequency(freq2); // 1000 HZ
     // nomad.SetCoreAffinity(3);
-    // nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Realtime::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
+    // nomad.SetPortOutput(Systems::Nomad::NomadPlant::STATE, Communications::Port::TransportType::UDP, "udpm://239.255.76.67:7667?ttl=0", "nomad.imu");
         usleep(1e6);
         j++;
     }

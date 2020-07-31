@@ -56,13 +56,13 @@ namespace Robot
             {
 
                 // State Estimate Input Port
-                input_port_map_[InputPort::IMU_DATA] = Realtime::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
-                input_port_map_[InputPort::JOINT_STATE] = Realtime::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
-                input_port_map_[InputPort::COM_STATE] = Realtime::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
+                input_port_map_[InputPort::IMU_DATA] = Communications::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
+                input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
+                input_port_map_[InputPort::COM_STATE] = Communications::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
 
                 // State Estimate Output Port
-                output_port_map_[OutputPort::BODY_STATE_HAT] = Realtime::Port::CreateOutput("BODY_STATE_HAT", rt_period_);
-                output_port_map_[OutputPort::BODY_STATE_ACTUAL] = Realtime::Port::CreateOutput("BODY_STATE_ACTUAL", rt_period_);
+                output_port_map_[OutputPort::BODY_STATE_HAT] = Communications::Port::CreateOutput("BODY_STATE_HAT", rt_period_);
+                output_port_map_[OutputPort::BODY_STATE_ACTUAL] = Communications::Port::CreateOutput("BODY_STATE_ACTUAL", rt_period_);
             }
 
             void FusedLegKinematicsStateEstimator::Run()
@@ -76,52 +76,52 @@ namespace Robot
                 {
                 }
 
-                if (GetInputPort(InputPort::COM_STATE)->Receive(com_state_))
+                if (GetInputPort(InputPort::COM_STATE)->Receive(com_state_in))
                 {
                     //std::cout << "GOT COM STATE: " << com_state_.pos[2] << std::endl;
-                    com_state_out_.orientation[0] = com_state_.orientation[0];
-                    com_state_out_.orientation[1] = com_state_.orientation[1];
-                    com_state_out_.orientation[2] = com_state_.orientation[2];
-                    com_state_out_.orientation[3] = com_state_.orientation[3];
+                    com_state_out_.orientation[0] = com_state_in.orientation[0];
+                    com_state_out_.orientation[1] = com_state_in.orientation[1];
+                    com_state_out_.orientation[2] = com_state_in.orientation[2];
+                    com_state_out_.orientation[3] = com_state_in.orientation[3];
 
-                    com_state_out_.theta[0] = com_state_.theta[0];
-                    com_state_out_.theta[1] = com_state_.theta[1];
-                    com_state_out_.theta[2] = com_state_.theta[2];
+                    com_state_out_.theta[0] = com_state_in.theta[0];
+                    com_state_out_.theta[1] = com_state_in.theta[1];
+                    com_state_out_.theta[2] = com_state_in.theta[2];
 
-                    com_state_out_.pos[0] = com_state_.pos[0];
-                    com_state_out_.pos[1] = com_state_.pos[1];
-                    com_state_out_.pos[2] = com_state_.pos[2];
+                    com_state_out_.pos[0] = com_state_in.pos[0];
+                    com_state_out_.pos[1] = com_state_in.pos[1];
+                    com_state_out_.pos[2] = com_state_in.pos[2];
 
-                    com_state_out_.omega[0] = com_state_.omega[0];
-                    com_state_out_.omega[1] = com_state_.omega[1];
-                    com_state_out_.omega[2] = com_state_.omega[2];
+                    com_state_out_.omega[0] = com_state_in.omega[0];
+                    com_state_out_.omega[1] = com_state_in.omega[1];
+                    com_state_out_.omega[2] = com_state_in.omega[2];
 
-                    com_state_out_.vel[0] = com_state_.vel[0];
-                    com_state_out_.vel[1] = com_state_.vel[1];
-                    com_state_out_.vel[2] = com_state_.vel[2];
+                    com_state_out_.vel[0] = com_state_in.vel[0];
+                    com_state_out_.vel[1] = com_state_in.vel[1];
+                    com_state_out_.vel[2] = com_state_in.vel[2];
                 }
 
                 // Compute State Estimate
-                com_state_hat_.orientation[0] = com_state_.orientation[0];
-                com_state_hat_.orientation[1] = com_state_.orientation[1];
-                com_state_hat_.orientation[2] = com_state_.orientation[2];
-                com_state_hat_.orientation[3] = com_state_.orientation[3];
+                com_state_hat_.orientation[0] = com_state_in.orientation[0];
+                com_state_hat_.orientation[1] = com_state_in.orientation[1];
+                com_state_hat_.orientation[2] = com_state_in.orientation[2];
+                com_state_hat_.orientation[3] = com_state_in.orientation[3];
 
-                com_state_hat_.theta[0] = com_state_.theta[0];
-                com_state_hat_.theta[1] = com_state_.theta[1];
-                com_state_hat_.theta[2] = com_state_.theta[2];
+                com_state_hat_.theta[0] = com_state_in.theta[0];
+                com_state_hat_.theta[1] = com_state_in.theta[1];
+                com_state_hat_.theta[2] = com_state_in.theta[2];
 
-                com_state_hat_.pos[0] = com_state_.pos[0];
-                com_state_hat_.pos[1] = com_state_.pos[1];
-                com_state_hat_.pos[2] = com_state_.pos[2];
+                com_state_hat_.pos[0] = com_state_in.pos[0];
+                com_state_hat_.pos[1] = com_state_in.pos[1];
+                com_state_hat_.pos[2] = com_state_in.pos[2];
 
-                com_state_hat_.omega[0] = com_state_.omega[0];
-                com_state_hat_.omega[1] = com_state_.omega[1];
-                com_state_hat_.omega[2] = com_state_.omega[2];
+                com_state_hat_.omega[0] = com_state_in.omega[0];
+                com_state_hat_.omega[1] = com_state_in.omega[1];
+                com_state_hat_.omega[2] = com_state_in.omega[2];
 
-                com_state_hat_.vel[0] = com_state_.vel[0];
-                com_state_hat_.vel[1] = com_state_.vel[1];
-                com_state_hat_.vel[2] = com_state_.vel[2];
+                com_state_hat_.vel[0] = com_state_in.vel[0];
+                com_state_hat_.vel[1] = com_state_in.vel[1];
+                com_state_hat_.vel[2] = com_state_in.vel[2];
 
                 // Publish State
                 bool send_status = GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_hat_);

@@ -59,12 +59,12 @@ namespace OperatorInterface
 
             // Create Ports
             // Setpoint MODE Port
-            output_port_map_[OutputPort::MODE] = std::make_shared<Realtime::Port>("MODE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::INT32, 1, rt_period);
+            output_port_map_[OutputPort::MODE] = std::make_shared<Communications::Port>("MODE", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::INT32, 1, rt_period);
             output_port_map_[OutputPort::MODE]->SetSignalLabel(0, "MODE");
 
             // Setpoint OUTPUT Port
             // TODO: Independent port speeds.  For now all ports will be same speed as task node
-            output_port_map_[OutputPort::SETPOINT] = std::make_shared<Realtime::Port>("SETPOINT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, 4, rt_period);
+            output_port_map_[OutputPort::SETPOINT] = std::make_shared<Communications::Port>("SETPOINT", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, 4, rt_period);
             output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::X_DOT, "X_DOT");
             output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
             output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");

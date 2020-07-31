@@ -38,7 +38,7 @@
 #include <Communications/Messages/int32_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
 
-namespace Realtime
+namespace Communications
 {
 
 Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension), started_(false)
@@ -81,7 +81,7 @@ Port::Port(const std::string &name, Direction direction, int period) : direction
 
 std::shared_ptr<Port> Port::CreateOutput(const std::string &name, int period)
 {
-    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>(name, Direction::OUTPUT, period);
+    std::shared_ptr<Communications::Port> port = std::make_shared<Communications::Port>(name, Direction::OUTPUT, period);
     return port;
 }
 

@@ -79,10 +79,10 @@ namespace Controllers
 
             // Create Ports
             // Leg Controller Input Port
-            input_port_map_[InputPort::LEG_COMMAND] = std::make_shared<Realtime::Port>("LEG_COMMAND", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::BYTE, 1, rt_period_);
+            input_port_map_[InputPort::LEG_COMMAND] = std::make_shared<Communications::Port>("LEG_COMMAND", Communications::Port::Direction::INPUT, Communications::Port::DataType::BYTE, 1, rt_period_);
 
             // Leg Controller Output Ports
-            output_port_map_[OutputPort::SERVO_COMMAND] = std::make_shared<Realtime::Port>("SERVO_COMMAND", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
+            output_port_map_[OutputPort::SERVO_COMMAND] = std::make_shared<Communications::Port>("SERVO_COMMAND", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::BYTE, 1, rt_period);
         }
 
         void LegController::Run()

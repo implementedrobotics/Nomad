@@ -74,7 +74,7 @@ public:
     void DumpCSV(const std::string& file); // Save a .csv file of the logged data
 
     // Connect Input to Port Output
-    void ConnectInput(InputPort port_id, std::shared_ptr<Realtime::Port> port);
+    void ConnectInput(InputPort port_id, std::shared_ptr<Communications::Port> port);
 
     // Add a signal variable to plot
     // TODO: Which subplot is this going on, etc.
