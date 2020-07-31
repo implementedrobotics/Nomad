@@ -38,66 +38,64 @@
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
+#include <Nomad/MessageTypes/full_state_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 #include <Controllers/LegController.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
 
-namespace Robot
+namespace Robot::Nomad::Controllers
 {
-    namespace Nomad
+    class NomadControl : public Realtime::RealTimeTaskNode
     {
-        namespace Controllers
+
+    public:
+        enum OutputPort
         {
-            class NomadControl : public Realtime::RealTimeTaskNode
-            {
+            LEG_COMMAND = 0,
+            NUM_OUTPUTS = 1
+        };
 
-            public:
-                enum OutputPort
-                {
-                    LEG_COMMAND = 0,
-                    NUM_OUTPUTS = 1
-                };
+        enum InputPort
+        {
+            CONTROL_MODE = 0,
+            FULL_STATE = 1,
+            NUM_INPUTS = 2
+        };
 
-                enum InputPort
-                {
-                    CONTROL_MODE = 0,
-                    NUM_INPUTS = 1
-                };
+        // Base Class Nomad Control Task Node
+        // name = Task Name
+        // stack_size = Task Thread Stack Size
+        // rt_priority = Task Thread Priority
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        NomadControl(const std::string &name = "Nomad_Control_FSM",
+                     const long rt_period = 10000,
+                     const unsigned int rt_priority = Realtime::Priority::MEDIUM,
+                     const int rt_core_id = -1,
+                     const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-                // Base Class Nomad Control Task Node
-                // name = Task Name
-                // stack_size = Task Thread Stack Size
-                // rt_priority = Task Thread Priority
-                // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-                // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-                NomadControl(const std::string &name = "Nomad_Control_FSM",
-                               const long rt_period = 10000,
-                               const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                               const int rt_core_id = -1,
-                               const unsigned int stack_size = PTHREAD_STACK_MIN);
+    protected:
+        // Overriden Run Function
+        virtual void Run();
 
-            protected:
-                // Overriden Run Function
-                virtual void Run();
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
 
-                // Pre-Run Setup Routine.  Setup any one time initialization here.
-                virtual void Setup();
+        // (Input) Full Robot State
+        full_state_t full_state_;
 
-                // Input
-                int32_vec_t control_mode_msg_;
+        // (Input)
+        int32_vec_t control_mode_msg_;
 
-                // Output
-                generic_msg_t leg_command_msg_;
-                ::Controllers::Locomotion::leg_controller_cmd_t leg_controller_cmd_;
+        // Output
+        //generic_msg_t leg_command_msg_;
+        //::Controllers::Locomotion::leg_controller_cmd_t leg_controller_cmd_;
 
-                // FSM
-                std::unique_ptr<Robot::Nomad::FSM::NomadControlFSM> nomad_control_FSM_;
-
-            };
-        } // namespace Controllers
-    }     // namespace Nomad
-} // namespace Robot
+        // FSM
+        std::unique_ptr<Robot::Nomad::FSM::NomadControlFSM> nomad_control_FSM_;
+    };
+} // namespace Robot::Nomad::Controllers
 
 #endif // ROBOT_NOMAD_NOMADCONTROL_H_

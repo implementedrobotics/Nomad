@@ -35,20 +35,14 @@
 // Project Include Files
 //#include <Nomad/FSM/NomadControlFSM.hpp>
 
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    // Struct to hold relevant control data
+    struct NomadControlData
     {
-        namespace FSM
-        {
-            // Struct to hold relevant control data
-            struct NomadControlData
-            {
-                int control_mode;
+        int control_mode;
 
-                // Outputs Etc
-            };
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+        // Outputs Etc
+    };
+} // namespace Robot::Nomad::FSM
 #endif // NOMAD_CONTROLDATA_H_

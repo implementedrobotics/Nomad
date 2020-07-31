@@ -56,21 +56,22 @@ namespace Robot
                                        const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
 
-                // Create Input/Output Messages
-                leg_command_msg_.length = sizeof(::Controllers::Locomotion::leg_controller_cmd_t);
-                leg_command_msg_.data.resize(leg_command_msg_.length);
+                // // Create Input/Output Messages
+                // leg_command_msg_.length = sizeof(::Controllers::Locomotion::leg_controller_cmd_t);
+                // leg_command_msg_.data.resize(leg_command_msg_.length);
 
                 control_mode_msg_.length = 1;
                 control_mode_msg_.data.resize(control_mode_msg_.length);
 
-                memset(&leg_controller_cmd_, 0, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
+                // memset(&leg_controller_cmd_, 0, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
 
                 // Create Ports
                 // Primary Controller Input Port
-                input_port_map_[InputPort::CONTROL_MODE] = std::make_shared<Communications::Port>("CONTROL_MODE", Communications::Port::Direction::INPUT, Communications::Port::DataType::INT32, 1, rt_period_);
+                input_port_map_[InputPort::CONTROL_MODE] = Communications::Port::CreateInput<int32_vec_t>("CONTROL_MODE", rt_period_);
+                input_port_map_[InputPort::FULL_STATE] = Communications::Port::CreateInput<full_state_t>("FULL_STATE", rt_period_);
 
                 // Primary Controller Output Ports
-                output_port_map_[OutputPort::LEG_COMMAND] = std::make_shared<Communications::Port>("LEG_COMMAND", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::BYTE, 1, rt_period);
+                output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port::CreateOutput("LEG_COMMAND", rt_period_);
 
                 // Create FSM
                 nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();
@@ -79,14 +80,15 @@ namespace Robot
 
             void NomadControl::Run()
             {
-                // Get Control Inputs, Modes, Trajectory etc
-                // bool imu_recv = GetInputPort(InputPort::IMU)->Receive(x_hat_in_); // Receive Setpoint
-                // if (!imu_recv)
-                // {
-                //     std::cout << "[NomadControl]: Receive Buffer Empty!" << std::endl;
-                //     return;
-                // }
-                bool receive = GetInputPort(InputPort::CONTROL_MODE)->Receive(control_mode_msg_);
+
+                if(GetInputPort(InputPort::CONTROL_MODE)->Receive(control_mode_msg_))
+                {
+
+                }
+                if(GetInputPort(InputPort::FULL_STATE)->Receive(full_state_))
+                {
+
+                }
 
                 // Update Data
                 nomad_control_FSM_->GetData()->control_mode = control_mode_msg_.data[0];
@@ -96,19 +98,16 @@ namespace Robot
 
                 // Get Desired Force Output to send out of leg controller
                 // Copy command to message
-                memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
+                //memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
 
                 // Publish Leg Command
-                bool send_status = GetOutputPort(OutputPort::LEG_COMMAND)->Send(leg_command_msg_);
+                //bool send_status = GetOutputPort(OutputPort::LEG_COMMAND)->Send(leg_command_msg_);
 
                 //std::cout << "[NomadControl]: Publishing: Send: " << send_status << " : " <<  receive << std::endl;
             }
 
             void NomadControl::Setup()
             {
-                // Connect Input Ports
-                //bool connect = GetInputPort(InputPort::CONTROL_MODE)->Connect();
-
                 bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
 
                 // Start FSM

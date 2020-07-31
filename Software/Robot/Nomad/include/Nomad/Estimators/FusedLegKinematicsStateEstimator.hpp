@@ -39,6 +39,7 @@
 #include <Nomad/MessageTypes/imu_data_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
+#include <Nomad/MessageTypes/full_state_t.hpp>
 
 namespace Robot::Nomad::Estimators
 {
@@ -59,7 +60,8 @@ namespace Robot::Nomad::Estimators
             JOINT_STATE = 1, // Joint State for Leg Kinematics Input
             VISUAL_ODOM = 2, // Visual Odometry Sensor Input
             COM_STATE = 3,   // Ground Truth Pose Data
-            NUM_INPUTS = 4
+            FOOT_STATE = 4,  // Foot State
+            NUM_INPUTS = 5
         };
 
         // Base Class State Estimator Task Node
@@ -88,7 +90,11 @@ namespace Robot::Nomad::Estimators
         imu_data_t imu_data_;
 
         // (Input) COM State Input (Absolute Externally Measured(Vive Tracker) or Sim)
-        com_state_t com_state_in;
+        com_state_t com_state_in_;
+
+        // (Input) Foot Position State
+        // TODO: Add a smaller new message for just the foot position/velocity
+        full_state_t full_state_in_;
 
         // (Output) COM State Output
         com_state_t com_state_out_;

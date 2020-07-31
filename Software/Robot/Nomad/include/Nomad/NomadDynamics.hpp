@@ -38,170 +38,145 @@
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
+#include <Nomad/MessageTypes/full_state_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 #include <Controllers/LegController.hpp>
 #include <Nomad/NomadRobot.hpp>
 
-namespace Robot
+namespace Robot::Nomad::Dynamics
 {
-    namespace Nomad
+    constexpr int kNumTotalDofs = 18;
+    constexpr int kNumActuatedDofs = 12;
+    constexpr int kNumFloatingDofs = 6;
+    constexpr int kNumContacts = 4;
+
+    class NomadDynamics : public Realtime::RealTimeTaskNode
     {
-        namespace Dynamics
 
+    public:
+        enum OutputPort
         {
-            constexpr int kNumTotalDofs = 18;
-            constexpr int kNumActuatedDofs = 12;
-            constexpr int kNumFloatingDofs = 6;
-            constexpr int kNumContacts = 4;
+            FULL_STATE = 0, // Full Dynamics State Output
+            NUM_OUTPUTS = 1
+        };
 
-            // TODO: Move to a standard hear for all custom tops
-            struct nomad_full_state_t
-            {
-                double q[kNumTotalDofs];        // Robot Position State
-                double q_dot[kNumTotalDofs];    // Robot Velocity State
-                double foot_pos[kNumActuatedDofs]; // Foot Position State
-                double foot_vel[kNumActuatedDofs]; // Foot Velocity State
+        enum InputPort
+        {
+            BODY_STATE_HAT = 0, // Estimated Body State from Fused State Estimate
+            JOINT_STATE = 1,    // Joint State (q, q_dot)
+            NUM_INPUTS = 1
+        };
 
-                double M[kNumTotalDofs * kNumTotalDofs];   // Mass Inertia Matrix
-                double g[kNumTotalDofs];        // Gravity Terms Vector
-                double b[kNumTotalDofs];        // Coriolis Terms Vector
-                double J_c[3 * kNumContacts * kNumTotalDofs]; // Contact Jacobian
-            };
+        // Indexing for leg order in array
+        enum LegIdx
+        {
+            FRONT_LEFT = 0,
+            FRONT_RIGHT = 1,
+            REAR_LEFT = 2,
+            REAR_RIGHT = 3,
+            NUM_LEGS = 4
+        };
 
-            class NomadDynamics : public Realtime::RealTimeTaskNode
-            {
+        // Indexing for leg order in array
+        enum FootIdx
+        {
+            FOOT_FL_X = (FRONT_LEFT * 3) + 0,
+            FOOT_FL_Y = (FRONT_LEFT * 3) + 1,
+            FOOT_FL_Z = (FRONT_LEFT * 3) + 2,
 
-            public:
-                enum OutputPort
-                {
-                    FULL_STATE = 0, // Full Dynamics State Output
-                    NUM_OUTPUTS = 1
-                };
+            FOOT_FR_X = (FRONT_RIGHT * 3) + 0,
+            FOOT_FR_Y = (FRONT_RIGHT * 3) + 1,
+            FOOT_FR_Z = (FRONT_RIGHT * 3) + 2,
 
-                enum InputPort
-                {
-                    BODY_STATE_HAT = 0, // Estimated Body State from Fused State Estimate
-                    JOINT_STATE = 1,  // Joint State (q, q_dot)
-                    NUM_INPUTS = 1
-                };
+            FOOT_RL_X = (REAR_LEFT * 3) + 0,
+            FOOT_RL_Y = (REAR_LEFT * 3) + 1,
+            FOOT_RL_Z = (REAR_LEFT * 3) + 2,
 
-                // Indexing for leg order in array
-                enum LegIdx
-                {
-                    FRONT_LEFT = 0,
-                    FRONT_RIGHT = 1,
-                    REAR_LEFT = 2,
-                    REAR_RIGHT = 3,
-                    NUM_LEGS = 4
-                };
+            FOOT_RR_X = (REAR_RIGHT * 3) + 0,
+            FOOT_RR_Y = (REAR_RIGHT * 3) + 1,
+            FOOT_RR_Z = (REAR_RIGHT * 3) + 2
+        };
 
-                // Indexing for leg order in array
-                enum FootIdx
-                {
-                    FOOT_FL_X = (FRONT_LEFT * 3) + 0,
-                    FOOT_FL_Y = (FRONT_LEFT * 3) + 1,
-                    FOOT_FL_Z = (FRONT_LEFT * 3) + 2,
+        // Indexing for state vector offsets
+        enum DOFIdx
+        {
+            BODY_PHI = 0,   // Body Roll
+            BODY_THETA = 1, // Body Pitch
+            BODY_PSI = 2,   // Body Yaw
+            BODY_X = 3,     // Body X Position
+            BODY_Y = 4,     // Body Y Position
+            BODY_Z = 5,     // Body Z Position
+            HAA_FL = 6,     // Front Left Leg Hip Ab/Ad Joint State
+            HFE_FL = 7,     // Front Left Leg Hip Flexion/Extension Joint State
+            KFE_FL = 8,     // Front Left Leg Knee Flexion/Extension Joint State
+            HAA_FR = 9,     // Front Right Leg Hip Ab/Ad Joint State
+            HFE_FR = 10,    // Front Right Leg Hip Flexion/Extension Joint State
+            KFE_FR = 11,    // Front Right Leg Knee Flexion/Extension Joint State
+            HAA_RL = 12,    // Rear Left Leg Hip Ab/Ad Joint State
+            HFE_RL = 13,    // Rear Left Leg Hip Flexion/Extension Joint State
+            KFE_RL = 14,    // Rear LeftLeg Knee Flexion/Extension Joint State
+            HAA_RR = 15,    // Rear Right Leg Hip Ab/Ad Joint State
+            HFE_RR = 16,    // Rear Right Leg Hip Flexion/Extension Joint State
+            KFE_RR = 17,    // Rear Right Leg Knee Flexion/Extension Joint State
+            NUM_TOTAL_DOFS = 18
+        };
 
-                    FOOT_FR_X = (FRONT_RIGHT * 3) + 0,
-                    FOOT_FR_Y = (FRONT_RIGHT * 3) + 1,
-                    FOOT_FR_Z = (FRONT_RIGHT * 3) + 2,
+        // Base Class Nomad Dynamics Task Node
+        // name = Task Name
+        // stack_size = Task Thread Stack Size
+        // rt_priority = Task Thread Priority
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        NomadDynamics(const std::string &name = "Nomad_Dynamics_Handler",
+                      const long rt_period = 10000,
+                      const unsigned int rt_priority = Realtime::Priority::MEDIUM,
+                      const int rt_core_id = -1,
+                      const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-                    FOOT_RL_X = (REAR_LEFT * 3) + 0,
-                    FOOT_RL_Y = (REAR_LEFT * 3) + 1,
-                    FOOT_RL_Z = (REAR_LEFT * 3) + 2,
+        // Set Dart Robot Skeleton
+        void SetRobotSkeleton(dart::dynamics::SkeletonPtr robot);
 
-                    FOOT_RR_X = (REAR_RIGHT * 3) + 0,
-                    FOOT_RR_Y = (REAR_RIGHT * 3) + 1,
-                    FOOT_RR_Z = (REAR_RIGHT * 3) + 2
-                };
+    protected:
+        // Overriden Run Function
+        virtual void Run();
 
-                // Indexing for state vector offsets
-                enum DOFIdx
-                {
-                    BODY_PHI = 0,   // Body Roll
-                    BODY_THETA = 1, // Body Pitch
-                    BODY_PSI = 2,   // Body Yaw
-                    BODY_X = 3,     // Body X Position
-                    BODY_Y = 4,     // Body Y Position
-                    BODY_Z = 5,     // Body Z Position
-                    HAA_FL = 6,     // Front Left Leg Hip Ab/Ad Joint State
-                    HFE_FL = 7,     // Front Left Leg Hip Flexion/Extension Joint State
-                    KFE_FL = 8,     // Front Left Leg Knee Flexion/Extension Joint State
-                    HAA_FR = 9,     // Front Right Leg Hip Ab/Ad Joint State
-                    HFE_FR = 10,    // Front Right Leg Hip Flexion/Extension Joint State
-                    KFE_FR = 11,    // Front Right Leg Knee Flexion/Extension Joint State
-                    HAA_RL = 12,    // Rear Left Leg Hip Ab/Ad Joint State
-                    HFE_RL = 13,    // Rear Left Leg Hip Flexion/Extension Joint State
-                    KFE_RL = 14,    // Rear LeftLeg Knee Flexion/Extension Joint State
-                    HAA_RR = 15,    // Rear Right Leg Hip Ab/Ad Joint State
-                    HFE_RR = 16,    // Rear Right Leg Hip Flexion/Extension Joint State
-                    KFE_RR = 17,    // Rear Right Leg Knee Flexion/Extension Joint State
-                    NUM_TOTAL_DOFS = 18
-                };
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
 
-                // Base Class Nomad Dynamics Task Node
-                // name = Task Name
-                // stack_size = Task Thread Stack Size
-                // rt_priority = Task Thread Priority
-                // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-                // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-                NomadDynamics(const std::string &name = "Nomad_Dynamics_Handler",
-                              const long rt_period = 10000,
-                              const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                              const int rt_core_id = -1,
-                              const unsigned int stack_size = PTHREAD_STACK_MIN);
+        // (Input) Actuated Joint State Estimate
+        joint_state_t joint_state_;
 
-                // Set Dart Robot Skeleton
-                void SetRobotSkeleton(dart::dynamics::SkeletonPtr robot);
+        // (Input) CoM State
+        com_state_t com_state_;
 
-            protected:
-                // Overriden Run Function
-                virtual void Run();
+        // (Output) Full Robot State
+        full_state_t full_state_;
 
-                // Pre-Run Setup Routine.  Setup any one time initialization here.
-                virtual void Setup();
+        // Dart Helpers
+        dart::dynamics::SkeletonPtr robot_;
 
-                // (Input) Joint State
-                //generic_msg_t leg_state_msg_;
-                //::Controllers::Locomotion::leg_controller_cmd_t leg_state_;
-                
-                // (Input) Actuated Joint State Estimate
-                joint_state_t joint_state_;
+        // Body Node for Floating Base Body
+        dart::dynamics::BodyNodePtr base_body_;
 
-                // (Input) CoM State
-                com_state_t com_state_;
+        // Body Nodes for Hip Base Bodies
+        dart::dynamics::BodyNodePtr hip_base_body_[NUM_LEGS];
 
-                // (Output) Full Robot State
-                generic_msg_t nomad_full_state_msg_;
-                nomad_full_state_t full_state_;
+        // Body Nodes for Foot EE Bodies
+        dart::dynamics::BodyNodePtr foot_body_[NUM_LEGS];
 
-                // Dart Helpers
-                dart::dynamics::SkeletonPtr robot_;
+        // Degree of Freedom Ptrs for Free DOFs
+        dart::dynamics::DegreeOfFreedomPtr DOF_[NUM_TOTAL_DOFS]; // See DOFIdx Enum
 
-                // Body Node for Floating Base Body
-                dart::dynamics::BodyNodePtr base_body_;
+        // Full Stacked Leg Jacobian
+        Eigen::MatrixXd J_legs_;
 
-                // Body Nodes for Hip Base Bodies
-                dart::dynamics::BodyNodePtr hip_base_body_[NUM_LEGS];
+        // Selector Matrices
+        Eigen::MatrixXd S_j_; // Actuated Joint Selection Matrix
 
-                // Body Nodes for Foot EE Bodies
-                dart::dynamics::BodyNodePtr foot_body_[NUM_LEGS];
-
-                // Degree of Freedom Ptrs for Free DOFs
-                dart::dynamics::DegreeOfFreedomPtr DOF_[NUM_TOTAL_DOFS]; // See DOFIdx Enum
-
-                // Full Stacked Leg Jacobian
-                Eigen::MatrixXd J_legs_;
-
-                // Selector Matrices
-                Eigen::MatrixXd S_j_; // Actuated Joint Selection Matrix
-
-                Eigen::MatrixXd S_f_; // Floating Base Selection Matrix
-            };
-        } // namespace Dynamics
-    }     // namespace Nomad
-} // namespace Robot
+        Eigen::MatrixXd S_f_; // Floating Base Selection Matrix
+    };
+} // namespace Robot::Nomad::Dynamics
 
 #endif // ROBOT_NOMAD_NOMADDYNAMICS_H_
