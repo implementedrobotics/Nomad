@@ -18,7 +18,7 @@ class com_state_t
 
         int64_t    sequence_num;
 
-        double     quat[4];
+        double     orientation[4];
 
         double     theta[3];
 
@@ -138,7 +138,7 @@ int com_state_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) cons
     thislen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &this->sequence_num, 1);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->quat[0], 4);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->orientation[0], 4);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->theta[0], 3);
@@ -167,7 +167,7 @@ int com_state_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen
     thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &this->sequence_num, 1);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->quat[0], 4);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->orientation[0], 4);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->theta[0], 3);

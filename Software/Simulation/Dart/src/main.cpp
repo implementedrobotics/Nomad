@@ -111,10 +111,10 @@ public:
     com_state.vel[1] = nomad_->Skeleton()->getDof(4)->getVelocity();
     com_state.vel[2] = nomad_->Skeleton()->getDof(5)->getVelocity();
 
-    com_state.quat[0] = body_orientation.x();
-    com_state.quat[1] = body_orientation.y();
-    com_state.quat[2] = body_orientation.z();
-    com_state.quat[3] = body_orientation.w();
+    com_state.orientation[0] = body_orientation.x();
+    com_state.orientation[1] = body_orientation.y();
+    com_state.orientation[2] = body_orientation.z();
+    com_state.orientation[3] = body_orientation.w();
 
     com_state.omega[0] = angular[0];
     com_state.omega[1] = angular[1];

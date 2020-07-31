@@ -53,7 +53,8 @@ namespace Robot
                 enum OutputPort
                 {
                     BODY_STATE_HAT = 0, // State Estimate
-                    NUM_OUTPUTS = 1
+                    BODY_STATE_ACTUAL = 1, // Ground Truth Body State
+                    NUM_OUTPUTS = 2
                 };
 
                 enum InputPort
@@ -95,6 +96,9 @@ namespace Robot
 
                 // (Output) COM State Output
                 com_state_t com_state_out_;
+
+                // (Output) COM State Estimate Output
+                com_state_t com_state_hat_;
 
                 // (Output) Contact Estimate
                 //int32_vec_t contact_state_out_;

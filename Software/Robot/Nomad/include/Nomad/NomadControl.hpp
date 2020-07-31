@@ -36,6 +36,8 @@
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
+#include <Nomad/MessageTypes/com_state_t.hpp>
+#include <Nomad/MessageTypes/joint_state_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>

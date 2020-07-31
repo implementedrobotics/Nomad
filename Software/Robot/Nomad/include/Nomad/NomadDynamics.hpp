@@ -36,6 +36,8 @@
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
+#include <Nomad/MessageTypes/com_state_t.hpp>
+#include <Nomad/MessageTypes/joint_state_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -81,7 +83,7 @@ namespace Robot
                 enum InputPort
                 {
                     BODY_STATE_HAT = 0, // Estimated Body State from Fused State Estimate
-                    //JOINT_STATE = 1,  // Joint State (q, q_dot)
+                    JOINT_STATE = 1,  // Joint State (q, q_dot)
                     NUM_INPUTS = 1
                 };
 
@@ -166,10 +168,10 @@ namespace Robot
                 //::Controllers::Locomotion::leg_controller_cmd_t leg_state_;
                 
                 // (Input) Actuated Joint State Estimate
-                double_vec_t joint_state_in_;
+                joint_state_t joint_state_;
 
                 // (Input) CoM State
-                double_vec_t com_state_in_;
+                com_state_t com_state_;
 
                 // (Output) Full Robot State
                 generic_msg_t nomad_full_state_msg_;

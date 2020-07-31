@@ -76,7 +76,8 @@ namespace Robot
 
                 // Create Ports
                 // Primary Controller Input Port
-                input_port_map_[InputPort::BODY_STATE_HAT] = std::make_shared<Realtime::Port>("BODY_STATE_HAT", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 12, rt_period_);
+                input_port_map_[InputPort::BODY_STATE_HAT] = Realtime::Port::CreateInput<com_state_t>("BODY_STATE_HAT", rt_period_);
+                input_port_map_[InputPort::JOINT_STATE] = Realtime::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
 
                 // Primary Controller Output Ports
                 output_port_map_[OutputPort::FULL_STATE] = std::make_shared<Realtime::Port>("FULL_STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::BYTE, 1, rt_period);
@@ -85,14 +86,19 @@ namespace Robot
             void NomadDynamics::Run()
             {
                 // Get Control Inputs, Modes, Trajectory etc
-                 bool imu_recv = GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_in_); // Receive Setpoint
-                 if (!imu_recv)
-                 {
-                     std::cout << "[NomadControl]: Receive Buffer Empty!" << std::endl;
-                     return;
-                 }
+                 bool imu_recv = GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_); // Receive Setpoint
 
-                 std::cout << "RECEIVED" << std::endl;
+                if(GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
+                {
+                    
+                }
+                //  if (!imu_recv)
+                //  {
+                //      std::cout << "[NomadControl]: Receive Buffer Empty!" << std::endl;
+                //      return;
+                //  }
+
+                 //std::cout << "RECEIVED: " << com_state_.pos[2] << std::endl;
 
                 // Read Inputs
                 // 1) Body State (State Estimator)
@@ -154,16 +160,6 @@ namespace Robot
 
             void NomadDynamics::Setup()
             {
-                // Connect Input Ports
-                 bool inputs_connected = true;
-                for (int i = 0; i < NUM_INPUTS; i++) // Connect all of our input ports
-                {
-                    // if (!GetInputPort(i)->Connect())
-                    // {
-                    //     inputs_connected = false;
-                    // }
-                }
-
                 bool outputs_bound = true;
                 for (int i = 0; i < NUM_OUTPUTS; i++) // Bind all of our output ports
                 {
@@ -174,7 +170,7 @@ namespace Robot
                 }
 
                 std::cout << "[NomadDynamics]: "
-                          << "Nomad Dynamics  Publisher Running!: " << outputs_bound << " " << inputs_connected << std::endl;
+                          << "Nomad Dynamics  Publisher Running!: " << outputs_bound << std::endl;
             }
 
             void NomadDynamics::SetRobotSkeleton(dart::dynamics::SkeletonPtr robot)

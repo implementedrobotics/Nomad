@@ -49,13 +49,12 @@ namespace Robot
             double kGravity = 9.81;
 
             FusedLegKinematicsStateEstimator::FusedLegKinematicsStateEstimator(const std::string &name,
-                                           const long rt_period,
-                                           unsigned int rt_priority,
-                                           const int rt_core_id,
-                                           const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
+                                                                               const long rt_period,
+                                                                               unsigned int rt_priority,
+                                                                               const int rt_core_id,
+                                                                               const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
 
-                
                 // State Estimate Input Port
                 input_port_map_[InputPort::IMU_DATA] = Realtime::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
                 input_port_map_[InputPort::JOINT_STATE] = Realtime::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
@@ -63,6 +62,7 @@ namespace Robot
 
                 // State Estimate Output Port
                 output_port_map_[OutputPort::BODY_STATE_HAT] = Realtime::Port::CreateOutput("BODY_STATE_HAT", rt_period_);
+                output_port_map_[OutputPort::BODY_STATE_ACTUAL] = Realtime::Port::CreateOutput("BODY_STATE_ACTUAL", rt_period_);
             }
 
             void FusedLegKinematicsStateEstimator::Run()
@@ -79,45 +79,69 @@ namespace Robot
                 if (GetInputPort(InputPort::COM_STATE)->Receive(com_state_))
                 {
                     //std::cout << "GOT COM STATE: " << com_state_.pos[2] << std::endl;
-                }
-                
+                    com_state_out_.orientation[0] = com_state_.orientation[0];
+                    com_state_out_.orientation[1] = com_state_.orientation[1];
+                    com_state_out_.orientation[2] = com_state_.orientation[2];
+                    com_state_out_.orientation[3] = com_state_.orientation[3];
 
-                // Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(imu_data_in_.data.data(), num_states_);
-                //std::cout << "[StateEstimator]: Received: " << x_hat_in_.sequence_num <<  std::endl;
+                    com_state_out_.theta[0] = com_state_.theta[0];
+                    com_state_out_.theta[1] = com_state_.theta[1];
+                    com_state_out_.theta[2] = com_state_.theta[2];
+
+                    com_state_out_.pos[0] = com_state_.pos[0];
+                    com_state_out_.pos[1] = com_state_.pos[1];
+                    com_state_out_.pos[2] = com_state_.pos[2];
+
+                    com_state_out_.omega[0] = com_state_.omega[0];
+                    com_state_out_.omega[1] = com_state_.omega[1];
+                    com_state_out_.omega[2] = com_state_.omega[2];
+
+                    com_state_out_.vel[0] = com_state_.vel[0];
+                    com_state_out_.vel[1] = com_state_.vel[1];
+                    com_state_out_.vel[2] = com_state_.vel[2];
+                }
 
                 // Compute State Estimate
-                // Eigen::VectorXd body_hat = Eigen::VectorXd::Ones(num_states_);
+                com_state_hat_.orientation[0] = com_state_.orientation[0];
+                com_state_hat_.orientation[1] = com_state_.orientation[1];
+                com_state_hat_.orientation[2] = com_state_.orientation[2];
+                com_state_hat_.orientation[3] = com_state_.orientation[3];
 
-                // // Update State
-                // com_state_out_.data[Idx::PHI] = body_hat[0];    // Roll Orientation
-                // com_state_out_.data[Idx::THETA] = body_hat[1];  // Pitch Orientation
-                // com_state_out_.data[Idx::PSI] = body_hat[2];    // Yaw Orientation
-                // com_state_out_.data[Idx::X] = body_hat[3];      // X Position
-                // com_state_out_.data[Idx::Y] = body_hat[4];      // Y Position
-                // com_state_out_.data[Idx::Z] = body_hat[5];      // Z Position
-                // com_state_out_.data[Idx::W_X] = body_hat[6];    // Roll Rate
-                // com_state_out_.data[Idx::W_Y] = body_hat[7];    // Pitch Rate
-                // com_state_out_.data[Idx::W_Z] = body_hat[8];    // Yaw Rate
-                // com_state_out_.data[Idx::X_DOT] = body_hat[9];  // X Velocity
-                // com_state_out_.data[Idx::Y_DOT] = body_hat[10]; // Y Velocity
-                // com_state_out_.data[Idx::Z_DOT] = body_hat[11]; // Z Velocity
+                com_state_hat_.theta[0] = com_state_.theta[0];
+                com_state_hat_.theta[1] = com_state_.theta[1];
+                com_state_hat_.theta[2] = com_state_.theta[2];
 
-                // output_state_.data[Idx::GRAVITY] = x_hat_[12]; // Gravity
+                com_state_hat_.pos[0] = com_state_.pos[0];
+                com_state_hat_.pos[1] = com_state_.pos[1];
+                com_state_hat_.pos[2] = com_state_.pos[2];
 
-                //std::cout << "State Estimator Send: " << std::endl;
+                com_state_hat_.omega[0] = com_state_.omega[0];
+                com_state_hat_.omega[1] = com_state_.omega[1];
+                com_state_hat_.omega[2] = com_state_.omega[2];
+
+                com_state_hat_.vel[0] = com_state_.vel[0];
+                com_state_hat_.vel[1] = com_state_.vel[1];
+                com_state_hat_.vel[2] = com_state_.vel[2];
 
                 // Publish State
-                bool send_status = GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_out_);
-
+                bool send_status = GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_hat_);
+                send_status = GetOutputPort(OutputPort::BODY_STATE_ACTUAL)->Send(com_state_out_);
+                
                 //std::cout << "[FusedLegKinematicsStateEstimator]: Publishing: " << com_state_out_.data[Idx::X] << " Send: " << send_status << std::endl;
             }
 
             void FusedLegKinematicsStateEstimator::Setup()
             {
-
-                GetOutputPort(OutputPort::BODY_STATE_HAT)->Bind();
+                bool outputs_bound = true;
+                for (int i = 0; i < OutputPort::NUM_OUTPUTS; i++) // Bind all of our output ports
+                {
+                    if (!GetOutputPort(i)->Bind())
+                    {
+                        outputs_bound = false;
+                    }
+                }
                 std::cout << "[FusedLegKinematicsStateEstimator]: "
-                           << "State Estimator Publisher Running!: " << std::endl;
+                          << "State Estimator Publisher Running!: " << outputs_bound << std::endl;
             }
         } // namespace Estimators
     }     // namespace Nomad
