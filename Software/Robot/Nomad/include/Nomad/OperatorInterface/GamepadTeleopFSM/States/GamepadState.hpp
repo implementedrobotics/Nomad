@@ -32,7 +32,8 @@
 
 // Project Include Files
 #include <Common/State.hpp>
-#include <OperatorInterface/GamepadInterface.hpp>
+//#include <OperatorInterface/GamepadInterface.hpp>
+#include <Nomad/OperatorInterface/GamepadInterface.hpp>
 
 namespace OperatorInterface
 {

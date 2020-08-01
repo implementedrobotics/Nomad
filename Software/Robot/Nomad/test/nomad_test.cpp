@@ -2,7 +2,7 @@
 #include <Communications/Port.hpp>
 #include <Controllers/LegController.hpp>
 #include <Nomad/NomadControl.hpp>
-#include <OperatorInterface/RemoteTeleop.hpp>
+#include <Nomad/OperatorInterface/RemoteTeleop.hpp>
 #include <Common/Time.hpp>
 #include <Nomad/NomadRobot.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
@@ -131,18 +131,18 @@ int main(int argc, char *argv[])
 
   estimator_node.Start();
 
-  // // Remote Teleop Task
-  // OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
-  // teleop_node.SetStackSize(1024 * 1024); // 1MB
-  // teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-  // teleop_node.SetTaskFrequency(freq1); // 50 HZ
-  // //teleop_node.SetCoreAffinity(-1);
-  // teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE,
-  //                           Communications::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode");
-  // teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
-  //                           Communications::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
+  // Remote Teleop Task
+  OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
+  teleop_node.SetStackSize(1024 * 1024); // 1MB
+  teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+  teleop_node.SetTaskFrequency(freq1); // 50 HZ
+  //teleop_node.SetCoreAffinity(-1);
+  teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE,
+                            Communications::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode");
+  teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
+                            Communications::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
 
-  // //teleop_node.Start();
+  //teleop_node.Start();
 
   // FSM Task
   NomadControl nomad_controller_node("Nomad_Controller");

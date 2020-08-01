@@ -4,7 +4,7 @@
 #include <Controllers/ConvexMPC.hpp>
 #include <Controllers/GaitScheduler.hpp>
 #include <Controllers/ReferenceTrajectoryGen.hpp>
-#include <OperatorInterface/RemoteTeleop.hpp>
+//#include <OperatorInterface/RemoteTeleop.hpp>
 #include <Plotting/PlotterTaskNode.hpp>
 #include <Systems/NomadPlant.hpp>
 #include <Common/Time.hpp>
@@ -46,14 +46,14 @@ int main(int argc, char *argv[])
     GAZEBO_IMU->SetTransport(Communications::Port::TransportType::UDP, gazebo_url, "nomad.imu");
 
     // Remote Teleop Task
-    OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
-    teleop_node.SetStackSize(1024 * 1024); // 1MB
-    teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    teleop_node.SetTaskFrequency(freq1); // 50 HZ
-    //teleop_node.SetCoreAffinity(-1);
-    teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
-                              Communications::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
-    teleop_node.Start();
+    // OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
+    // teleop_node.SetStackSize(1024 * 1024); // 1MB
+    // teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
+    // teleop_node.SetTaskFrequency(freq1); // 50 HZ
+    // //teleop_node.SetCoreAffinity(-1);
+    // teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
+    //                           Communications::Port::TransportType::INPROC, "inproc", "nomad.setpoint");
+    // teleop_node.Start();
 
     // State Estimator
     Controllers::Estimators::StateEstimator estimator_node("Estimator_Task");
@@ -77,10 +77,10 @@ int main(int argc, char *argv[])
     Communications::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
                         estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
-    // Map Setpoint Output to Trajectory Reference Generator Input
-    Communications::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT),
-                        teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
-    ref_generator_node.Start();
+    // // Map Setpoint Output to Trajectory Reference Generator Input
+    // Communications::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::SETPOINT),
+    //                     teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT));
+    // ref_generator_node.Start();
 
 
     // Convex Model Predicive Controller for Locomotion
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     ref_generator_node.Stop();
     convex_mpc_node.Stop();
     estimator_node.Stop();
-    teleop_node.Stop();
+    //teleop_node.Stop();
 
     //scope.DumpCSV("test.csv");
     //scope2.DumpCSV("test2.csv");

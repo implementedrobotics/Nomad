@@ -34,8 +34,12 @@
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <OperatorInterface/GamepadInterface.hpp>
-#include <OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
+#include <Nomad/OperatorInterface/GamepadInterface.hpp>
+
+//#include <OperatorInterface/GamepadInterface.hpp>
+
+#include <Nomad/OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
+//#include <OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 

@@ -22,7 +22,7 @@
  */
 
 // Primary Include
-#include <OperatorInterface/GamepadInterface.hpp>
+#include <Nomad/OperatorInterface/GamepadInterface.hpp>
 
 // C System Includes
 #include <fcntl.h>

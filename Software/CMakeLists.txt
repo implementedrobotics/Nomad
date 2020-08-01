@@ -23,9 +23,6 @@ add_subdirectory(Common)
 # Communications Library
 add_subdirectory(Communications)
 
-# Operator Interface
-add_subdirectory(OperatorInterface)
-
 # Realtime Library
 add_subdirectory(Realtime)
 
