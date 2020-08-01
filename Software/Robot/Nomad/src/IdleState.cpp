@@ -33,26 +33,19 @@
 
 #include <Nomad/FSM/IdleState.hpp>
 
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    IdleState::IdleState() : NomadState("IDLE", 1)
     {
-        namespace FSM
-        {
-
-            IdleState::IdleState() : NomadState("IDLE", 1)
-            {
-            }
-            void IdleState::Run(double dt)
-            {
-               // std::cout << "Idle Running" << std::endl;
-                // Set mode to idle
-            }
-            void IdleState::Enter(double current_time)
-            {
-                std::cout << "Entering Idle State!!!" << std::endl;
-               // current_mode_ = ControlMode::OFF;
-            }
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+    }
+    void IdleState::Run(double dt)
+    {
+       // std::cout << "Idle Running" << std::endl;
+        // Set mode to idle
+    }
+    void IdleState::Enter(double current_time)
+    {
+        std::cout << "Entering Idle State!!!" << std::endl;
+        // current_mode_ = ControlMode::OFF;
+    }
+} // namespace Robot::Nomad::FSM

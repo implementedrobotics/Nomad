@@ -33,26 +33,19 @@
 
 #include <Nomad/FSM/StandState.hpp>
 
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    StandState::StandState() : NomadState("STAND", 2)
     {
-        namespace FSM
-        {
-
-            StandState::StandState() : NomadState("STAND", 2)
-            {
-            }
-            void StandState::Run(double dt)
-            {
-               // std::cout << "Stand Running" << std::endl;
-                // Set mode to idle
-            }
-            void StandState::Enter(double current_time)
-            {
-                std::cout << "Entering Stand State!!!" << std::endl;
-               // current_mode_ = ControlMode::OFF;
-            }
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+    }
+    void StandState::Run(double dt)
+    {
+       //std::cout << "Stand Running" << std::endl;
+        // Set mode to idle
+    }
+    void StandState::Enter(double current_time)
+    {
+        std::cout << "Entering Stand State!!!" << std::endl;
+        // current_mode_ = ControlMode::OFF;
+    }
+} // namespace Robot::Nomad::FSM

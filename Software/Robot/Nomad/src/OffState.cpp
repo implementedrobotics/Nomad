@@ -33,26 +33,21 @@
 
 #include <Nomad/FSM/OffState.hpp>
 
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    OffState::OffState() : NomadState("OFF", 0)
     {
-        namespace FSM
-        {
+    }
+    void OffState::Run(double dt)
+    {
+       // std::cout << "Off Running"
+        //          << " " << data_->control_mode << std::endl;
 
-            OffState::OffState() : NomadState("OFF", 0)
-            {
-            }
-            void OffState::Run(double dt)
-            {
-               // std::cout << "Off Running" << std::endl;
-                // Set mode to idle
-            }
-            void OffState::Enter(double current_time)
-            {
-                //std::cout << "Entering Off State!!!!" << std::endl;
-               // current_mode_ = ControlMode::OFF;
-            }
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+        // Set mode to idle
+    }
+    void OffState::Enter(double current_time)
+    {
+        std::cout << "Entering Off State!!!!" << std::endl;
+        // current_mode_ = ControlMode::OFF;
+    }
+} // namespace Robot::Nomad::FSM

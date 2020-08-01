@@ -38,76 +38,69 @@
 
 //#include <TransitionEvent.h>
 
-
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    // Transition Events For States
+    NomadControlTransitionEvent::NomadControlTransitionEvent(const std::string &name, std::shared_ptr<NomadControlData> data)
+        : TransitionEvent(name), data_(data)
     {
-        namespace FSM
-        {
-            // Transition Events For States
-            NomadControlTransitionEvent::NomadControlTransitionEvent(const std::string &name, std::shared_ptr<NomadControlData> data)
-                : TransitionEvent(name), data_(data)
-            {
-                data_ = data;
-            }
+        data_ = data;
+    }
 
-            NomadControlFSM::NomadControlFSM() : FiniteStateMachine("Nomad Primary Control FSM")
-            {
-                // Create Data Pointer
-                data_ = std::make_unique<Robot::Nomad::FSM::NomadControlData>();
-                _CreateFSM();
-            }
-            bool NomadControlFSM::Run(double dt)
-            {
-                // Now run base FSM code
-                return FiniteStateMachine::Run(dt);
-            }
+    NomadControlFSM::NomadControlFSM() : FiniteStateMachine("Nomad Primary Control FSM")
+    {
+        // Create Data Pointer
+        data_ = std::make_unique<Robot::Nomad::FSM::NomadControlData>();
+        _CreateFSM();
+    }
+    bool NomadControlFSM::Run(double dt)
+    {
+        // Now run base FSM code
+        return FiniteStateMachine::Run(dt);
+    }
 
-            const std::shared_ptr<NomadControlData> &NomadControlFSM::GetData() const
-            {
-                return data_;
-            }
+    const std::shared_ptr<NomadControlData> &NomadControlFSM::GetData() const
+    {
+        return data_;
+    }
 
-            void NomadControlFSM::_CreateFSM()
-            {
-                std::cout << "[NomadControlFSM]: Creating FSM" << std::endl;
+    void NomadControlFSM::_CreateFSM()
+    {
+        std::cout << "[NomadControlFSM]: Creating FSM" << std::endl;
 
-                ///////////////////////// Define Our States
-                // Off
-                std::shared_ptr<OffState> off = std::make_shared<OffState>();
-                off->SetControllerData(data_);
+        ///////////////////////// Define Our States
+        // Off
+        std::shared_ptr<OffState> off = std::make_shared<OffState>();
+        off->SetControllerData(data_);
 
-                // Idle
-                std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
-                idle->SetControllerData(data_);
+        // Idle
+        std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
+        idle->SetControllerData(data_);
 
-                // Stand
-                std::shared_ptr<StandState> stand = std::make_shared<StandState>();
-                stand->SetControllerData(data_);
+        // Stand
+        std::shared_ptr<StandState> stand = std::make_shared<StandState>();
+        stand->SetControllerData(data_);
 
-                // // Sit
-                // std::shared_ptr<SitState> sit = std::make_shared<SitState>();
-                // sit->SetGamepadInterface(gamepad_);
+        // // Sit
+        // std::shared_ptr<SitState> sit = std::make_shared<SitState>();
+        // sit->SetGamepadInterface(gamepad_);
 
-                std::shared_ptr<CommandModeEvent> transition_idle = std::make_shared<CommandModeEvent>("IDLE TRANSITION", CONTROL_MODE::IDLE, data_);
-                std::shared_ptr<CommandModeEvent> transition_stand = std::make_shared<CommandModeEvent>("STAND TRANSITION", CONTROL_MODE::STAND, data_);
+        std::shared_ptr<CommandModeEvent> transition_idle = std::make_shared<CommandModeEvent>("IDLE TRANSITION", CONTROL_MODE::IDLE, data_);
+        std::shared_ptr<CommandModeEvent> transition_stand = std::make_shared<CommandModeEvent>("STAND TRANSITION", CONTROL_MODE::STAND, data_);
 
-                // Setup Transitions
-                off->AddTransitionEvent(transition_idle, idle);
-                idle->AddTransitionEvent(transition_stand, stand);
-                // stand->AddTransitionEvent(down_event, sit);
-                // sit->AddTransitionEvent(up_event, stand);
+        // Setup Transitions
+        off->AddTransitionEvent(transition_idle, idle);
+        idle->AddTransitionEvent(transition_stand, stand);
+        // stand->AddTransitionEvent(down_event, sit);
+        // sit->AddTransitionEvent(up_event, stand);
 
-                // Add the stated to the FSM
-                AddState(off);
-                AddState(idle);
-                AddState(stand);
-                // AddState(sit);
+        // Add the stated to the FSM
+        AddState(off);
+        AddState(idle);
+        AddState(stand);
+        // AddState(sit);
 
-                // Set Initials State
-                SetInitialState(off);
-            }
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+        // Set Initials State
+        SetInitialState(off);
+    }
+} // namespace Robot::Nomad::FSM

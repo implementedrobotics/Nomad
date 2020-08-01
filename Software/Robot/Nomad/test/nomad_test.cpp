@@ -27,6 +27,8 @@ using Robot::Nomad::Interface::SimulationInterface;
 
 using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
 
+using OperatorInterface::Teleop::RemoteTeleop;
+
 int main(int argc, char *argv[])
 {
   // Task Periods.
@@ -132,17 +134,15 @@ int main(int argc, char *argv[])
   estimator_node.Start();
 
   // Remote Teleop Task
-  OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
+  RemoteTeleop teleop_node("Remote_Teleop");
   teleop_node.SetStackSize(1024 * 1024); // 1MB
   teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
   teleop_node.SetTaskFrequency(freq1); // 50 HZ
   //teleop_node.SetCoreAffinity(-1);
-  teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE,
-                            Communications::Port::TransportType::INPROC, "inproc", "nomad.teleop.control_mode");
-  teleop_node.SetPortOutput(OperatorInterface::Teleop::RemoteTeleop::OutputPort::SETPOINT,
-                            Communications::Port::TransportType::INPROC, "inproc", "nomad.teleop.setpoint");
+  teleop_node.SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA,
+                            Port::TransportType::INPROC, "inproc", "nomad.teleop.data");
 
-  //teleop_node.Start();
+  teleop_node.Start();
 
   // FSM Task
   NomadControl nomad_controller_node("Nomad_Controller");
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
                                                    //nomad_controller_node.SetPortOutput(NomadControl::OutputPort::LEG_COMMAND,
                                                    //                                    Communications::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
-  // Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::CONTROL_MODE),
-  //                     teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
+  Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::TELEOP_DATA),
+                       teleop_node.GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA));
 
   Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::FULL_STATE),
             nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));

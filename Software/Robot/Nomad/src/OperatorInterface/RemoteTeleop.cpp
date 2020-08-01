@@ -37,79 +37,43 @@
 #include <Realtime/RealTimeTask.hpp>
 #include <Common/Time.hpp>
 
-namespace OperatorInterface
+namespace OperatorInterface::Teleop
 {
-
-    namespace Teleop
+    RemoteTeleop::RemoteTeleop(const std::string &name,
+                               const long rt_period,
+                               unsigned int rt_priority,
+                               const int rt_core_id,
+                               const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
     {
-        RemoteTeleop::RemoteTeleop(const std::string &name,
-                                   const long rt_period,
-                                   unsigned int rt_priority,
-                                   const int rt_core_id,
-                                   const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
-        {
-            // Create Messages
-            // Desired Mode Type Message
-            output_mode_.length = 1;
-            output_mode_.data.resize(output_mode_.length);
+        // Create Ports
+        output_port_map_[OutputPort::TELEOP_DATA] = Communications::Port::CreateOutput("TELEOP_DATA", rt_period_);
 
-            // Desired Setpoint Type Message
-            output_setpoint_.length = 4;
-            output_setpoint_.data.resize(output_setpoint_.length);
+        // Create Gamepad Object
+        // TODO: Needs to be a parameter for game pad device
+        gamepad_ = std::make_shared<GamepadInterface>("/dev/input/js0");
 
-            // Create Ports
-            // Setpoint MODE Port
-            output_port_map_[OutputPort::MODE] = std::make_shared<Communications::Port>("MODE", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::INT32, 1, rt_period);
-            output_port_map_[OutputPort::MODE]->SetSignalLabel(0, "MODE");
+        // Create FSM for game pad state
+        gamepad_FSM_ = std::make_unique<GamepadTeleopFSM>(gamepad_);
+    }
 
-            // Setpoint OUTPUT Port
-            // TODO: Independent port speeds.  For now all ports will be same speed as task node
-            output_port_map_[OutputPort::SETPOINT] = std::make_shared<Communications::Port>("SETPOINT", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, 4, rt_period);
-            output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::X_DOT, "X_DOT");
-            output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
-            output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::YAW_DOT, "YAW_DOT");
-            output_port_map_[OutputPort::SETPOINT]->SetSignalLabel(Idx::Z_COM, "Z_COM");
+    void RemoteTeleop::Run()
+    {
+        // Run FSM
+        gamepad_FSM_->Run(0);
 
-            // Create Gamepad Object
-            // TODO: Needs to be a parameter for game pad device
-            gamepad_ = std::make_shared<GamepadInterface>("/dev/input/js0");
+        // Get Mode from FSM
+        teleop_data_.control_mode = gamepad_FSM_->GetMode(); // Mode Type
 
-            // Create FSM for game pad state
-            gamepad_FSM_ = std::make_unique<GamepadTeleopFSM>(gamepad_);
-        }
+        // Publish Messages
+        GetOutputPort(OutputPort::TELEOP_DATA)->Send(teleop_data_);
+    }
 
-        void RemoteTeleop::Run()
-        {
-            // Run FSM
-            gamepad_FSM_->Run(0);
+    void RemoteTeleop::Setup()
+    {
+        // Start FSM
+        gamepad_FSM_->Start(Systems::Time::GetTime());
 
-            // Get Mode from FSM
-            output_mode_.data[0] = gamepad_FSM_->GetMode(); // Mode Type
-
-            // Get Input (Remote)
-            output_setpoint_.data[Idx::X_DOT] = 1.0;   // x_dot
-            output_setpoint_.data[Idx::Y_DOT] = 0.0;   // y_dot
-            output_setpoint_.data[Idx::YAW_DOT] = 0.0; // yaw_dot
-            output_setpoint_.data[Idx::Z_COM] = 0.5;   // z_comt
-
-            // Publish Messages
-            /*bool send_status = */ GetOutputPort(OutputPort::MODE)->Send(output_mode_);
-            /*bool send_status2 = */ GetOutputPort(OutputPort::SETPOINT)->Send(output_setpoint_);
-
-            //  std::cout << "SENDING STUFF: " << send_status << " and " << send_status2 << std::endl;
-        }
-
-        void RemoteTeleop::Setup()
-        {
-            //gamepad_.OpenDevice("/dev/input/js0");
-
-            // Start FSM
-            gamepad_FSM_->Start(Systems::Time::GetTime());
-
-            // TODO: Autobind NON-NULL output port
-            GetOutputPort(OutputPort::MODE)->Bind();
-            GetOutputPort(OutputPort::SETPOINT)->Bind();
-        }
-
-    } // namespace Teleop
-} // namespace OperatorInterface
+        // TODO: Autobind NON-NULL output port
+        GetOutputPort(OutputPort::TELEOP_DATA)->Bind();
+    }
+} // namespace OperatorInterface::Teleop

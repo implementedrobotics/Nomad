@@ -39,6 +39,7 @@
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
 #include <Nomad/MessageTypes/full_state_t.hpp>
+#include <Nomad/MessageTypes/teleop_data_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -59,7 +60,7 @@ namespace Robot::Nomad::Controllers
 
         enum InputPort
         {
-            CONTROL_MODE = 0,
+            TELEOP_DATA = 0,
             FULL_STATE = 1,
             NUM_INPUTS = 2
         };
@@ -86,8 +87,8 @@ namespace Robot::Nomad::Controllers
         // (Input) Full Robot State
         full_state_t full_state_;
 
-        // (Input)
-        int32_vec_t control_mode_msg_;
+        // (Input) Teleop Command Data
+        teleop_data_t teleop_data_;
 
         // Output
         //generic_msg_t leg_command_msg_;

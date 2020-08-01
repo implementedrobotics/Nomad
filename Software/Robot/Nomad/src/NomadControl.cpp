@@ -42,80 +42,65 @@
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Common/Time.hpp>
 
-namespace Robot
+namespace Robot::Nomad::Controllers
 {
-    namespace Nomad
+    NomadControl::NomadControl(const std::string &name,
+                               const long rt_period,
+                               unsigned int rt_priority,
+                               const int rt_core_id,
+                               const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
     {
-        namespace Controllers
+
+        // // Create Input/Output Messages
+        // leg_command_msg_.length = sizeof(::Controllers::Locomotion::leg_controller_cmd_t);
+        // leg_command_msg_.data.resize(leg_command_msg_.length);
+
+        // Create Ports
+        // Primary Controller Input Port
+        input_port_map_[InputPort::TELEOP_DATA] = Communications::Port::CreateInput<teleop_data_t>("TELEOP_DATA", rt_period_);
+        input_port_map_[InputPort::FULL_STATE] = Communications::Port::CreateInput<full_state_t>("FULL_STATE", rt_period_);
+
+        // Primary Controller Output Ports
+        output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port::CreateOutput("LEG_COMMAND", rt_period_);
+
+        // Create FSM
+        nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();
+    }
+
+    void NomadControl::Run()
+    {
+
+        if (GetInputPort(InputPort::TELEOP_DATA)->Receive(teleop_data_))
         {
+        }
+        if (GetInputPort(InputPort::FULL_STATE)->Receive(full_state_))
+        {
+        }
 
-            NomadControl::NomadControl(const std::string &name,
-                                       const long rt_period,
-                                       unsigned int rt_priority,
-                                       const int rt_core_id,
-                                       const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
-            {
+        // Update Data
+        nomad_control_FSM_->GetData()->control_mode = teleop_data_.control_mode;
 
-                // // Create Input/Output Messages
-                // leg_command_msg_.length = sizeof(::Controllers::Locomotion::leg_controller_cmd_t);
-                // leg_command_msg_.data.resize(leg_command_msg_.length);
+        // Run FSM
+        nomad_control_FSM_->Run(0);
 
-                control_mode_msg_.length = 1;
-                control_mode_msg_.data.resize(control_mode_msg_.length);
+        // Get Desired Force Output to send out of leg controller
+        // Copy command to message
+        //memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
 
-                // memset(&leg_controller_cmd_, 0, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
+        // Publish Leg Command
+        //bool send_status = GetOutputPort(OutputPort::LEG_COMMAND)->Send(leg_command_msg_);
 
-                // Create Ports
-                // Primary Controller Input Port
-                input_port_map_[InputPort::CONTROL_MODE] = Communications::Port::CreateInput<int32_vec_t>("CONTROL_MODE", rt_period_);
-                input_port_map_[InputPort::FULL_STATE] = Communications::Port::CreateInput<full_state_t>("FULL_STATE", rt_period_);
+        //std::cout << "[NomadControl]: Publishing: Send: " << send_status << " : " <<  receive << std::endl;
+    }
 
-                // Primary Controller Output Ports
-                output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port::CreateOutput("LEG_COMMAND", rt_period_);
+    void NomadControl::Setup()
+    {
+        bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
 
-                // Create FSM
-                nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();
+        // Start FSM
+        nomad_control_FSM_->Start(Systems::Time::GetTime());
 
-            }
-
-            void NomadControl::Run()
-            {
-
-                if(GetInputPort(InputPort::CONTROL_MODE)->Receive(control_mode_msg_))
-                {
-
-                }
-                if(GetInputPort(InputPort::FULL_STATE)->Receive(full_state_))
-                {
-                    
-                }
-
-                // Update Data
-                nomad_control_FSM_->GetData()->control_mode = control_mode_msg_.data[0];
-                
-                // Run FSM
-                nomad_control_FSM_->Run(0);
-
-                // Get Desired Force Output to send out of leg controller
-                // Copy command to message
-                //memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
-
-                // Publish Leg Command
-                //bool send_status = GetOutputPort(OutputPort::LEG_COMMAND)->Send(leg_command_msg_);
-
-                //std::cout << "[NomadControl]: Publishing: Send: " << send_status << " : " <<  receive << std::endl;
-            }
-
-            void NomadControl::Setup()
-            {
-                bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
-
-                // Start FSM
-                nomad_control_FSM_->Start(Systems::Time::GetTime());
-
-                std::cout << "[NomadControl]: "
-                          << "Nomad Control FSM Publisher Running!: " << binded << std::endl;
-            }
-        } // namespace Controllers
-    }     // namespace Nomad
-} // namespace Robot
+        std::cout << "[NomadControl]: "
+                  << "Nomad Control FSM Publisher Running!: " << binded << std::endl;
+    }
+} // namespace Robot::Nomad::Controllers

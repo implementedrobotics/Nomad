@@ -1,0 +1,7 @@
+struct teleop_data_t
+{
+    int64_t timestamp;
+    int64_t sequence_num;
+
+    int8_t control_mode;
+}
