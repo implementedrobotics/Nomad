@@ -280,6 +280,9 @@ namespace Realtime
                       << "POSIX Thread failed to detach thread!" << std::endl;
             return thread_status_;
         }
+
+        // Give thread some time to init
+        usleep(1e5);
     }
 
     void RealTimeTaskNode::Stop()

@@ -66,13 +66,13 @@ namespace Robot
             robot->getJoint("j_kfe_RL")->setPositionLimitEnforced(true);
             robot->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
 
-            int i = 0;
-            for (auto dof : robot->getDofs())
-            {
-                std::cout << "DOF: " << i++ << " : " << dof->getName() << std::endl;
-            }
+            // int i = 0;
+            // for (auto dof : robot->getDofs())
+            // {
+            //     std::cout << "DOF: " << i++ << " : " << dof->getName() << std::endl;
+            // }
 
-            std::cout << "Mass: " << robot->getMass() << std::endl;
+            // std::cout << "Mass: " << robot->getMass() << std::endl;
 
             // Set Intial Pose
             robot->getDof("base_z")->setPosition(0.2);

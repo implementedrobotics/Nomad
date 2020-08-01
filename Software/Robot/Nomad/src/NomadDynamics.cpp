@@ -73,6 +73,7 @@ namespace Robot::Nomad::Dynamics
 
     void NomadDynamics::Run()
     {
+        // TODO: Time this function  Would be nice if we could run this at 2x sample rate
         // Read Inputs
         // 1) Body State (State Estimator)
         if(GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_)) // Receive Setpoint

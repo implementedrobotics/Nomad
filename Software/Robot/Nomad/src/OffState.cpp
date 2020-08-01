@@ -50,7 +50,7 @@ namespace Robot
             }
             void OffState::Enter(double current_time)
             {
-                std::cout << "Entering Off State!!!!" << std::endl;
+                //std::cout << "Entering Off State!!!!" << std::endl;
                // current_mode_ = ControlMode::OFF;
             }
         } // namespace FSM

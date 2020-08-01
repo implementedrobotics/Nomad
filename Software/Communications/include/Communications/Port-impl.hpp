@@ -65,8 +65,8 @@ void PortHandler<T>::HandleMessage(const zcm::ReceiveBuffer *rbuf,
                                    const std::string &chan,
                                    const T *msg)
 {
-    // printf("Received message on channel \"%s\":\n", chan.c_str());
-    // printf("  Message   = %ld\n", msg->sequence_num);
+    //printf("Received message on channel \"%s\":\n", chan.c_str());
+    //printf("  Message   = %ld\n", msg->sequence_num);
 
     std::unique_lock<std::mutex> lck(mutex_);
     if (msg_buffer_.size() >= queue_size_)
@@ -156,7 +156,11 @@ template <class T>
 bool Port::Send(T &tx_msg)
 {
     //std::cout << "Sending Channel: " << channel_ << std::endl;
-
+    if(channel_.empty())
+    {
+        std::cout << "[PORT]: ERROR: Output channel is NOT defined!" << std::endl;
+        return false;
+    }
     // Append Sequence Number and Timestamp
     // Get Timestamp
     // TODO: "GetUptime" Static function in a time class

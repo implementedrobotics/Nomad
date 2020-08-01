@@ -87,7 +87,7 @@ namespace Robot
                 }
                 if(GetInputPort(InputPort::FULL_STATE)->Receive(full_state_))
                 {
-
+                    
                 }
 
                 // Update Data

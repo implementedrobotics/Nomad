@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
 
   if (!RealTimeTaskManager::EnableRTMemory(500 * 1024 * 1024)) // 1000MB
   {
-    exit(-2);
+    // exit(-2);
+    std::cout << "Error configuring Realtime Memory Requiremets!  Realtime Execution NOT guaranteed." << std::endl;
   }
   // Plant Inputs
   const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
@@ -113,6 +114,9 @@ int main(int argc, char *argv[])
   estimator_node.SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT,
                                Port::TransportType::INPROC, "inproc", "nomad.com.state");
 
+  estimator_node.SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_ACTUAL,
+                               Port::TransportType::INPROC, "inproc", "nomad.com.state2");
+
   Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::FOOT_STATE),
             nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
 
@@ -141,7 +145,7 @@ int main(int argc, char *argv[])
   // //teleop_node.Start();
 
   // FSM Task
-  Robot::Nomad::Controllers::NomadControl nomad_controller_node("Nomad_Controller");
+  NomadControl nomad_controller_node("Nomad_Controller");
 
   nomad_controller_node.SetStackSize(1024 * 1024); // 1MB
   nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
@@ -150,10 +154,10 @@ int main(int argc, char *argv[])
                                                    //nomad_controller_node.SetPortOutput(NomadControl::OutputPort::LEG_COMMAND,
                                                    //                                    Communications::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
-  // Port::Map(nomad_controller_node.GetInputPort(Robot::Nomad::Controllers::NomadControl::InputPort::CONTROL_MODE),
+  // Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::CONTROL_MODE),
   //                     teleop_node.GetOutputPort(OperatorInterface::Teleop::RemoteTeleop::OutputPort::MODE));
 
-  Port::Map(nomad_controller_node.GetInputPort(Robot::Nomad::Controllers::NomadControl::InputPort::FULL_STATE),
+  Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::FULL_STATE),
             nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
 
   nomad_controller_node.Start();
@@ -163,6 +167,7 @@ int main(int argc, char *argv[])
             estimator_node.GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT));
 
   nomad_simulation_interface.Start();
+
 
   // Print Threads
   RealTimeTaskManager::Instance()->PrintActiveTasks();
