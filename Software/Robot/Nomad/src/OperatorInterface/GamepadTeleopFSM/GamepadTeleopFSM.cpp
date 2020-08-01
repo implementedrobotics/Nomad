@@ -31,8 +31,6 @@
 // Project Include Files
 #include <Nomad/OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
 #include <Nomad/OperatorInterface/GamepadTeleopFSM/States/GamepadState.hpp>
-//#include <OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
-//#include <OperatorInterface/GamepadTeleopFSM/States/GamepadState.hpp>
 
 //#include <TransitionEvent.h>
 //#include <StandState.h>

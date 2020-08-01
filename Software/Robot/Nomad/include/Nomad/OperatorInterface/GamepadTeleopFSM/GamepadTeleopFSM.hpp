@@ -33,7 +33,6 @@
 // Project Include Files
 #include <Common/FiniteStateMachine.hpp>
 #include <Nomad/OperatorInterface/GamepadInterface.hpp>
-//#include <OperatorInterface/GamepadInterface.hpp>
 
 namespace OperatorInterface
 {
