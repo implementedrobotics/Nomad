@@ -102,7 +102,7 @@ namespace Robot
                        //s std::cout << "Check: " << data_->control_mode << std::endl;
                     if (data_->control_mode == req_mode_)
                     {
-                        std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
+                        //std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
                         return true;
                     }
                     return false;

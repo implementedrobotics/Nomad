@@ -46,7 +46,7 @@ namespace OperatorInterface
         }
         void OffState::Enter(double current_time)
         {
-            std::cout << "Entering Off State" << std::endl;
+            //std::cout << "Entering Off State" << std::endl;
             current_mode_ = ControlMode::OFF;
         }
 
@@ -62,7 +62,7 @@ namespace OperatorInterface
         }
         void IdleState::Enter(double current_time)
         {
-            std::cout << "Entering Idle State" << std::endl;
+            //std::cout << "Entering Idle State" << std::endl;
             current_mode_ = ControlMode::IDLE;
         }
 
@@ -77,7 +77,7 @@ namespace OperatorInterface
         }
         void StandState::Enter(double current_time)
         {
-            std::cout << "Entering Stand State" << std::endl;
+            //std::cout << "Entering Stand State" << std::endl;
             current_mode_ = ControlMode::STAND;
         }
 
@@ -91,7 +91,7 @@ namespace OperatorInterface
         }
         void SitState::Enter(double current_time)
         {
-            std::cout << "Entering Sit State" << std::endl;
+            //std::cout << "Entering Sit State" << std::endl;
             current_mode_ = ControlMode::SIT;
         }
 

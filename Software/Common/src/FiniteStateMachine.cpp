@@ -96,7 +96,7 @@ namespace Common
 
         if(current_state_->ReadyToTransition())
         {
-            std::cout << "State ready to transition" << std::endl;
+            //std::cout << "State ready to transition" << std::endl;
             TransitionTo(current_state_->NextState());
         }
                 // else if (current_state_->InTransition()) // In Transition, run code

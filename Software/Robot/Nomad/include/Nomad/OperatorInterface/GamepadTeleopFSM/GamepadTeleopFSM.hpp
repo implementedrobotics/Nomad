@@ -94,12 +94,12 @@ namespace OperatorInterface
             {
                 if (event_ == EventType::EVENT_PRESSED && gamepad_->IsPressed(button_))
                 {
-                     std::cout << "Event PRESSED ID: " << name_ << " is SET!" << std::endl;
+                     //std::cout << "Event PRESSED ID: " << name_ << " is SET!" << std::endl;
                      return true;
                 }
                 else if (event_ == EventType::EVENT_RELEASED && gamepad_->IsReleased(button_))
                 {
-                     std::cout << "Event RELEASED ID: " << name_ << " is SET!" << std::endl;
+                     //std::cout << "Event RELEASED ID: " << name_ << " is SET!" << std::endl;
                      return true;
                 }
                 else
@@ -129,7 +129,7 @@ namespace OperatorInterface
             {
                 if (gamepad_->GetDPadState(dpad_event_))
                 {
-                     std::cout << "Event PRESSED ID: " << name_ << " is SET!" << std::endl;
+                     //std::cout << "Event PRESSED ID: " << name_ << " is SET!" << std::endl;
                      return true;
                 }
                 else
