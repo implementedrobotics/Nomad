@@ -36,26 +36,20 @@
 
 // Project Includes
 
-namespace Robot
+namespace Robot::Nomad
 {
-namespace Nomad
-{
-class NomadRobot
-{
+    class NomadRobot
+    {
 
-public:
+    public:
+        // Base Class Robot Nomad Node
+        NomadRobot();
 
-    // Base Class Robot Nomad Node
-    NomadRobot();
+        // Load Dart Skeleton from URDF
+        static dart::dynamics::SkeletonPtr Load(const std::string &urdf);
 
-    // Load Dart Skeleton from URDF
-    static dart::dynamics::SkeletonPtr Load(const std::string &urdf);
-
-protected:
-
-
-};
-} // namespace Nomad
-} // namespace Robot
+    protected:
+    };
+} // namespace Robot::Nomad
 
 #endif // ROBOT_NOMADROBOT_H_

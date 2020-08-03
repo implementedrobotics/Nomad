@@ -38,82 +38,75 @@
 #include <OptimalControl/LinearCondensedOCP.hpp>
 #include <Systems/RigidBody.hpp>
 
-namespace Controllers
+namespace Controllers::Locomotion
 {
-namespace Locomotion
-{
-class ConvexMPC : public Realtime::RealTimeTaskNode
-{
-
-public:
-
-    enum OutputPort
+    class ConvexMPC : public Realtime::RealTimeTaskNode
     {
-        FORCES = 0 // State Estimate
-    };
 
-    enum InputPort
-    {
-        STATE_HAT = 0,    // State Estimate
-        REFERENCE_TRAJECTORY = 1 // Reference Trajectory
-    };
+    public:
+        enum OutputPort
+        {
+            FORCES = 0 // State Estimate
+        };
+
+        enum InputPort
+        {
+            STATE_HAT = 0,           // State Estimate
+            REFERENCE_TRAJECTORY = 1 // Reference Trajectory
+        };
 
         // TODO: Move to a State class
-    enum Idx
-    {
-        U = 0   // Force
+        enum Idx
+        {
+            U = 0 // Force
+        };
+
+        // Base Class Convex Model Predictive Controller Locomotion Task Node
+        // name = Task Name
+        // N = Trajectory Steps
+        // T = Trajectory Time Window
+        ConvexMPC(const std::string &name, const unsigned int N, const double T);
+
+    protected:
+        // Overriden Run Function
+        virtual void Run();
+
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
+
+        // Optimal Control Problem
+        std::unique_ptr<OptimalControl::LinearOptimalControl::LinearCondensedOCP> ocp_;
+
+        // TODO:
+        // Dynamic System Block
+        RigidBlock1D block_;
+
+        // State/Input Weights
+
+        // Number of System States
+        unsigned int num_states_;
+
+        // Number of System Inputs
+        unsigned int num_inputs_;
+
+        // Prediction Steps
+        unsigned int N_;
+
+        // Prediction Length (s)
+        double T_;
+
+        // Sampling Time (s)
+        double T_s_;
+
+        // Input (State Estimate)
+        double_vec_t x_hat_in_;
+
+        // Input (Reference Trajectory)
+        double_vec_t reference_in_;
+
+        // Output (Optimal Forces)
+        double_vec_t force_output_;
     };
-
-
-    // Base Class Convex Model Predictive Controller Locomotion Task Node
-    // name = Task Name
-    // N = Trajectory Steps
-    // T = Trajectory Time Window
-    ConvexMPC(const std::string &name, const unsigned int N, const double T);
-
-
-protected:
-    // Overriden Run Function
-    virtual void Run();
-
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
-
-    // Optimal Control Problem
-    std::unique_ptr<OptimalControl::LinearOptimalControl::LinearCondensedOCP> ocp_;
-
-    // TODO:
-    // Dynamic System Block
-    RigidBlock1D block_;
-
-    // State/Input Weights
-
-    // Number of System States
-    unsigned int num_states_;
-
-    // Number of System Inputs
-    unsigned int num_inputs_;
-
-    // Prediction Steps
-    unsigned int N_;
-
-    // Prediction Length (s)
-    double T_;
-
-    // Sampling Time (s)
-    double T_s_;
-
-    // Input (State Estimate)
-    double_vec_t x_hat_in_;
-
-    // Input (Reference Trajectory)
-    double_vec_t reference_in_;
-
-    // Output (Optimal Forces)
-    double_vec_t force_output_;
-
-};
-} // namespace Locomotion
-} // namespace Controllers
+} // namespace Controllers::Locomotion
 
 #endif // NOMAD_CORE_CONTROLLERS_CONVEXMPC_H_

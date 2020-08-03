@@ -33,32 +33,26 @@
 // Project Include Files
 #include <Common/State.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    // Base NomadState Class
+    class NomadState : public Common::State
     {
-        namespace FSM
+    public:
+        // Base Class NomadState
+        NomadState(const std::string &name, std::size_t id) : Common::State(name, id)
         {
-            // Base NomadState Class
-            class NomadState : public Common::State
-            {
-            public:
-                // Base Class NomadState
-                NomadState(const std::string &name, std::size_t id) : Common::State(name, id)
-                {
-                }
+        }
 
-                void SetControllerData(std::shared_ptr<NomadControlData> data)
-                {
-                    data_ = data;
-                }
+        void SetControllerData(std::shared_ptr<NomadControlData> data)
+        {
+            data_ = data;
+        }
 
-            protected:
-                // Data pointer to controller data pointer
-                std::shared_ptr<NomadControlData> data_;
-            };
+    protected:
+        // Data pointer to controller data pointer
+        std::shared_ptr<NomadControlData> data_;
+    };
 
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+} // namespace Robot::Nomad::FSM
 #endif // NOMAD_FSM_NOMADSTATE_H_

@@ -41,60 +41,54 @@
 #include <Nomad/MessageTypes/joint_state_t.hpp>
 #include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
 
-namespace Robot
+namespace Robot::Nomad::Interface
 {
-    namespace Nomad
+    class SimulationInterface : public Realtime::RealTimeTaskNode
     {
-        namespace Interface
+
+    public:
+        enum OutputPort
         {
-            class SimulationInterface : public Realtime::RealTimeTaskNode
-            {
+            JOINT_STATE_OUT = 0, // Joint State Estimate from Plant
+            IMU_STATE_OUT = 1,   // IMU State from Sensors
+            COM_STATE_OUT = 2,   // Ground Truth Body Pose State from Sim
+            NUM_OUTPUTS = 3
+        };
 
-            public:
-                enum OutputPort
-                {
-                    JOINT_STATE_OUT = 0,   // Joint State Estimate from Plant
-                    IMU_STATE_OUT = 1,     // IMU State from Sensors
-                    COM_STATE_OUT = 2,    // Ground Truth Body Pose State from Sim
-                    NUM_OUTPUTS = 3
-                };
+        enum InputPort
+        {
+            JOINT_CONTROL_CMD_IN = 0, // Control Message for Servo -> Sim
+            IMU_STATE_IN = 1,         // IMU State <- Sim
+            JOINT_STATE_IN = 2,       // Joint State <- Sim
+            COM_STATE_IN = 3,         // POse State <- Sim
+            NUM_INPUTS = 4
+        };
 
-                enum InputPort
-                {
-                    JOINT_CONTROL_CMD_IN = 0, // Control Message for Servo -> Sim
-                    IMU_STATE_IN = 1,         // IMU State <- Sim
-                    JOINT_STATE_IN = 2,       // Joint State <- Sim
-                    COM_STATE_IN = 3,        // POse State <- Sim
-                    NUM_INPUTS = 4      
-                };
+        // Plant Simulation Task Node
+        // name = Task Name
+        // stack_size = Task Thread Stack Size
+        // rt_priority = Task Thread Priority
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        SimulationInterface(const std::string &name = "Nomad_Simulation_Interface",
+                            const long rt_period = 10000,
+                            const unsigned int rt_priority = Realtime::Priority::MEDIUM,
+                            const int rt_core_id = -1,
+                            const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-                // Plant Simulation Task Node
-                // name = Task Name
-                // stack_size = Task Thread Stack Size
-                // rt_priority = Task Thread Priority
-                // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-                // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-                SimulationInterface(const std::string &name = "Nomad_Simulation_Interface",
-                             const long rt_period = 10000,
-                             const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                             const int rt_core_id = -1,
-                             const unsigned int stack_size = PTHREAD_STACK_MIN);
+    protected:
+        // Overriden Run Function
+        virtual void Run();
 
-            protected:
-                // Overriden Run Function
-                virtual void Run();
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
 
-                // Pre-Run Setup Routine.  Setup any one time initialization here.
-                virtual void Setup();
-                
-                // Messages
-                imu_data_t imu_data_;
-                com_state_t com_state_;
-                joint_state_t joint_state_;
-                joint_control_cmd_t joint_command_;
-            };
-        } // namespace Interface
-    }     // namespace Nomad
-} // namespace Robot
+        // Messages
+        imu_data_t imu_data_;
+        com_state_t com_state_;
+        joint_state_t joint_state_;
+        joint_control_cmd_t joint_command_;
+    };
+} // namespace Robot::Nomad::Interface
 
 #endif // ROBOT_NOMAD_SIMULATIONINTERFACE_H_

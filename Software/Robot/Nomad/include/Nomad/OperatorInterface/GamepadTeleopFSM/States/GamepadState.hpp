@@ -34,132 +34,128 @@
 #include <Common/State.hpp>
 #include <Nomad/OperatorInterface/GamepadInterface.hpp>
 
-namespace OperatorInterface
+namespace OperatorInterface::Teleop
 {
-    namespace Teleop
+    // State Class
+    class GamepadState : public Common::State
     {
-        // State Class
-        class GamepadState : public Common::State
+    public:
+        enum ControlMode
         {
-        public:
-            enum ControlMode
-            {
-                OFF = 0,
-                IDLE = 1,
-                PASSIVE = 2,
-                STAND = 3,
-                SIT = 4,
-                BALANCE = 5,
-                LOCOMOTION = 6,
-                JUMP = 7,
-                ESTOP = 8
-            };
-
-            // Base Class GamepadState
-            GamepadState(const std::string &name, std::size_t id) : Common::State(name, id)
-            {
-            }
-
-            void SetGamepadInterface(std::shared_ptr<GamepadInterface> gamepad)
-            {
-                gamepad_ = gamepad;
-            }
-
-            int GetMode()
-            {
-                return current_mode_;
-            }
-
-        protected:
-            // Data pointer to controller data pointer
-            std::shared_ptr<GamepadInterface> gamepad_;
-            int current_mode_;
+            OFF = 0,
+            IDLE = 1,
+            PASSIVE = 2,
+            STAND = 3,
+            SIT = 4,
+            BALANCE = 5,
+            LOCOMOTION = 6,
+            JUMP = 7,
+            ESTOP = 8
         };
 
-        class OffState : public GamepadState
+        // Base Class GamepadState
+        GamepadState(const std::string &name, std::size_t id) : Common::State(name, id)
         {
+        }
 
-        public:
-            OffState();
-
-            // Called upon a state change and we enter this state
-            // current_time = current robot/controller time
-            void Enter(double current_time);
-
-            // // current_time = current robot/controller time
-            // // Called upon a state change and we are exiting this state
-            // void Exit(double current_time);
-
-            // Logic to run each iteration of the state machine run
-            // dt = time step for this iteration
-            void Run(double dt);
-
-        protected:
-        };
-
-        class IdleState : public GamepadState
+        void SetGamepadInterface(std::shared_ptr<GamepadInterface> gamepad)
         {
+            gamepad_ = gamepad;
+        }
 
-        public:
-            IdleState();
-
-            // Called upon a state change and we enter this state
-            // current_time = current robot/controller time
-            void Enter(double current_time);
-
-            // // current_time = current robot/controller time
-            // // Called upon a state change and we are exiting this state
-            // void Exit(double current_time);
-
-            // Logic to run each iteration of the state machine run
-            // dt = time step for this iteration
-            void Run(double dt);
-
-        protected:
-        };
-
-        class StandState : public GamepadState
+        int GetMode()
         {
+            return current_mode_;
+        }
 
-        public:
-            StandState();
+    protected:
+        // Data pointer to controller data pointer
+        std::shared_ptr<GamepadInterface> gamepad_;
+        int current_mode_;
+    };
 
-            // Called upon a state change and we enter this state
-            // current_time = current robot/controller time
-            void Enter(double current_time);
+    class OffState : public GamepadState
+    {
 
-            // // current_time = current robot/controller time
-            // // Called upon a state change and we are exiting this state
-            // void Exit(double current_time);
+    public:
+        OffState();
 
-            // Logic to run each iteration of the state machine run
-            // dt = time step for this iteration
-            void Run(double dt);
+        // Called upon a state change and we enter this state
+        // current_time = current robot/controller time
+        void Enter(double current_time);
 
-        protected:
-        };
+        // // current_time = current robot/controller time
+        // // Called upon a state change and we are exiting this state
+        // void Exit(double current_time);
 
-        class SitState : public GamepadState
-        {
+        // Logic to run each iteration of the state machine run
+        // dt = time step for this iteration
+        void Run(double dt);
 
-        public:
-            SitState();
+    protected:
+    };
 
-            // Called upon a state change and we enter this state
-            // current_time = current robot/controller time
-            void Enter(double current_time);
+    class IdleState : public GamepadState
+    {
 
-            // // current_time = current robot/controller time
-            // // Called upon a state change and we are exiting this state
-            // void Exit(double current_time);
+    public:
+        IdleState();
 
-            // Logic to run each iteration of the state machine run
-            // dt = time step for this iteration
-            void Run(double dt);
+        // Called upon a state change and we enter this state
+        // current_time = current robot/controller time
+        void Enter(double current_time);
 
-        protected:
-        };
+        // // current_time = current robot/controller time
+        // // Called upon a state change and we are exiting this state
+        // void Exit(double current_time);
 
-    } // namespace Teleop
-} // namespace OperatorInterface
+        // Logic to run each iteration of the state machine run
+        // dt = time step for this iteration
+        void Run(double dt);
+
+    protected:
+    };
+
+    class StandState : public GamepadState
+    {
+
+    public:
+        StandState();
+
+        // Called upon a state change and we enter this state
+        // current_time = current robot/controller time
+        void Enter(double current_time);
+
+        // // current_time = current robot/controller time
+        // // Called upon a state change and we are exiting this state
+        // void Exit(double current_time);
+
+        // Logic to run each iteration of the state machine run
+        // dt = time step for this iteration
+        void Run(double dt);
+
+    protected:
+    };
+
+    class SitState : public GamepadState
+    {
+
+    public:
+        SitState();
+
+        // Called upon a state change and we enter this state
+        // current_time = current robot/controller time
+        void Enter(double current_time);
+
+        // // current_time = current robot/controller time
+        // // Called upon a state change and we are exiting this state
+        // void Exit(double current_time);
+
+        // Logic to run each iteration of the state machine run
+        // dt = time step for this iteration
+        void Run(double dt);
+
+    protected:
+    };
+} // namespace OperatorInterface::Teleop
 #endif // NOMAD_GAMEPADSTATE_H_

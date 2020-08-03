@@ -34,84 +34,78 @@
 #include <Common/FiniteStateMachine.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
 
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    typedef enum
     {
-        namespace FSM
+        OFF = 0,
+        IDLE = 1,
+        PASSIVE = 2,
+        STAND = 3,
+        BALANCE = 4,
+        LOCOMOTION = 5,
+        JUMP = 6,
+        ESTOP = 7
+    } CONTROL_MODE;
+
+    // Finite State Machine Class
+    class NomadControlFSM : public Common::FiniteStateMachine
+    {
+    public:
+        // Base Class Gamepad Teleop FSM
+        NomadControlFSM();
+
+        // Run an iteration of the state machine
+        bool Run(double dt);
+
+        // Return Mode from Active State
+        const std::shared_ptr<NomadControlData> &GetData() const;
+
+        //
+    protected:
+        //Helper function to create state machine
+        void
+        _CreateFSM();
+
+        std::shared_ptr<NomadControlData> data_;
+    };
+
+    class NomadControlTransitionEvent : public Common::TransitionEvent
+    {
+    public:
+        NomadControlTransitionEvent(const std::string &name, std::shared_ptr<NomadControlData> data);
+
+    protected:
+        std::shared_ptr<NomadControlData> data_;
+        std::string name_;
+    };
+
+    // Transitions
+    class CommandModeEvent : public NomadControlTransitionEvent
+    {
+    public:
+        // Base Class Transition Event
+        // name = Transition Event name
+        CommandModeEvent(const std::string &name,
+                         CONTROL_MODE mode,
+                         std::shared_ptr<NomadControlData> data) : NomadControlTransitionEvent(name, data), req_mode_(mode)
         {
-            typedef enum
+        }
+
+        // Stop state machine and cleans up
+        bool Triggered()
+        {
+            //s std::cout << "Check: " << data_->control_mode << std::endl;
+            if (data_->control_mode == req_mode_)
             {
-                OFF = 0,
-                IDLE = 1,
-                PASSIVE = 2,
-                STAND = 3,
-                BALANCE = 4,
-                LOCOMOTION = 5,
-                JUMP = 6,
-                ESTOP = 7
-            } CONTROL_MODE;
+                //std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
+                return true;
+            }
+            return false;
+        };
 
-            // Finite State Machine Class
-            class NomadControlFSM : public Common::FiniteStateMachine
-            {
-            public:
-                // Base Class Gamepad Teleop FSM
-                NomadControlFSM();
-
-                // Run an iteration of the state machine
-                bool Run(double dt);
-
-                // Return Mode from Active State
-                const std::shared_ptr<NomadControlData> &GetData() const;
-
-                //
-            protected:
-                //Helper function to create state machine
-                void
-                _CreateFSM();
-
-                std::shared_ptr<NomadControlData> data_;
-            };
-
-            class NomadControlTransitionEvent : public Common::TransitionEvent
-            {
-            public:
-                NomadControlTransitionEvent(const std::string &name, std::shared_ptr<NomadControlData> data);
-
-            protected:
-                std::shared_ptr<NomadControlData> data_;
-                std::string name_;
-            };
-
-            // Transitions
-            class CommandModeEvent : public NomadControlTransitionEvent
-            {
-            public:
-                // Base Class Transition Event
-                // name = Transition Event name
-                CommandModeEvent(const std::string &name,
-                                 CONTROL_MODE mode,
-                                 std::shared_ptr<NomadControlData> data) : NomadControlTransitionEvent(name, data), req_mode_(mode)
-                {
-                }
-
-                // Stop state machine and cleans up
-                bool Triggered()
-                {
-                       //s std::cout << "Check: " << data_->control_mode << std::endl;
-                    if (data_->control_mode == req_mode_)
-                    {
-                        //std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
-                        return true;
-                    }
-                    return false;
-                };
-
-            protected:
-                CONTROL_MODE req_mode_;
-            };
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+    protected:
+        CONTROL_MODE req_mode_;
+    };
+} // namespace Robot::Nomad::FSM
 #endif // ROBOT_NOMAD_NOMADCONTROLFSM_H_

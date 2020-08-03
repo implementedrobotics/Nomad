@@ -31,115 +31,110 @@
 namespace OptimalControl
 {
 
-class OptimalControlProblem
-{
-
-public:
-    // Base Class Optimal Control Problem
-    // N = Prediction Steps
-    // T = Horizon Length
-    // num_states = Number of States of OCP
-    // num_inputs = Number of Inputs of OCP
-    OptimalControlProblem(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const unsigned int max_iterations = 1000);
-
-    // Solve
-    virtual void Solve() = 0;
-
-    // Get System State Trajectory Vector
-    // TODO: Compute this depending on U solutions.  X_ = Ax+Bu
-    // TODO: Make pure virtual
-    virtual Eigen::MatrixXd X() const { return X_; }
-
-    //Get Current Input Sequence Solution
-    Eigen::MatrixXd U() const { return U_; }
-
-    // Set Weight Matrices
-    virtual void SetWeights(const Eigen::VectorXd &Q, const Eigen::VectorXd &R)
+    class OptimalControlProblem
     {
-        // TODO: Verify Vector Size Matches correct state and inputs
-        Q_ = Q.matrix().asDiagonal().toDenseMatrix();
-        R_ = R.matrix().asDiagonal().toDenseMatrix();
-    }
 
-    // Set Problem Initial Condition
-    void SetInitialCondition(const Eigen::VectorXd &x_0) { x_0_ = x_0; }
+    public:
+        // Base Class Optimal Control Problem
+        // N = Prediction Steps
+        // T = Horizon Length
+        // num_states = Number of States of OCP
+        // num_inputs = Number of Inputs of OCP
+        OptimalControlProblem(const unsigned int N, const double T, const unsigned int num_states, const unsigned int num_inputs, const unsigned int max_iterations = 1000);
 
-    // Set Reference Trajectory
-    void SetReference(const Eigen::MatrixXd &X_ref) { X_ref_ = X_ref; }
+        // Solve
+        virtual void Solve() = 0;
 
-    // Time step sample time
-    double SampleTime() const { return T_s_; }
+        // Get System State Trajectory Vector
+        // TODO: Compute this depending on U solutions.  X_ = Ax+Bu
+        // TODO: Make pure virtual
+        virtual Eigen::MatrixXd X() const { return X_; }
 
-    // Prediction Horizon Steps
-    int N() const { return N_; }
-    
-protected:
-    Eigen::VectorXd x_0_;   // Current State/Initial Condition
-    Eigen::MatrixXd X_ref_; // Reference Trajectory
+        //Get Current Input Sequence Solution
+        Eigen::MatrixXd U() const { return U_; }
 
-    Eigen::MatrixXd X_; // System State Trajectory
-    Eigen::MatrixXd U_; // Optimal Control Input Sequence Solution
+        // Set Weight Matrices
+        virtual void SetWeights(const Eigen::VectorXd &Q, const Eigen::VectorXd &R)
+        {
+            // TODO: Verify Vector Size Matches correct state and inputs
+            Q_ = Q.matrix().asDiagonal().toDenseMatrix();
+            R_ = R.matrix().asDiagonal().toDenseMatrix();
+        }
 
-    Eigen::MatrixXd Q_; // State Weights
-    Eigen::MatrixXd R_; // Input Weights
+        // Set Problem Initial Condition
+        void SetInitialCondition(const Eigen::VectorXd &x_0) { x_0_ = x_0; }
 
-    int num_states_; // Number of System States
-    int num_inputs_; // Number of System Inputs
+        // Set Reference Trajectory
+        void SetReference(const Eigen::MatrixXd &X_ref) { X_ref_ = X_ref; }
 
-    int N_; // Number of Prediction Steps
+        // Time step sample time
+        double SampleTime() const { return T_s_; }
 
-    double T_s_; // Sample Time
-    double T_;   // Horizon Length
+        // Prediction Horizon Steps
+        int N() const { return N_; }
 
-    int max_iterations_; // Max Iterations for Solver
-    int solver_iterations_; // Total number of Solver iterations for solution
-    double solver_time_; // Total time for Solver to compute a solution
+    protected:
+        Eigen::VectorXd x_0_;   // Current State/Initial Condition
+        Eigen::MatrixXd X_ref_; // Reference Trajectory
 
-    bool solved_;
-    // TODO: 
-    // Infeasible, BlahBlah
+        Eigen::MatrixXd X_; // System State Trajectory
+        Eigen::MatrixXd U_; // Optimal Control Input Sequence Solution
 
+        Eigen::MatrixXd Q_; // State Weights
+        Eigen::MatrixXd R_; // Input Weights
 
-};
+        int num_states_; // Number of System States
+        int num_inputs_; // Number of System Inputs
+
+        int N_; // Number of Prediction Steps
+
+        double T_s_; // Sample Time
+        double T_;   // Horizon Length
+
+        int max_iterations_;    // Max Iterations for Solver
+        int solver_iterations_; // Total number of Solver iterations for solution
+        double solver_time_;    // Total time for Solver to compute a solution
+
+        bool solved_;
+        // TODO:
+        // Infeasible, BlahBlah
+    };
 } // namespace OptimalControl
 
 namespace OptimalControl
 {
-namespace LinearOptimalControl
-{
-class LinearOptimalControlProblem : public OptimalControlProblem
-{
-public:
-    // Base Class Linear Optimal Control Problem
-    // N = Prediction Steps
-    // T = Horizon Length
-    // num_states = Number of States of OCP
-    // num_inputs = Number of Inputs of OCP
-    // max_iterations = Maximum number of solver iterations
-    LinearOptimalControlProblem(const unsigned int N, 
-    const double T, 
-    const unsigned int num_states, 
-    const unsigned int num_inputs, 
-    const unsigned int max_iterations = 1000);
-
-    // Set Model Matrices
-    void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B)
+    namespace LinearOptimalControl
     {
-        A_ = A;
-        B_ = B;
-    }
+        class LinearOptimalControlProblem : public OptimalControlProblem
+        {
+        public:
+            // Base Class Linear Optimal Control Problem
+            // N = Prediction Steps
+            // T = Horizon Length
+            // num_states = Number of States of OCP
+            // num_inputs = Number of Inputs of OCP
+            // max_iterations = Maximum number of solver iterations
+            LinearOptimalControlProblem(const unsigned int N,
+                                        const double T,
+                                        const unsigned int num_states,
+                                        const unsigned int num_inputs,
+                                        const unsigned int max_iterations = 1000);
 
-    // Solve
-    virtual void Solve();
+            // Set Model Matrices
+            void SetModelMatrices(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B)
+            {
+                A_ = A;
+                B_ = B;
+            }
 
-protected:
-    Eigen::MatrixXd A_; // System State Transition Matrix
-    Eigen::MatrixXd B_; // Control Input Matrix
+            // Solve
+            virtual void Solve();
 
-
-
-};
-} // namespace LinearOptimalControl
+        protected:
+            Eigen::MatrixXd A_; // System State Transition Matrix
+            Eigen::MatrixXd B_; // Control Input Matrix
+        };
+    } // namespace LinearOptimalControl
 } // namespace OptimalControl
 
 #endif // NOMAD_CORE_OPTIMALCONTROL_OPTIMALCONTROLPROBLEM_H_

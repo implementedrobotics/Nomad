@@ -35,55 +35,51 @@
 // // Project Includes
 // #include <Realtime/RealTimeTask.hpp>
 
-// namespace Controllers
+// namespace Controllers::Locomotion
 // {
+//     //using namespace RealTimeControl;
 
-// namespace Locomotion
-// {
-// //using namespace RealTimeControl;
+//     GaitScheduler::GaitScheduler(const std::string &name,
+//                                  const long rt_period,
+//                                  unsigned int rt_priority,
+//                                  const int rt_core_id,
+//                                  const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
+//                                                                   gait_schedule_sequence_num_(0)
+//     {
+//         // Create Ports
+//         zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
 
-// GaitScheduler::GaitScheduler(const std::string &name,
-//                      const long rt_period,
-//                      unsigned int rt_priority,
-//                      const int rt_core_id,
-//                      const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-//                                                       gait_schedule_sequence_num_(0)
-// {
-//     // Create Ports
-//     zmq::context_t *ctx = Realtime::RealTimeTaskManager::Instance()->GetZMQContext();
+//         // Gait Scheduler Output Ports
+//         // TODO: Independent port speeds.  For now all ports will be same speed as task node
+//         Communications::Port *port = new Communications::Port("CONTACT_STATE", ctx, "gait/contact", rt_period);
+//         output_port_map_[OutputPort::CONTACT_STATE] = port;
+//     }
 
-//     // Gait Scheduler Output Ports
-//     // TODO: Independent port speeds.  For now all ports will be same speed as task node
-//     Communications::Port *port = new Communications::Port("CONTACT_STATE", ctx, "gait/contact", rt_period);
-//     output_port_map_[OutputPort::CONTACT_STATE] = port;
-// }
+//     void GaitScheduler::Run()
+//     {
+//         // Publish State
 
-// void GaitScheduler::Run()
-// {
-//     // Publish State
+//         // TODO: Struct Pubish.
+//         // Send Gait Contact Phase
+//         // Send Gait Swing/Contact Phase Times
+//         // TODO: Zero Copy Publish
+//         std::stringstream s;
+//         s << "Contact [0,1,0,1] " << gait_schedule_sequence_num_;
+//         auto msg = s.str();
+//         zmq::message_t message(msg.length());
+//         memcpy(message.data(), msg.c_str(), msg.length());
 
-//     // TODO: Struct Pubish.
-//     // Send Gait Contact Phase
-//     // Send Gait Swing/Contact Phase Times
-//     // TODO: Zero Copy Publish
-//     std::stringstream s;
-//     s << "Contact [0,1,0,1] " << gait_schedule_sequence_num_;
-//     auto msg = s.str();
-//     zmq::message_t message(msg.length());
-//     memcpy(message.data(), msg.c_str(), msg.length());
+//         GetOutputPort(0)->Send(message);
 
-//     GetOutputPort(0)->Send(message);
+//         std::cout << "[GaitScheduler]: Publishing: " << msg << std::endl;
 
-//     std::cout << "[GaitScheduler]: Publishing: " << msg << std::endl;
+//         gait_schedule_sequence_num_++;
+//     }
 
-//     gait_schedule_sequence_num_++;
-// }
-
-// void GaitScheduler::Setup()
-// {
-//     GetOutputPort(0)->Bind();
-//     std::cout << "[GaitScheduler]: " << "Gait Scheduler Publisher Running!" << std::endl;
-// }
-
-// } // namespace Locomotion
-// } // namespace Controllers
+//     void GaitScheduler::Setup()
+//     {
+//         GetOutputPort(0)->Bind();
+//         std::cout << "[GaitScheduler]: "
+//                   << "Gait Scheduler Publisher Running!" << std::endl;
+//     }
+// } // namespace Controllers::Locomotion

@@ -33,46 +33,43 @@
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
 
-namespace Controllers
+namespace Controllers::Locomotion
 {
-namespace Locomotion
-{
-class GaitScheduler : public Realtime::RealTimeTaskNode
-{
-
-public:
-    enum OutputPort
+    class GaitScheduler : public Realtime::RealTimeTaskNode
     {
-        CONTACT_STATE = 0 // Leg Contact State
+
+    public:
+        enum OutputPort
+        {
+            CONTACT_STATE = 0 // Leg Contact State
+        };
+
+        enum InputPort
+        {
+        };
+
+        // Base Class Gait Scheduler Task Node
+        // name = Task Name
+        // stack_size = Task Thread Stack Size
+        // rt_priority = Task Thread Priority
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        GaitScheduler(const std::string &name = "GaitScheduler_Task",
+                      const long rt_period = 20000,
+                      const unsigned int rt_priority = Realtime::Priority::HIGH,
+                      const int rt_core_id = -1,
+                      const unsigned int stack_size = PTHREAD_STACK_MIN);
+
+    protected:
+        // Overriden Run Function
+        virtual void Run();
+
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
+
+    private:
+        int gait_schedule_sequence_num_;
     };
-
-    enum InputPort
-    {
-    };
-
-    // Base Class Gait Scheduler Task Node
-    // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    GaitScheduler(const std::string &name = "GaitScheduler_Task",
-                   const long rt_period = 20000,
-                   const unsigned int rt_priority = Realtime::Priority::HIGH,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
-
-protected:
-    // Overriden Run Function
-    virtual void Run();
-
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
-
-private:
-    int gait_schedule_sequence_num_;
-};
-} // namespace Locomotion
-} // namespace Controllers
+} // namespace Controllers::Locomotion
 
 #endif // NOMAD_CORE_CONTROLLERS_GAITSCHEDULER_H_

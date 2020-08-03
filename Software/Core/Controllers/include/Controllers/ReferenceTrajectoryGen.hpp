@@ -37,67 +37,63 @@
 #include <Realtime/RealTimeTask.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 
-namespace Controllers
-{
-namespace Locomotion
+namespace Controllers::Locomotion
 {
 
-// TODO: This could just be a base class.  For now it is our specific trajectory generator for the convex mpc.  i.e. Number of states is fixed, and uses all assumptions (like 0 z-velocity, etc)
-// Long story short this is not universal...
-class ReferenceTrajectoryGenerator : public Realtime::RealTimeTaskNode
-{
-
-public:
-    enum OutputPort
+    // TODO: This could just be a base class.  For now it is our specific trajectory generator for the convex mpc.  i.e. Number of states is fixed, and uses all assumptions (like 0 z-velocity, etc)
+    // Long story short this is not universal...
+    class ReferenceTrajectoryGenerator : public Realtime::RealTimeTaskNode
     {
-        REFERENCE = 0 // Trajectory Reference
+
+    public:
+        enum OutputPort
+        {
+            REFERENCE = 0 // Trajectory Reference
+        };
+
+        enum InputPort
+        {
+            STATE_HAT = 0, // State Estimate
+            SETPOINT = 1   // Input Setpoint (Operator)
+        };
+
+        // Base Class Reference Trajectory Generator Task Node
+        // name = Task Name
+        // N = Trajectory Steps
+        // T = Trajectory Time Window
+        ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T);
+
+    protected:
+        // Overriden Run Function
+        virtual void Run();
+
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
+
+        // Trajectory State
+        Eigen::MatrixXd X_ref_;
+
+        // Number of System States
+        int num_states_;
+
+        // Number of Sample Points
+        int N_;
+
+        // Sample Time
+        double T_s_;
+
+        // Horizon Length
+        double T_;
+
+        // Input (State Estimate)
+        double_vec_t x_hat_in_;
+
+        // Input (Setpoint)
+        double_vec_t setpoint_in_;
+
+        // Output (Reference Trajectory)
+        double_vec_t reference_out_;
     };
-
-    enum InputPort
-    {
-        STATE_HAT = 0, // State Estimate
-        SETPOINT = 1   // Input Setpoint (Operator)
-    };
-
-    // Base Class Reference Trajectory Generator Task Node
-    // name = Task Name
-    // N = Trajectory Steps
-    // T = Trajectory Time Window
-    ReferenceTrajectoryGenerator(const std::string &name, const unsigned int N, const double T);
-
-protected:
-    // Overriden Run Function
-    virtual void Run();
-
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
-
-    // Trajectory State
-    Eigen::MatrixXd X_ref_;
-
-    // Number of System States
-    int num_states_; 
-    
-    // Number of Sample Points
-    int N_; 
-
-    // Sample Time
-    double T_s_; 
-
-    // Horizon Length
-    double T_;   
-
-    // Input (State Estimate)
-    double_vec_t x_hat_in_;
-
-    // Input (Setpoint)
-    double_vec_t setpoint_in_;
-
-    // Output (Reference Trajectory)
-    double_vec_t reference_out_;
-
-};
-} // namespace Locomotion
-} // namespace Controllers
+} // namespace Controllers::Locomotion
 
 #endif // NOMAD_CORE_CONTROLLERS_REFERENCETRAJECTORYGEN_H_

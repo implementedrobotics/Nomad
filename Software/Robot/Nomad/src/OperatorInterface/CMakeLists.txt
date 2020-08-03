@@ -10,8 +10,6 @@ ${PROJECT_SOURCE_DIR}/OperatorInterface/src/GamepadTeleopFSM/States/GamepadState
 set(OPERATOR_INTERFACE_LIBS Realtime pthread rt zmq Common)
 
 
-include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
-include_directories("${PROJECT_SOURCE_DIR}/OperatorInterface/include")
 include_directories("${PROJECT_SOURCE_DIR}/Common/include")
 include_directories("${PROJECT_SOURCE_DIR}/Realtime/include")
 include_directories("${PROJECT_SOURCE_DIR}/Communications/include")

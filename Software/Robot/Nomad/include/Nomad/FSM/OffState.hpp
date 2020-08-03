@@ -33,32 +33,25 @@
 // Project Include Files
 #include <Nomad/FSM/NomadState.hpp>
 
-namespace Robot
+namespace Robot::Nomad::FSM
 {
-    namespace Nomad
+    class OffState : public NomadState
     {
 
-        namespace FSM
-        {
-            class OffState : public NomadState
-            {
+    public:
+        OffState();
 
-            public:
-                OffState();
+        // Called upon a state change and we enter this state
+        // current_time = current robot/controller time
+        void Enter(double current_time);
 
-                // Called upon a state change and we enter this state
-                // current_time = current robot/controller time
-                void Enter(double current_time);
+        // // current_time = current robot/controller time
+        // // Called upon a state change and we are exiting this state
+        // void Exit(double current_time);
 
-                // // current_time = current robot/controller time
-                // // Called upon a state change and we are exiting this state
-                // void Exit(double current_time);
-
-                // Logic to run each iteration of the state machine run
-                // dt = time step for this iteration
-                void Run(double dt);
-            };
-        } // namespace FSM
-    }     // namespace Nomad
-} // namespace Robot
+        // Logic to run each iteration of the state machine run
+        // dt = time step for this iteration
+        void Run(double dt);
+    };
+} // namespace Robot::Nomad::FSM
 #endif // NOMAD_CONTROL_OFFSTATE_H_
