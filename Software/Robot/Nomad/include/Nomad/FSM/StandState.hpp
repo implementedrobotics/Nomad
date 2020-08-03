@@ -52,6 +52,10 @@ namespace Robot::Nomad::FSM
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
         void Run(double dt);
+
+    private:
+        full_state_t nomad_state_initial_;
+
     };
 } // namespace Robot::Nomad::FSM
 #endif // NOMAD_CONTROL_STANDSTATE_H_

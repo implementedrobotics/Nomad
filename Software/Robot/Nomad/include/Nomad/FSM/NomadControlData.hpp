@@ -33,6 +33,7 @@
 #include <Eigen/Dense>
 
 // Project Include Files
+#include <Nomad/MessageTypes/full_state_t.hpp>
 //#include <Nomad/FSM/NomadControlFSM.hpp>
 
 namespace Robot::Nomad::FSM
@@ -41,6 +42,10 @@ namespace Robot::Nomad::FSM
     struct NomadControlData
     {
         int control_mode;
+
+        // State
+        full_state_t nomad_state;
+
 
         // Outputs Etc
     };

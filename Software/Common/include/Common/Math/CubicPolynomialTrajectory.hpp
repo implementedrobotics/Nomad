@@ -1,8 +1,8 @@
 
 /*
- * GamepadTeleopFSM.cpp
+ * CubicPolynomialTrajectory.h
  *
- *  Created on: June 27, 2020
+ *  Created on: June 21, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,34 +22,48 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef NOMAD_CUBICPOLYNOMIALTRAJECTORY_H_
+#define NOMAD_CUBICPOLYNOMIALTRAJECTORY_H_
+
 // C System Files
 
 // C++ System Files
-#include <iostream>
 
 // Third Party Includes
+#include <Eigen/Dense>
 
 // Project Include Files
-
-#include <Nomad/FSM/StandState.hpp>
-
-namespace Robot::Nomad::FSM
+namespace Common
 {
-    StandState::StandState() : NomadState("STAND", 2)
+    class CubicPolynomialTrajectory
     {
-    }
-    void StandState::Run(double dt)
-    {
-       //std::cout << "Stand Running" << std::endl;
-        // Set mode to idle
-    }
-    void StandState::Enter(double current_time)
-    {
-        State::Enter(current_time);
 
-        std::cout << "Entering Stand State!!!" << std::endl;
-        nomad_state_initial_ = data_->nomad_state;
+    public:
+        CubicPolynomialTrajectory(double q_f, double t_f);
+        CubicPolynomialTrajectory(double q_0, double q_f, double v_0, double v_f, double t_0, double t_f);
+        CubicPolynomialTrajectory(); // Empty Trajectory
 
-        // current_mode_ = ControlMode::OFF;
-    }
-} // namespace Robot::Nomad::FSM
+        void Generate(double q_f, double t_f);
+        void Generate(double q_0, double q_f, double v_0, double v_f, double t_0, double t_f);
+
+        // TODO: Check for valid t between 0<->t_f
+        double Position(double t);
+        double Velocity(double t);
+        double Acceleration(double t);
+
+    protected:
+        void ComputeCoeffs();
+
+        Eigen::Vector4d a_; // Coefficients
+
+        double q_0_;
+        double v_0_;
+        double t_0_;
+
+        double q_f_;
+        double v_f_;
+        double t_f_;
+    };
+} // namespace Common
+
+#endif // NOMAD_CUBICPOLYNOMIALTRAJECTORY_H_

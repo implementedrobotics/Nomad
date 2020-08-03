@@ -79,10 +79,21 @@ namespace Robot::Nomad::Controllers
 
         // Update Data
         nomad_control_FSM_->GetData()->control_mode = teleop_data_.control_mode;
+        nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
         // Run FSM
         nomad_control_FSM_->Run(0);
 
+
+        std::cout << Systems::Time::GetTime() << std::endl;
+
+        {
+            Systems::Time test;
+            for(int i = 0; i < 100000; i++)
+            {
+                
+            }
+        }
         // Get Desired Force Output to send out of leg controller
         // Copy command to message
         //memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));

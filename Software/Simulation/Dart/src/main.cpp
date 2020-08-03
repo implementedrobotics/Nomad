@@ -1,11 +1,12 @@
 
+//#include <dart/collision/bullet/BulletCollisionDetector.hpp>
 #include <dart/dynamics/Skeleton.hpp>
 #include <dart/dynamics/DegreeOfFreedom.hpp>
 #include <dart/dynamics/WeldJoint.hpp>
 #include <dart/dynamics/SphereShape.hpp>
 #include <dart/simulation/World.hpp>
 #include <dart/utils/urdf/DartLoader.hpp>
-
+#include <dart/constraint/ConstraintSolver.hpp>
 #include <dart/gui/osg/osg.hpp>
 #include <dart/gui/osg/TrackballManipulator.hpp>
 
@@ -248,6 +249,9 @@ int main(int argc, char *argv[])
   // Create and add ground to world
   SkeletonPtr ground = CreateGround();
   g_world->addSkeleton(ground);
+
+  // Update Collision
+  //g_world->getConstraintSolver()->setCollisionDetector(dart::collision::BulletCollisionDetector::create());
 
   g_nomad = std::make_shared<NomadRobot>(g_world);
 
