@@ -82,7 +82,7 @@ namespace Robot::Nomad::Controllers
         nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
         // Run FSM
-        nomad_control_FSM_->Run(0);
+        nomad_control_FSM_->Run(rt_period_*1e-3);
 
 
         std::cout << Systems::Time::GetTime<double>() << std::endl;
