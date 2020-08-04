@@ -48,7 +48,7 @@ namespace Robot::Nomad::FSM
         {
             data_ = data;
         }
-
+        
     protected:
         // Data pointer to controller data pointer
         std::shared_ptr<NomadControlData> data_;

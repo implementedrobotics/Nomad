@@ -38,22 +38,23 @@ namespace Robot::Nomad::FSM
     StandState::StandState() : NomadState("STAND", 2)
     {
     }
-    void StandState::Run(double dt)
+    void StandState::Run_(double dt)
     {
-       //std::cout << "Stand Running" << std::endl;
-        // Set mode to idle
+       std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+       full_state_t nomad_state_ = data_->nomad_state;
     }
-    void StandState::Enter(double current_time)
+    void StandState::Enter_(double current_time)
     {
-        State::Enter(current_time);
-
-        std::cout << "Entering Stand State!!!" << std::endl;
+        std::cout << "Entering Stand State!!! | " << current_time << std::endl;
         nomad_state_initial_ = data_->nomad_state;
 
-        // Get Start Time
         // Create Cubic Trajectory
-        
-
-        // current_mode_ = ControlMode::OFF;
+        double stand_height = .35; // TODO: From Parameter/ControlData
+        // TODO: 1.0 = Stand Time, Make Param
+        // TODO: Add indexing form FL/FR etc indexing
+        for(int i = 0; i < 4; i++)
+        {
+            stand_traj_[i].Generate(nomad_state_initial_.foot_pos[i*3+2], -stand_height, 0.0, 0.0, 0.0, 1.0);
+        }
     }
 } // namespace Robot::Nomad::FSM

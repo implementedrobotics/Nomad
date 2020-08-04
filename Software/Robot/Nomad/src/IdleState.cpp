@@ -38,12 +38,12 @@ namespace Robot::Nomad::FSM
     IdleState::IdleState() : NomadState("IDLE", 1)
     {
     }
-    void IdleState::Run(double dt)
+    void IdleState::Run_(double dt)
     {
        // std::cout << "Idle Running" << std::endl;
         // Set mode to idle
     }
-    void IdleState::Enter(double current_time)
+    void IdleState::Enter_(double current_time)
     {
         std::cout << "Entering Idle State!!!" << std::endl;
         // current_mode_ = ControlMode::OFF;

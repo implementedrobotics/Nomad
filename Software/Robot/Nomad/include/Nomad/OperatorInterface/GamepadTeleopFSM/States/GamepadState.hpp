@@ -82,7 +82,7 @@ namespace OperatorInterface::Teleop
 
         // Called upon a state change and we enter this state
         // current_time = current robot/controller time
-        void Enter(double current_time);
+        void Enter_(double current_time);
 
         // // current_time = current robot/controller time
         // // Called upon a state change and we are exiting this state
@@ -90,7 +90,7 @@ namespace OperatorInterface::Teleop
 
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
-        void Run(double dt);
+        void Run_(double dt);
 
     protected:
     };
@@ -103,7 +103,7 @@ namespace OperatorInterface::Teleop
 
         // Called upon a state change and we enter this state
         // current_time = current robot/controller time
-        void Enter(double current_time);
+        void Enter_(double current_time);
 
         // // current_time = current robot/controller time
         // // Called upon a state change and we are exiting this state
@@ -111,7 +111,7 @@ namespace OperatorInterface::Teleop
 
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
-        void Run(double dt);
+        void Run_(double dt);
 
     protected:
     };
@@ -124,7 +124,7 @@ namespace OperatorInterface::Teleop
 
         // Called upon a state change and we enter this state
         // current_time = current robot/controller time
-        void Enter(double current_time);
+        void Enter_(double current_time);
 
         // // current_time = current robot/controller time
         // // Called upon a state change and we are exiting this state
@@ -132,7 +132,7 @@ namespace OperatorInterface::Teleop
 
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
-        void Run(double dt);
+        void Run_(double dt);
 
     protected:
     };
@@ -145,7 +145,7 @@ namespace OperatorInterface::Teleop
 
         // Called upon a state change and we enter this state
         // current_time = current robot/controller time
-        void Enter(double current_time);
+        void Enter_(double current_time);
 
         // // current_time = current robot/controller time
         // // Called upon a state change and we are exiting this state
@@ -153,7 +153,7 @@ namespace OperatorInterface::Teleop
 
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
-        void Run(double dt);
+        void Run_(double dt);
 
     protected:
     };

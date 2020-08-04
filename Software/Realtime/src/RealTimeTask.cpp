@@ -37,6 +37,8 @@
 #include <sys/resource.h>
 #include <malloc.h>
 
+
+
 // Timing comparison
 #define tscmp(a, b, CMP) \
     (((a)->tv_sec == (b)->tv_sec) ? ((a)->tv_nsec CMP(b)->tv_nsec) : ((a)->tv_sec CMP(b)->tv_sec))
@@ -76,6 +78,7 @@ namespace Realtime
                                                                         stack_size_(stack_size),
                                                                         thread_status_(-1),
                                                                         process_id_(-1),
+                                                                        tick_count_(0),
                                                                         thread_cancel_event_(false)
     {
         // Add to task manager
@@ -187,6 +190,8 @@ namespace Realtime
         // Call Setup
         task->Setup();
 
+        Statistics::RollingStats<double> stats;
+
         // TODO:  Check Control deadlines as well.  If run over we can throw exception here
         while (1)
         {
@@ -201,6 +206,17 @@ namespace Realtime
             //std::cout << "Run Time: " << total_us << std::endl;
 
             long int remainder = TaskDelay(task->rt_period_ - total_us);
+
+            auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
+            
+            stats.Add((double)total_elapsed);
+
+            //std::cout << "Name: " << task->task_name_ << " | " << stats.StandardDeviation() << " | " << stats.Mean() << " | " << task->rt_period_ << " | " << total_elapsed <<  std::endl;
+            //std::cout << "Stats : " << stats.Min() << " | " << stats.Mean() << " | " << stats.StandardDeviation() << " | " << stats.Max() << std::endl;
+            
+            // Do timing statistics
+            task->tick_count_++;
+
             //std::cout << "Period: " << task->rt_period_ << std::endl;
             //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
             //std::cout << "Total Task Time: " <<  task->rt_period_ - total_us + remainder + total_us << " Frequency: " <<  1.0 / ((task->rt_period_ - total_us + remainder + total_us) * 1e-6) << " HZ" << std::endl;

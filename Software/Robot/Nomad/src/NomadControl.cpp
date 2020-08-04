@@ -84,7 +84,7 @@ namespace Robot::Nomad::Controllers
         // Run FSM
         nomad_control_FSM_->Run(dt_nominal_);
 
-        std::cout << Systems::Time::GetTime<double>() << " | RATE: " << dt_nominal_ << std::endl;
+        //std::cout << Systems::Time::GetTime<double>() << " | RATE: " << dt_nominal_ << std::endl;
         // {
         //     Systems::Time test;
         //     for(int i = 0; i < 100000; i++)

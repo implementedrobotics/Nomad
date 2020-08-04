@@ -34,7 +34,11 @@ namespace Common
 {
     State::State(const std::string &name, std::size_t id)
         : name_(name),
-          id_(id)
+          id_(id),
+          start_time_(0.0),
+          end_time_(0.0),
+          elapsed_time_(0.0),
+          cycle_count_(0)
     {
         // Nothing to do
     }
@@ -44,14 +48,34 @@ namespace Common
         // Nothing to do
     }
 
+    void State::Run(double dt)
+    {
+
+        elapsed_time_ += dt;
+        cycle_count_++;
+
+        Run_(dt);
+    }
+
     void State::Enter(double current_time)
     {
         start_time_ = current_time;
+        elapsed_time_ = 0.0;
+        cycle_count_ = 0;
+
+        Enter_(current_time);
+    }
+    // Called upon a state change and we enter this state
+    // current_time = current robot/controller time
+    void State::Enter_(double current_time)
+    {
+        // No op
     }
 
     void State::Exit(double current_time)
     {
         // Nothing to do
+        end_time_ = current_time;
     }
     void State::AddTransitionEvent(TransitionEventPtr event, StatePtr next_state)
     {

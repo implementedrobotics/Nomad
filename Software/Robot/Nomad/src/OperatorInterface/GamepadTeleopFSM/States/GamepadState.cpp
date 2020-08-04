@@ -39,12 +39,12 @@ namespace OperatorInterface
         OffState::OffState() : GamepadState("OFF", 0)
         {
         }
-        void OffState::Run(double dt)
+        void OffState::Run_(double dt)
         {
             //std::cout << "Off Running" << std::endl;
             // Set mode to idle
         }
-        void OffState::Enter(double current_time)
+        void OffState::Enter_(double current_time)
         {
             //std::cout << "Entering Off State" << std::endl;
             current_mode_ = ControlMode::OFF;
@@ -55,12 +55,12 @@ namespace OperatorInterface
         IdleState::IdleState() : GamepadState("IDLE", 1)
         {
         }
-        void IdleState::Run(double dt)
+        void IdleState::Run_(double dt)
         {
             //std::cout << "Idle Running" << std::endl;
             // Set mode to idle
         }
-        void IdleState::Enter(double current_time)
+        void IdleState::Enter_(double current_time)
         {
             //std::cout << "Entering Idle State" << std::endl;
             current_mode_ = ControlMode::IDLE;
@@ -70,12 +70,12 @@ namespace OperatorInterface
         StandState::StandState() : GamepadState("STAND", 2)
         {
         }
-        void StandState::Run(double dt)
+        void StandState::Run_(double dt)
         {
             //std::cout << "Stand Running" << std::endl;
             // Set mode to stand
         }
-        void StandState::Enter(double current_time)
+        void StandState::Enter_(double current_time)
         {
             //std::cout << "Entering Stand State" << std::endl;
             current_mode_ = ControlMode::STAND;
@@ -84,12 +84,12 @@ namespace OperatorInterface
         SitState::SitState() : GamepadState("SIT", 3)
         {
         }
-        void SitState::Run(double dt)
+        void SitState::Run_(double dt)
         {
             //std::cout << "Sit Running" << std::endl;
             // Set mode to stand
         }
-        void SitState::Enter(double current_time)
+        void SitState::Enter_(double current_time)
         {
             //std::cout << "Entering Sit State" << std::endl;
             current_mode_ = ControlMode::SIT;

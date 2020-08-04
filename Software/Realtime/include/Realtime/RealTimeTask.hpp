@@ -39,6 +39,7 @@
 
 // Project Includes
 #include <Communications/Port.hpp>
+#include <Common/Math/Statistics.hpp>
 
 namespace Realtime
 {
@@ -139,6 +140,11 @@ namespace Realtime
         // Task Period (seconds)
         double dt_nominal_;
 
+        // Timing Stats
+        long unsigned int tick_count_;
+        
+        Statistics::RollingStats<double> stats;
+        
         // Task CPU Affinboolity/CoreID
         int rt_core_id_;
 

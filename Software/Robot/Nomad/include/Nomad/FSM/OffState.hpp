@@ -43,7 +43,7 @@ namespace Robot::Nomad::FSM
 
         // Called upon a state change and we enter this state
         // current_time = current robot/controller time
-        void Enter(double current_time);
+        void Enter_(double current_time);
 
         // // current_time = current robot/controller time
         // // Called upon a state change and we are exiting this state
@@ -51,7 +51,7 @@ namespace Robot::Nomad::FSM
 
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
-        void Run(double dt);
+        void Run_(double dt);
     };
 } // namespace Robot::Nomad::FSM
 #endif // NOMAD_CONTROL_OFFSTATE_H_

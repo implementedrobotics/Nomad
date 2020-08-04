@@ -89,7 +89,7 @@ namespace Common
 
         // Logic to run each iteration of the state machine run
         // dt = time step for this iteration
-        virtual void Run(double dt) = 0;
+        virtual void Run(double dt);
 
         // Next State to transition to
         const StatePtr &NextState() const;
@@ -97,6 +97,15 @@ namespace Common
         // TODO: Valid state transition?
 
     protected:
+
+        // Logic to run each iteration of the state machine run
+        // dt = time step for this iteration
+        virtual void Run_(double dt) = 0;
+
+        // Called upon a state change and we enter this state
+        // current_time = current robot/controller time
+        virtual void Enter_(double current_time);
+
         // State name
         std::string name_;
 
@@ -112,6 +121,16 @@ namespace Common
 
         // Start begin time
         double start_time_;
+
+        // End time of state machine
+        double end_time_;
+
+        // Total elapsed time since state machine began
+        double elapsed_time_;
+
+        // Total iteration count of state machine run cycles
+        std::size_t cycle_count_;
+
     };
 } // namespace Common
 

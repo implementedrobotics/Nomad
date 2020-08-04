@@ -38,14 +38,14 @@ namespace Robot::Nomad::FSM
     OffState::OffState() : NomadState("OFF", 0)
     {
     }
-    void OffState::Run(double dt)
+    void OffState::Run_(double dt)
     {
        // std::cout << "Off Running"
         //          << " " << data_->control_mode << std::endl;
 
         // Set mode to idle
     }
-    void OffState::Enter(double current_time)
+    void OffState::Enter_(double current_time)
     {
         std::cout << "Entering Off State!!!!" << std::endl;
         // current_mode_ = ControlMode::OFF;
