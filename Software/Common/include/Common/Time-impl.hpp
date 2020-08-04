@@ -1,7 +1,7 @@
 /*
- * Time.cpp
+ * Time-imp.hpp
  *
- *  Created on: August 9, 2019
+ *  Created on: August 3, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,12 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Primary Include
-#include <Common/Time.hpp>
+// C System Files
 
-// C System Includes
-
-// C++ System Includes
+// C++ System Files
 #include <iostream>
 #include <string>
 #include <chrono>
@@ -34,27 +31,19 @@
 // Third Party Includes
 
 // Project Include Files
+#include <Common/Time.hpp>
 
 namespace Systems
 {
-    Time::Time()
-    {
-        start_ = std::chrono::high_resolution_clock::now();
-    }
-    Time::~Time()
-    {
-        end_ = std::chrono::high_resolution_clock::now();
-        duration_ = end_ -  start_;
 
-        std::cout << "Timer Took: " << duration_.count()*1e6 << "uS" << std::endl;
-    }
-    uint64_t Time::GetTimeStamp()
+    template <typename T>
+    T Time::GetTime()
     {
-        static auto start_time = std::chrono::high_resolution_clock::now(); 
+        static auto start_time = std::chrono::high_resolution_clock::now();
 
-        auto time_now = std::chrono::high_resolution_clock::now(); 
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+        auto time_now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::duration<T>>(time_now - start_time);
         return duration.count();
     }
 
-}
+} // namespace Systems

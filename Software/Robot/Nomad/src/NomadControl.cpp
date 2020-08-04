@@ -85,7 +85,7 @@ namespace Robot::Nomad::Controllers
         nomad_control_FSM_->Run(0);
 
 
-        std::cout << Systems::Time::GetTime() << std::endl;
+        std::cout << Systems::Time::GetTime<double>() << std::endl;
 
         {
             Systems::Time test;
@@ -109,7 +109,7 @@ namespace Robot::Nomad::Controllers
         bool binded = GetOutputPort(OutputPort::LEG_COMMAND)->Bind();
 
         // Start FSM
-        nomad_control_FSM_->Start(Systems::Time::GetTime());
+        nomad_control_FSM_->Start(Systems::Time::GetTime<double>());
 
         std::cout << "[NomadControl]: "
                   << "Nomad Control FSM Publisher Running!: " << binded << std::endl;

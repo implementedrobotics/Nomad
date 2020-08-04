@@ -133,7 +133,7 @@ void NomadPlant::Run()
     }
 
     rigid_skel->getBodyNode(0)->addExtForce(Eigen::Vector3d::UnitX() * current_force, rigid_skel->getBodyNode(0)->getCOM(), false, true);
-    std::cout << "TIME: " << Systems::Time::GetTime() / 1e6<< std::endl;
+    //std::cout << "TIME: " << Systems::Time::GetTime() / 1e6<< std::endl;
     std::cout << world->getTime() << " : ";
     std::cout << "U: " << current_force << std::endl;
     std::cout << "X: " << rigid_skel->getPosition(3) << "\tY: " << rigid_skel->getPosition(4) << "\tZ: " << rigid_skel->getPosition(5) << std::endl;

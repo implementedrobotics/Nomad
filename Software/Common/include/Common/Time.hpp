@@ -37,22 +37,30 @@
 namespace Systems
 {
 
-class Time
-{
+    class Time
+    {
     public:
-
         // Constructor
         Time();
         ~Time();
 
-        static uint64_t GetTime();
-    protected:
+        static uint64_t GetTimeStamp();
 
+        template <typename T>
+        static T GetTime()
+        {
+            static auto start_time = std::chrono::high_resolution_clock::now();
+
+            auto time_now = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::duration<T>>(time_now - start_time);
+            return duration.count();
+        }
+
+    protected:
         std::chrono::time_point<std::chrono::system_clock> start_;
         std::chrono::time_point<std::chrono::system_clock> end_;
 
         std::chrono::duration<double> duration_;
-
-};
-}
+    };
+} // namespace Systems
 #endif // NOMAD_COMMON_TIME_H

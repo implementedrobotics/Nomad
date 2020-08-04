@@ -71,7 +71,7 @@ namespace OperatorInterface::Teleop
     void RemoteTeleop::Setup()
     {
         // Start FSM
-        gamepad_FSM_->Start(Systems::Time::GetTime());
+        gamepad_FSM_->Start(Systems::Time::GetTime<double>());
 
         // TODO: Autobind NON-NULL output port
         GetOutputPort(OutputPort::TELEOP_DATA)->Bind();

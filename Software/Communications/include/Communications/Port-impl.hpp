@@ -162,7 +162,7 @@ namespace Communications
         // Get Timestamp
         // TODO: "GetUptime" Static function in a time class
         //uint64_t time_now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-        uint64_t time_now = Systems::Time::GetTime();
+        uint64_t time_now = Systems::Time::GetTimeStamp();
 
         // Move this back to the PORT portion
         tx_msg.timestamp = time_now;
