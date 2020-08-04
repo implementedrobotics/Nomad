@@ -50,6 +50,10 @@ namespace Robot::Nomad::FSM
         std::cout << "Entering Stand State!!!" << std::endl;
         nomad_state_initial_ = data_->nomad_state;
 
+        // Get Start Time
+        // Create Cubic Trajectory
+        
+
         // current_mode_ = ControlMode::OFF;
     }
 } // namespace Robot::Nomad::FSM

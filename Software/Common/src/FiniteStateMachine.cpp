@@ -41,7 +41,7 @@ namespace Common
     start_time_(0.0),
     end_time_(0.0),
     elapsed_time_(0.0),
-    cycle_count_(0.0)
+    cycle_count_(0)
     {
         // Nothing to do here
     }

@@ -78,9 +78,11 @@ namespace Realtime
                                                                         process_id_(-1),
                                                                         thread_cancel_event_(false)
     {
-
         // Add to task manager
         RealTimeTaskManager::Instance()->AddTask(this);
+    
+        // Sample Rate (Seconds)
+        dt_nominal_ = rt_period_ * 1e-3;
     }
 
     RealTimeTaskNode::~RealTimeTaskNode()

@@ -82,18 +82,16 @@ namespace Robot::Nomad::Controllers
         nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
         // Run FSM
-        nomad_control_FSM_->Run(rt_period_*1e-3);
+        nomad_control_FSM_->Run(dt_nominal_);
 
-
-        std::cout << Systems::Time::GetTime<double>() << std::endl;
-
-        {
-            Systems::Time test;
-            for(int i = 0; i < 100000; i++)
-            {
+        std::cout << Systems::Time::GetTime<double>() << " | RATE: " << dt_nominal_ << std::endl;
+        // {
+        //     Systems::Time test;
+        //     for(int i = 0; i < 100000; i++)
+        //     {
                 
-            }
-        }
+        //     }
+        // }
         // Get Desired Force Output to send out of leg controller
         // Copy command to message
         //memcpy(leg_command_msg_.data.data(), &leg_controller_cmd_, sizeof(::Controllers::Locomotion::leg_controller_cmd_t));
