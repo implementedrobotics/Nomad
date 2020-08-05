@@ -46,8 +46,10 @@ namespace Robot::Nomad::FSM
         // State
         full_state_t nomad_state;
 
-
         // Outputs Etc
+        double stance_height;
+
+        // Vectors for Force OUtputs
     };
 } // namespace Robot::Nomad::FSM
 #endif // NOMAD_CONTROLDATA_H_

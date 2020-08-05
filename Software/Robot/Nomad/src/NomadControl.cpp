@@ -84,6 +84,8 @@ namespace Robot::Nomad::Controllers
         // Run FSM
         nomad_control_FSM_->Run(dt_nominal_);
 
+        // TODO: Leg Command to control data
+
         //std::cout << Systems::Time::GetTime<double>() << " | RATE: " << dt_nominal_ << std::endl;
         // {
         //     Systems::Time test;

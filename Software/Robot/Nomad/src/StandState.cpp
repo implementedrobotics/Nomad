@@ -30,18 +30,47 @@
 // Third Party Includes
 
 // Project Include Files
-
 #include <Nomad/FSM/StandState.hpp>
+#include <Controllers/Messages/leg_controller_cmd_t.hpp>
 
 namespace Robot::Nomad::FSM
 {
+    double stance_height = .35; // TODO: From Parameter/ControlData
+    double stance_time = 1.0;
     StandState::StandState() : NomadState("STAND", 2)
     {
     }
     void StandState::Run_(double dt)
     {
-       std::cout << "Stand Running: " << elapsed_time_ << std::endl;
-       full_state_t nomad_state_ = data_->nomad_state;
+        std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+        full_state_t nomad_state_ = data_->nomad_state;
+
+        // Zero out leg command
+        leg_controller_cmd_t leg_command;
+        memset(&leg_command, 0, sizeof(leg_controller_cmd_t));
+
+
+        for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
+        {
+            double h_t = stand_traj_[leg_id].Position(elapsed_time_);
+            double a_t = stand_traj_[leg_id].Acceleration(elapsed_time_);
+
+            int foot_id = leg_id * 3;
+
+            // Copy Initial
+            Eigen::Vector3d foot_pos_desired = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos[foot_id]);
+            foot_pos_desired.z() = h_t;
+
+            Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos_desired[foot_id], 3) = foot_pos_desired;
+
+            Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 500;
+            Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 0;
+
+            //std::cout << "Got: " << leg_command.foot_pos_desired[foot_id] << std::endl;
+            //std::cout << "Got2: " << nomad_state_initial_.foot_pos[leg_id * 3+2] << std::endl;
+        }
+
+        // Output Leg Command
     }
     void StandState::Enter_(double current_time)
     {
@@ -49,11 +78,9 @@ namespace Robot::Nomad::FSM
         nomad_state_initial_ = data_->nomad_state;
 
         // Create Cubic Trajectory
-        double stand_height = .35; // TODO: From Parameter/ControlData
-        // TODO: 1.0 = Stand Time, Make Param
-        stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
-        stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
-        stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
-        stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
+        stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
     }
 } // namespace Robot::Nomad::FSM
