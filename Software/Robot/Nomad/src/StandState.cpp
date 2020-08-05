@@ -1,6 +1,6 @@
 
 /*
- * GamepadTeleopFSM.cpp
+ * StandState.cpp
  *
  *  Created on: June 27, 2020
  *      Author: Quincy Jones
@@ -51,10 +51,9 @@ namespace Robot::Nomad::FSM
         // Create Cubic Trajectory
         double stand_height = .35; // TODO: From Parameter/ControlData
         // TODO: 1.0 = Stand Time, Make Param
-        // TODO: Add indexing form FL/FR etc indexing
-        for(int i = 0; i < 4; i++)
-        {
-            stand_traj_[i].Generate(nomad_state_initial_.foot_pos[i*3+2], -stand_height, 0.0, 0.0, 0.0, 1.0);
-        }
+        stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
+        stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
+        stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
+        stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stand_height, 0.0, 0.0, 0.0, 1.0);
     }
 } // namespace Robot::Nomad::FSM

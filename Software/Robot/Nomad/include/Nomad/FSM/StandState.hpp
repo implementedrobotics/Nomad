@@ -32,7 +32,9 @@
 
 // Project Include Files
 #include <Nomad/FSM/NomadState.hpp>
+#include <Nomad/NomadRobot.hpp>
 #include <Common/Math/CubicPolynomialTrajectory.hpp>
+
 
 namespace Robot::Nomad::FSM
 {
@@ -56,7 +58,7 @@ namespace Robot::Nomad::FSM
 
     private:
         full_state_t nomad_state_initial_;
-        Common::CubicPolynomialTrajectory stand_traj_[4];
+        Common::CubicPolynomialTrajectory stand_traj_[Robot::Nomad::NUM_LEGS];
 
     };
 } // namespace Robot::Nomad::FSM

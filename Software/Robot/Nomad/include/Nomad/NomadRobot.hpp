@@ -38,6 +38,60 @@
 
 namespace Robot::Nomad
 {
+    // Indexing for leg order in array
+    enum LegIdx
+    {
+        FRONT_LEFT = 0,
+        FRONT_RIGHT = 1,
+        REAR_LEFT = 2,
+        REAR_RIGHT = 3,
+        NUM_LEGS = 4
+    };
+
+    // Indexing for leg order in array
+    enum FootIdx
+    {
+        FOOT_FL_X = (FRONT_LEFT * 3) + 0,
+        FOOT_FL_Y = (FRONT_LEFT * 3) + 1,
+        FOOT_FL_Z = (FRONT_LEFT * 3) + 2,
+
+        FOOT_FR_X = (FRONT_RIGHT * 3) + 0,
+        FOOT_FR_Y = (FRONT_RIGHT * 3) + 1,
+        FOOT_FR_Z = (FRONT_RIGHT * 3) + 2,
+
+        FOOT_RL_X = (REAR_LEFT * 3) + 0,
+        FOOT_RL_Y = (REAR_LEFT * 3) + 1,
+        FOOT_RL_Z = (REAR_LEFT * 3) + 2,
+
+        FOOT_RR_X = (REAR_RIGHT * 3) + 0,
+        FOOT_RR_Y = (REAR_RIGHT * 3) + 1,
+        FOOT_RR_Z = (REAR_RIGHT * 3) + 2
+    };
+
+    // Indexing for state vector offsets
+    enum DOFIdx
+    {
+        BODY_PHI = 0,   // Body Roll
+        BODY_THETA = 1, // Body Pitch
+        BODY_PSI = 2,   // Body Yaw
+        BODY_X = 3,     // Body X Position
+        BODY_Y = 4,     // Body Y Position
+        BODY_Z = 5,     // Body Z Position
+        HAA_FL = 6,     // Front Left Leg Hip Ab/Ad Joint State
+        HFE_FL = 7,     // Front Left Leg Hip Flexion/Extension Joint State
+        KFE_FL = 8,     // Front Left Leg Knee Flexion/Extension Joint State
+        HAA_FR = 9,     // Front Right Leg Hip Ab/Ad Joint State
+        HFE_FR = 10,    // Front Right Leg Hip Flexion/Extension Joint State
+        KFE_FR = 11,    // Front Right Leg Knee Flexion/Extension Joint State
+        HAA_RL = 12,    // Rear Left Leg Hip Ab/Ad Joint State
+        HFE_RL = 13,    // Rear Left Leg Hip Flexion/Extension Joint State
+        KFE_RL = 14,    // Rear LeftLeg Knee Flexion/Extension Joint State
+        HAA_RR = 15,    // Rear Right Leg Hip Ab/Ad Joint State
+        HFE_RR = 16,    // Rear Right Leg Hip Flexion/Extension Joint State
+        KFE_RR = 17,    // Rear Right Leg Knee Flexion/Extension Joint State
+        NUM_TOTAL_DOFS = 18
+    };
+
     class NomadRobot
     {
 
