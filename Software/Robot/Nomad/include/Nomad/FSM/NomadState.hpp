@@ -33,6 +33,9 @@
 // Project Include Files
 #include <Common/State.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
+#include <Communications/Port.hpp>
+#include <Nomad/FSM/NomadControlFSM.hpp>
+
 namespace Robot::Nomad::FSM
 {
     // Base NomadState Class
@@ -44,6 +47,10 @@ namespace Robot::Nomad::FSM
         {
         }
 
+        void SetParent(std::shared_ptr<Robot::Nomad::FSM::NomadControlFSM> parent)
+        {
+            parent_ = parent;
+        }
         void SetControllerData(std::shared_ptr<NomadControlData> data)
         {
             data_ = data;
@@ -52,6 +59,11 @@ namespace Robot::Nomad::FSM
     protected:
         // Data pointer to controller data pointer
         std::shared_ptr<NomadControlData> data_;
+        full_state_t nomad_state_;
+
+        // Parent State Machine Container for this state
+        std::shared_ptr<Robot::Nomad::FSM::NomadControlFSM> parent_;
+
     };
 
 } // namespace Robot::Nomad::FSM

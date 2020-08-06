@@ -33,6 +33,7 @@
 // Project Include Files
 #include <Common/FiniteStateMachine.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
+#include <Communications/Port.hpp>
 
 namespace Robot::Nomad::FSM
 {
@@ -51,6 +52,7 @@ namespace Robot::Nomad::FSM
     // Finite State Machine Class
     class NomadControlFSM : public Common::FiniteStateMachine
     {
+        friend class NomadState;
     public:
         // Base Class Gamepad Teleop FSM
         NomadControlFSM();
@@ -67,7 +69,12 @@ namespace Robot::Nomad::FSM
         void
         _CreateFSM();
 
+        // Shared Data Pointer.  TODO: Switch to ZCM Port?
         std::shared_ptr<NomadControlData> data_;
+
+        // Input / Output Port
+        std::shared_ptr<Communications::Port> input_;
+        std::shared_ptr<Communications::Port> output_;
     };
 
     class NomadControlTransitionEvent : public Common::TransitionEvent

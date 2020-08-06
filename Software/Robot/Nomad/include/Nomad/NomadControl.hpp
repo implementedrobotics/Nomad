@@ -95,7 +95,7 @@ namespace Robot::Nomad::Controllers
         //::Controllers::Locomotion::leg_controller_cmd_t leg_controller_cmd_;
 
         // FSM
-        std::unique_ptr<Robot::Nomad::FSM::NomadControlFSM> nomad_control_FSM_;
+        std::shared_ptr<Robot::Nomad::FSM::NomadControlFSM> nomad_control_FSM_;
     };
 } // namespace Robot::Nomad::Controllers
 

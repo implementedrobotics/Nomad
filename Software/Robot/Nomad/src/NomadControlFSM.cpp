@@ -35,6 +35,7 @@
 #include <Nomad/FSM/OffState.hpp>
 #include <Nomad/FSM/IdleState.hpp>
 #include <Nomad/FSM/StandState.hpp>
+#include <Nomad/NomadControl.hpp>
 
 //#include <TransitionEvent.h>
 
@@ -51,6 +52,7 @@ namespace Robot::Nomad::FSM
     {
         // Create Data Pointer
         data_ = std::make_unique<Robot::Nomad::FSM::NomadControlData>();
+
         _CreateFSM();
     }
     bool NomadControlFSM::Run(double dt)
@@ -72,14 +74,17 @@ namespace Robot::Nomad::FSM
         // Off
         std::shared_ptr<OffState> off = std::make_shared<OffState>();
         off->SetControllerData(data_);
+        //off->SetSignalPorts(input_, output_);
 
         // Idle
         std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
         idle->SetControllerData(data_);
+       // idle->SetSignalPorts(input_, output_);
 
         // Stand
         std::shared_ptr<StandState> stand = std::make_shared<StandState>();
         stand->SetControllerData(data_);
+        //stand->SetSignalPorts(input_, output_);
 
         // // Sit
         // std::shared_ptr<SitState> sit = std::make_shared<SitState>();

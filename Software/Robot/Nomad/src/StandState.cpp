@@ -43,12 +43,13 @@ namespace Robot::Nomad::FSM
     void StandState::Run_(double dt)
     {
         std::cout << "Stand Running: " << elapsed_time_ << std::endl;
-        full_state_t nomad_state_ = data_->nomad_state;
+        // if (input_->Receive(nomad_state_))
+        // {
+        // }
 
         // Zero out leg command
         leg_controller_cmd_t leg_command;
         memset(&leg_command, 0, sizeof(leg_controller_cmd_t));
-
 
         for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         {
@@ -71,11 +72,15 @@ namespace Robot::Nomad::FSM
         }
 
         // Output Leg Command
+        // output_->Send(leg_command);
     }
     void StandState::Enter_(double current_time)
     {
         std::cout << "Entering Stand State!!! | " << current_time << std::endl;
-        nomad_state_initial_ = data_->nomad_state;
+        std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+        // while(!input_->Receive(nomad_state_initial_)) // Wait on input
+        // {
+        // }
 
         // Create Cubic Trajectory
         stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);

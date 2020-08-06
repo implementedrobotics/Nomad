@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
   nomad_dynamics_node.SetRobotSkeleton(robot->cloneSkeleton());
   nomad_dynamics_node.SetStackSize(1024 * 1024); // 1MB
   nomad_dynamics_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-  nomad_dynamics_node.SetTaskFrequency(freq1); // 50 HZ
+  nomad_dynamics_node.SetTaskFrequency(hi_freq); // 50 HZ
   //nomad_dynamics_node.SetCoreAffinity(-1);
   Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::JOINT_STATE),
             nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE_OUT));
@@ -150,12 +150,12 @@ int main(int argc, char *argv[])
   nomad_controller_node.SetStackSize(1024 * 1024); // 1MB
   nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
   nomad_controller_node.SetTaskFrequency(hi_freq); // 50 HZ
-                                                   //nomad_controller_node.SetCoreAffinity(-1);
-                                                   //nomad_controller_node.SetPortOutput(NomadControl::OutputPort::LEG_COMMAND,
-                                                   //                                    Communications::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
+  //nomad_controller_node.SetCoreAffinity(-1);
+  nomad_controller_node.SetPortOutput(NomadControl::OutputPort::LEG_COMMAND,
+                                      Communications::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
 
   Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::TELEOP_DATA),
-                       teleop_node.GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA));
+            teleop_node.GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA));
 
   Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::FULL_STATE),
             nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
@@ -167,7 +167,6 @@ int main(int argc, char *argv[])
             estimator_node.GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT));
 
   nomad_simulation_interface.Start();
-
 
   // Print Threads
   RealTimeTaskManager::Instance()->PrintActiveTasks();

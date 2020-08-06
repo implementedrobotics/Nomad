@@ -64,7 +64,7 @@ namespace Robot::Nomad::Controllers
         output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port::CreateOutput("LEG_COMMAND", rt_period_);
 
         // Create FSM
-        nomad_control_FSM_ = std::make_unique<Robot::Nomad::FSM::NomadControlFSM>();
+        nomad_control_FSM_ = std::make_shared<Robot::Nomad::FSM::NomadControlFSM>();
     }
 
     void NomadControl::Run()
@@ -73,13 +73,13 @@ namespace Robot::Nomad::Controllers
         if (GetInputPort(InputPort::TELEOP_DATA)->Receive(teleop_data_))
         {
         }
-        if (GetInputPort(InputPort::FULL_STATE)->Receive(full_state_))
-        {
-        }
+        // if (GetInputPort(InputPort::FULL_STATE)->Receive(full_state_))
+        // {
+        // }
 
         // Update Data
         nomad_control_FSM_->GetData()->control_mode = teleop_data_.control_mode;
-        nomad_control_FSM_->GetData()->nomad_state = full_state_;
+        //nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
         // Run FSM
         nomad_control_FSM_->Run(dt_nominal_);
