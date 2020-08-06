@@ -49,7 +49,15 @@ namespace Robot::Nomad::FSM
         // Outputs Etc
         double stance_height;
 
-        // Vectors for Force OUtputs
+        // Vectors for Force Outputs
+        Eigen::VectorXd K_P_cartesian;
+        Eigen::VectorXd K_D_cartesian;
+
+        Eigen::VectorXd K_P_joint;
+        Eigen::VectorXd K_D_joint;
+
+        
+        
     };
 } // namespace Robot::Nomad::FSM
 #endif // NOMAD_CONTROLDATA_H_
