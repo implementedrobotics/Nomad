@@ -29,8 +29,6 @@
 // Third Party Includes
 
 // Project Include Files
-//#include <OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
-//#include <OperatorInterface/GamepadTeleopFSM/States/GamepadState.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
 #include <Nomad/FSM/OffState.hpp>
 #include <Nomad/FSM/IdleState.hpp>

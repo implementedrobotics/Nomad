@@ -31,10 +31,16 @@
 // Third Party Includes
 
 // Project Include Files
+//#include <Nomad/NomadControl.hpp>
 #include <Common/FiniteStateMachine.hpp>
 #include <Nomad/FSM/NomadControlData.hpp>
 #include <Communications/Port.hpp>
 
+
+namespace Robot::Nomad::Controllers
+{
+class NomadControl;
+}
 namespace Robot::Nomad::FSM
 {
     typedef enum
@@ -54,9 +60,10 @@ namespace Robot::Nomad::FSM
     {
         friend class NomadState;
     public:
-        // Base Class Gamepad Teleop FSM
+        // Base Class Primary Controller FSM
         NomadControlFSM();
 
+        void SetController(Robot::Nomad::Controllers::NomadControl *control){}
         // Run an iteration of the state machine
         bool Run(double dt);
 
@@ -71,6 +78,8 @@ namespace Robot::Nomad::FSM
 
         // Shared Data Pointer.  TODO: Switch to ZCM Port?
         std::shared_ptr<NomadControlData> data_;
+
+       Robot::Nomad::Controllers::NomadControl *control_;
 
         // Input / Output Port
         std::shared_ptr<Communications::Port> input_;

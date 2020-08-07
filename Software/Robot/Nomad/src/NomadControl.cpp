@@ -65,6 +65,8 @@ namespace Robot::Nomad::Controllers
 
         // Create FSM
         nomad_control_FSM_ = std::make_shared<Robot::Nomad::FSM::NomadControlFSM>();
+
+        nomad_control_FSM_->SetController(this);
     }
 
     void NomadControl::Run()
