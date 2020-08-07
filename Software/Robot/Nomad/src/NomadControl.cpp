@@ -64,9 +64,7 @@ namespace Robot::Nomad::Controllers
         output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port::CreateOutput("LEG_COMMAND", rt_period_);
 
         // Create FSM
-        nomad_control_FSM_ = std::make_shared<Robot::Nomad::FSM::NomadControlFSM>();
-
-        nomad_control_FSM_->SetController(this);
+        nomad_control_FSM_ = std::make_shared<Robot::Nomad::FSM::NomadControlFSM>(this);
     }
 
     void NomadControl::Run()

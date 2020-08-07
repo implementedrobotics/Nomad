@@ -35,31 +35,13 @@
 #include <Eigen/Dense>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
-
-#include <dart/dynamics/Skeleton.hpp>
-#include <dart/dynamics/BodyNode.hpp>
-#include <dart/dynamics/DegreeOfFreedom.hpp>
+#include <Controllers/Messages/leg_controller_cmd_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 
 namespace Controllers::Locomotion
 {
-    struct leg_controller_cmd_t
-    {
-        double torque_ff[12];        // Torque Feedforward
-        double force_ff[12];         // Force Feedforward
-        double q[12];                // Joint Position
-        double q_d[12];              // Joint Velocity
-        double foot_pos_desired[12]; // Foot Position Desired
-        double foot_vel_desired[12]; // Foot Velocity Desired
-        double foot_pos[12];         // Foot Position Actual
-        double foot_vel[12];         // Foot Velocity Actual
-        double k_p_joint[12];        // P Gains (Joint)
-        double k_d_joint[12];        // D Gains (Joint)
-        double k_p_cartesian[12];    // P Gains (Cartesian)
-        double k_d_cartesian[12];    // D Gains (Cartesian)
-    };
 
     class LegController : public Realtime::RealTimeTaskNode
     {
@@ -91,9 +73,6 @@ namespace Controllers::Locomotion
                       const int rt_core_id = -1,
                       const unsigned int stack_size = PTHREAD_STACK_MIN);
 
-        // Set Dart Robot Skeleton
-        void SetRobotSkeleton(dart::dynamics::SkeletonPtr robot);
-
     protected:
         // Overriden Run Function
         virtual void Run();
@@ -111,7 +90,7 @@ namespace Controllers::Locomotion
         unsigned int total_dofs_;
 
         // Input (Messages)
-        generic_msg_t leg_command_input_;
+        leg_controller_cmd_t leg_command_input_;
 
         // Output (Messages)
         generic_msg_t servo_command_output_;
@@ -132,9 +111,6 @@ namespace Controllers::Locomotion
 
         // Jacobian Matrix
         Eigen::MatrixXd J_;
-
-        // Dart Helpers
-        dart::dynamics::SkeletonPtr robot_;
 
         void ResetState();
     };

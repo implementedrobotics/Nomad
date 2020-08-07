@@ -46,7 +46,7 @@ namespace Robot::Nomad::FSM
         data_ = data;
     }
 
-    NomadControlFSM::NomadControlFSM() : FiniteStateMachine("Nomad Primary Control FSM")
+    NomadControlFSM::NomadControlFSM(Robot::Nomad::Controllers::NomadControl *control) : FiniteStateMachine("Nomad Primary Control FSM"), control_(control)
     {
         // Create Data Pointer
         data_ = std::make_unique<Robot::Nomad::FSM::NomadControlData>();
@@ -64,6 +64,16 @@ namespace Robot::Nomad::FSM
         return data_;
     }
 
+    std::shared_ptr<Communications::Port> NomadControlFSM::GetOutputPort(const int port_id)
+    {
+        return control_->GetOutputPort(port_id);
+    }
+
+    std::shared_ptr<Communications::Port> NomadControlFSM::GetInputPort(const int port_id)
+    {
+        return control_->GetInputPort(port_id);
+    }
+
     void NomadControlFSM::_CreateFSM()
     {
         std::cout << "[NomadControlFSM]: Creating FSM" << std::endl;
@@ -72,21 +82,20 @@ namespace Robot::Nomad::FSM
         // Off
         std::shared_ptr<OffState> off = std::make_shared<OffState>();
         off->SetControllerData(data_);
-        //off->SetSignalPorts(input_, output_);
+        off->SetParentFSM(this);
 
         // Idle
         std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
         idle->SetControllerData(data_);
-       // idle->SetSignalPorts(input_, output_);
+        idle->SetParentFSM(this);
 
         // Stand
         std::shared_ptr<StandState> stand = std::make_shared<StandState>();
         stand->SetControllerData(data_);
-        //stand->SetSignalPorts(input_, output_);
+        stand->SetParentFSM(this);
 
         // // Sit
         // std::shared_ptr<SitState> sit = std::make_shared<SitState>();
-        // sit->SetGamepadInterface(gamepad_);
 
         std::shared_ptr<CommandModeEvent> transition_idle = std::make_shared<CommandModeEvent>("IDLE TRANSITION", CONTROL_MODE::IDLE, data_);
         std::shared_ptr<CommandModeEvent> transition_stand = std::make_shared<CommandModeEvent>("STAND TRANSITION", CONTROL_MODE::STAND, data_);
@@ -97,7 +106,7 @@ namespace Robot::Nomad::FSM
         // stand->AddTransitionEvent(down_event, sit);
         // sit->AddTransitionEvent(up_event, stand);
 
-        // Add the stated to the FSM
+        // Add the states to the FSM
         AddState(off);
         AddState(idle);
         AddState(stand);

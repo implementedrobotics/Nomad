@@ -36,10 +36,9 @@
 #include <Nomad/FSM/NomadControlData.hpp>
 #include <Communications/Port.hpp>
 
-
 namespace Robot::Nomad::Controllers
 {
-class NomadControl;
+    class NomadControl;
 }
 namespace Robot::Nomad::FSM
 {
@@ -59,32 +58,36 @@ namespace Robot::Nomad::FSM
     class NomadControlFSM : public Common::FiniteStateMachine
     {
         friend class NomadState;
+
     public:
         // Base Class Primary Controller FSM
-        NomadControlFSM();
-
-        void SetController(Robot::Nomad::Controllers::NomadControl *control){}
+        NomadControlFSM(Robot::Nomad::Controllers::NomadControl *control);
+        
         // Run an iteration of the state machine
         bool Run(double dt);
 
         // Return Mode from Active State
         const std::shared_ptr<NomadControlData> &GetData() const;
 
-        //
     protected:
-        //Helper function to create state machine
-        void
-        _CreateFSM();
+        // Helper function to create state machine
+        void _CreateFSM();
+
+
+        // Port Accesor Functions
+        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id);
+        std::shared_ptr<Communications::Port> GetInputPort(const int port_id);
 
         // Shared Data Pointer.  TODO: Switch to ZCM Port?
         std::shared_ptr<NomadControlData> data_;
 
-       Robot::Nomad::Controllers::NomadControl *control_;
-
-        // Input / Output Port
-        std::shared_ptr<Communications::Port> input_;
-        std::shared_ptr<Communications::Port> output_;
+        // Control Interface
+        Robot::Nomad::Controllers::NomadControl *control_;
     };
+
+
+
+
 
     class NomadControlTransitionEvent : public Common::TransitionEvent
     {
@@ -123,5 +126,6 @@ namespace Robot::Nomad::FSM
     protected:
         CONTROL_MODE req_mode_;
     };
+
 } // namespace Robot::Nomad::FSM
 #endif // ROBOT_NOMAD_NOMADCONTROLFSM_H_

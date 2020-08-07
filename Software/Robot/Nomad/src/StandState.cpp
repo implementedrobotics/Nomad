@@ -31,7 +31,11 @@
 
 // Project Include Files
 #include <Nomad/FSM/StandState.hpp>
+#include <Nomad/NomadControl.hpp>
 #include <Controllers/Messages/leg_controller_cmd_t.hpp>
+
+
+using Robot::Nomad::Controllers::NomadControl;
 
 namespace Robot::Nomad::FSM
 {
@@ -72,16 +76,20 @@ namespace Robot::Nomad::FSM
         }
 
         // Output Leg Command
-        // output_->Send(leg_command);
+        bool sent = GetOutputPort(NomadControl::OutputPort::LEG_COMMAND)->Send(leg_command);
+        std::cout << "Sent: " << sent << std::endl;
     }
     void StandState::Enter_(double current_time)
     {
         std::cout << "Entering Stand State!!! | " << current_time << std::endl;
         std::cout << "Stand Running: " << elapsed_time_ << std::endl;
-        // while(!input_->Receive(nomad_state_initial_)) // Wait on input
-        // {
-        // }
 
+        while(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_initial_)) // Wait on input
+        {
+        }
+
+        // std::cout << "Got Message: " << nomad_state_initial_.foot_pos[2] << std::endl;;
+        
         // Create Cubic Trajectory
         stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
         stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);

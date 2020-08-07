@@ -43,27 +43,38 @@ namespace Robot::Nomad::FSM
     {
     public:
         // Base Class NomadState
-        NomadState(const std::string &name, std::size_t id) : Common::State(name, id)
+        NomadState(const std::string &name, std::size_t id) : Common::State(name, id), parent_(nullptr)
         {
         }
 
-        void SetParent(std::shared_ptr<Robot::Nomad::FSM::NomadControlFSM> parent)
+        void SetParentFSM(Robot::Nomad::FSM::NomadControlFSM *parent)
         {
             parent_ = parent;
         }
+
         void SetControllerData(std::shared_ptr<NomadControlData> data)
         {
             data_ = data;
         }
-        
+
     protected:
+
+        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id)
+        {
+            return parent_->GetOutputPort(port_id);
+        }
+        std::shared_ptr<Communications::Port> GetInputPort(const int port_id)
+        {
+            return parent_->GetInputPort(port_id);
+        }
+
         // Data pointer to controller data pointer
         std::shared_ptr<NomadControlData> data_;
+
         full_state_t nomad_state_;
 
         // Parent State Machine Container for this state
-        std::shared_ptr<Robot::Nomad::FSM::NomadControlFSM> parent_;
-
+        Robot::Nomad::FSM::NomadControlFSM *parent_;
     };
 
 } // namespace Robot::Nomad::FSM

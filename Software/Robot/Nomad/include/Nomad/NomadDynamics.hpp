@@ -33,17 +33,18 @@
 
 // Third Party Includes
 #include <Eigen/Dense>
-#include <Communications/Messages/double_vec_t.hpp>
-#include <Communications/Messages/int32_vec_t.hpp>
-#include <Communications/Messages/generic_msg_t.hpp>
+
+#include <dart/dynamics/Skeleton.hpp>
+#include <dart/dynamics/BodyNode.hpp>
+#include <dart/dynamics/DegreeOfFreedom.hpp>
+
+// Project Includes
+#include <Realtime/RealTimeTask.hpp>
+#include <Nomad/NomadRobot.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
 #include <Nomad/MessageTypes/full_state_t.hpp>
 
-// Project Includes
-#include <Realtime/RealTimeTask.hpp>
-#include <Controllers/LegController.hpp>
-#include <Nomad/NomadRobot.hpp>
 
 namespace Robot::Nomad::Dynamics
 {
