@@ -52,7 +52,6 @@ namespace Robot
                                                      const int rt_core_id,
                                                      const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
-
                 // Create Ports
                 // Sim Inputs
                 input_port_map_[InputPort::IMU_STATE_IN] = Communications::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
@@ -66,33 +65,93 @@ namespace Robot
                 output_port_map_[OutputPort::IMU_STATE_OUT] = Communications::Port::CreateOutput("IMU_STATE", rt_period_);
                 output_port_map_[OutputPort::JOINT_STATE_OUT] = Communications::Port::CreateOutput("JOINT_STATE", rt_period_);
                 output_port_map_[OutputPort::COM_STATE_OUT] = Communications::Port::CreateOutput("POSE_STATE", rt_period_);
+                output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL", rt_period_);
             }
 
             void SimulationInterface::Run()
             {
 
-                // Read Any Input Commands
+                static int last_stamp_imu = 0;
+                static int last_stamp_joint = 0;
+                static int last_stamp_com = 0;
+                static uint64_t last_control_time = 0; 
 
                 //Read Plant State
                 if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
                 {
-                    //std::cout << "Got: " << imu_data_.accel[2] << std::endl;
+                    //std::cout << "Got: " << imu_data_.sequence_num << std::endl;
                 }
 
                 if (GetInputPort(InputPort::JOINT_STATE_IN)->Receive(joint_state_))
                 {
-                   // std::cout << "Got 2: " << joint_state_.q[2] << std::endl;
+                //    // std::cout << "Got 2: " << joint_state_.q[2] << std::endl;
                 }
 
                 if (GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
                 {
-                   // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
+                //    // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
                 }
 
-                //Publish/Forward Outputs from Sim
-                GetOutputPort(OutputPort::IMU_STATE_OUT)->Send(imu_data_);
-                GetOutputPort(OutputPort::JOINT_STATE_OUT)->Send(joint_state_);
-                GetOutputPort(OutputPort::COM_STATE_OUT)->Send(com_state_);
+                // Read Any Input Commands
+                if (GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_))
+                {
+                   //std::cout << "Got Command: " << joint_command_.tau_ff[1] << std::endl;
+                }
+
+                //std::cout << "Command In Time: " << Systems::Time::GetTimeStamp() << std::endl;
+                //std::cout << "Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;
+                
+
+                
+                if(imu_data_.sequence_num >= last_stamp_imu)
+                {
+                     last_stamp_imu = imu_data_.sequence_num;
+                     //GetOutputPort(OutputPort::IMU_STATE_OUT)->Send(imu_data_);
+                }
+                else
+                {
+                    //std::cout << "OUT OF ORDER: " << last_stamp_imu << std::endl;
+                }
+                
+
+                // if(joint_state_.sequence_num > last_stamp_joint)
+                // {
+                //     last_stamp_joint = joint_state_.sequence_num;
+                //     GetOutputPort(OutputPort::JOINT_STATE_OUT)->Send(joint_state_);
+                // }
+
+                // if(com_state_.sequence_num > last_stamp_com)
+                // {
+                //     last_stamp_com = com_state_.sequence_num;
+                //     GetOutputPort(OutputPort::COM_STATE_OUT)->Send(com_state_);
+                // }
+
+                    
+
+                //std::cout << "----------------------------Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;
+                //std::cout << "Stamps: " << last_stamp_imu << " " << last_stamp_joint << " " << last_stamp_com << std::endl;
+                //std::cout << "Stamps: " << imu_data_.sequence_num << " " << last_stamp << std::endl;
+
+                imu_data_t imu_data_out_ = imu_data_;
+                com_state_t com_state_out_ = com_state_;
+                joint_state_t joint_state_out_ = joint_state_;
+
+                //std::cout << com_state_out_.pos[2] << std::endl;        
+
+                // Publish/Forward Outputs from Sim
+                GetOutputPort(OutputPort::IMU_STATE_OUT)->Send(imu_data_out_);
+                GetOutputPort(OutputPort::JOINT_STATE_OUT)->Send(joint_state_out_);
+                GetOutputPort(OutputPort::COM_STATE_OUT)->Send(com_state_out_);
+
+                //last_control_time = Systems::Time::GetTimeStamp();
+
+                // Publish/Forward to Sim
+                GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+                //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
+                //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
+
+
+                last_control_time = Systems::Time::GetTimeStamp();
             }
 
             void SimulationInterface::Setup()

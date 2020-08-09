@@ -76,15 +76,23 @@ namespace Robot::Nomad::Dynamics
         // TODO: Time this function  Would be nice if we could run this at 2x sample rate
         // Read Inputs
         // 1) Body State (State Estimator)
-        if(GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_)) // Receive Setpoint
+        while(!GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_)) // Receive Setpoint
         {
+            //std::cout << "GOT " << std::endl;
         }
+        // else
+        // {
+        //     std::cout << " NOT GOT " << std::endl;
+        // }
+        
 
         // 2) Joint State (Plant Bridge Output)
-        if (GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
+        while(!GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
         {
 
         }
+
+        //std::cout << "COM STATE: " << com_state_.pos[2] << std::endl;
 
         // Setup some state vectors
         Eigen::VectorXd q = Eigen::VectorXd::Zero(kNumTotalDofs);

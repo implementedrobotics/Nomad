@@ -67,16 +67,10 @@ namespace Controllers::Locomotion
         // Jacobian Variable (Linear or Angular 3, Full 6)
         J_ = Eigen::MatrixXd(num_legs_ * 3, total_dofs_);
 
-        // Create Input/Output Messages
-        // leg_command_input_.length = sizeof(leg_controller_cmd_t);
-        // leg_command_input_.data.resize(leg_command_input_.length);
-
-        // servo_command_output_.length = sizeof(leg_controller_cmd_t);
-        // servo_command_output_.data.resize(servo_command_output_.length);
-
         // Create Ports
         // Leg Controller Input Port
         input_port_map_[InputPort::LEG_COMMAND] = Communications::Port::CreateInput<leg_controller_cmd_t>("LEG_COMMAND", rt_period_);
+        
 
         // Leg Controller Output Ports
         output_port_map_[OutputPort::SERVO_COMMAND] = Communications::Port::CreateOutput("SERVO_COMMAND", rt_period_);
@@ -94,10 +88,11 @@ namespace Controllers::Locomotion
         q_d_out_ = Eigen::VectorXd::Zero(total_dofs_);
 
         // Reset State, Zero Inputs, and Force/Torque outputs
-        // ResetState();
+        //ResetState();
 
+        // TODO: Wait for some timeout, if control deadline missed -> ZERO OUTPUTS
         // Read Command
-        if (GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_))
+        while (!GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_))
         {
             //std::cout << "Got: " << imu_data_.accel[2] << std::endl;
         }
@@ -124,24 +119,37 @@ namespace Controllers::Locomotion
         foot_pos_desired = Eigen::Map<Eigen::VectorXd>(leg_command_input_.foot_pos_desired, total_dofs_);
         foot_vel_desired = Eigen::Map<Eigen::VectorXd>(leg_command_input_.foot_vel_desired, total_dofs_);
 
+        // Contact Jacobians
+        J_ = Eigen::Map<Eigen::MatrixXd>(leg_command_input_.J_c, J_.rows(), J_.cols());
+
+        
+        //std::cout << J_ << std::endl;
+
         // Compute Forces
         force_output += k_P_cartesian_ * (foot_pos_desired - foot_pos_);
         force_output += k_D_cartesian_ * (foot_vel_desired - foot_vel_);
 
+        //std::cout << "Force: " << force_output << std::endl;
+
         Eigen::VectorXd force_to_tau = J_.transpose() * force_output;
+        
+        tau_output += force_to_tau;
 
+        Eigen::Map<Eigen::VectorXd>(servo_command_output_.tau_ff, 12) = tau_output;
+
+        //std::cout << "Error: " << (foot_pos_desired - foot_pos_) <<std::endl;
+        //std::cout << "Force: " << force_output <<std::endl;
+        //std::cout << "in leg Send: " << tau_output <<std::endl;
         // Add Feed Forward Forces to Torque Feed Forwards
-        // TODO: Need to compute Jacobian
-        tau_output += (J_.transpose() * force_output);
+        //tau_output += (J_.transpose() * force_output);
 
-        // Sync Vectors
+        //servo_command_output_.tau_ff[1] = 5;
 
         // Publish Forces
 
-        // Publish State
-        //bool send_status = GetOutputPort(OutputPort::STATE_HAT)->Send(output_state_);
+        bool send_status = GetOutputPort(OutputPort::SERVO_COMMAND)->Send(servo_command_output_);
 
-        // std::cout << "[LegController]: Publishing: " << std::endl; //output_state_.data[Idx::X] << " Send: " << send_status << std::endl;
+        //std::cout << "[LegController]: Publishing: " << std::endl;
 
     }
 
@@ -164,8 +172,8 @@ namespace Controllers::Locomotion
 
     void LegController::ResetState()
     {
-        //  memset(&leg_command_input_, 0, sizeof(leg_controller_cmd_t));
-        //  memset(&servo_command_output_, 0, sizeof(leg_controller_cmd_t));
+        memset(&leg_command_input_, 0, sizeof(leg_controller_cmd_t));
+        memset(&servo_command_output_, 0, sizeof(servo_command_output_));
     }
 
 } // namespace Controllers::Locomotion

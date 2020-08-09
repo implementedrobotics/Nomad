@@ -169,7 +169,7 @@ namespace Communications
         friend class Port;
 
     public:
-        // Base class for RealTimeTaskNode Port
+        // Base class for RealTimeTaskNode PortHandler
         // name = Port Name
         // ctx = ZCM Context
         // transport = ZCM Message Transport Location String

@@ -6,49 +6,33 @@
 
 #include <zcm/zcm_coretypes.h>
 
-#ifndef __leg_controller_cmd_t_hpp__
-#define __leg_controller_cmd_t_hpp__
+#ifndef __joint_control_cmd_t_hpp__
+#define __joint_control_cmd_t_hpp__
 
 
 
-class leg_controller_cmd_t
+class joint_control_cmd_t
 {
     public:
         int64_t    timestamp;
 
         int64_t    sequence_num;
 
-        double     torque_ff[12];
-
-        double     force_ff[12];
+        double     tau_ff[12];
 
         double     q[12];
 
-        double     q_d[12];
-
-        double     foot_pos_desired[12];
-
-        double     foot_vel_desired[12];
-
-        double     foot_pos[12];
-
-        double     foot_vel[12];
+        double     q_dot[12];
 
         double     k_p_joint[12];
 
         double     k_d_joint[12];
 
-        double     k_p_cartesian[12];
-
-        double     k_d_cartesian[12];
-
-        double     J_c[144];
-
     public:
         /**
          * Destructs a message properly if anything inherits from it
         */
-        virtual ~leg_controller_cmd_t() {}
+        virtual ~joint_control_cmd_t() {}
 
         /**
          * Encode a message into binary form.
@@ -85,7 +69,7 @@ class leg_controller_cmd_t
         inline static int64_t getHash();
 
         /**
-         * Returns "leg_controller_cmd_t"
+         * Returns "joint_control_cmd_t"
          */
         inline static const char* getTypeName();
 
@@ -96,7 +80,7 @@ class leg_controller_cmd_t
         inline static uint64_t _computeHash(const __zcm_hash_ptr* p);
 };
 
-int leg_controller_cmd_t::encode(void* buf, uint32_t offset, uint32_t maxlen) const
+int joint_control_cmd_t::encode(void* buf, uint32_t offset, uint32_t maxlen) const
 {
     uint32_t pos = 0;
     int thislen;
@@ -111,7 +95,7 @@ int leg_controller_cmd_t::encode(void* buf, uint32_t offset, uint32_t maxlen) co
     return pos;
 }
 
-int leg_controller_cmd_t::decode(const void* buf, uint32_t offset, uint32_t maxlen)
+int joint_control_cmd_t::decode(const void* buf, uint32_t offset, uint32_t maxlen)
 {
     uint32_t pos = 0;
     int thislen;
@@ -127,23 +111,23 @@ int leg_controller_cmd_t::decode(const void* buf, uint32_t offset, uint32_t maxl
     return pos;
 }
 
-uint32_t leg_controller_cmd_t::getEncodedSize() const
+uint32_t joint_control_cmd_t::getEncodedSize() const
 {
     return 8 + _getEncodedSizeNoHash();
 }
 
-int64_t leg_controller_cmd_t::getHash()
+int64_t joint_control_cmd_t::getHash()
 {
     static int64_t hash = _computeHash(NULL);
     return hash;
 }
 
-const char* leg_controller_cmd_t::getTypeName()
+const char* joint_control_cmd_t::getTypeName()
 {
-    return "leg_controller_cmd_t";
+    return "joint_control_cmd_t";
 }
 
-int leg_controller_cmd_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) const
+int joint_control_cmd_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) const
 {
     uint32_t pos = 0;
     int thislen;
@@ -154,28 +138,13 @@ int leg_controller_cmd_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t max
     thislen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &this->sequence_num, 1);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->torque_ff[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->force_ff[0], 12);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->tau_ff[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->q[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->q_d[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_pos_desired[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_vel_desired[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_pos[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_vel[0], 12);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->q_dot[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->k_p_joint[0], 12);
@@ -184,19 +153,10 @@ int leg_controller_cmd_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t max
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->k_d_joint[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->k_p_cartesian[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->k_d_cartesian[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->J_c[0], 144);
-    if(thislen < 0) return thislen; else pos += thislen;
-
     return pos;
 }
 
-int leg_controller_cmd_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen)
+int joint_control_cmd_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen)
 {
     uint32_t pos = 0;
     int thislen;
@@ -207,28 +167,13 @@ int leg_controller_cmd_t::_decodeNoHash(const void* buf, uint32_t offset, uint32
     thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &this->sequence_num, 1);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->torque_ff[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->force_ff[0], 12);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->tau_ff[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->q[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->q_d[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_pos_desired[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_vel_desired[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_pos[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_vel[0], 12);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->q_dot[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->k_p_joint[0], 12);
@@ -237,19 +182,10 @@ int leg_controller_cmd_t::_decodeNoHash(const void* buf, uint32_t offset, uint32
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->k_d_joint[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->k_p_cartesian[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->k_d_cartesian[0], 12);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->J_c[0], 144);
-    if(thislen < 0) return thislen; else pos += thislen;
-
     return pos;
 }
 
-uint32_t leg_controller_cmd_t::_getEncodedSizeNoHash() const
+uint32_t joint_control_cmd_t::_getEncodedSizeNoHash() const
 {
     uint32_t enc_size = 0;
     enc_size += __int64_t_encoded_array_size(NULL, 1);
@@ -259,20 +195,12 @@ uint32_t leg_controller_cmd_t::_getEncodedSizeNoHash() const
     enc_size += __double_encoded_array_size(NULL, 12);
     enc_size += __double_encoded_array_size(NULL, 12);
     enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 12);
-    enc_size += __double_encoded_array_size(NULL, 144);
     return enc_size;
 }
 
-uint64_t leg_controller_cmd_t::_computeHash(const __zcm_hash_ptr*)
+uint64_t joint_control_cmd_t::_computeHash(const __zcm_hash_ptr*)
 {
-    uint64_t hash = (uint64_t)0xfa1cf672bcd7fe03LL;
+    uint64_t hash = (uint64_t)0xebd5b5c5613b5ac9LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

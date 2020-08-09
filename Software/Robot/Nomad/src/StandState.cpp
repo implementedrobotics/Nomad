@@ -40,16 +40,22 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 1.0;
+    double stance_time = 0.5;
     StandState::StandState() : NomadState("STAND", 2)
     {
     }
     void StandState::Run_(double dt)
     {
-        std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+       // std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+        
         // if (input_->Receive(nomad_state_))
         // {
         // }
+        static full_state_t nomad_state_;
+        while(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_))
+        {
+            //std::cout << "FAILED TO RECEIVED" << std::endl;
+        }
 
         // Zero out leg command
         leg_controller_cmd_t leg_command;
@@ -62,22 +68,34 @@ namespace Robot::Nomad::FSM
 
             int foot_id = leg_id * 3;
 
+
             // Copy Initial
+            Eigen::Vector3d foot_pos = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos[foot_id]);
             Eigen::Vector3d foot_pos_desired = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos[foot_id]);
             foot_pos_desired.z() = h_t;
 
-            Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos_desired[foot_id], 3) = foot_pos_desired;
+            //std::cout << "HT" << foot_pos_desired << std::endl;
 
-            Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 500;
-            Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 0;
+            Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos_desired[foot_id], 3) = foot_pos_desired;
+            Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos[foot_id], 3) = foot_pos;
+
+            //std::cout << leg_command.foot_pos_desired[2] << std::endl;
+            Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 300;
+            Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 100;
 
             //std::cout << "Got: " << leg_command.foot_pos_desired[foot_id] << std::endl;
             //std::cout << "Got2: " << nomad_state_initial_.foot_pos[leg_id * 3+2] << std::endl;
         }
+        
+
+        // Get Trimmed Jaobian
+        Eigen::MatrixXd J_c = Eigen::Map<Eigen::MatrixXd>(nomad_state_.J_c, 12, 18).rightCols(12);
+        Eigen::Map<Eigen::MatrixXd>(leg_command.J_c, Robot::Nomad::NUM_LEGS * 3, 12) = J_c;
+        //std::cout << J_c << std::endl;
 
         // Output Leg Command
-        bool sent = GetOutputPort(NomadControl::OutputPort::LEG_COMMAND)->Send(leg_command);
-        std::cout << "Sent: " << sent << std::endl;
+        GetOutputPort(NomadControl::OutputPort::LEG_COMMAND)->Send(leg_command);
+       // std::cout << "Sent: " << sent << std::endl;
     }
     void StandState::Enter_(double current_time)
     {

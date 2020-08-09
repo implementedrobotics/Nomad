@@ -1,4 +1,4 @@
-
+#include <Eigen/Dense>
 //#include <dart/collision/bullet/BulletCollisionDetector.hpp>
 #include <dart/dynamics/Skeleton.hpp>
 #include <dart/dynamics/DegreeOfFreedom.hpp>
@@ -30,6 +30,8 @@ WorldPtr g_world;
 
 std::shared_ptr<NomadRobot> g_nomad;
 
+Eigen::VectorXd joint_torques = Eigen::VectorXd::Zero(18);
+
 // Robot Class
 // Dynamic State Vector
 // Floating Base Class
@@ -49,7 +51,7 @@ public:
     context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     std::cout << "Nomad DART Sim connecting." << std::endl;
-    context_->subscribe("nomad.forces", &NomadSimWorldNode::OnMsg, this);
+    context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
     context_->start();
 
     // TODO: Publish state back
@@ -61,6 +63,7 @@ public:
   void customPreStep()
   {
 
+     // std::cout << "Step!" << std::endl;
     // std::cout << leg->getJoint("leg_to_world")->getPosition(0) << std::endl;
     //  if (step_iter < 5)
     //    return;
@@ -69,6 +72,8 @@ public:
     // nomad_->ProcessInputs();
     // nomad_->Run(world_->getTimeStep());
     //nomad_->SendOutputs();
+    std::cout << "SETTING" << std::endl;
+    nomad_->Skeleton()->setForces(joint_torques);
 
     // Post Setup
   }
@@ -77,12 +82,35 @@ public:
   {
     // nomad_->UpdateState();
     PublishState();
+
+    //joint_torques = Eigen::VectorXd::Zero(18);
     step_iter++;
   }
 
-  void OnMsg(const zcm::ReceiveBuffer *rbuf, const std::string &chan, const double_vec_t *msg)
+  void OnJointControlMsg(const zcm::ReceiveBuffer *rbuf, const std::string &chan, const joint_control_cmd_t *msg)
   {
-    std::cout << "Received Message on Channel: " << chan << std::endl;
+    //std::cout << "Received Message on Channel: " << chan << std::endl;
+    std::cout << "Got :" << msg->sequence_num << std::endl;
+
+    Eigen::VectorXd tau_cmd(12);// = Eigen::VectorXd::Zero(12);
+
+    tau_cmd[0] = msg->tau_ff[0];
+    tau_cmd[1] = msg->tau_ff[1];
+    tau_cmd[2] = msg->tau_ff[2];
+    tau_cmd[3] = msg->tau_ff[3];
+    tau_cmd[4] = msg->tau_ff[4];
+    tau_cmd[5] = msg->tau_ff[5];
+    tau_cmd[6] = msg->tau_ff[6];
+    tau_cmd[7] = msg->tau_ff[7];
+    tau_cmd[8] = msg->tau_ff[8];
+    tau_cmd[9] = msg->tau_ff[9];
+    tau_cmd[10] = msg->tau_ff[10];
+    tau_cmd[11] = msg->tau_ff[11];
+
+    //std::cout << " GOT: " << tau_cmd << std::endl;
+
+    //Eigen::VectorXd tau_output = Eigen::Map<Eigen::VectorXd>(msg->tau_ff, 12);
+    joint_torques.tail(12) = tau_cmd;
   }
 
   void PublishState()
@@ -244,6 +272,7 @@ int main(int argc, char *argv[])
 
   // Update Gravity vector to Z down
   Eigen::Vector3d gravity(0.0, 0.0, -9.81);
+  //Eigen::Vector3d gravity(0.0, 0.0, 0.0);
   g_world->setGravity(gravity);
 
   // Create and add ground to world

@@ -63,7 +63,7 @@ namespace Communications
                                        const std::string &chan,
                                        const T *msg)
     {
-        //printf("Received message on channel \"%s\":\n", chan.c_str());
+        //printf("Received message on channel \"%s\" and %s:\n", chan.c_str(), channel_.c_str());
         //printf("  Message   = %ld\n", msg->sequence_num);
 
         std::unique_lock<std::mutex> lck(mutex_);
@@ -137,6 +137,7 @@ namespace Communications
         //     std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
         //     return false;
         // }
+        //static_cast<PortHandler<T> *>(handler_)->channel_ = channel_;
 
         auto subs = context_->subscribe(channel_, &PortHandler<T>::HandleMessage, static_cast<PortHandler<T> *>(handler_));
         if (transport_type_ != TransportType::INPROC)

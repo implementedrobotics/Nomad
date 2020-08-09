@@ -113,6 +113,6 @@ namespace Robot::Nomad::FSM
         // AddState(sit);
 
         // Set Initials State
-        SetInitialState(off);
+        SetInitialState(stand);
     }
 } // namespace Robot::Nomad::FSM

@@ -109,6 +109,8 @@ namespace Communications
         input->dimension_ = output->dimension_;
         input->data_type_ = output->data_type_;
         input->signal_labels_ = output->signal_labels_;
+
+       // std::cout << "Map: " << input->transport_url_ << " " << input->channel_ << std::endl;
     }
 
     bool Port::Bind()

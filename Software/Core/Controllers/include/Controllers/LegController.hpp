@@ -36,6 +36,7 @@
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Controllers/Messages/leg_controller_cmd_t.hpp>
+#include <Controllers/Messages/joint_control_cmd_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
@@ -93,7 +94,7 @@ namespace Controllers::Locomotion
         leg_controller_cmd_t leg_command_input_;
 
         // Output (Messages)
-        generic_msg_t servo_command_output_;
+        joint_control_cmd_t servo_command_output_;
 
         // TODO: Set these at compile time?
         Eigen::VectorXd torque_ff_out_;

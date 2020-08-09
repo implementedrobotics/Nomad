@@ -126,9 +126,9 @@ namespace Robot::Nomad::Estimators
 
         // Publish State
         bool send_status = GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_hat_);
-        send_status = GetOutputPort(OutputPort::BODY_STATE_ACTUAL)->Send(com_state_out_);
+        //send_status = GetOutputPort(OutputPort::BODY_STATE_ACTUAL)->Send(com_state_out_);
 
-        //std::cout << "[FusedLegKinematicsStateEstimator]: Publishing: " << com_state_out_.data[Idx::X] << " Send: " << send_status << std::endl;
+        //std::cout << "[FusedLegKinematicsStateEstimator]: Publishing: " << com_state_hat_.pos[2] << " Send: " << send_status << std::endl;
     }
 
     void FusedLegKinematicsStateEstimator::Setup()
