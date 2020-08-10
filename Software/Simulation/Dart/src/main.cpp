@@ -32,6 +32,7 @@ std::shared_ptr<NomadRobot> g_nomad;
 
 Eigen::VectorXd joint_torques = Eigen::VectorXd::Zero(18);
 
+int control_missed =0;
 // Robot Class
 // Dynamic State Vector
 // Floating Base Class
@@ -72,9 +73,10 @@ public:
     // nomad_->ProcessInputs();
     // nomad_->Run(world_->getTimeStep());
     //nomad_->SendOutputs();
-    std::cout << "SETTING" << std::endl;
+    //std::cout << "SETTING" << std::endl;
     nomad_->Skeleton()->setForces(joint_torques);
 
+control_missed++;
     // Post Setup
   }
 
@@ -90,7 +92,7 @@ public:
   void OnJointControlMsg(const zcm::ReceiveBuffer *rbuf, const std::string &chan, const joint_control_cmd_t *msg)
   {
     //std::cout << "Received Message on Channel: " << chan << std::endl;
-    std::cout << "Got :" << msg->sequence_num << std::endl;
+    //std::cout << "Got :" << msg->sequence_num << std::endl;
 
     Eigen::VectorXd tau_cmd(12);// = Eigen::VectorXd::Zero(12);
 
@@ -111,6 +113,8 @@ public:
 
     //Eigen::VectorXd tau_output = Eigen::Map<Eigen::VectorXd>(msg->tau_ff, 12);
     joint_torques.tail(12) = tau_cmd;
+    std::cout << "MISSED: " << control_missed << std::endl;
+    control_missed = 0;
   }
 
   void PublishState()

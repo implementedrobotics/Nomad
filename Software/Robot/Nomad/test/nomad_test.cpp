@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 {
     // Task Periods.
     int freq1 = 1;
-    int hi_freq = 100;
+    int hi_freq = 1000;
     // int freq2 = 100;
 
     // Create Manager Class Instance Singleton.
