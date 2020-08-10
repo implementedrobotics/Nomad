@@ -262,7 +262,7 @@ namespace Realtime
         //               << "POSIX Thread failed to set schedule policy!" << std::endl;
         //     return thread_status_;
         // }
-        // Set Thread Priority
+        // // // Set Thread Priority
         // param.sched_priority = rt_priority_;
         // thread_status_ = pthread_attr_setschedparam(&attr, &param);
         // if (thread_status_)

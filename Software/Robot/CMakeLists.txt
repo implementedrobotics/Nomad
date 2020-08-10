@@ -9,6 +9,7 @@ ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OffState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/IdleState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/StandState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/SimulationInterface.cpp
+${PROJECT_SOURCE_DIR}/Robot/Nomad/src/StandController.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/FusedLegKinematicsStateEstimator.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/RemoteTeleop.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/GamepadInterface.cpp

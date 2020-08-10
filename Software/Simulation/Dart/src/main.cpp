@@ -49,14 +49,14 @@ public:
     //  step_iter = 0;
 
     // TODO: Pass IP Address as a parameter, in the .model file?
-    context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+    context_ = std::make_unique<zcm::ZCM>("ipc");
 
     std::cout << "Nomad DART Sim connecting." << std::endl;
-    context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
+    context_->subscribe("nomad.sim.joint_cmd2", &NomadSimWorldNode::OnJointControlMsg, this);
     context_->start();
 
     // TODO: Publish state back
-    pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+    pub_context_ = std::make_unique<zcm::ZCM>("ipc");
 
     sequence_num_ = 0;
   }
@@ -74,6 +74,7 @@ public:
     // nomad_->Run(world_->getTimeStep());
     //nomad_->SendOutputs();
     //std::cout << "SETTING" << std::endl;
+    //std::cout << joint_torques << std::endl;
     nomad_->Skeleton()->setForces(joint_torques);
 
 control_missed++;
@@ -83,7 +84,7 @@ control_missed++;
   void customPostStep()
   {
     // nomad_->UpdateState();
-    PublishState();
+    //PublishState();
 
     //joint_torques = Eigen::VectorXd::Zero(18);
     step_iter++;
@@ -93,6 +94,8 @@ control_missed++;
   {
     //std::cout << "Received Message on Channel: " << chan << std::endl;
     //std::cout << "Got :" << msg->sequence_num << std::endl;
+
+    // Read Input
 
     Eigen::VectorXd tau_cmd(12);// = Eigen::VectorXd::Zero(12);
 
@@ -109,12 +112,18 @@ control_missed++;
     tau_cmd[10] = msg->tau_ff[10];
     tau_cmd[11] = msg->tau_ff[11];
 
+    // Send State
+    PublishState();
+
     //std::cout << " GOT: " << tau_cmd << std::endl;
 
     //Eigen::VectorXd tau_output = Eigen::Map<Eigen::VectorXd>(msg->tau_ff, 12);
     joint_torques.tail(12) = tau_cmd;
-    std::cout << "MISSED: " << control_missed << std::endl;
-    control_missed = 0;
+
+
+    // Send Output
+    //std::cout << "MISSED: " << control_missed << std::endl;
+    //control_missed = 0;
   }
 
   void PublishState()
