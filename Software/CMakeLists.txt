@@ -4,10 +4,10 @@ project(Nomad)
 set(NOMAD_VERSION_MAJOR 0)
 set(NOMAD_VERSION_MINOR 1)
 
-#set(SOURCES ${PROJECT_SOURCE_DIR}/src/QuickStart.cpp)
+#set(CMAKE_CXX_STANDARD 17)
 
-#include_directories("${PROJECT_SOURCE_DIR}/include")
-#add_library(QuickStart STATIC ${SOURCES})
+#set(CMAKE_CXX_FLAGS "-O3")
+
 #enable_testing()
 
 # Core Library

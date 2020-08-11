@@ -53,13 +53,13 @@ int main(int argc, char *argv[])
     const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
 
     std::shared_ptr<Port> SIM_IMU = Port::CreateOutput("SIM_IMU", 10);
-    SIM_IMU->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.imu_state");
+    SIM_IMU->SetTransport(Port::TransportType::IPC, "ipc", "nomad.sim.imu_state");
 
     std::shared_ptr<Port> JOINT_STATE = Port::CreateOutput("SIM_JOINT_STATE", 10);
-    JOINT_STATE->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.joint_state");
+    JOINT_STATE->SetTransport(Port::TransportType::IPC, "ipc", "nomad.sim.joint_state");
 
     std::shared_ptr<Port> COM_STATE = Port::CreateOutput("SIM_COM_STATE", 10);
-    COM_STATE->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.com_state");
+    COM_STATE->SetTransport(Port::TransportType::IPC, "ipc", "nomad.sim.com_state");
 
     // Simulator Interface Task Setup
     SimulationInterface nomad_simulation_interface("Simulation Interface");
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     nomad_simulation_interface.SetPortOutput(SimulationInterface::COM_STATE_OUT,
                                              Port::TransportType::INPROC, "inproc", "nomad.com_state");
     nomad_simulation_interface.SetPortOutput(SimulationInterface::JOINT_CONTROL_CMD_OUT,
-                                             Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
+                                             Communications::Port::TransportType::IPC, "ipc", "nomad.sim.joint_cmd2");
 
     Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::IMU_STATE_IN),
               SIM_IMU);

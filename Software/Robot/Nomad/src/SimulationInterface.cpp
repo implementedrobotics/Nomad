@@ -75,25 +75,25 @@ namespace Robot
                 static int last_stamp_joint = 0;
                 static int last_stamp_com = 0;
                 static uint64_t last_control_time = 0; 
-
+                Systems::Time t;
                 //Read Plant State
-                if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
+               // if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
                 {
                     //std::cout << "Got: " << imu_data_.sequence_num << std::endl;
                 }
 
-                if (GetInputPort(InputPort::JOINT_STATE_IN)->Receive(joint_state_))
+               // if (GetInputPort(InputPort::JOINT_STATE_IN)->Receive(joint_state_))
                 {
                 //    // std::cout << "Got 2: " << joint_state_.q[2] << std::endl;
                 }
 
-                if (GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
+             //   if (GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
                 {
                 //    // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
                 }
 
                 // Read Any Input Commands
-                if (GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_))
+              //  if (GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_))
                 {
                    //std::cout << "Got Command: " << joint_command_.tau_ff[1] << std::endl;
                 }
@@ -139,14 +139,14 @@ namespace Robot
                 //std::cout << com_state_out_.pos[2] << std::endl;        
 
                 // Publish/Forward Outputs from Sim
-                GetOutputPort(OutputPort::IMU_STATE_OUT)->Send(imu_data_out_);
-                GetOutputPort(OutputPort::JOINT_STATE_OUT)->Send(joint_state_out_);
-                GetOutputPort(OutputPort::COM_STATE_OUT)->Send(com_state_out_);
+                //GetOutputPort(OutputPort::IMU_STATE_OUT)->Send(imu_data_out_);
+                //GetOutputPort(OutputPort::JOINT_STATE_OUT)->Send(joint_state_out_);
+                //GetOutputPort(OutputPort::COM_STATE_OUT)->Send(com_state_out_);
 
                 //last_control_time = Systems::Time::GetTimeStamp();
 
                 // Publish/Forward to Sim
-                GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+               // GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
                 //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
                 //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
 

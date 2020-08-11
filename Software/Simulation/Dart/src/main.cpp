@@ -241,6 +241,7 @@ control_missed++;
     rc = pub_context_->publish("nomad.sim.joint_state", &joint_state);
 
     rc = pub_context_->publish("nomad.sim.com_state", &com_state);
+    pub_context_->flush();
   }
 
 protected:

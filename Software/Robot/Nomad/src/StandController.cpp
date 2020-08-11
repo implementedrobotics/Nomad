@@ -47,10 +47,10 @@ namespace Robot
         {
 
             StandController::StandController(const std::string &name,
-                                                     const long rt_period,
-                                                     unsigned int rt_priority,
-                                                     const int rt_core_id,
-                                                     const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
+                                             const long rt_period,
+                                             unsigned int rt_priority,
+                                             const int rt_core_id,
+                                             const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
             {
                 // Create Ports
                 // Sim Inputs
@@ -64,13 +64,10 @@ namespace Robot
 
             void StandController::Run()
             {
-
-                {
-                Systems::Time t;
                 static int last_stamp_imu = 0;
                 static int last_stamp_joint = 0;
                 static int last_stamp_com = 0;
-                static uint64_t last_control_time = 0; 
+                static uint64_t last_control_time = 0;
 
                 //Read Plant State
                 // if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
@@ -90,8 +87,7 @@ namespace Robot
 
                 //std::cout << "Command In Time: " << Systems::Time::GetTimeStamp() << std::endl;
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;
-                
-                
+
                 //std::cout << "----------------------------Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;
                 //std::cout << "Stamps: " << last_stamp_imu << " " << last_stamp_joint << " " << last_stamp_com << std::endl;
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << last_stamp << std::endl;
@@ -100,24 +96,27 @@ namespace Robot
 
                 // Publish/Forward to Sim
                 memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
-                GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_) ;
+                {
+                    //Systems::Time t;
+                    GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+                    //std::cout << "OUT SEND: " << std::endl;
+                }
 
                 // Receive/Block
                 int timeout = 0;
-                while(!GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
+                while (!GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
                 {
                     // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
 
-                    if(timeout++ > 0)
+                    if (timeout++ > 0)
                         break;
                 }
 
                 //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
                 //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
-                std::cout << "OUT: " << com_state_.sequence_num << " " << timeout << std::endl;
+                //std::cout << "OUT: " << com_state_.sequence_num << " " << timeout << std::endl;
 
                 last_control_time = Systems::Time::GetTimeStamp();
-                }
             }
 
             void StandController::Setup()
@@ -132,7 +131,7 @@ namespace Robot
                 }
 
                 std::cout << "[StandController]: "
-                          << "StandController Interface Publisher Running!: " << outputs_bound << " " <<  std::endl;
+                          << "StandController Interface Publisher Running!: " << outputs_bound << " " << std::endl;
             }
 
         } // namespace Interface
