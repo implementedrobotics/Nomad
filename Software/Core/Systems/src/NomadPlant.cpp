@@ -80,10 +80,10 @@ NomadPlant::NomadPlant(const std::string &name, const double T_s) : Realtime::Re
     // TODO: Move to "CONNECT"
     // Create Ports
     // State Estimate Input Port
-    input_port_map_[InputPort::FORCES] = std::make_shared<Realtime::Port>("FORCES", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, 1, rt_period_);
+    input_port_map_[InputPort::FORCES] = std::make_shared<Communications::Port>("FORCES", Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, 1, rt_period_);
 
     // Optimal Force Solution Output Port
-    output_port_map_[OutputPort::STATE] = std::make_shared<Realtime::Port>("STATE", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
+    output_port_map_[OutputPort::STATE] = std::make_shared<Communications::Port>("STATE", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period_);
 
     // Create Messages
     output_state_.length = num_states_;
@@ -133,7 +133,7 @@ void NomadPlant::Run()
     }
 
     rigid_skel->getBodyNode(0)->addExtForce(Eigen::Vector3d::UnitX() * current_force, rigid_skel->getBodyNode(0)->getCOM(), false, true);
-    std::cout << "TIME: " << Systems::Time::GetTime() / 1e6<< std::endl;
+    //std::cout << "TIME: " << Systems::Time::GetTime() / 1e6<< std::endl;
     std::cout << world->getTime() << " : ";
     std::cout << "U: " << current_force << std::endl;
     std::cout << "X: " << rigid_skel->getPosition(3) << "\tY: " << rigid_skel->getPosition(4) << "\tZ: " << rigid_skel->getPosition(5) << std::endl;
@@ -162,7 +162,7 @@ void NomadPlant::Run()
 void NomadPlant::Setup()
 {
     // Connect Input Ports
-    GetInputPort(InputPort::FORCES)->Connect(); // Forces
+    //GetInputPort(InputPort::FORCES)->Connect(); // Forces
 
     // Bind Output Ports
     //GetOutputPort(OutputPort::STATE)->Bind(); // Optimal Force Output

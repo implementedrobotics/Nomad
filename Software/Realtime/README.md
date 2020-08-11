@@ -68,6 +68,12 @@ sudo ./cyclictest --mlockall --smp --priority=99 --distance=0
 
 ```
 sudo setcap cap_sys_nice+ep <EXECUTABLE BINARY>
+sudo setcap cap_ipc_lock+ep <EXECUTABLE BINARY>
+or
+Edit /etc/security/capability.conf and add cap_ipc_lock          nomad
+https://unix.stackexchange.com/questions/454708/how-do-you-add-cap-sys-admin-permissions-to-user-in-centos-7
+
+verify with capsh --print
 ```
 
 

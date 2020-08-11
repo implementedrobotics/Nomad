@@ -1,7 +1,7 @@
 /*
  * LegController.hpp
  *
- *  Created on: July 1, 2019
+ *  Created on: July 13, 2019
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -25,6 +25,7 @@
 #define NOMAD_CORE_CONTROLLERS_LEGCONTROLLER_H_
 
 // C System Files
+#include <stdint.h>
 
 // C++ System Files
 #include <iostream>
@@ -32,53 +33,88 @@
 
 // Third Party Includes
 #include <Eigen/Dense>
+#include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/generic_msg_t.hpp>
+#include <Controllers/Messages/leg_controller_cmd_t.hpp>
+#include <Controllers/Messages/joint_control_cmd_t.hpp>
 
-// Project Include Files
+// Project Includes
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/Messages.hpp>
 
-namespace Controllers
-{
-namespace Locomotion
+namespace Controllers::Locomotion
 {
 
-// TODO: This could just be a base class.  For now it is our specific trajectory generator for the convex mpc.  i.e. Number of states is fixed, and uses all assumptions (like 0 z-velocity, etc)
-// Long story short this is not universal...
-class LegController : public Realtime
-
-public:
-    enum OutputPort
+    class LegController : public Realtime::RealTimeTaskNode
     {
-        CONTROL = 0,  // Controller Output (Hardware)
-        SIMULATION = 1    // Simulation Output (Sim)
+
+    public:
+        // TODO: Evaluate breaking these down into single message type, LegControllerSetpoint_t, LegControllerState_t etc
+        enum OutputPort
+        {
+            SERVO_COMMAND = 0,
+            NUM_OUTPUTS = 1
+        };
+
+        enum InputPort
+        {
+            LEG_COMMAND = 0,
+            NUM_INPUTS = 1
+        };
+        // FL = 0, FR = 1, RL = 2, RR = 3
+
+        // Base Class Leg ControllerTask Node
+        // name = Task Name
+        // stack_size = Task Thread Stack Size
+        // rt_priority = Task Thread Priority
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        LegController(const std::string &name = "Leg_Controller_Task",
+                      const long rt_period = 10000,
+                      const unsigned int rt_priority = Realtime::Priority::HIGH,
+                      const int rt_core_id = -1,
+                      const unsigned int stack_size = PTHREAD_STACK_MIN);
+
+    protected:
+        // Overriden Run Function
+        virtual void Run();
+
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
+
+        // Number of legs
+        unsigned int num_legs_;
+
+        // Number of dofs per each leg
+        unsigned int num_dofs_;
+
+        // Total number of dofs
+        unsigned int total_dofs_;
+
+        // Input (Messages)
+        leg_controller_cmd_t leg_command_input_;
+
+        // Output (Messages)
+        joint_control_cmd_t servo_command_output_;
+
+        // TODO: Set these at compile time?
+        Eigen::VectorXd torque_ff_out_;
+        Eigen::VectorXd q_out_;
+        Eigen::VectorXd q_d_out_;
+
+        Eigen::MatrixXd k_P_joint_;
+        Eigen::MatrixXd k_D_joint_;
+
+        Eigen::MatrixXd k_P_cartesian_;
+        Eigen::MatrixXd k_D_cartesian_;
+
+        Eigen::VectorXd foot_pos_;
+        Eigen::VectorXd foot_vel_;
+
+        // Jacobian Matrix
+        Eigen::MatrixXd J_;
+
+        void ResetState();
     };
+} // namespace Controllers::Locomotion
 
-    enum InputPort
-    {
-        GROUND_REACTION = 0, // Ground Reaction Forces
-        SWING_LEG = 1   // Swing Leg Impedance
-    };
-
-    // Base Class Reference Trajectory Generator Task Node
-    // name = Task Name
-    // N = Trajectory Steps
-    // T = Trajectory Time Window
-    LegController(const std::string &name, const unsigned int N, const double T);
-
-protected:
-    // Overriden Run Function
-    virtual void Run();
-
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
-
-    // Input (State Estimate)
-    //Messages::Controllers::Estimators::CoMState x_hat_in_;
-
-private:
-    int sequence_num_;
-};
-} // namespace Locomotion
-} // namespace Controllers
-
-#endif // NOMAD_CORE_CONTROLLERS_LEGCONTROLLER_H_
+#endif // NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_

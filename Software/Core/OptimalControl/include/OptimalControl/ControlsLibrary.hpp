@@ -21,8 +21,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
-
 #ifndef NOMAD_CORE_OPTIMALCONTROL_CONTROLSLIBRARY_H
 #define NOMAD_CORE_OPTIMALCONTROL_CONTROLSLIBRARY_H
 
@@ -30,11 +28,10 @@
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 
-
 namespace ControlsLibrary
 {
 
-/**
+    /**
      * Converts the linear continuous time dynamical systems model to disrete time
      * using the Zero Order Hold method
      *
@@ -45,48 +42,48 @@ namespace ControlsLibrary
      * @param[out] B_d Discrete time input matrix
      * @param[in] data the data to analyze
      */
-void ContinuousToDiscrete(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B, double Ts, Eigen::MatrixXd &A_d, Eigen::MatrixXd &B_d);
+    void ContinuousToDiscrete(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B, double Ts, Eigen::MatrixXd &A_d, Eigen::MatrixXd &B_d);
 
-namespace EigenHelpers
-{
+    namespace EigenHelpers
+    {
 
-// Typedefs
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RowMatrixXd;
-// TODO: Make this more generic
-// Block Matrix Class
-class BlockMatrixXd
-{
-public:
-    BlockMatrixXd() {}
-    BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, const int init_val = 0);
+        // Typedefs
+        typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> RowMatrixXd;
+        // TODO: Make this more generic
+        // Block Matrix Class
+        class BlockMatrixXd
+        {
+        public:
+            BlockMatrixXd() {}
+            BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, const int init_val = 0);
 
-    friend std::ostream &operator<<(std::ostream &os, BlockMatrixXd const &bm) { return os << bm.Matrix_; }
-    // Operator Overload:
-    void operator()(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
+            friend std::ostream &operator<<(std::ostream &os, BlockMatrixXd const &bm) { return os << bm.Matrix_; }
+            // Operator Overload:
+            void operator()(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
 
-    // TODO: Fix Templated Hack so we can set this directly... i.e. matrix(1,1) = block
-    const Eigen::MatrixXd operator()(const unsigned int Row, const unsigned int Col);
+            // TODO: Fix Templated Hack so we can set this directly... i.e. matrix(1,1) = block
+            const Eigen::MatrixXd operator()(const unsigned int Row, const unsigned int Col);
 
-    // Cast Overload
-    operator Eigen::MatrixXd() { return Matrix_; }
+            // Cast Overload
+            operator Eigen::MatrixXd() { return Matrix_; }
 
-    Eigen::MatrixXd MatrixXd() const { return Matrix_; }
-    // Set Block Matrix Value
-    // TODO: Should be Matrix(1,1) = value
-    void SetBlock(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
+            Eigen::MatrixXd MatrixXd() const { return Matrix_; }
+            // Set Block Matrix Value
+            // TODO: Should be Matrix(1,1) = value
+            void SetBlock(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
 
-    // Fill Diagonal with a block
-    void FillDiagonal(const Eigen::MatrixXd &block_val, const int k = 0);
+            // Fill Diagonal with a block
+            void FillDiagonal(const Eigen::MatrixXd &block_val, const int k = 0);
 
-protected:
-    unsigned int Rows_;
-    unsigned int Cols_;
-    unsigned int BlockWidth_;
-    unsigned int BlockHeight_;
+        protected:
+            unsigned int Rows_;
+            unsigned int Cols_;
+            unsigned int BlockWidth_;
+            unsigned int BlockHeight_;
 
-    Eigen::MatrixXd Matrix_;
-};
-} // namespace EigenHelpers
+            Eigen::MatrixXd Matrix_;
+        };
+    } // namespace EigenHelpers
 } // namespace ControlsLibrary
 
 #endif // NOMAD_CORE_OPTIMALCONTROL_CONTROLSLIBRARY_H

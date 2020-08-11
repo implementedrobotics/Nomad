@@ -1,0 +1,839 @@
+<sdf version='1.6'>
+  <model name='Nomad'>
+    <link name='base_link'>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0 0 0.000159 0 -0 0</pose>
+        <mass>3.1127</mass>
+        <inertia>
+          <ixx>0.0303631</ixx>
+          <ixy>-1.39577e-09</ixy>
+          <ixz>5.33227e-17</ixz>
+          <iyy>0.0951521</iyy>
+          <iyz>-6.15067e-17</iyz>
+          <izz>0.110368</izz>
+        </inertia>
+      </inertial>
+      <collision name='base_link_collision'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.44 0.26 0.14</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='base_link_visual'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/base_link.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+
+          <ambient>1 0 0 1</ambient>
+
+          <diffuse>1 0 0 1</diffuse>
+
+          <specular>0.1 0.1 0.1 1</specular>
+
+          <emissive>0 0 0 0</emissive>
+
+        </material>
+      </visual>
+      <visual name='base_link_fixed_joint_lump__b_haa_motor_FL_visual_1'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_haa_motor_FL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_link_fixed_joint_lump__b_haa_motor_FR_visual_2'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_haa_motor_FR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_link_fixed_joint_lump__b_haa_motor_RL_visual_3'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_haa_motor_RL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='base_link_fixed_joint_lump__b_haa_motor_RR_visual_4'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_haa_motor_RR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <link name='b_hfe_motor_FL'>
+      <pose frame=''>0.217 0.07 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.048378 0.004377 0.00043 0 -0 0</pose>
+        <mass>0.287587</mass>
+        <inertia>
+          <ixx>0.000280355</ixx>
+          <ixy>-1.2113e-05</ixy>
+          <ixz>-1.18873e-06</ixz>
+          <iyy>0.000473881</iyy>
+          <iyz>3.05115e-06</iyz>
+          <izz>0.000361322</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_hfe_motor_FL_collision'>
+        <pose frame=''>0.058 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.053</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='b_hfe_motor_FL_visual'>
+        <pose frame=''>-0.217 -0.07 -0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_hfe_motor_FL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_haa_FL' type='revolute'>
+      <child>b_hfe_motor_FL</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>-1 0 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_kfe_motor_FL'>
+      <pose frame=''>0.275 0.0945 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.008314 0.054672 -0.044525 0 -0 0</pose>
+        <mass>0.589636</mass>
+        <inertia>
+          <ixx>0.00372285</ixx>
+          <ixy>3.74238e-05</ixy>
+          <ixz>-0.000336267</ixz>
+          <iyy>0.00373948</iyy>
+          <iyz>0.000433463</iyz>
+          <izz>0.00073608</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_kfe_motor_FL_collision'>
+        <pose frame=''>0 0.048 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.075</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_kfe_motor_FL_fixed_joint_lump__b_upper_leg_FL_collision_1'>
+        <pose frame=''>-0.02 0.0693 -0.125 0 0.1 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.03 0.25</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='b_kfe_motor_FL_visual'>
+        <pose frame=''>-0.275 -0.0945 -0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_kfe_motor_FL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_kfe_motor_FL_fixed_joint_lump__b_upper_leg_FL_visual_1'>
+        <pose frame=''>-0.275 -0.0945 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_upper_leg_FL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_hfe_FL' type='revolute'>
+      <child>b_kfe_motor_FL</child>
+      <parent>b_hfe_motor_FL</parent>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_lower_leg_FL'>
+      <pose frame=''>0.27482 0.1545 -0.25 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.037525 0.010921 0.12398 0 -0 0</pose>
+        <mass>0.177139</mass>
+        <inertia>
+          <ixx>0.00210533</ixx>
+          <ixy>-4.0181e-07</ixy>
+          <ixz>-0.000615045</ixz>
+          <iyy>0.00229935</iyy>
+          <iyz>-1.39942e-06</iyz>
+          <izz>0.000209299</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_lower_leg_FL_collision'>
+        <pose frame=''>0.042 0.0095 0.13 0 0.24 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.26</length>
+            <radius>0.01</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_lower_leg_FL_fixed_joint_lump__b_foot_FL_collision_1'>
+        <pose frame=''>0.077613 0.011 0.24861 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.025</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <visual name='b_lower_leg_FL_visual'>
+        <pose frame=''>-0.27482 -0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_lower_leg_FL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_lower_leg_FL_fixed_joint_lump__b_foot_FL_visual_1'>
+        <pose frame=''>-0.27482 -0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_foot_FL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_kfe_FL' type='revolute'>
+      <child>b_lower_leg_FL</child>
+      <parent>b_kfe_motor_FL</parent>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-2.2</lower>
+          <upper>0</upper>
+          <effort>50</effort>
+          <velocity>400</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_hfe_motor_FR'>
+      <pose frame=''>0.217 -0.07 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.048378 -0.004377 0.00043 0 -0 0</pose>
+        <mass>0.287587</mass>
+        <inertia>
+          <ixx>0.000280355</ixx>
+          <ixy>1.2113e-05</ixy>
+          <ixz>-1.18873e-06</ixz>
+          <iyy>0.000473881</iyy>
+          <iyz>-3.05115e-06</iyz>
+          <izz>0.000361322</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_hfe_motor_FR_collision'>
+        <pose frame=''>0.058 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.053</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='b_hfe_motor_FR_visual'>
+        <pose frame=''>-0.217 0.07 -0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_hfe_motor_FR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_haa_FR' type='revolute'>
+      <child>b_hfe_motor_FR</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>-1 0 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_kfe_motor_FR'>
+      <pose frame=''>0.275 -0.0945 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.008314 -0.054672 -0.044525 0 -0 0</pose>
+        <mass>0.589639</mass>
+        <inertia>
+          <ixx>0.0037229</ixx>
+          <ixy>-3.74172e-05</ixy>
+          <ixz>-0.000336241</ixz>
+          <iyy>0.0037396</iyy>
+          <iyz>-0.000433467</iyz>
+          <izz>0.000736153</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_kfe_motor_FR_collision'>
+        <pose frame=''>0 -0.048 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.075</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_kfe_motor_FR_fixed_joint_lump__b_upper_leg_FR_collision_1'>
+        <pose frame=''>-0.02 -0.0693 -0.125 0 0.1 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.03 0.25</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='b_kfe_motor_FR_visual'>
+        <pose frame=''>-0.275 0.0945 -0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_kfe_motor_FR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_kfe_motor_FR_fixed_joint_lump__b_upper_leg_FR_visual_1'>
+        <pose frame=''>-0.275 0.0945 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_upper_leg_FR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_hfe_FR' type='revolute'>
+      <child>b_kfe_motor_FR</child>
+      <parent>b_hfe_motor_FR</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_lower_leg_FR'>
+      <pose frame=''>0.27482 -0.1545 -0.25 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.037525 -0.011079 0.12398 0 -0 0</pose>
+        <mass>0.177139</mass>
+        <inertia>
+          <ixx>0.00210533</ixx>
+          <ixy>-4.0181e-07</ixy>
+          <ixz>-0.000615045</ixz>
+          <iyy>0.00229935</iyy>
+          <iyz>-1.39942e-06</iyz>
+          <izz>0.000209299</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_lower_leg_FR_collision'>
+        <pose frame=''>0.042 -0.0095 0.13 0 0.24 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.26</length>
+            <radius>0.01</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_lower_leg_FR_fixed_joint_lump__b_foot_FR_collision_1'>
+        <pose frame=''>0.077613 -0.011 0.24861 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.025</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <visual name='b_lower_leg_FR_visual'>
+        <pose frame=''>-0.27482 0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_lower_leg_FR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_lower_leg_FR_fixed_joint_lump__b_foot_FR_visual_1'>
+        <pose frame=''>-0.27482 0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_foot_FR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_kfe_FR' type='revolute'>
+      <child>b_lower_leg_FR</child>
+      <parent>b_kfe_motor_FR</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>2.2</upper>
+          <effort>50</effort>
+          <velocity>400</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_hfe_motor_RL'>
+      <pose frame=''>-0.217 0.07 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.048378 0.004377 0.00043 0 -0 0</pose>
+        <mass>0.287587</mass>
+        <inertia>
+          <ixx>0.000280355</ixx>
+          <ixy>1.2113e-05</ixy>
+          <ixz>1.18873e-06</ixz>
+          <iyy>0.000473881</iyy>
+          <iyz>3.05115e-06</iyz>
+          <izz>0.000361322</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_hfe_motor_RL_collision'>
+        <pose frame=''>-0.058 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.053</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='b_hfe_motor_RL_visual'>
+        <pose frame=''>0.217 -0.07 -0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_hfe_motor_RL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_haa_RL' type='revolute'>
+      <child>b_hfe_motor_RL</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_kfe_motor_RL'>
+      <pose frame=''>-0.275 0.0945 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.008314 0.054672 -0.044525 0 -0 0</pose>
+        <mass>0.589636</mass>
+        <inertia>
+          <ixx>0.00372285</ixx>
+          <ixy>3.74238e-05</ixy>
+          <ixz>-0.000336267</ixz>
+          <iyy>0.00373948</iyy>
+          <iyz>0.000433463</iyz>
+          <izz>0.00073608</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_kfe_motor_RL_collision'>
+        <pose frame=''>0 0.048 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.075</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_kfe_motor_RL_fixed_joint_lump__b_upper_leg_RL_collision_1'>
+        <pose frame=''>-0.02 0.0693 -0.125 0 0.1 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.03 0.25</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='b_kfe_motor_RL_visual'>
+        <pose frame=''>0.275 -0.0945 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_kfe_motor_RL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_kfe_motor_RL_fixed_joint_lump__b_upper_leg_RL_visual_1'>
+        <pose frame=''>0.275 -0.0945 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_upper_leg_RL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_hfe_RL' type='revolute'>
+      <child>b_kfe_motor_RL</child>
+      <parent>b_hfe_motor_RL</parent>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_lower_leg_RL'>
+      <pose frame=''>-0.27518 0.1545 -0.25 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.037525 0.010921 0.12398 0 -0 0</pose>
+        <mass>0.177139</mass>
+        <inertia>
+          <ixx>0.00210533</ixx>
+          <ixy>-4.0181e-07</ixy>
+          <ixz>-0.000615045</ixz>
+          <iyy>0.00229935</iyy>
+          <iyz>-1.39942e-06</iyz>
+          <izz>0.000209299</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_lower_leg_RL_collision'>
+        <pose frame=''>0.042 0.0095 0.13 0 0.24 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.26</length>
+            <radius>0.01</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_lower_leg_RL_fixed_joint_lump__b_foot_RL_collision_1'>
+        <pose frame=''>0.077613 0.011 0.24861 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.025</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <visual name='b_lower_leg_RL_visual'>
+        <pose frame=''>0.27518 -0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_lower_leg_RL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_lower_leg_RL_fixed_joint_lump__b_foot_RL_visual_1'>
+        <pose frame=''>0.27518 -0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_foot_RL.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_kfe_RL' type='revolute'>
+      <child>b_lower_leg_RL</child>
+      <parent>b_kfe_motor_RL</parent>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-2.2</lower>
+          <upper>0</upper>
+          <effort>50</effort>
+          <velocity>400</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_hfe_motor_RR'>
+      <pose frame=''>-0.217 -0.07 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.048378 -0.004377 0.00043 0 -0 0</pose>
+        <mass>0.287587</mass>
+        <inertia>
+          <ixx>0.000280355</ixx>
+          <ixy>-1.2113e-05</ixy>
+          <ixz>1.18873e-06</ixz>
+          <iyy>0.000473881</iyy>
+          <iyz>-3.05115e-06</iyz>
+          <izz>0.000361322</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_hfe_motor_RR_collision'>
+        <pose frame=''>-0.058 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.053</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='b_hfe_motor_RR_visual'>
+        <pose frame=''>0.217 0.07 -0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_hfe_motor_RR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_haa_RR' type='revolute'>
+      <child>b_hfe_motor_RR</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_kfe_motor_RR'>
+      <pose frame=''>-0.275 -0.0945 0 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.008314 -0.054672 -0.044525 0 -0 0</pose>
+        <mass>0.589639</mass>
+        <inertia>
+          <ixx>0.0037229</ixx>
+          <ixy>-3.74172e-05</ixy>
+          <ixz>-0.000336241</ixz>
+          <iyy>0.0037396</iyy>
+          <iyz>-0.000433467</iyz>
+          <izz>0.000736153</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_kfe_motor_RR_collision'>
+        <pose frame=''>0 -0.048 0 1.5708 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.075</length>
+            <radius>0.05</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_kfe_motor_RR_fixed_joint_lump__b_upper_leg_RR_collision_1'>
+        <pose frame=''>-0.02 -0.0693 -0.125 0 0.1 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.03 0.25</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='b_kfe_motor_RR_visual'>
+        <pose frame=''>0.275 0.0945 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_kfe_motor_RR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_kfe_motor_RR_fixed_joint_lump__b_upper_leg_RR_visual_1'>
+        <pose frame=''>0.275 0.0945 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_upper_leg_RR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_hfe_RR' type='revolute'>
+      <child>b_kfe_motor_RR</child>
+      <parent>b_hfe_motor_RR</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='b_lower_leg_RR'>
+      <pose frame=''>-0.27518 -0.1545 -0.25 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.037525 -0.011079 0.12398 0 -0 0</pose>
+        <mass>0.177139</mass>
+        <inertia>
+          <ixx>0.00210533</ixx>
+          <ixy>-4.0181e-07</ixy>
+          <ixz>-0.000615045</ixz>
+          <iyy>0.00229935</iyy>
+          <iyz>-1.39942e-06</iyz>
+          <izz>0.000209299</izz>
+        </inertia>
+      </inertial>
+      <collision name='b_lower_leg_RR_collision'>
+        <pose frame=''>0.042 -0.0095 0.13 0 0.24 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.26</length>
+            <radius>0.01</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <collision name='b_lower_leg_RR_fixed_joint_lump__b_foot_RR_collision_1'>
+        <pose frame=''>0.077613 -0.011 0.24861 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.025</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <visual name='b_lower_leg_RR_visual'>
+        <pose frame=''>0.27518 0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_lower_leg_RR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='b_lower_leg_RR_fixed_joint_lump__b_foot_RR_visual_1'>
+        <pose frame=''>0.27518 0.1545 0.25 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.001 0.001 0.001</scale>
+            <uri>model://Nomad/meshes/b_foot_RR.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='j_kfe_RR' type='revolute'>
+      <child>b_lower_leg_RR</child>
+      <parent>b_kfe_motor_RR</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>2.2</upper>
+          <effort>50</effort>
+          <velocity>400</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.2</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+  </model>
+</sdf>

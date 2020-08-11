@@ -1,0 +1,20 @@
+struct leg_controller_cmd_t
+{
+    int64_t timestamp;
+    int64_t sequence_num;
+
+    double torque_ff[12];        // Torque Feedforward
+    double force_ff[12];         // Force Feedforward
+    double q[12];                // Joint Position
+    double q_d[12];              // Joint Velocity
+    double foot_pos_desired[12]; // Foot Position Desired
+    double foot_vel_desired[12]; // Foot Velocity Desired
+    double foot_pos[12];         // Foot Position Actual
+    double foot_vel[12];         // Foot Velocity Actual
+    double k_p_joint[12];        // P Gains (Joint)
+    double k_d_joint[12];        // D Gains (Joint)
+    double k_p_cartesian[12];    // P Gains (Cartesian)
+    double k_d_cartesian[12];    // D Gains (Cartesian)
+    double J_c[144]; // Contact Jacobian (216 = 3 * 4 * 18 or contact dofs * num contacts * total dofs)
+    
+}

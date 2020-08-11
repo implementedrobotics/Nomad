@@ -35,153 +35,132 @@
 #include <map>
 
 #include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/int32_vec_t.hpp>
+#include <Communications/Messages/generic_msg_t.hpp>
 
-namespace Realtime
+namespace Communications
 {
 
-Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension)
-{
-    queue_size_ = 1;
-    transport_type_ = TransportType::INPROC;
-    transport_url_ = "inproc"; // TODO: Noblock?
-
-    // If Input Port Create Handlers
-    if (direction == Direction::INPUT)
+    Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension), started_(false)
     {
-        if (data_type == DataType::DOUBLE)
+        queue_size_ = 1;
+        transport_type_ = TransportType::INPROC;
+        transport_url_ = "inproc"; // TODO: Noblock?
+
+        // If Input Port Create Handlers
+        if (direction == Direction::INPUT)
         {
-            PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
-            handler_ = (void *)handler;
+            if (data_type == DataType::DOUBLE)
+            {
+                PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
+                handler_ = (void *)handler;
+            }
+            else if (data_type == DataType::INT32)
+            {
+                PortHandler<int32_vec_t> *handler = new PortHandler<int32_vec_t>(queue_size_);
+                handler_ = (void *)handler;
+            }
+            else if (data_type == DataType::BYTE)
+            {
+                PortHandler<generic_msg_t> *handler = new PortHandler<generic_msg_t>(queue_size_);
+                handler_ = (void *)handler;
+            }
+        }
+        else // Setup Outputs
+        {
         }
     }
-    else // Setup Outputs
-    {
-    }
-}
 
-// TODO: Clear Handler Memory Etc,
-Port::~Port()
-{
-    // if (data_type_ == DataType::DOUBLE)
-    // {
-    //     PortHandler<double_vec_t> *handler = static_cast<PortHandler<double_vec_t> *>(handler);
-    //     if (handler)
-    //         delete handler;
-    // }
-    // handler_ = 0;
-}
-
-void Port::SetSignalLabel(const int signal_idx, const std::string &label)
-{
-    signal_labels_.insert(std::make_pair(signal_idx, label));
-}
-// TODO: I do not love this...
-bool Port::Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output)
-{
-    input->transport_url_ = output->transport_url_;
-    input->channel_ = output->channel_;
-    input->transport_type_ = output->transport_type_;
-    input->dimension_ = output->dimension_;
-    input->data_type_ = output->data_type_;
-    input->signal_labels_ = output->signal_labels_;
-}
-
-bool Port::Bind()
-{
-    // Reset and Clear Reference
-    context_.reset();
-
-    // Setup Contexts
-    if (transport_type_ == TransportType::INPROC)
+    Port::Port(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0), started_(false)
     {
-        context_ = PortManager::Instance()->GetInprocContext();
-    }
-    else if (transport_type_ == TransportType::IPC)
-    {
-        context_ = std::make_shared<zcm::ZCM>("ipc");
-    }
-    else if (transport_type_ == TransportType::UDP)
-    {
-        context_ = std::make_shared<zcm::ZCM>(transport_url_);
-    }
-    else if (transport_type_ == TransportType::SERIAL)
-    {
-        context_ = std::make_shared<zcm::ZCM>(transport_url_);
-    }
-    else
-    {
-        std::cout << "[PORT:BIND]: ERROR: Invalid Transport Type!" << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool Port::Connect()
-{
-    // Reset and Clear Reference
-    context_.reset();
-
-    // Setup Contexts
-    if (transport_type_ == TransportType::INPROC)
-    {
-        context_ = PortManager::Instance()->GetInprocContext();
-    }
-    else if (transport_type_ == TransportType::IPC)
-    {
-        context_ = std::make_shared<zcm::ZCM>("ipc");
-    }
-    else if (transport_type_ == TransportType::UDP)
-    {
-        context_ = std::make_shared<zcm::ZCM>(transport_url_);
-    }
-    else if (transport_type_ == TransportType::SERIAL)
-    {
-        context_ = std::make_shared<zcm::ZCM>(transport_url_);
-    }
-    else
-    {
-        std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
+        queue_size_ = 1;
+        transport_type_ = TransportType::INPROC;
+        transport_url_ = "inproc"; // TODO: Noblock?
     }
 
-    // Now Subscribe
-    // TODO: Save subs somewhere for unsubscribe
-    // TODO: Switch Types
-    if (data_type_ == DataType::DOUBLE)
+    std::shared_ptr<Port> Port::CreateOutput(const std::string &name, int period)
     {
-        auto subs = context_->subscribe(channel_, &PortHandler<double_vec_t>::HandleMessage, static_cast<PortHandler<double_vec_t> *>(handler_));
-    }
-    else
-    {
-        std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
-        return false;
+        std::shared_ptr<Communications::Port> port = std::make_shared<Communications::Port>(name, Direction::OUTPUT, period);
+        return port;
     }
 
-    if(transport_type_ != TransportType::INPROC)
+    // TODO: Clear Handler Memory Etc,
+    Port::~Port()
     {
-        context_->start();
+        // if (data_type_ == DataType::DOUBLE)
+        // {
+        //     PortHandler<double_vec_t> *handler = static_cast<PortHandler<double_vec_t> *>(handler);
+        //     if (handler)
+        //         delete handler;
+        // }
+        // handler_ = 0;
     }
 
-    return true;
-}
-
-///////////////////////
-// Port Manager Source
-///////////////////////
-// Global static pointer used to ensure a single instance of the class.
-PortManager *PortManager::manager_instance_ = NULL;
-
-PortManager::PortManager()
-{
-    // ZCM Context
-    inproc_context_ = std::make_shared<zcm::ZCM>("inproc");
-}
-
-PortManager *PortManager::Instance()
-{
-    if (manager_instance_ == NULL)
+    void Port::SetSignalLabel(const int signal_idx, const std::string &label)
     {
-        manager_instance_ = new PortManager();
+        signal_labels_.insert(std::make_pair(signal_idx, label));
     }
-    return manager_instance_;
-}
-} // namespace Realtime
+    // TODO: I do not love this...
+    bool Port::Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output)
+    {
+        input->transport_url_ = output->transport_url_;
+        input->channel_ = output->channel_;
+        input->transport_type_ = output->transport_type_;
+        input->dimension_ = output->dimension_;
+        input->data_type_ = output->data_type_;
+        input->signal_labels_ = output->signal_labels_;
+
+       // std::cout << "Map: " << input->transport_url_ << " " << input->channel_ << std::endl;
+    }
+
+    bool Port::Bind()
+    {
+        // Reset and Clear Reference
+        context_.reset();
+
+        // Setup Contexts
+        if (transport_type_ == TransportType::INPROC)
+        {
+            context_ = PortManager::Instance()->GetInprocContext();
+        }
+        else if (transport_type_ == TransportType::IPC)
+        {
+            context_ = std::make_shared<zcm::ZCM>("ipc");
+        }
+        else if (transport_type_ == TransportType::UDP)
+        {
+            context_ = std::make_shared<zcm::ZCM>(transport_url_);
+        }
+        else if (transport_type_ == TransportType::SERIAL)
+        {
+            context_ = std::make_shared<zcm::ZCM>(transport_url_);
+        }
+        else
+        {
+            std::cout << "[PORT:BIND]: ERROR: Invalid Transport Type!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    ///////////////////////
+    // Port Manager Source
+    ///////////////////////
+    // Global static pointer used to ensure a single instance of the class.
+    PortManager *PortManager::manager_instance_ = NULL;
+
+    PortManager::PortManager()
+    {
+        // ZCM Context
+        inproc_context_ = std::make_shared<zcm::ZCM>("inproc");
+    }
+
+    PortManager *PortManager::Instance()
+    {
+        if (manager_instance_ == NULL)
+        {
+            manager_instance_ = new PortManager();
+        }
+        return manager_instance_;
+    }
+} // namespace Communications

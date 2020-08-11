@@ -33,79 +33,88 @@
 
 // Third Party Includes
 #include <Eigen/Dense>
-#include <Communications/Messages/double_vec_t.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/int32_vec_t.hpp>
 
-namespace Controllers
+namespace Controllers::Estimators
 {
-namespace Estimators
-{
-class StateEstimator : public Realtime::RealTimeTaskNode
-{
-
-public:
-    enum OutputPort
+    class StateEstimator : public Realtime::RealTimeTaskNode
     {
-        STATE_HAT = 0 // State Estimate
+
+    public:
+        enum OutputPort
+        {
+            BODY_STATE_HAT = 0, // State Estimate
+            NUM_OUTPUTS = 1
+        };
+
+        enum InputPort
+        {
+            IMU_DATA = 0,     // IMU Sensor Input
+            JOINT_STATE = 1,  // Joint State for Leg Kinematics Input
+            VISUAL_ODOM = 2,  // Visual Odometry Sensor Input
+            CHEATER_POSE = 3, // Ground Truth Pose Data
+            NUM_INPUTS = 4
+        };
+
+        // TODO: Move to a State class
+        enum Idx
+        {
+            PHI = 0,    // Body Orientation (Roll)
+            THETA = 1,  // Body Orientation (Pitch)
+            PSI = 2,    // Body Orientation (Yaw)
+            X = 3,      // Body Position (X)
+            Y = 4,      // Body Position (Y)
+            Z = 5,      // Body Position (Z)
+            W_X = 6,    // Angular Vel (Roll)
+            W_Y = 7,    // Angular Vel (Pitch)
+            W_Z = 8,    // Angular Vel (Yaw)
+            X_DOT = 9,  // Body Velocity (X)
+            Y_DOT = 10, // Body Velocity (Y)
+            Z_DOT = 11, // Body Velocity (Z)
+            //GRAVITY = 12 // Augmented Gravity
+        };
+
+        // Base Class State Estimator Task Node
+        // name = Task Name
+        // stack_size = Task Thread Stack Size
+        // rt_priority = Task Thread Priority
+        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        StateEstimator(const std::string &name = "State_Estimator_Task",
+                       const long rt_period = 10000,
+                       const unsigned int rt_priority = Realtime::Priority::MEDIUM,
+                       const int rt_core_id = -1,
+                       const unsigned int stack_size = PTHREAD_STACK_MIN);
+
+    protected:
+        // Overriden Run Function
+        virtual void Run();
+
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
+
+        // Number of states
+        unsigned int num_states_;
+
+        // (Input) Actuated Joint State Estimate
+        double_vec_t joint_state_in_;
+
+        // (Input) IMU Estimate
+        double_vec_t imu_data_in_;
+
+        // (Input) Ground Truth Pose Estimate
+        //double_vec_t imu_data_in_;
+
+        // (Output) State Estimate
+        double_vec_t com_state_out_;
+
+        // (Output) Contact Estimate
+        int32_vec_t contact_state_out_;
     };
-
-    enum InputPort
-    {
-        IMU = 0,    // IMU Sensor Input
-        LEG_KINEMATICS = 1, // Leg Kinematics Input
-        VISUAL_ODOM = 2 // Visual Odometry Sensor Input
-    };
-
-    // TODO: Move to a State class
-    enum Idx
-    {
-        X = 0,     // X Position
-        Y = 1,     // Y Position
-        Z = 2,     // Z Position
-        X_DOT = 3, // X Velocity
-        Y_DOT = 4, // Y Velocity
-        Z_DOT = 5, // Z Velocity
-        PHI = 6,   // Roll
-        THETA = 7, // Pitch
-        PSI = 8,   // Yaw
-        W_X = 9,   // Angular Vel (Roll)
-        W_Y = 10,  // Angular Vel (Pitch)
-        W_Z = 11,  // Angular Vel (Yaw)
-        GRAVITY = 12 // Augmented Gravity
-    };
-
-
-    // Base Class State Estimator Task Node
-    // name = Task Name
-    // stack_size = Task Thread Stack Size
-    // rt_priority = Task Thread Priority
-    // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-    // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-    StateEstimator(const std::string &name = "State_Estimator_Task",
-                   const long rt_period = 10000,
-                   const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                   const int rt_core_id = -1,
-                   const unsigned int stack_size = PTHREAD_STACK_MIN);
-
-protected:
-    // Overriden Run Function
-    virtual void Run();
-
-    // Pre-Run Setup Routine.  Setup any one time initialization here.
-    virtual void Setup();
-
-    // Number of states
-    unsigned int num_states_;
-
-    // Input (State Estimate)
-    double_vec_t x_hat_in_;
-
-    // (Output) State Estimate
-    double_vec_t output_state_;
-};
-} // namespace Estimators
-} // namespace Controllers
+} // namespace Controllers::Estimators
 
 #endif // NOMAD_CORE_CONTROLLERS_STATEESTIMATOR_H_

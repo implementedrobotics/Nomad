@@ -4,7 +4,6 @@
 #include <unsupported/Eigen/MatrixFunctions>
 //#include <OptimalControl/ControlsLibrary.hpp>
 
-using namespace std;
 using namespace qpOASES;
 
 
@@ -99,21 +98,21 @@ int main()
     //lbX << 0, 0;
     //ubX << 10, 10;
 
-    cout << H << endl;
-    cout << H.data()[0] << endl;
-    cout << H.data()[1] << endl;
-    cout << H.data()[2] << endl;
-    cout << H.data()[3] << endl;
-    cout << A << endl;
+    std::cout << H << std::endl;
+    std::cout << H.data()[0] << std::endl;
+    std::cout << H.data()[1] << std::endl;
+    std::cout << H.data()[2] << std::endl;
+    std::cout << H.data()[3] << std::endl;
+    std::cout << A << std::endl;
 
-    cout << A.data()[0] << endl;
-    cout << A.data()[1] << endl;
-    cout << A.data()[2] << endl;
-    cout << A.data()[3] << endl;
+    std::cout << A.data()[0] << std::endl;
+    std::cout << A.data()[1] << std::endl;
+    std::cout << A.data()[2] << std::endl;
+    std::cout << A.data()[3] << std::endl;
 
-    cout << g << endl;
+    std::cout << g << std::endl;
  //   cout << ubA << endl;
-    cout << ubA << endl;
+    std::cout << ubA << std::endl;
     //cout << lbX << endl;
     //cout << ubX << endl;
 
@@ -129,5 +128,5 @@ int main()
 
     qp.getPrimalSolution(x_out.data());
     // qp.printOptions();
-    cout << x_out << endl;
+    std::cout << x_out << std::endl;
 }   

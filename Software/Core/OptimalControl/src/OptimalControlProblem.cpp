@@ -27,52 +27,51 @@
 namespace OptimalControl
 {
 
-OptimalControlProblem::OptimalControlProblem(const unsigned int N,
-                                             const double T,
-                                             const unsigned int num_states,
-                                             const unsigned int num_inputs,
-                                             const unsigned int max_iterations) : 
-                                             T_(T), 
-                                             N_(N), 
-                                             num_states_(num_states), 
-                                             num_inputs_(num_inputs), 
-                                             max_iterations_(max_iterations),
-                                             solved_(false)
-{
-    // Initial Condition
-    x_0_ = Eigen::VectorXd(num_states);
-    
-    // Target Reference
-    X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, N);
+    OptimalControlProblem::OptimalControlProblem(const unsigned int N,
+                                                 const double T,
+                                                 const unsigned int num_states,
+                                                 const unsigned int num_inputs,
+                                                 const unsigned int max_iterations) : T_(T),
+                                                                                      N_(N),
+                                                                                      num_states_(num_states),
+                                                                                      num_inputs_(num_inputs),
+                                                                                      max_iterations_(max_iterations),
+                                                                                      solved_(false)
+    {
+        // Initial Condition
+        x_0_ = Eigen::VectorXd(num_states);
 
-    // State/Input Trajectories
-    X_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, N);
-    U_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs, N - 1);
+        // Target Reference
+        X_ref_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, N);
 
-    // State/Input Weights
-    Q_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, num_states);
-    R_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs, num_inputs);
+        // State/Input Trajectories
+        X_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, N);
+        U_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs, N - 1);
 
-    // Compute Sampling Time
-    T_s_ = T_ / N_;
-}
+        // State/Input Weights
+        Q_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, num_states);
+        R_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_inputs, num_inputs);
+
+        // Compute Sampling Time
+        T_s_ = T_ / N_;
+    }
 } // namespace OptimalControl
 
 namespace OptimalControl
 {
-namespace LinearOptimalControl
-{
-LinearOptimalControlProblem::LinearOptimalControlProblem(const unsigned int N,
-                                                         const double T,
-                                                         const unsigned int num_states,
-                                                         const unsigned int num_inputs,
-                                                         const unsigned int max_iterations) : OptimalControlProblem(N, T, num_states, num_inputs, max_iterations)
-{
-    A_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, num_states);
-    B_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, num_inputs);
-}
-void LinearOptimalControlProblem::Solve()
-{
-}
-} // namespace LinearOptimalControl
+    namespace LinearOptimalControl
+    {
+        LinearOptimalControlProblem::LinearOptimalControlProblem(const unsigned int N,
+                                                                 const double T,
+                                                                 const unsigned int num_states,
+                                                                 const unsigned int num_inputs,
+                                                                 const unsigned int max_iterations) : OptimalControlProblem(N, T, num_states, num_inputs, max_iterations)
+        {
+            A_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, num_states);
+            B_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_states, num_inputs);
+        }
+        void LinearOptimalControlProblem::Solve()
+        {
+        }
+    } // namespace LinearOptimalControl
 } // namespace OptimalControl

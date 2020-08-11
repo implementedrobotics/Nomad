@@ -38,107 +38,103 @@
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
-#include <Systems/Time.hpp>
+#include <Common/Time.hpp>
 
-
-namespace Controllers
+namespace Controllers::Estimators
 {
-namespace Estimators
-{
+    // TODO: Static Variable in "Physics" Class somewhere
+    double kGravity = 9.81;
 
-// TODO: Static Variable in "Physics" Class somewhere
-double kGravity = 9.81;
-
-StateEstimator::StateEstimator(const std::string &name,
-                               const long rt_period,
-                               unsigned int rt_priority,
-                               const int rt_core_id,
-                               const unsigned int stack_size) : 
-                               Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
-                               num_states_(13)
-{  
-
-    // Create Messages
-    output_state_.length = num_states_;
-    output_state_.data.resize(num_states_);
-
-    // Create Ports
-    // State Estimate Output Port
-    // TODO: Independent port speeds.  For now all ports will be same speed as task node
-    std::shared_ptr<Realtime::Port> port = std::make_shared<Realtime::Port>("STATE_HAT", Realtime::Port::Direction::OUTPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period);
-
-    port->SetSignalLabel(Idx::X, "X");
-    port->SetSignalLabel(Idx::Y, "Y");
-    port->SetSignalLabel(Idx::Z, "Z");
-
-    port->SetSignalLabel(Idx::X_DOT, "X_DOT");
-    port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
-    port->SetSignalLabel(Idx::Z_DOT, "Z_DOT");
-
-    port->SetSignalLabel(Idx::PHI, "Roll");
-    port->SetSignalLabel(Idx::THETA, "Pitch");
-    port->SetSignalLabel(Idx::PSI, "Yaw");
-
-    port->SetSignalLabel(Idx::W_X, "Angular Roll Rate");
-    port->SetSignalLabel(Idx::W_Y, "Angular Pitch Rate");
-    port->SetSignalLabel(Idx::W_Z, "Angular Yaw Rate");
-
-    port->SetSignalLabel(Idx::GRAVITY, "Gravity");
-
-
-    // State Estimate Input Port
-    input_port_map_[InputPort::IMU] = std::make_shared<Realtime::Port>("IMU", Realtime::Port::Direction::INPUT, Realtime::Port::DataType::DOUBLE, num_states_, rt_period_);
-
-    // State Estimate Output Port
-    output_port_map_[OutputPort::STATE_HAT] = port;    
-}
-
-void StateEstimator::Run()
-{
-    // Estimate State
-    bool imu_recv = GetInputPort(InputPort::IMU)->Receive(x_hat_in_); // Receive Setpoint
-    if (!imu_recv)
+    StateEstimator::StateEstimator(const std::string &name,
+                                   const long rt_period,
+                                   unsigned int rt_priority,
+                                   const int rt_core_id,
+                                   const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
+                                                                    num_states_(12)
     {
-        std::cout << "[StateEstimator]: Receive Buffer Empty!" << std::endl;
-        return;
+
+        // Create Messages
+        com_state_out_.length = num_states_;
+        com_state_out_.data.resize(num_states_);
+
+        // Create Ports
+        // State Estimate Output Port
+        // TODO: Independent port speeds.  For now all ports will be same speed as task node
+        std::shared_ptr<Communications::Port> port = std::make_shared<Communications::Port>("BODY_STATE_HAT", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period);
+
+        port->SetSignalLabel(Idx::PHI, "Roll");
+        port->SetSignalLabel(Idx::THETA, "Pitch");
+        port->SetSignalLabel(Idx::PSI, "Yaw");
+
+        port->SetSignalLabel(Idx::X, "X");
+        port->SetSignalLabel(Idx::Y, "Y");
+        port->SetSignalLabel(Idx::Z, "Z");
+
+        port->SetSignalLabel(Idx::W_X, "Angular Roll Rate");
+        port->SetSignalLabel(Idx::W_Y, "Angular Pitch Rate");
+        port->SetSignalLabel(Idx::W_Z, "Angular Yaw Rate");
+
+        port->SetSignalLabel(Idx::X_DOT, "X_DOT");
+        port->SetSignalLabel(Idx::Y_DOT, "Y_DOT");
+        port->SetSignalLabel(Idx::Z_DOT, "Z_DOT");
+
+        // port->SetSignalLabel(Idx::GRAVITY, "Gravity");
+
+        // State Estimate Input Port
+        input_port_map_[InputPort::IMU_DATA] = std::make_shared<Communications::Port>("IMU_DATA", Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period_);
+
+        // State Estimate Output Port
+        output_port_map_[OutputPort::BODY_STATE_HAT] = port;
     }
 
+    void StateEstimator::Run()
+    {
+        // Estimate State
+        // bool imu_recv = GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_in_); // Receive IMU Data
+        // if (!imu_recv)
+        // {
+        //     std::cout << "[StateEstimator]: Receive Buffer Empty!" << std::endl;
+        //     return;
+        // }
 
-    Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(x_hat_in_.data.data(), num_states_);
-    //std::cout << "[StateEstimator]: Received: " << x_hat_in_.sequence_num <<  std::endl;
+        // Eigen::VectorXd x_hat_ = Eigen::Map<Eigen::VectorXd>(imu_data_in_.data.data(), num_states_);
+        //std::cout << "[StateEstimator]: Received: " << x_hat_in_.sequence_num <<  std::endl;
 
-    // Update State
-    output_state_.data[Idx::X] = x_hat_[0]; // X Position
-    output_state_.data[Idx::Y] = x_hat_[1]; // Y Position
-    output_state_.data[Idx::Z] = x_hat_[2]; // Z Position
-    output_state_.data[Idx::X_DOT] = x_hat_[3]; // X Velocity
-    output_state_.data[Idx::Y_DOT] = x_hat_[4]; // Y Velocity
-    output_state_.data[Idx::Z_DOT] = x_hat_[5]; // Z Velocity
-    output_state_.data[Idx::PHI] = x_hat_[6]; // Roll Orientation
-    output_state_.data[Idx::THETA] = x_hat_[7]; // Pitch Orientation
-    output_state_.data[Idx::PSI] = x_hat_[8]; // Yaw Orientation
-    output_state_.data[Idx::W_X] = x_hat_[9]; // Roll Rate
-    output_state_.data[Idx::W_Y] = x_hat_[10]; // Pitch Rate
-    output_state_.data[Idx::W_Z] = x_hat_[11]; // Yaw Rate
-    output_state_.data[Idx::GRAVITY] = x_hat_[12]; // Gravity
+        // Compute State Estimate
+        Eigen::VectorXd body_hat = Eigen::VectorXd::Ones(num_states_);
 
-    //std::cout << "State Estimator Send: " << std::endl;
-    
-    // Publish State
-    bool send_status = GetOutputPort(OutputPort::STATE_HAT)->Send(output_state_);
-    
-    //std::cout << "[StateEstimator]: Publishing: " << output_state_.data[Idx::X] << " Send: " << send_status << std::endl;
-}
+        // Update State
+        com_state_out_.data[Idx::PHI] = body_hat[0];    // Roll Orientation
+        com_state_out_.data[Idx::THETA] = body_hat[1];  // Pitch Orientation
+        com_state_out_.data[Idx::PSI] = body_hat[2];    // Yaw Orientation
+        com_state_out_.data[Idx::X] = body_hat[3];      // X Position
+        com_state_out_.data[Idx::Y] = body_hat[4];      // Y Position
+        com_state_out_.data[Idx::Z] = body_hat[5];      // Z Position
+        com_state_out_.data[Idx::W_X] = body_hat[6];    // Roll Rate
+        com_state_out_.data[Idx::W_Y] = body_hat[7];    // Pitch Rate
+        com_state_out_.data[Idx::W_Z] = body_hat[8];    // Yaw Rate
+        com_state_out_.data[Idx::X_DOT] = body_hat[9];  // X Velocity
+        com_state_out_.data[Idx::Y_DOT] = body_hat[10]; // Y Velocity
+        com_state_out_.data[Idx::Z_DOT] = body_hat[11]; // Z Velocity
 
-void StateEstimator::Setup()
-{
+        // output_state_.data[Idx::GRAVITY] = x_hat_[12]; // Gravity
 
-    // Connect Input Ports
-    bool connect = GetInputPort(InputPort::IMU)->Connect();            // State Estimate
+        //std::cout << "State Estimator Send: " << std::endl;
 
-    GetOutputPort(OutputPort::STATE_HAT)->Bind();
-    std::cout << "[StateEstimator]: " << "State Estimator Publisher Running!: " << connect << std::endl;
-}
+        // Publish State
+        bool send_status = GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_out_);
 
-} // namespace Estimators
-} // namespace Controllers
+        std::cout << "[StateEstimator]: Publishing: " << com_state_out_.data[Idx::X] << " Send: " << send_status << std::endl;
+    }
+
+    void StateEstimator::Setup()
+    {
+
+        // Connect Input Ports
+        //bool connect = GetInputPort(InputPort::IMU_DATA)->Connect(); // State Estimate
+
+        GetOutputPort(OutputPort::BODY_STATE_HAT)->Bind();
+        //std::cout << "[StateEstimator]: "
+        //         << "State Estimator Publisher Running!: " << connect << std::endl;
+    }
+} // namespace Controllers::Estimators

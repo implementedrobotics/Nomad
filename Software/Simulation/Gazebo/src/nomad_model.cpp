@@ -32,7 +32,7 @@
 #include <Communications/Messages/double_vec_t.hpp>
 // C++ Includes
 #include <string>
-
+#include <math.h>
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
 
@@ -67,6 +67,21 @@ namespace gazebo
 
             // TODO: Publish state back
             pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+
+            this->model->GetJoint("j_hfe_FL")->SetPosition(0, -M_PI_2);
+            this->model->GetJoint("j_hfe_FR")->SetPosition(0, M_PI_2);
+            this->model->GetJoint("j_hfe_RL")->SetPosition(0, -M_PI_2);
+            this->model->GetJoint("j_hfe_RR")->SetPosition(0, M_PI_2);
+
+            this->model->GetJoint("j_kfe_FL")->SetLowerLimit(0, -2.2);
+            this->model->GetJoint("j_kfe_FL")->SetUpperLimit(0, 0.0);
+        
+        
+    //         robot_->getDof("j_kfe_FL")->setPositionLimits(-2.2, 0.0);
+    // robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, 2.2);
+    // robot_->getDof("j_kfe_RL")->setPositionLimits(-2.2, 0.0);
+    // robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, 2.2);
+
         }
 
         // Called by the world update start event
@@ -74,7 +89,7 @@ namespace gazebo
         {
             // Apply a small linear velocity to the model.
             //this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
-            this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(current_force_, 0, 0));
+            //this->model->GetLink("base_link")->SetForce(ignition::math::Vector3d(current_force_, 0, 0));
             //printf("Force: :%f\n", current_force_);
 
             double_vec_t tx_msg;
@@ -91,6 +106,7 @@ namespace gazebo
             tx_msg.data[3] = this->model->GetLink("base_link")->WorldCoGLinearVel()[0];
 
             //printf("PUBLISH: %f/%f\n",tx_msg.data[0],tx_msg.data[1]);
+
             // Publish
             int rc = pub_context_->publish("nomad.imu", &tx_msg);
         }
