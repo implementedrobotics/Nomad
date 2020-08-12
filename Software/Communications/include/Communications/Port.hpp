@@ -49,6 +49,7 @@ namespace Communications
             INPROC = 0,
             IPC,
             UDP,
+            NATIVE,
             SERIAL
         };
 
