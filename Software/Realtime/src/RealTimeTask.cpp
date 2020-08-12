@@ -255,31 +255,31 @@ namespace Realtime
         }
         // TODO: Back off RT Priority until PREEMPT Kernel.
         // Set Scheduler Policy to RT(SCHED_FIFO)
-        // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set schedule policy!" << std::endl;
-        //     return thread_status_;
-        // }
-        // // // Set Thread Priority
-        // param.sched_priority = rt_priority_;
-        // thread_status_ = pthread_attr_setschedparam(&attr, &param);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set thread priority!" << std::endl;
-        //     return thread_status_;
-        // }
+        thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set schedule policy!" << std::endl;
+            return thread_status_;
+        }
+        // // Set Thread Priority
+        param.sched_priority = rt_priority_;
+        thread_status_ = pthread_attr_setschedparam(&attr, &param);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set thread priority!" << std::endl;
+            return thread_status_;
+        }
 
-        // // Use Scheduling Policy from Attributes.
-        // thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
-        //     return thread_status_;
-        // }
+        // Use Scheduling Policy from Attributes.
+        thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
+            return thread_status_;
+        }
 
         // Create our pthread.  Pass an instance of 'this' class as a parameter
         thread_status_ = pthread_create(&thread_id_, &attr, &RunTask, this);
