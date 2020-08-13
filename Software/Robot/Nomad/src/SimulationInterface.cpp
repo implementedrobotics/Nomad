@@ -75,7 +75,7 @@ namespace Robot
                 static int last_stamp_joint = 0;
                 static int last_stamp_com = 0;
                 static uint64_t last_control_time = 0; 
-                Systems::Time t;
+                //Systems::Time t;
                 //Read Plant State
                // if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
                 {
@@ -132,9 +132,6 @@ namespace Robot
                 //std::cout << "Stamps: " << last_stamp_imu << " " << last_stamp_joint << " " << last_stamp_com << std::endl;
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << last_stamp << std::endl;
 
-                imu_data_t imu_data_out_ = imu_data_;
-                com_state_t com_state_out_ = com_state_;
-                joint_state_t joint_state_out_ = joint_state_;
 
                 //std::cout << com_state_out_.pos[2] << std::endl;        
 
@@ -150,6 +147,35 @@ namespace Robot
                 //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
                 //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
 
+
+
+                // Publish/Forward to Sim
+                memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
+                {
+                    //Systems::Time t;
+                    GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+                    //std::cout << "OUT SEND: " << std::endl;
+                }
+
+                // Receive/Block
+                int timeout = 0;
+                GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_);
+                GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_);
+                GetInputPort(InputPort::JOINT_STATE_IN)->Receive(joint_state_);
+
+
+                imu_data_t imu_data_out_ = imu_data_;
+                com_state_t com_state_out_ = com_state_;
+                joint_state_t joint_state_out_ = joint_state_;
+
+
+                GetOutputPort(OutputPort::IMU_STATE_OUT)->Send(imu_data_out_);
+
+                GetOutputPort(OutputPort::JOINT_STATE_OUT)->Send(joint_state_out_);
+
+                GetOutputPort(OutputPort::COM_STATE_OUT)->Send(com_state_out_);
+
+               
 
                 last_control_time = Systems::Time::GetTimeStamp();
             }

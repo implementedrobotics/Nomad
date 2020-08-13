@@ -92,7 +92,7 @@ namespace Robot::Nomad::Dynamics
 
         }
 
-        //std::cout << "COM STATE: " << com_state_.pos[2] << std::endl;
+        std::cout << "COM STATE: " << joint_state_.sequence_num << std::endl;
 
         // Setup some state vectors
         Eigen::VectorXd q = Eigen::VectorXd::Zero(kNumTotalDofs);
@@ -155,7 +155,7 @@ namespace Robot::Nomad::Dynamics
         // Publish Leg Command
         bool send_status = GetOutputPort(OutputPort::FULL_STATE)->Send(full_state_);
 
-        //std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
+       // std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
     }
 
     void NomadDynamics::Setup()

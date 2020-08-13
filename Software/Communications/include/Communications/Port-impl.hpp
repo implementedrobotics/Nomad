@@ -223,6 +223,7 @@ namespace Communications
                     handler->cond_.notify_all();
                 }
             }
+            return true;
         }
     }
 

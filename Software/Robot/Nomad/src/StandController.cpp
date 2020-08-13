@@ -104,17 +104,19 @@ namespace Robot
 
                 // Receive/Block
                 int timeout = 0;
-                while (!GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
-                {
-                    // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
+                GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_);
 
-                    if (timeout++ > 0)
-                        break;
-                }
+                // while (!GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
+                // {
+                // //std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
+
+                //     if (timeout++ > 500)
+                //         break;
+                // }
 
                 //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
                 //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
-                //std::cout << "OUT: " << com_state_.sequence_num << " " << timeout << std::endl;
+                std::cout << "OUT: " << com_state_.sequence_num << " " << timeout << std::endl;
 
                 last_control_time = Systems::Time::GetTimeStamp();
             }

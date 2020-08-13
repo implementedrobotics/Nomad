@@ -49,14 +49,14 @@ public:
     //  step_iter = 0;
 
     // TODO: Pass IP Address as a parameter, in the .model file?
-    context_ = std::make_unique<zcm::ZCM>("ipc");
+    context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     std::cout << "Nomad DART Sim connecting." << std::endl;
-    context_->subscribe("nomad.sim.joint_cmd2", &NomadSimWorldNode::OnJointControlMsg, this);
+    context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
     context_->start();
 
     // TODO: Publish state back
-    pub_context_ = std::make_unique<zcm::ZCM>("ipc");
+    pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     sequence_num_ = 0;
   }
@@ -77,14 +77,14 @@ public:
     //std::cout << joint_torques << std::endl;
     nomad_->Skeleton()->setForces(joint_torques);
 
-control_missed++;
+    control_missed++;
     // Post Setup
   }
 
   void customPostStep()
   {
     // nomad_->UpdateState();
-    //PublishState();
+   // PublishState();
 
     //joint_torques = Eigen::VectorXd::Zero(18);
     step_iter++;
@@ -92,7 +92,7 @@ control_missed++;
 
   void OnJointControlMsg(const zcm::ReceiveBuffer *rbuf, const std::string &chan, const joint_control_cmd_t *msg)
   {
-    //std::cout << "Received Message on Channel: " << chan << std::endl;
+   // std::cout << "Received Message on Channel: " << chan << std::endl;
     //std::cout << "Got :" << msg->sequence_num << std::endl;
 
     // Read Input
@@ -122,8 +122,8 @@ control_missed++;
 
 
     // Send Output
-    //std::cout << "MISSED: " << control_missed << std::endl;
-    //control_missed = 0;
+    std::cout << "MISSED: " << "ID: " << msg->sequence_num << " MISSED: " << control_missed << std::endl;
+    control_missed = 0;
   }
 
   void PublishState()
@@ -241,7 +241,6 @@ control_missed++;
     rc = pub_context_->publish("nomad.sim.joint_state", &joint_state);
 
     rc = pub_context_->publish("nomad.sim.com_state", &com_state);
-    pub_context_->flush();
   }
 
 protected:

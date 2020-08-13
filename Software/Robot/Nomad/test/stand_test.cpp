@@ -19,8 +19,6 @@ using Robot::Nomad::Interface::StandController;
 int main(int argc, char *argv[])
 {
 
-  
-
     // Task Periods.
     int freq1 = 1;
     int hi_freq = 1000;
@@ -41,22 +39,22 @@ int main(int argc, char *argv[])
     const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
 
     std::shared_ptr<Port> SIM_IMU = Port::CreateOutput("SIM_IMU", 10);
-    SIM_IMU->SetTransport(Port::TransportType::IPC, sim_url, "nomad.sim.imu_state");
+    SIM_IMU->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.imu_state");
 
     std::shared_ptr<Port> JOINT_STATE = Port::CreateOutput("SIM_JOINT_STATE", 10);
-    JOINT_STATE->SetTransport(Port::TransportType::IPC, sim_url, "nomad.sim.joint_state");
+    JOINT_STATE->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.joint_state");
 
     std::shared_ptr<Port> COM_STATE = Port::CreateOutput("SIM_COM_STATE", 10);
-    COM_STATE->SetTransport(Port::TransportType::IPC, sim_url, "nomad.sim.com_state");
+    COM_STATE->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.com_state");
 
     // Simulator Interface Task Setup
     StandController nomad_simulation_interface("Simulation Interface");
     nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB
     nomad_simulation_interface.SetTaskPriority(Realtime::Priority::MEDIUM);
     nomad_simulation_interface.SetTaskFrequency(hi_freq); // 50 HZ
-    nomad_simulation_interface.SetCoreAffinity(2);
+    nomad_simulation_interface.SetCoreAffinity(-1);
     nomad_simulation_interface.SetPortOutput(StandController::JOINT_CONTROL_CMD_OUT,
-                                             Communications::Port::TransportType::IPC, "ipc", "nomad.sim.joint_cmd2");
+                                             Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
 
     Port::Map(nomad_simulation_interface.GetInputPort(StandController::InputPort::IMU_STATE_IN),
               SIM_IMU);
