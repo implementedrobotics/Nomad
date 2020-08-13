@@ -215,6 +215,7 @@ namespace Communications
         else
         {
             //std::cout << "THREAD SENDING!" << std::endl;
+            
             for(auto port : listeners_)
             {
                 PortHandler<T> *handler = static_cast<PortHandler<T> *>(port->handler_);

@@ -89,8 +89,10 @@ namespace Robot
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << last_stamp << std::endl;
 
                 //last_control_time = Systems::Time::GetTimeStamp();
-
+{
+                Systems::Time t;
                 GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+}
 
             }
 

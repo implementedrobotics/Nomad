@@ -84,7 +84,7 @@ namespace Robot
                // std::cout << "RUNNING! " << std::endl;
                 bool recv = false;
                 {
-                Systems::Time t;
+                //Systems::Time t;
                 recv = GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_, 50us);
                 }
                 //std::cout << "REceived: " << joint_command_.sequence_num << " New: " << recv << std::endl;
