@@ -45,11 +45,11 @@ namespace Realtime
 {
     enum Priority
     {
-        LOWEST = 99,
-        LOW = 80,
+        LOWEST = 1,
+        LOW = 20,
         MEDIUM = 50,
-        HIGH = 20,
-        HIGHEST = 1
+        HIGH = 80,
+        HIGHEST = 99
     };
 
     class RealTimeTaskNode

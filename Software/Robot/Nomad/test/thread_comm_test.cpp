@@ -53,25 +53,26 @@ int main(int argc, char *argv[])
     TaskWrite task_write("Task Write");
     task_write.SetStackSize(1024 * 1024); // 1MB
     task_write.SetTaskPriority(Realtime::Priority::MEDIUM);
-    task_write.SetTaskFrequency(25); // 50 HZ
-    task_write.SetCoreAffinity(-1);
+    task_write.SetTaskFrequency(1000); // 50 HZ
+    task_write.SetCoreAffinity(3);
     task_write.SetPortOutput(TaskWrite::JOINT_CONTROL_CMD_OUT,
                                              Communications::Port::TransportType::NATIVE, "native", "nomad.sim.joint_cmd");
+    task_write.Start();
+    
 
     TaskRead task_read("Task Read");
     task_read.SetStackSize(1024 * 1024); // 1MB
-    task_read.SetTaskPriority(Realtime::Priority::MEDIUM);
-    task_read.SetTaskFrequency(25); // 50 HZ
-    task_read.SetCoreAffinity(-1);
+    task_read.SetTaskPriority(Realtime::Priority::HIGH);
+    task_read.SetTaskFrequency(1000); // 50 HZ
+    task_read.SetCoreAffinity(3);
     // task_read.SetPortOutput(TaskWrite::JOINT_CONTROL_CMD_OUT,
     //                                          Communications::Port::TransportType::NATIVE, "native", "nomad.sim.joint_cmd");
 
     Port::Map(task_read.GetInputPort(TaskRead::InputPort::JOINT_CONTROL_CMD_IN),
                task_write.GetOutputPort(TaskRead::OutputPort::JOINT_CONTROL_CMD_OUT));
 
-
     task_read.Start();
-    task_write.Start();
+    
     
 
     // Print Threads

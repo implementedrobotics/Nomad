@@ -218,9 +218,12 @@ namespace Communications
             for(auto port : listeners_)
             {
                 PortHandler<T> *handler = static_cast<PortHandler<T> *>(port->handler_);
+                //std::cout << "SENDING: " << handler->num_unread_ << std::endl;
                 handler->mutex_.lock();
                 handler->HandleMessage(tx_msg);
                 handler->num_unread_++;
+                
+                //std::cout << "NOTIFIED" << std::endl;
                 handler->mutex_.unlock();
                 handler->cond_.notify_one();
                 //std::cout << "LISTEN" << std::endl;
@@ -240,6 +243,7 @@ namespace Communications
         {
             Connect<T>();
         }
+        //std::cout << "RECEIVING!" << std::endl;
         return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
     }
 
