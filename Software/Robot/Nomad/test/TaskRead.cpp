@@ -84,10 +84,10 @@ namespace Robot
                // std::cout << "RUNNING! " << std::endl;
                 bool recv = false;
                 {
-                //Systems::Time t;
-                recv = GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_, 50us);
+                Systems::Time t;
+                recv = GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_, 100us);
                 }
-                //std::cout << "REceived: " << joint_command_.sequence_num << " New: " << recv << std::endl;
+                std::cout << "Received: " << joint_command_.sequence_num << " New: " << recv << std::endl;
 
                 //std::cout << "Command In Time: " << Systems::Time::GetTimeStamp() << std::endl;
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;

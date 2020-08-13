@@ -30,7 +30,7 @@
 #include <iostream>
 #include <chrono>
 
-
+using namespace std::chrono_literals;
 namespace Communications
 {
 
@@ -76,6 +76,9 @@ namespace Communications
         }
         msg_buffer_.push_back(*msg);
 
+        //Increase Num Unread
+        num_unread_++;
+
         //std::cout << msg_buffer_.size() << std::endl;
     }
     template <class T>
@@ -92,20 +95,35 @@ namespace Communications
     template <class T>
     const inline bool PortHandler<T>::Read(T &rx_msg, std::chrono::duration<double> timeout)
     {
-        std::unique_lock<std::mutex> lock(mutex_);
-        
-        if(cond_.wait_for(lock, timeout, [&] {return num_unread_ > 0; }))
+       // std::unique_lock<std::mutex> lock(mutex_);
+
+        mutex_.lock();
+        if(num_unread_ > 0)
         {
             num_unread_ = 0; // Reset Unread count
             rx_msg = msg_buffer_.back();
             msg_buffer_.pop_back();
-            //std::cout << "GOT DATA: " << "TRUE" << std::endl;
+            mutex_.unlock();
             return true;
         }
         else
         {
+            mutex_.unlock();
             return false;
         }
+        
+        //lock.unlock();
+        // if(cond_.wait_for(lock, timeout, [&] {return num_unread_ > 0; }))
+        // {
+        //     num_unread_ = 0; // Reset Unread count
+        //     rx_msg = msg_buffer_.back();
+        //     msg_buffer_.pop_back();
+        //     return true;
+        // }
+        // else
+        // {
+        //     return false;
+        // }
 
         // std::unique_lock<std::mutex> lck(mutex_);
         // if (msg_buffer_.empty())
@@ -149,26 +167,6 @@ namespace Communications
             std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
         }
 
-        // Now Subscribe
-        // TODO: Save subs somewhere for unsubscribe
-        // TODO: Switch Types
-        // if (data_type_ == DataType::DOUBLE)
-        // {
-        //     auto subs = context_->subscribe(channel_, &PortHandler<double_vec_t>::HandleMessage, static_cast<PortHandler<double_vec_t> *>(handler_));
-        // }
-        // else if (data_type_ == DataType::INT32)
-        // {
-        //     auto subs = context_->subscribe(channel_, &PortHandler<int32_vec_t>::HandleMessage, static_cast<PortHandler<int32_vec_t> *>(handler_));
-        // }
-        // else if (data_type_ == DataType::BYTE)
-        // {
-        //     auto subs = context_->subscribe(channel_, &PortHandler<generic_msg_t>::HandleMessage, static_cast<PortHandler<generic_msg_t> *>(handler_));
-        // }
-        // else
-        // {
-        //     std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
-        //     return false;
-        // }
         //static_cast<PortHandler<T> *>(handler_)->channel_ = channel_;
 
         if (transport_type_ != TransportType::NATIVE)
@@ -214,25 +212,18 @@ namespace Communications
         }
         else
         {
-            //std::cout << "THREAD SENDING!" << std::endl;
-            
-            for(auto port : listeners_)
+            for (auto port : listeners_)
             {
                 PortHandler<T> *handler = static_cast<PortHandler<T> *>(port->handler_);
-                //std::cout << "SENDING: " << handler->num_unread_ << std::endl;
-                handler->mutex_.lock();
-                handler->HandleMessage(tx_msg);
-                handler->num_unread_++;
-                
-                //std::cout << "NOTIFIED" << std::endl;
-                handler->mutex_.unlock();
-                handler->cond_.notify_one();
-                //std::cout << "LISTEN" << std::endl;
+                {
+                    handler->mutex_.lock();
+                    handler->HandleMessage(tx_msg);
+                    handler->num_unread_++;
+                    handler->mutex_.unlock();
+                    handler->cond_.notify_all();
+                }
             }
         }
-        
-
-
     }
 
     // Receive data on port

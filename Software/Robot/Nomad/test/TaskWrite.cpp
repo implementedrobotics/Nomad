@@ -90,9 +90,11 @@ namespace Robot
 
                 //last_control_time = Systems::Time::GetTimeStamp();
 {
+                std::cout << "Send!" << std::endl; 
                 Systems::Time t;
                 GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
 }
+
 
             }
 
