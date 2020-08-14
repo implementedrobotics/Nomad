@@ -39,6 +39,7 @@
 #include <Nomad/MessageTypes/imu_data_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
+#include <Nomad/MessageTypes/sim_data_t.hpp>
 #include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
 
 namespace Robot::Nomad::Interface
@@ -55,10 +56,8 @@ namespace Robot::Nomad::Interface
 
         enum InputPort
         {
-            IMU_STATE_IN = 0,         // IMU State <- Sim
-            JOINT_STATE_IN = 1,       // Joint State <- Sim
-            COM_STATE_IN = 2,         // POse State <- Sim
-            NUM_INPUTS = 3
+            SIM_DATA = 0,         // SIM Data <- Sim
+            NUM_INPUTS = 1
         };
 
         // Plant Simulation Task Node
@@ -84,6 +83,7 @@ namespace Robot::Nomad::Interface
         imu_data_t imu_data_;
         com_state_t com_state_;
         joint_state_t joint_state_;
+        sim_data_t sim_data_;
         joint_control_cmd_t joint_command_;
     };
 } // namespace Robot::Nomad::Interface

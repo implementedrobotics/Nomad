@@ -52,7 +52,7 @@ namespace Robot::Nomad::FSM
         // {
         // }
         static full_state_t nomad_state_;
-        while(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_))
+        if(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_, std::chrono::microseconds(5000)))
         {
             //std::cout << "FAILED TO RECEIVED" << std::endl;
         }
@@ -72,7 +72,7 @@ namespace Robot::Nomad::FSM
             // Copy Initial
             Eigen::Vector3d foot_pos = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos[foot_id]);
             Eigen::Vector3d foot_pos_desired = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos[foot_id]);
-            foot_pos_desired.z() = h_t;
+            foot_pos_desired.z() = -stance_height;
 
             //std::cout << "HT" << foot_pos_desired << std::endl;
 
@@ -80,8 +80,8 @@ namespace Robot::Nomad::FSM
             Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos[foot_id], 3) = foot_pos;
 
             //std::cout << leg_command.foot_pos_desired[2] << std::endl;
-            Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 300;
-            Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 100;
+            Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 200;
+            Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 25;
 
             //std::cout << "Got: " << leg_command.foot_pos_desired[foot_id] << std::endl;
             //std::cout << "Got2: " << nomad_state_initial_.foot_pos[leg_id * 3+2] << std::endl;
@@ -102,11 +102,12 @@ namespace Robot::Nomad::FSM
         std::cout << "Entering Stand State!!! | " << current_time << std::endl;
         std::cout << "Stand Running: " << elapsed_time_ << std::endl;
 
-        while(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_initial_)) // Wait on input
+        if(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_initial_, std::chrono::milliseconds(2000))) // Wait on input
         {
+            std::cout << "COULD NOT GET INITIAL STATE" << std::endl;
         }
 
-        // std::cout << "Got Message: " << nomad_state_initial_.foot_pos[2] << std::endl;;
+       // std::cout << "Got Message: " << nomad_state_initial_.foot_pos[2] << std::endl;;
         
         // Create Cubic Trajectory
         stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);

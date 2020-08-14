@@ -1,0 +1,21 @@
+struct sim_data_t
+{
+    int64_t timestamp;
+    int64_t sequence_num;
+
+    // IMU
+    double imu_orientation[4];
+    double imu_omega[3];
+    double imu_accel[3];
+
+    // Joint State
+    double q[12];      // Joint Position
+    double q_dot[12];  // Joint Velocity
+    double tau[12];    // Torque
+
+    double com_orientation[4];        // Body Orientation Quaternion (Body Coordinates)
+    double com_theta[3];    // Body Orientation Roll Pitch Yaw (Body Coordinates)
+    double com_pos[3];      // Body Position XYZ (World Coordinates)
+    double com_omega[3];    // Body Rotational Velocity (Body Coordinates)
+    double com_vel[3];      // Body Velocity XYZ (World Coordinates)
+}

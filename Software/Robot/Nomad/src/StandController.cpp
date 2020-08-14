@@ -1,5 +1,5 @@
 /*
- * SimulationInterface.cpp
+ * StandController.cpp
  *
  *  Created on: July 16, 2020
  *      Author: Quincy Jones
@@ -54,9 +54,7 @@ namespace Robot
             {
                 // Create Ports
                 // Sim Inputs
-                input_port_map_[InputPort::IMU_STATE_IN] = Communications::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
-                input_port_map_[InputPort::JOINT_STATE_IN] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
-                input_port_map_[InputPort::COM_STATE_IN] = Communications::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
+                input_port_map_[InputPort::SIM_DATA] = Communications::Port::CreateInput<sim_data_t>("SIM_DATA", rt_period_);
 
                 // Outputs
                 output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL", rt_period_);
@@ -64,26 +62,17 @@ namespace Robot
 
             void StandController::Run()
             {
-                static int last_stamp_imu = 0;
-                static int last_stamp_joint = 0;
-                static int last_stamp_com = 0;
+                //Systems::Time t;
                 static uint64_t last_control_time = 0;
+                static int lost_control = 0;
 
-                //Read Plant State
-                // if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
-                // {
-                //     //std::cout << "Got: " << imu_data_.sequence_num << std::endl;
-                // }
+                // Read Plant State
+                if(!GetInputPort(InputPort::SIM_DATA)->Receive(sim_data_, std::chrono::milliseconds(1000)))
+                {
+                    std::cout << "FAILED TO GET SYNCED SIM MESSAGE!!: " << lost_control++ << std::endl;
+                    // TODO: What to do.
+                }
 
-                // if (GetInputPort(InputPort::JOINT_STATE_IN)->Receive(joint_state_))
-                // {
-                // //    // std::cout << "Got 2: " << joint_state_.q[2] << std::endl;
-                // }
-
-                // if (GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
-                // {
-                // //    // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
-                // }
 
                 //std::cout << "Command In Time: " << Systems::Time::GetTimeStamp() << std::endl;
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;
@@ -99,12 +88,9 @@ namespace Robot
                 {
                     //Systems::Time t;
                     GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
-                    //std::cout << "OUT SEND: " << std::endl;
+                   // std::cout << "OUT SEND: " << joint_command_.sequence_num << std::endl;
                 }
 
-                // Receive/Block
-                int timeout = 0;
-                GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_);
 
                 // while (!GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
                 // {
@@ -116,9 +102,13 @@ namespace Robot
 
                 //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
                 //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
-                std::cout << "OUT: " << com_state_.sequence_num << " " << timeout << std::endl;
+                //std::cout << "OUT: " << joint_command_.sequence_num << " " << std::endl;
 
+                //std::cout << "Total Time: " << Systems::Time::GetTimeStamp() - last_control_time << "us" << std::endl;
+                //std::cout << "Loop Frequency: " << 1000000.0 / (double)(Systems::Time::GetTimeStamp() - last_control_time) << std::endl;
                 last_control_time = Systems::Time::GetTimeStamp();
+
+                
             }
 
             void StandController::Setup()

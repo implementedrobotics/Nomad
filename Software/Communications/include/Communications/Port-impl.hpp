@@ -229,15 +229,30 @@ namespace Communications
 
     // Receive data on port
     template <class T>
-    bool Port::Receive(T &rx_msg, std::chrono::duration<double> timeout)
+    bool Port::Receive(T &rx_msg, std::chrono::microseconds timeout)
     {
         // Check Started, If not Connect it
         if (!started_)
         {
             Connect<T>();
         }
-        //std::cout << "RECEIVING!" << std::endl;
-        return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
+        if(transport_type_ != NATIVE)
+        {
+            context_->flush();
+        }
+        auto start_time = std::chrono::high_resolution_clock::now(); 
+
+        PortHandler<T> *handler = static_cast<PortHandler<T> *>(handler_);
+        while(!handler->Read(rx_msg, timeout))
+        {
+            auto time_now = std::chrono::high_resolution_clock::now(); 
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+            if(duration >= timeout)
+                return false;
+            //usleep(50);
+        }
+        return true;
+        //return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
     }
 
 } // namespace Communications

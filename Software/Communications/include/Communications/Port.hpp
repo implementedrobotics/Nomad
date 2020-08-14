@@ -120,7 +120,7 @@ namespace Communications
 
         // Receive message type data on port
         template <class T>
-        bool Receive(T &msg, std::chrono::duration<double> timeout = std::chrono::milliseconds(0));
+        bool Receive(T &msg, std::chrono::microseconds timeout = std::chrono::microseconds(0));
 
     protected:
         // Port Name

@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
     // Task Periods.
     int freq1 = 1;
-    int hi_freq = 1000;
+    int hi_freq = 500;
     // int freq2 = 100;
 
     // Create Manager Class Instance Singleton.
@@ -38,14 +38,9 @@ int main(int argc, char *argv[])
     // Plant Inputs
     const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
 
-    std::shared_ptr<Port> SIM_IMU = Port::CreateOutput("SIM_IMU", 10);
-    SIM_IMU->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.imu_state");
+    std::shared_ptr<Port> SIM_DATA = Port::CreateOutput("SIM_DATA", 10);
+    SIM_DATA->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.data");
 
-    std::shared_ptr<Port> JOINT_STATE = Port::CreateOutput("SIM_JOINT_STATE", 10);
-    JOINT_STATE->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.joint_state");
-
-    std::shared_ptr<Port> COM_STATE = Port::CreateOutput("SIM_COM_STATE", 10);
-    COM_STATE->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.com_state");
 
     // Simulator Interface Task Setup
     StandController nomad_simulation_interface("Simulation Interface");
@@ -56,14 +51,8 @@ int main(int argc, char *argv[])
     nomad_simulation_interface.SetPortOutput(StandController::JOINT_CONTROL_CMD_OUT,
                                              Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
 
-    Port::Map(nomad_simulation_interface.GetInputPort(StandController::InputPort::IMU_STATE_IN),
-              SIM_IMU);
-
-    Port::Map(nomad_simulation_interface.GetInputPort(StandController::InputPort::JOINT_STATE_IN),
-               JOINT_STATE);
-
-    Port::Map(nomad_simulation_interface.GetInputPort(StandController::InputPort::COM_STATE_IN),
-              COM_STATE);
+    Port::Map(nomad_simulation_interface.GetInputPort(StandController::InputPort::SIM_DATA),
+              SIM_DATA);
 
     nomad_simulation_interface.Start();
 
