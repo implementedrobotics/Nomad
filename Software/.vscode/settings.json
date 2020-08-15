@@ -73,6 +73,9 @@
         "image": "cpp",
         "billboard": "cpp",
         "light": "cpp",
-        "readerwriter": "cpp"
+        "readerwriter": "cpp",
+        "graphicscontext": "cpp",
+        "shader": "cpp",
+        "eventqueue": "cpp"
     }
 }

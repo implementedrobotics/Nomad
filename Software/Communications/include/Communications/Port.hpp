@@ -29,9 +29,14 @@
 // C++ Includes
 #include <deque>
 #include <memory>
-#include <mutex>
 #include <map>
+#include <mutex>
+#include <queue>
+#include <chrono>
+#include <condition_variable>
+#include <iostream>
 
+// Project Includes
 #include <Common/Time.hpp>
 
 // Third Party Includes
@@ -43,12 +48,15 @@ namespace Communications
     {
 
     public:
+        static const int MAX_LISTENERS = 16;
+        
         // Transport Type Enum
         enum TransportType
         {
             INPROC = 0,
             IPC,
             UDP,
+            NATIVE,
             SERIAL
         };
 
@@ -112,7 +120,7 @@ namespace Communications
 
         // Receive message type data on port
         template <class T>
-        bool Receive(T &msg);
+        bool Receive(T &msg, std::chrono::microseconds timeout = std::chrono::microseconds(0));
 
     protected:
         // Port Name
@@ -158,6 +166,10 @@ namespace Communications
         // Pointer to Handler
         void *handler_;
 
+        // Thread Synchronization and Handling for Native Communications
+        // Current Listener Ports
+        std::vector<std::shared_ptr<Port>> listeners_;
+
     private:
         template <class T>
         void _CreateHandler();
@@ -188,7 +200,12 @@ namespace Communications
 
         // Read Available Messages
         // TODO: Read Backward In Time
-        const inline bool Read(T &rx_msg);
+        const inline bool Read(T &rx_msg, std::chrono::duration<double> timeout = std::chrono::milliseconds(0));
+
+        void HandleMessage(T &rx_msg);
+
+        // Condition Signaling Variable for Thread Comms Sync
+        std::condition_variable cond_;
 
         // Message Buffer
         std::deque<T> msg_buffer_;
@@ -198,6 +215,9 @@ namespace Communications
 
         // Queue Size to Buffer
         int queue_size_;
+
+        // Number of unread messages on port
+        int num_unread_;
     };
 
     class PortManager
@@ -222,6 +242,7 @@ namespace Communications
         std::shared_ptr<zcm::ZCM> inproc_context_;
 
     private:
+
         // Singleton Instance
         static PortManager *manager_instance_;
     };

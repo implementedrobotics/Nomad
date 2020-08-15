@@ -30,6 +30,7 @@
 #include <iostream>
 #include <chrono>
 
+using namespace std::chrono_literals;
 namespace Communications
 {
 
@@ -48,7 +49,7 @@ namespace Communications
     }
 
     template <class T>
-    PortHandler<T>::PortHandler(int queue_size) : queue_size_(queue_size)
+    PortHandler<T>::PortHandler(int queue_size) : queue_size_(queue_size), num_unread_(0)
     {
     }
 
@@ -66,6 +67,7 @@ namespace Communications
         //printf("Received message on channel \"%s\" and %s:\n", chan.c_str(), channel_.c_str());
         //printf("  Message   = %ld\n", msg->sequence_num);
 
+        // TODO: CV Notify...
         std::unique_lock<std::mutex> lck(mutex_);
         if (msg_buffer_.size() >= queue_size_)
         {
@@ -74,18 +76,62 @@ namespace Communications
         }
         msg_buffer_.push_back(*msg);
 
+        //Increase Num Unread
+        num_unread_++;
+
         //std::cout << msg_buffer_.size() << std::endl;
     }
     template <class T>
-    const inline bool PortHandler<T>::Read(T &rx_msg)
+    void PortHandler<T>::HandleMessage(T &rx_msg)
     {
-        std::unique_lock<std::mutex> lck(mutex_);
-        if (msg_buffer_.empty())
-            return false;
+        if (msg_buffer_.size() >= queue_size_)
+        {
+            // Kill Old Message
+            msg_buffer_.pop_front();
+        }
+        msg_buffer_.push_back(rx_msg);
+    }
 
-        rx_msg = msg_buffer_.back();
-        msg_buffer_.pop_back();
-        return true;
+    template <class T>
+    const inline bool PortHandler<T>::Read(T &rx_msg, std::chrono::duration<double> timeout)
+    {
+       // std::unique_lock<std::mutex> lock(mutex_);
+
+        mutex_.lock();
+        if(num_unread_ > 0)
+        {
+            num_unread_ = 0; // Reset Unread count
+            rx_msg = msg_buffer_.back();
+            msg_buffer_.pop_back();
+            mutex_.unlock();
+            return true;
+        }
+        else
+        {
+            mutex_.unlock();
+            return false;
+        }
+        
+        //lock.unlock();
+        // if(cond_.wait_for(lock, timeout, [&] {return num_unread_ > 0; }))
+        // {
+        //     num_unread_ = 0; // Reset Unread count
+        //     rx_msg = msg_buffer_.back();
+        //     msg_buffer_.pop_back();
+        //     return true;
+        // }
+        // else
+        // {
+        //     return false;
+        // }
+
+        // std::unique_lock<std::mutex> lck(mutex_);
+        // if (msg_buffer_.empty())
+        //     return false;
+
+        // rx_msg = msg_buffer_.back();
+        // msg_buffer_.pop_back();
+        // return true;
     }
 
     // Connect Port
@@ -112,40 +158,27 @@ namespace Communications
         {
             context_ = std::make_shared<zcm::ZCM>(transport_url_);
         }
+        else if (transport_type_ == TransportType::NATIVE)
+        {
+            // Nothing to do here yet
+        }
         else
         {
             std::cout << "[PORT:CONNECT]: ERROR: Invalid Transport Type!" << std::endl;
         }
 
-        // Now Subscribe
-        // TODO: Save subs somewhere for unsubscribe
-        // TODO: Switch Types
-        // if (data_type_ == DataType::DOUBLE)
-        // {
-        //     auto subs = context_->subscribe(channel_, &PortHandler<double_vec_t>::HandleMessage, static_cast<PortHandler<double_vec_t> *>(handler_));
-        // }
-        // else if (data_type_ == DataType::INT32)
-        // {
-        //     auto subs = context_->subscribe(channel_, &PortHandler<int32_vec_t>::HandleMessage, static_cast<PortHandler<int32_vec_t> *>(handler_));
-        // }
-        // else if (data_type_ == DataType::BYTE)
-        // {
-        //     auto subs = context_->subscribe(channel_, &PortHandler<generic_msg_t>::HandleMessage, static_cast<PortHandler<generic_msg_t> *>(handler_));
-        // }
-        // else
-        // {
-        //     std::cout << "[PORT:CONNECT]: ERROR: Unsupported Data Type! : " << data_type_ << std::endl;
-        //     return false;
-        // }
         //static_cast<PortHandler<T> *>(handler_)->channel_ = channel_;
 
-        auto subs = context_->subscribe(channel_, &PortHandler<T>::HandleMessage, static_cast<PortHandler<T> *>(handler_));
-        if (transport_type_ != TransportType::INPROC)
+        if (transport_type_ != TransportType::NATIVE)
         {
-            context_->start();
+            auto subs = context_->subscribe(channel_, &PortHandler<T>::HandleMessage, static_cast<PortHandler<T> *>(handler_));
+            if (transport_type_ != TransportType::INPROC)
+            {
+                context_->start();
+            }
         }
-        started_ = true;
 
+        started_ = true;
         return true;
     }
 
@@ -170,22 +203,56 @@ namespace Communications
         tx_msg.sequence_num = sequence_num_++;
 
         // Publish
-        int rc = context_->publish(channel_, &tx_msg);
-
-        // True if OK
-        return rc == ZCM_EOK;
+        if(transport_type_ != TransportType::NATIVE)
+        {
+            int rc = context_->publish(channel_, &tx_msg);
+            
+            // True if OK
+            return rc == ZCM_EOK;
+        }
+        else
+        {
+            for (auto port : listeners_)
+            {
+                PortHandler<T> *handler = static_cast<PortHandler<T> *>(port->handler_);
+                {
+                    handler->mutex_.lock();
+                    handler->HandleMessage(tx_msg);
+                    handler->num_unread_++;
+                    handler->mutex_.unlock();
+                    handler->cond_.notify_all();
+                }
+            }
+            return true;
+        }
     }
 
     // Receive data on port
     template <class T>
-    bool Port::Receive(T &rx_msg)
+    bool Port::Receive(T &rx_msg, std::chrono::microseconds timeout)
     {
         // Check Started, If not Connect it
         if (!started_)
         {
             Connect<T>();
         }
-        return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg);
+        if(transport_type_ != NATIVE)
+        {
+            context_->flush();
+        }
+        auto start_time = std::chrono::high_resolution_clock::now(); 
+
+        PortHandler<T> *handler = static_cast<PortHandler<T> *>(handler_);
+        while(!handler->Read(rx_msg, timeout))
+        {
+            auto time_now = std::chrono::high_resolution_clock::now(); 
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+            if(duration >= timeout)
+                return false;
+            //usleep(50);
+        }
+        return true;
+        //return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
     }
 
 } // namespace Communications

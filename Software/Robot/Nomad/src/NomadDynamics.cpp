@@ -75,24 +75,20 @@ namespace Robot::Nomad::Dynamics
     {
         // TODO: Time this function  Would be nice if we could run this at 2x sample rate
         // Read Inputs
-        // 1) Body State (State Estimator)
-        while(!GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_)) // Receive Setpoint
+        if (!GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_, std::chrono::microseconds(1000000)))
         {
-            //std::cout << "GOT " << std::endl;
-        }
-        // else
-        // {
-        //     std::cout << " NOT GOT " << std::endl;
-        // }
-        
-
-        // 2) Joint State (Plant Bridge Output)
-        while(!GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
-        {
-
+            std::cout << "[DYNAMICS]: FAILED TO GET SYNCED BODY STATE MESSAGE!!: " << std::endl;
+            // TODO: What to do.
         }
 
-        //std::cout << "COM STATE: " << com_state_.pos[2] << std::endl;
+        if (!GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_, std::chrono::microseconds(1000000)))
+        {
+            std::cout << "[DYNAMICS]: FAILED TO GET SYNCED JOINT STATE MESSAGE!!: " << std::endl;
+            // TODO: What to do.
+        }
+
+        //std::cout << "JOINT STATE: " << joint_state_.sequence_num << std::endl;
+        //std::cout << "BODY STATE: " << com_state_.sequence_num << std::endl;
 
         // Setup some state vectors
         Eigen::VectorXd q = Eigen::VectorXd::Zero(kNumTotalDofs);
@@ -145,7 +141,7 @@ namespace Robot::Nomad::Dynamics
             Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos[i * 3], 3) = foot_body_[i]->getTransform(hip_base_body_[i]).translation();
         }
 
-        //std::cout << "VELS: " << robot_->getVelocities() << std::endl;
+        //std::cout << "VELS: " << robot_->getVelocities().head(6) << std::endl;
         //std::cout << "Size: " << (J_legs_ * robot_->getVelocities()) << std::endl;
         //std::cout << "Row: " << (J_legs_ * robot_->getVelocities()).rows() << std::endl;
         //std::cout << "Col: " << (J_legs_ * robot_->getVelocities()).cols() << std::endl;
@@ -155,7 +151,7 @@ namespace Robot::Nomad::Dynamics
         // Publish Leg Command
         bool send_status = GetOutputPort(OutputPort::FULL_STATE)->Send(full_state_);
 
-        //std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
+       //std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
     }
 
     void NomadDynamics::Setup()

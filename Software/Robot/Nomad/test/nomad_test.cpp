@@ -34,9 +34,9 @@ using OperatorInterface::Teleop::RemoteTeleop;
 int main(int argc, char *argv[])
 {
     // Task Periods.
-    int freq1 = 1;
-    int hi_freq = 1000;
-    // int freq2 = 100;
+    int hz_25 = 25;
+    int hz_500 = 500;
+    int hz_1000 = 1000;
 
     // Create Manager Class Instance Singleton.
     // Must make sure this is done before any thread tries to access.
@@ -52,40 +52,29 @@ int main(int argc, char *argv[])
     // Plant Inputs
     const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
 
-    std::shared_ptr<Port> SIM_IMU = Port::CreateOutput("SIM_IMU", 10);
-    SIM_IMU->SetTransport(Port::TransportType::IPC, "ipc", "nomad.sim.imu_state");
-
-    std::shared_ptr<Port> JOINT_STATE = Port::CreateOutput("SIM_JOINT_STATE", 10);
-    JOINT_STATE->SetTransport(Port::TransportType::IPC, "ipc", "nomad.sim.joint_state");
-
-    std::shared_ptr<Port> COM_STATE = Port::CreateOutput("SIM_COM_STATE", 10);
-    COM_STATE->SetTransport(Port::TransportType::IPC, "ipc", "nomad.sim.com_state");
+    std::shared_ptr<Port> SIM_DATA = Port::CreateOutput("SIM_DATA", 10);
+    SIM_DATA->SetTransport(Port::TransportType::UDP, sim_url, "nomad.sim.data");
 
     // Simulator Interface Task Setup
     SimulationInterface nomad_simulation_interface("Simulation Interface");
     nomad_simulation_interface.SetStackSize(1024 * 1024); // 1MB
     nomad_simulation_interface.SetTaskPriority(Realtime::Priority::HIGHEST);
-    nomad_simulation_interface.SetTaskFrequency(hi_freq); // 50 HZ
-    nomad_simulation_interface.SetCoreAffinity(2);
-    nomad_simulation_interface.SetPortOutput(SimulationInterface::IMU_STATE_OUT,
-                                             Port::TransportType::INPROC, "inproc", "nomad.imu");
+    nomad_simulation_interface.SetTaskFrequency(hz_1000); // 50 HZ
+    nomad_simulation_interface.SetCoreAffinity(-1);
+    // nomad_simulation_interface.SetPortOutput(SimulationInterface::IMU_STATE_OUT,
+    //                                          Port::TransportType::NATIVE, "native", "nomad.imu");
 
-    nomad_simulation_interface.SetPortOutput(SimulationInterface::JOINT_STATE_OUT,
-                                             Port::TransportType::INPROC, "inproc", "nomad.joint_state");
+    nomad_simulation_interface.SetPortOutput(SimulationInterface::JOINT_STATE,
+                                             Port::TransportType::NATIVE, "native", "nomad.joint_state");
 
-    nomad_simulation_interface.SetPortOutput(SimulationInterface::COM_STATE_OUT,
-                                             Port::TransportType::INPROC, "inproc", "nomad.com_state");
+    nomad_simulation_interface.SetPortOutput(SimulationInterface::COM_STATE,
+                                              Port::TransportType::NATIVE, "native", "nomad.com_state");
+
     nomad_simulation_interface.SetPortOutput(SimulationInterface::JOINT_CONTROL_CMD_OUT,
-                                             Communications::Port::TransportType::IPC, "ipc", "nomad.sim.joint_cmd2");
+                                             Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
 
-    Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::IMU_STATE_IN),
-              SIM_IMU);
-
-    Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::JOINT_STATE_IN),
-               JOINT_STATE);
-
-    Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::COM_STATE_IN),
-              COM_STATE);
+    Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::SIM_DATA),
+              SIM_DATA);
 
     // Start Dynamics
     // Nomad Dynamics Computation Task
@@ -101,67 +90,65 @@ int main(int argc, char *argv[])
     nomad_dynamics_node.SetRobotSkeleton(robot->cloneSkeleton());
     nomad_dynamics_node.SetStackSize(1024 * 1024); // 1MB
     nomad_dynamics_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    nomad_dynamics_node.SetTaskFrequency(hi_freq); // 50 HZ
-    //nomad_dynamics_node.SetCoreAffinity(-1);
+    nomad_dynamics_node.SetTaskFrequency(hz_1000); // 50 HZ
+    nomad_dynamics_node.SetCoreAffinity(-1);
     Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::JOINT_STATE),
-              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE_OUT));
+              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE));
 
     Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::BODY_STATE_HAT),
-              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE_OUT));
+              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
 
     nomad_dynamics_node.SetPortOutput(NomadDynamics::OutputPort::FULL_STATE,
-                                      Port::TransportType::INPROC, "inproc", "nomad.robot.state");
+                                      Port::TransportType::NATIVE, "native", "nomad.robot.state");
 
-                                      
-
-    nomad_dynamics_node.Start();
+    //nomad_dynamics_node.Start();
 
     // State Estimator Task
     FusedLegKinematicsStateEstimator estimator_node("Estimator_Task");
     estimator_node.SetStackSize(1024 * 1024); // 1MB
     estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    estimator_node.SetTaskFrequency(hi_freq); // 1000 HZ
-    //estimator_node.SetCoreAffinity(1);
+    estimator_node.SetTaskFrequency(hz_1000); // 1000 HZ
+    estimator_node.SetCoreAffinity(-1);
     estimator_node.SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT,
-                                 Port::TransportType::INPROC, "inproc", "nomad.com.state");
+                                 Port::TransportType::NATIVE, "native", "nomad.body.state");
 
     estimator_node.SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_ACTUAL,
-                                 Port::TransportType::INPROC, "inproc", "nomad.com.state2");
+                                 Port::TransportType::NATIVE, "native", "nomad.body.state2");
 
     Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::FOOT_STATE),
               nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
 
     Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::IMU_DATA),
-              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::IMU_STATE_OUT));
+              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::IMU_STATE));
 
     Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::JOINT_STATE),
-              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE_OUT));
+              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE));
 
     Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE),
-              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE_OUT));
+              nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
 
-    estimator_node.Start();
+    //estimator_node.Start();
 
     // Remote Teleop Task
     RemoteTeleop teleop_node("Remote_Teleop");
     teleop_node.SetStackSize(1024 * 1024); // 1MB
     teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    teleop_node.SetTaskFrequency(freq1); // 50 HZ
-    //teleop_node.SetCoreAffinity(-1);
+    teleop_node.SetTaskFrequency(hz_25); // 50 HZ
+    teleop_node.SetCoreAffinity(-1);
     teleop_node.SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA,
-                              Port::TransportType::INPROC, "inproc", "nomad.teleop.data");
+                              Port::TransportType::NATIVE, "native", "nomad.teleop.data");
 
-    teleop_node.Start();
+    //teleop_node.Start();
 
     // FSM Task
     NomadControl nomad_controller_node("Nomad_Controller");
 
     nomad_controller_node.SetStackSize(1024 * 1024); // 1MB
     nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    nomad_controller_node.SetTaskFrequency(hi_freq); // 50 HZ
-    //nomad_controller_node.SetCoreAffinity(-1);
+    nomad_controller_node.SetTaskFrequency(hz_1000); // 50 HZ
+    nomad_controller_node.SetCoreAffinity(-1);
     nomad_controller_node.SetPortOutput(NomadControl::OutputPort::LEG_COMMAND,
-                                        Communications::Port::TransportType::INPROC, "inproc", "nomad.control.fsm.leg_cmd");
+                                        Communications::Port::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
 
     Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::TELEOP_DATA),
               teleop_node.GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA));
@@ -169,7 +156,7 @@ int main(int argc, char *argv[])
     Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::FULL_STATE),
               nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
 
-    nomad_controller_node.Start();
+    //nomad_controller_node.Start();
 
     // Port Mappings
     //Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::BODY_STATE_HAT),
@@ -180,10 +167,10 @@ int main(int argc, char *argv[])
 
     leg_controller_node.SetStackSize(1024 * 1024); // 1MB
     leg_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    leg_controller_node.SetTaskFrequency(hi_freq); // 50 HZ
-    //leg_controller_node.SetCoreAffinity(-1);
+    leg_controller_node.SetTaskFrequency(hz_1000); // 50 HZ
+    leg_controller_node.SetCoreAffinity(-1);
     leg_controller_node.SetPortOutput(LegController::OutputPort::SERVO_COMMAND,
-                                      Communications::Port::TransportType::INPROC, "inproc", "nomad.control.servo_cmd");
+                                      Communications::Port::TransportType::NATIVE, "native", "nomad.control.servo_cmd");
 
     Port::Map(leg_controller_node.GetInputPort(LegController::InputPort::LEG_COMMAND),
               nomad_controller_node.GetOutputPort(NomadControl::OutputPort::LEG_COMMAND));
@@ -191,7 +178,7 @@ int main(int argc, char *argv[])
     Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::JOINT_CONTROL_CMD_IN),
               leg_controller_node.GetOutputPort(LegController::OutputPort::SERVO_COMMAND));
 
-    leg_controller_node.Start();
+    //leg_controller_node.Start();
 
     nomad_simulation_interface.Start();
 

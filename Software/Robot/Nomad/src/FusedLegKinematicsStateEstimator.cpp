@@ -50,7 +50,6 @@ namespace Robot::Nomad::Estimators
                                                                        const int rt_core_id,
                                                                        const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
     {
-
         // State Estimate Input Port
         input_port_map_[InputPort::IMU_DATA] = Communications::Port::CreateInput<imu_data_t>("IMU_STATE", rt_period_);
         input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
@@ -65,21 +64,22 @@ namespace Robot::Nomad::Estimators
     void FusedLegKinematicsStateEstimator::Run()
     {
         // Estimate State
-        if (GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_))
-        {
-        }
+        // if (GetInputPort(InputPort::IMU_DATA)->Receive(imu_data_))
+        // {
+        // }
 
-        if (GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
-        {
-        }
+        // if (GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_))
+        // {
+        // }
 
-        if (GetInputPort(InputPort::FOOT_STATE)->Receive(full_state_in_))
-        {
-        }
+        // if (GetInputPort(InputPort::FOOT_STATE)->Receive(full_state_in_))
+        // {
+        // }
         
-        if (GetInputPort(InputPort::COM_STATE)->Receive(com_state_in_))
+        
+        if (GetInputPort(InputPort::COM_STATE)->Receive(com_state_in_, std::chrono::microseconds(100000)))
         {
-            //std::cout << "GOT COM STATE: " << com_state_.pos[2] << std::endl;
+            //std::cout << "GOT COM STATE: " << com_state_in_.pos[2] << std::endl;
             com_state_out_.orientation[0] = com_state_in_.orientation[0];
             com_state_out_.orientation[1] = com_state_in_.orientation[1];
             com_state_out_.orientation[2] = com_state_in_.orientation[2];
@@ -101,6 +101,12 @@ namespace Robot::Nomad::Estimators
             com_state_out_.vel[1] = com_state_in_.vel[1];
             com_state_out_.vel[2] = com_state_in_.vel[2];
         }
+
+        else
+        {
+            std::cout << "GOT NOTHING IN STATE ESTIMATE!" << std::endl;
+        }
+        
 
         // Compute State Estimate
         com_state_hat_.orientation[0] = com_state_in_.orientation[0];

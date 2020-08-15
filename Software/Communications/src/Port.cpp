@@ -74,8 +74,11 @@ namespace Communications
     Port::Port(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0), started_(false)
     {
         queue_size_ = 1;
-        transport_type_ = TransportType::INPROC;
-        transport_url_ = "inproc"; // TODO: Noblock?
+        transport_type_ = TransportType::NATIVE;
+        transport_url_ = "thread"; // TODO: Noblock?
+
+        if(direction == Direction::OUTPUT)
+            listeners_.reserve(MAX_LISTENERS); // Reserve Space for Output Listeners
     }
 
     std::shared_ptr<Port> Port::CreateOutput(const std::string &name, int period)
@@ -87,19 +90,13 @@ namespace Communications
     // TODO: Clear Handler Memory Etc,
     Port::~Port()
     {
-        // if (data_type_ == DataType::DOUBLE)
-        // {
-        //     PortHandler<double_vec_t> *handler = static_cast<PortHandler<double_vec_t> *>(handler);
-        //     if (handler)
-        //         delete handler;
-        // }
-        // handler_ = 0;
     }
 
     void Port::SetSignalLabel(const int signal_idx, const std::string &label)
     {
         signal_labels_.insert(std::make_pair(signal_idx, label));
     }
+
     // TODO: I do not love this...
     bool Port::Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output)
     {
@@ -109,6 +106,9 @@ namespace Communications
         input->dimension_ = output->dimension_;
         input->data_type_ = output->data_type_;
         input->signal_labels_ = output->signal_labels_;
+
+        // Add to listeners
+        output->listeners_.push_back(input);
 
        // std::cout << "Map: " << input->transport_url_ << " " << input->channel_ << std::endl;
     }
@@ -134,6 +134,10 @@ namespace Communications
         else if (transport_type_ == TransportType::SERIAL)
         {
             context_ = std::make_shared<zcm::ZCM>(transport_url_);
+        }
+        else if (transport_type_ == TransportType::NATIVE)
+        {
+            std::cout << "Binding Output Native." << std::endl;
         }
         else
         {

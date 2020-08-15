@@ -10,14 +10,11 @@
 #include <dart/gui/osg/osg.hpp>
 #include <dart/gui/osg/TrackballManipulator.hpp>
 
-#include <vector>
 
-#include <Communications/Messages/double_vec_t.hpp>
-#include <Nomad/MessageTypes/imu_data_t.hpp>
+#include <Nomad/MessageTypes/sim_data_t.hpp>
 #include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
-#include <Nomad/MessageTypes/joint_state_t.hpp>
-#include <Nomad/MessageTypes/com_state_t.hpp>
-//#include <Simulation/Dart/NomadRobot.h>
+#include <condition_variable>
+#include <vector>
 #include "../include/NomadRobot.h"
 
 // Third Party Includes
@@ -27,15 +24,13 @@ using namespace dart::dynamics;
 using namespace dart::simulation;
 
 WorldPtr g_world;
-
 std::shared_ptr<NomadRobot> g_nomad;
+Eigen::VectorXd joint_torques_cmd = Eigen::VectorXd::Zero(18);
 
-Eigen::VectorXd joint_torques = Eigen::VectorXd::Zero(18);
+std::mutex mtx;
+std::condition_variable cv;
 
-int control_missed =0;
-// Robot Class
-// Dynamic State Vector
-// Floating Base Class
+bool b_first = true;
 
 class NomadSimWorldNode : public dart::gui::osg::RealTimeWorldNode
 {
@@ -46,45 +41,60 @@ public:
   {
     // World gets saved as -> mWorld if ever needed.  Also ->getWorld()
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
-    //  step_iter = 0;
 
-    // TODO: Pass IP Address as a parameter, in the .model file?
-    context_ = std::make_unique<zcm::ZCM>("ipc");
+    // TODO: Pass IP Address as a parameter
+    context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     std::cout << "Nomad DART Sim connecting." << std::endl;
-    context_->subscribe("nomad.sim.joint_cmd2", &NomadSimWorldNode::OnJointControlMsg, this);
-    context_->start();
 
+    context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
+    //context_->start();
     // TODO: Publish state back
-    pub_context_ = std::make_unique<zcm::ZCM>("ipc");
+    pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     sequence_num_ = 0;
+
+    step_iter = 0;
+  }
+
+  void ReceiveCommand()
+  {
+    //std::cout << "START RECEIVE" << std::endl;
+    //std::unique_lock <std::mutex> lock(mtx);
+    //cv.wait(lock);
+    context_->handle();
+
+    //std::cout << "Recevied! " << std::endl;
   }
 
   void customPreStep()
   {
+    if(step_iter < 10)
+    {
+      return;
+    }
+    if(b_first)
+    {
+    //  std::cout << "PUBLISHING " << std::endl;
+      PublishState();
+      b_first = false;
+    }
 
-     // std::cout << "Step!" << std::endl;
-    // std::cout << leg->getJoint("leg_to_world")->getPosition(0) << std::endl;
-    //  if (step_iter < 5)
-    //    return;
+    ReceiveCommand();
 
-    // Reset Leg Controller
-    // nomad_->ProcessInputs();
-    // nomad_->Run(world_->getTimeStep());
-    //nomad_->SendOutputs();
-    //std::cout << "SETTING" << std::endl;
-    //std::cout << joint_torques << std::endl;
-    nomad_->Skeleton()->setForces(joint_torques);
+   // std::cout << joint_torques_cmd << std::endl;
 
-control_missed++;
-    // Post Setup
+  //  std::cout << "OUT OF PRE STEP!" << std::endl;
+    nomad_->Skeleton()->setForces(joint_torques_cmd);
+
+    //context_->handle();
+    
   }
 
   void customPostStep()
   {
-    // nomad_->UpdateState();
-    //PublishState();
+   // std::cout << "POST STEP!" << std::endl;
+    PublishState();
 
     //joint_torques = Eigen::VectorXd::Zero(18);
     step_iter++;
@@ -92,8 +102,9 @@ control_missed++;
 
   void OnJointControlMsg(const zcm::ReceiveBuffer *rbuf, const std::string &chan, const joint_control_cmd_t *msg)
   {
-    //std::cout << "Received Message on Channel: " << chan << std::endl;
-    //std::cout << "Got :" << msg->sequence_num << std::endl;
+    //std::unique_lock <std::mutex> lock(mtx);
+   // std::cout << "Received Message on Channel: " << chan << std::endl;
+   // std::cout << "Got :" << msg->sequence_num << std::endl;
 
     // Read Input
 
@@ -112,26 +123,17 @@ control_missed++;
     tau_cmd[10] = msg->tau_ff[10];
     tau_cmd[11] = msg->tau_ff[11];
 
-    // Send State
-    PublishState();
-
-    //std::cout << " GOT: " << tau_cmd << std::endl;
-
-    //Eigen::VectorXd tau_output = Eigen::Map<Eigen::VectorXd>(msg->tau_ff, 12);
-    joint_torques.tail(12) = tau_cmd;
-
+    joint_torques_cmd.tail(12) = tau_cmd;
 
     // Send Output
-    //std::cout << "MISSED: " << control_missed << std::endl;
-    //control_missed = 0;
+    //std::cout << "MISSED: " << "ID: " << msg->sequence_num << " MISSED: " << control_missed << std::endl;
+   // cv.notify_one();
   }
 
   void PublishState()
   {
 
-    imu_data_t imu_data;
-    com_state_t com_state;
-    joint_state_t joint_state;
+    sim_data_t sim_data;
 
     uint64_t time_now = sequence_num_;
 
@@ -141,106 +143,93 @@ control_missed++;
     Eigen::Vector3d angular = nomad_->GetAngularVelocity();
 
     // Cheater Orientation
-    com_state.timestamp = time_now;
-    com_state.sequence_num = sequence_num_;
-    com_state.theta[0] = nomad_->Skeleton()->getDof(0)->getPosition();
-    com_state.theta[1] = nomad_->Skeleton()->getDof(1)->getPosition();
-    com_state.theta[2] = nomad_->Skeleton()->getDof(2)->getPosition();
-    com_state.pos[0] = nomad_->Skeleton()->getDof(3)->getPosition();
-    com_state.pos[1] = nomad_->Skeleton()->getDof(4)->getPosition();
-    com_state.pos[2] = nomad_->Skeleton()->getDof(5)->getPosition();
-    com_state.vel[0] = nomad_->Skeleton()->getDof(3)->getVelocity();
-    com_state.vel[1] = nomad_->Skeleton()->getDof(4)->getVelocity();
-    com_state.vel[2] = nomad_->Skeleton()->getDof(5)->getVelocity();
+    sim_data.timestamp = time_now;
+    sim_data.sequence_num = sequence_num_;
 
-    com_state.orientation[0] = body_orientation.x();
-    com_state.orientation[1] = body_orientation.y();
-    com_state.orientation[2] = body_orientation.z();
-    com_state.orientation[3] = body_orientation.w();
+    sim_data.com_theta[0] = nomad_->Skeleton()->getDof(0)->getPosition();
+    sim_data.com_theta[1] = nomad_->Skeleton()->getDof(1)->getPosition();
+    sim_data.com_theta[2] = nomad_->Skeleton()->getDof(2)->getPosition();
+    sim_data.com_pos[0] = nomad_->Skeleton()->getDof(3)->getPosition();
+    sim_data.com_pos[1] = nomad_->Skeleton()->getDof(4)->getPosition();
+    sim_data.com_pos[2] = nomad_->Skeleton()->getDof(5)->getPosition();
+    sim_data.com_vel[0] = nomad_->Skeleton()->getDof(3)->getVelocity();
+    sim_data.com_vel[1] = nomad_->Skeleton()->getDof(4)->getVelocity();
+    sim_data.com_vel[2] = nomad_->Skeleton()->getDof(5)->getVelocity();
 
-    com_state.omega[0] = angular[0];
-    com_state.omega[1] = angular[1];
-    com_state.omega[2] = angular[2];
+    sim_data.com_orientation[0] = body_orientation.x();
+    sim_data.com_orientation[1] = body_orientation.y();
+    sim_data.com_orientation[2] = body_orientation.z();
+    sim_data.com_orientation[3] = body_orientation.w();
 
-    //
-    imu_data.timestamp = time_now;
-    imu_data.sequence_num = sequence_num_;
-    
+    sim_data.com_omega[0] = angular[0];
+    sim_data.com_omega[1] = angular[1];
+    sim_data.com_omega[2] = angular[2];
 
     // Orientation
-    imu_data.orientation[0] = body_orientation.x();
-    imu_data.orientation[1] = body_orientation.y();
-    imu_data.orientation[2] = body_orientation.z();
-    imu_data.orientation[3] = body_orientation.w();
+    sim_data.imu_orientation[0] = body_orientation.x();
+    sim_data.imu_orientation[1] = body_orientation.y();
+    sim_data.imu_orientation[2] = body_orientation.z();
+    sim_data.imu_orientation[3] = body_orientation.w();
 
     // Accelerometer
-    imu_data.accel[0] = accel[0];
-    imu_data.accel[1] = accel[1];
-    imu_data.accel[2] = accel[2];
+    sim_data.imu_accel[0] = accel[0];
+    sim_data.imu_accel[1] = accel[1];
+    sim_data.imu_accel[2] = accel[2];
 
     // Gyro
-    imu_data.omega[0] = angular[0];
-    imu_data.omega[1] = angular[1];
-    imu_data.omega[2] = angular[2];
+    sim_data.imu_omega[0] = angular[0];
+    sim_data.imu_omega[1] = angular[1];
+    sim_data.imu_omega[2] = angular[2];
 
     Eigen::VectorXd joint_pos = nomad_->Skeleton()->getPositions();
     Eigen::VectorXd joint_vel = nomad_->Skeleton()->getVelocities();
     Eigen::VectorXd joint_tau = nomad_->Skeleton()->getForces();
 
-    joint_state.timestamp = time_now;
-    joint_state.sequence_num = sequence_num_;
+    sim_data.q[0] = joint_pos[6];
+    sim_data.q[1] = joint_pos[7];
+    sim_data.q[2] = joint_pos[8];
+    sim_data.q[3] = joint_pos[9];
+    sim_data.q[4] = joint_pos[10];
+    sim_data.q[5] = joint_pos[11];
+    sim_data.q[6] = joint_pos[12];
+    sim_data.q[7] = joint_pos[13];
+    sim_data.q[8] = joint_pos[14];
+    sim_data.q[9] = joint_pos[15];
+    sim_data.q[10] = joint_pos[16];
+    sim_data.q[11] = joint_pos[17];
 
-    joint_state.q[0] = joint_pos[6];
-    joint_state.q[1] = joint_pos[7];
-    joint_state.q[2] = joint_pos[8];
-    joint_state.q[3] = joint_pos[9];
-    joint_state.q[4] = joint_pos[10];
-    joint_state.q[5] = joint_pos[11];
-    joint_state.q[6] = joint_pos[12];
-    joint_state.q[7] = joint_pos[13];
-    joint_state.q[8] = joint_pos[14];
-    joint_state.q[9] = joint_pos[15];
-    joint_state.q[10] = joint_pos[16];
-    joint_state.q[11] = joint_pos[17];
+    sim_data.q_dot[0] = joint_vel[6];
+    sim_data.q_dot[1] = joint_vel[7];
+    sim_data.q_dot[2] = joint_vel[8];
+    sim_data.q_dot[3] = joint_vel[9];
+    sim_data.q_dot[4] = joint_vel[10];
+    sim_data.q_dot[5] = joint_vel[11];
+    sim_data.q_dot[6] = joint_vel[12];
+    sim_data.q_dot[7] = joint_vel[13];
+    sim_data.q_dot[8] = joint_vel[14];
+    sim_data.q_dot[9] = joint_vel[15];
+    sim_data.q_dot[10] = joint_vel[16];
+    sim_data.q_dot[11] = joint_vel[17];
 
-    joint_state.q_dot[0] = joint_vel[6];
-    joint_state.q_dot[1] = joint_vel[7];
-    joint_state.q_dot[2] = joint_vel[8];
-    joint_state.q_dot[3] = joint_vel[9];
-    joint_state.q_dot[4] = joint_vel[10];
-    joint_state.q_dot[5] = joint_vel[11];
-    joint_state.q_dot[6] = joint_vel[12];
-    joint_state.q_dot[7] = joint_vel[13];
-    joint_state.q_dot[8] = joint_vel[14];
-    joint_state.q_dot[9] = joint_vel[15];
-    joint_state.q_dot[10] = joint_vel[16];
-    joint_state.q_dot[11] = joint_vel[17];
-
-    joint_state.tau[0] = joint_tau[6];
-    joint_state.tau[1] = joint_tau[7];
-    joint_state.tau[2] = joint_tau[8];
-    joint_state.tau[3] = joint_tau[9];
-    joint_state.tau[4] = joint_tau[10];
-    joint_state.tau[5] = joint_tau[11];
-    joint_state.tau[6] = joint_tau[12];
-    joint_state.tau[7] = joint_tau[13];
-    joint_state.tau[8] = joint_tau[14];
-    joint_state.tau[9] = joint_tau[15];
-    joint_state.tau[10] = joint_tau[16];
-    joint_state.tau[11] = joint_tau[17];
+    sim_data.tau[0] = joint_tau[6];
+    sim_data.tau[1] = joint_tau[7];
+    sim_data.tau[2] = joint_tau[8];
+    sim_data.tau[3] = joint_tau[9];
+    sim_data.tau[4] = joint_tau[10];
+    sim_data.tau[5] = joint_tau[11];
+    sim_data.tau[6] = joint_tau[12];
+    sim_data.tau[7] = joint_tau[13];
+    sim_data.tau[8] = joint_tau[14];
+    sim_data.tau[9] = joint_tau[15];
+    sim_data.tau[10] = joint_tau[16];
+    sim_data.tau[11] = joint_tau[17];
 
     sequence_num_++;
-    //std::cout << "Got :" << accel << std::endl;
-    //std::cout << "Got Angular :" << angular << std::endl;
-
-    //std::cout << "RPY: " << mat.eulerAngles(0,1,2) << std::endl;
 
     // Publish
-    int rc = pub_context_->publish("nomad.sim.imu_state", &imu_data);
+    int rc = pub_context_->publish("nomad.sim.data", &sim_data);
 
-    rc = pub_context_->publish("nomad.sim.joint_state", &joint_state);
-
-    rc = pub_context_->publish("nomad.sim.com_state", &com_state);
+    //std::cout << " OUT SIM: " << sim_data.sequence_num << std::endl;
     pub_context_->flush();
   }
 

@@ -40,6 +40,7 @@
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
 #include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
+#include <Nomad/MessageTypes/sim_data_t.hpp>
 
 namespace Robot::Nomad::Interface
 {
@@ -49,9 +50,9 @@ namespace Robot::Nomad::Interface
     public:
         enum OutputPort
         {
-            JOINT_STATE_OUT = 0, // Joint State Estimate from Plant
-            IMU_STATE_OUT = 1,   // IMU State from Sensors
-            COM_STATE_OUT = 2,   // Ground Truth Body Pose State from Sim
+            JOINT_STATE = 0, // Joint State Estimate from Plant
+            IMU_STATE = 1,   // IMU State from Sensors
+            COM_STATE = 2,   // Ground Truth Body Pose State from Sim
             JOINT_CONTROL_CMD_OUT = 3, // Control Message for Servo -> Sim
             NUM_OUTPUTS = 4
         };
@@ -59,10 +60,8 @@ namespace Robot::Nomad::Interface
         enum InputPort
         {
             JOINT_CONTROL_CMD_IN = 0, // Control Message for Servo -> Sim
-            IMU_STATE_IN = 1,         // IMU State <- Sim
-            JOINT_STATE_IN = 2,       // Joint State <- Sim
-            COM_STATE_IN = 3,         // POse State <- Sim
-            NUM_INPUTS = 4
+            SIM_DATA = 1,             // SIM Data State <- Sim
+            NUM_INPUTS = 2
         };
 
         // Plant Simulation Task Node
@@ -85,6 +84,7 @@ namespace Robot::Nomad::Interface
         virtual void Setup();
 
         // Messages
+        sim_data_t sim_data_;
         imu_data_t imu_data_;
         com_state_t com_state_;
         joint_state_t joint_state_;

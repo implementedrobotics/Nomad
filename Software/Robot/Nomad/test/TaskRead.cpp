@@ -1,5 +1,5 @@
 /*
- * StandController.cpp
+ * SimulationInterface.cpp
  *
  *  Created on: July 16, 2020
  *      Author: Quincy Jones
@@ -22,7 +22,7 @@
  */
 
 // Primary Include
-#include <Nomad/Interface/StandController.hpp>
+#include <TaskRead.hpp>
 
 // C System Includes
 
@@ -33,12 +33,12 @@
 #include <memory>
 
 // Third-Party Includes
-#include <zcm/zcm-cpp.hpp>
 
 // Project Includes
 #include <Realtime/RealTimeTask.hpp>
 #include <Common/Time.hpp>
 
+using namespace std::chrono_literals;
 namespace Robot
 {
     namespace Nomad
@@ -46,7 +46,7 @@ namespace Robot
         namespace Interface
         {
 
-            StandController::StandController(const std::string &name,
+            TaskRead::TaskRead(const std::string &name,
                                              const long rt_period,
                                              unsigned int rt_priority,
                                              const int rt_core_id,
@@ -54,25 +54,40 @@ namespace Robot
             {
                 // Create Ports
                 // Sim Inputs
-                input_port_map_[InputPort::SIM_DATA] = Communications::Port::CreateInput<sim_data_t>("SIM_DATA", rt_period_);
+                input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port::CreateInput<joint_control_cmd_t>("JOINT_CMD", rt_period_);
+                //input_port_map_[InputPort::JOINT_STATE_IN] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
+                //input_port_map_[InputPort::COM_STATE_IN] = Communications::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
 
                 // Outputs
-                output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL", rt_period_);
+                //output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL", rt_period_);
+
+                memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
             }
 
-            void StandController::Run()
+            void TaskRead::Run()
             {
-                //Systems::Time t;
-                static uint64_t last_control_time = 0;
-                static int lost_control = 0;
+                //Read Plant State
+                // if (GetInputPort(InputPort::IMU_STATE_IN)->Receive(imu_data_))
+                // {
+                //     //std::cout << "Got: " << imu_data_.sequence_num << std::endl;
+                // }
 
-                // Read Plant State
-                if(!GetInputPort(InputPort::SIM_DATA)->Receive(sim_data_, std::chrono::milliseconds(1000)))
+                // if (GetInputPort(InputPort::JOINT_STATE_IN)->Receive(joint_state_))
+                // {
+                // //    // std::cout << "Got 2: " << joint_state_.q[2] << std::endl;
+                // }
+
+                // if (GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
+                // {
+                // //    // std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
+                // }
+               // std::cout << "RUNNING! " << std::endl;
+                bool recv = false;
                 {
-                    std::cout << "FAILED TO GET SYNCED SIM MESSAGE!!: " << lost_control++ << std::endl;
-                    // TODO: What to do.
+                Systems::Time t;
+                recv = GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_, 100us);
                 }
-
+                std::cout << "Received: " << joint_command_.sequence_num << " New: " << recv << std::endl;
 
                 //std::cout << "Command In Time: " << Systems::Time::GetTimeStamp() << std::endl;
                 //std::cout << "Stamps: " << imu_data_.sequence_num << " " << joint_state_.sequence_num << " " << com_state_.sequence_num << std::endl;
@@ -83,35 +98,11 @@ namespace Robot
 
                 //last_control_time = Systems::Time::GetTimeStamp();
 
-                // Publish/Forward to Sim
-                memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
-                {
-                    //Systems::Time t;
-                    GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
-                   // std::cout << "OUT SEND: " << joint_command_.sequence_num << std::endl;
-                }
+                //GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
 
-
-                // while (!GetInputPort(InputPort::COM_STATE_IN)->Receive(com_state_))
-                // {
-                // //std::cout << "Got 3: " << com_state_.pos[2] << std::endl;
-
-                //     if (timeout++ > 500)
-                //         break;
-                // }
-
-                //std::cout << "Command Out Time: " << joint_command_.timestamp << std::endl;
-                //std::cout << "Turn around time: " << joint_command_.timestamp - last_control_time << std::endl;
-                //std::cout << "OUT: " << joint_command_.sequence_num << " " << std::endl;
-
-                //std::cout << "Total Time: " << Systems::Time::GetTimeStamp() - last_control_time << "us" << std::endl;
-                //std::cout << "Loop Frequency: " << 1000000.0 / (double)(Systems::Time::GetTimeStamp() - last_control_time) << std::endl;
-                last_control_time = Systems::Time::GetTimeStamp();
-
-                
             }
 
-            void StandController::Setup()
+            void TaskRead::Setup()
             {
                 bool outputs_bound = true;
                 for (int i = 0; i < OutputPort::NUM_OUTPUTS; i++) // Bind all of our output ports
@@ -122,8 +113,8 @@ namespace Robot
                     }
                 }
 
-                std::cout << "[StandController]: "
-                          << "StandController Interface Publisher Running!: " << outputs_bound << " " << std::endl;
+                std::cout << "[TaskRead]: "
+                          << "TaskRead Interface Publisher Running!: " << outputs_bound << " " << std::endl;
             }
 
         } // namespace Interface

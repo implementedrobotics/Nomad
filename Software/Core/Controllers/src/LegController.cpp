@@ -92,7 +92,7 @@ namespace Controllers::Locomotion
 
         // TODO: Wait for some timeout, if control deadline missed -> ZERO OUTPUTS
         // Read Command
-        while (!GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_))
+        if(!GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_, std::chrono::microseconds(1000)))
         {
             //std::cout << "Got: " << imu_data_.accel[2] << std::endl;
         }
@@ -149,7 +149,7 @@ namespace Controllers::Locomotion
 
         bool send_status = GetOutputPort(OutputPort::SERVO_COMMAND)->Send(servo_command_output_);
 
-        //std::cout << "[LegController]: Publishing: " << std::endl;
+        //std::cout << "[LegController]: Publishing: " << send_status << std::endl;
 
     }
 

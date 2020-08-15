@@ -45,11 +45,11 @@ namespace Realtime
 {
     enum Priority
     {
-        LOWEST = 99,
-        LOW = 80,
+        LOWEST = 1,
+        LOW = 20,
         MEDIUM = 50,
-        HIGH = 20,
-        HIGHEST = 1
+        HIGH = 80,
+        HIGHEST = 99
     };
 
     class RealTimeTaskNode
@@ -163,13 +163,14 @@ namespace Realtime
         // Cancellation Signal
         std::atomic_bool thread_cancel_event_;
 
-    private:
+    protected:
         // STATIC Task Delay (More accurate but uses a busy wait)
         static long int TaskDelay(long int microseconds); // Usuful for tight timings or periods below 1000us
 
         // Static Task Sleep (Less accurate but less resource intensive) // Useful for sotter timings and periods > 1000us
         static long int TaskSleep(long int microseconds);
-
+    
+    private:
         // STATIC Member Task Run
         static void *RunTask(void *task_instance);
     };

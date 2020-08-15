@@ -1,5 +1,5 @@
 /*
- * SimulationInterface.hpp
+ * TaskRead.hpp
  *
  *  Created on: July 16, 2020
  *      Author: Quincy Jones
@@ -21,8 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef ROBOT_NOMAD_STANDCONTROLLER_H_
-#define ROBOT_NOMAD_STANDCONTROLLER_H_
+#ifndef ROBOT_NOMAD_TASKREAD_H_
+#define ROBOT_NOMAD_TASKREAD_H_
 
 // C System Files
 #include <stdint.h>
@@ -39,24 +39,23 @@
 #include <Nomad/MessageTypes/imu_data_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
-#include <Nomad/MessageTypes/sim_data_t.hpp>
 #include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
 
 namespace Robot::Nomad::Interface
 {
-    class StandController : public Realtime::RealTimeTaskNode
+    class TaskRead : public Realtime::RealTimeTaskNode
     {
 
     public:
         enum OutputPort
         {
             JOINT_CONTROL_CMD_OUT = 0, // Control Message for Servo -> Sim
-            NUM_OUTPUTS = 1
+            NUM_OUTPUTS = 0
         };
 
         enum InputPort
         {
-            SIM_DATA = 0,         // SIM Data <- Sim
+            JOINT_CONTROL_CMD_IN = 0,
             NUM_INPUTS = 1
         };
 
@@ -66,7 +65,7 @@ namespace Robot::Nomad::Interface
         // rt_priority = Task Thread Priority
         // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
         // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-        StandController(const std::string &name = "Nomad_Stand_Controller",
+        TaskRead(const std::string &name = "Task_Read_Controller",
                             const long rt_period = 10000,
                             const unsigned int rt_priority = Realtime::Priority::MEDIUM,
                             const int rt_core_id = -1,
@@ -80,12 +79,8 @@ namespace Robot::Nomad::Interface
         virtual void Setup();
 
         // Messages
-        imu_data_t imu_data_;
-        com_state_t com_state_;
-        joint_state_t joint_state_;
-        sim_data_t sim_data_;
         joint_control_cmd_t joint_command_;
     };
 } // namespace Robot::Nomad::Interface
 
-#endif // ROBOT_NOMAD_SIMULATIONINTERFACE_H_
+#endif // ROBOT_NOMAD_TaskRead_H_
