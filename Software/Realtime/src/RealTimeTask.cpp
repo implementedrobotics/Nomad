@@ -255,7 +255,7 @@ namespace Realtime
         }
         // TODO: Back off RT Priority until PREEMPT Kernel.
         // Set Scheduler Policy to RT(SCHED_FIFO)
-        // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHEDblu_FIFO);
         // if (thread_status_)
         // {
         //     std::cout << "[RealTimeTaskNode]: "

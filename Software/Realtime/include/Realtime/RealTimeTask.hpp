@@ -98,7 +98,8 @@ namespace Realtime
         // Set Task Period (Microseconds)
         void SetTaskPeriod(const long period) { 
             rt_period_ = period; 
-            dt_nominal_ = rt_period_ * 1e-6;}
+            dt_nominal_ = rt_period_ * 1e-6;
+        }
 
         // Set CPU Core Affinity
         void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }

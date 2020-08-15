@@ -19,6 +19,9 @@ set(TELEOP_TEST_LIBS Plotting Controllers Common zcm)
 set(LEG_CONTROLLER_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/leg_controller_test.cpp)
 set(LEG_CONTROLLER_TEST_LIBS Controllers Common Robot zcm)
 
+set(DIAGRAM_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Controllers/test/diagram_test.cpp)
+set(DIAGRAM_TEST_LIBS Controllers Common Communications Robot zcm)
+
 # Definitions
 add_definitions(-D_GNU_SOURCE)
 
@@ -36,3 +39,6 @@ target_link_libraries(teleop_test ${TELEOP_TEST_LIBS} )
 
 add_executable(legcontroller_test ${LEG_CONTROLLER_TEST_SOURCES})
 target_link_libraries(legcontroller_test ${LEG_CONTROLLER_TEST_LIBS} )
+
+add_executable(diagram_test ${DIAGRAM_TEST_SOURCES})
+target_link_libraries(diagram_test ${DIAGRAM_TEST_LIBS} )

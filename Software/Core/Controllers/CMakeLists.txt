@@ -6,6 +6,8 @@ ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ConvexMPC.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/GaitScheduler.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/ReferenceTrajectoryGen.cpp
 ${PROJECT_SOURCE_DIR}/Core/Controllers/src/LegController.cpp
+${PROJECT_SOURCE_DIR}/Core/Controllers/src/BlockDiagram.cpp
+${PROJECT_SOURCE_DIR}/Core/Controllers/src/SystemBlock.cpp
 )
 
 set(CONTROLLERS_LIBS OptimalControl Systems Robot pthread rt zcm dart)
