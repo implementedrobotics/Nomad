@@ -65,6 +65,9 @@ namespace Controllers::Systems
         // Overriden Setup Function
         virtual void Setup();
 
+        // Connect Function
+        virtual void Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input);
+
     protected:
 
 
