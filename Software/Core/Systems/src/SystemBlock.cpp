@@ -22,7 +22,7 @@
  */
 
 // Primary Include
-#include <Controllers/SystemBlock.hpp>
+#include <Systems/SystemBlock.hpp>
 
 // C System Includes
 
@@ -33,17 +33,25 @@
 // Third-Party Includes
 
 // Project Includes
+#include <Systems/BlockDiagram.hpp>
 
 namespace Controllers::Systems
 {
 
-    SystemBlock::SystemBlock(const std::string &name) : name_(name)
+    SystemBlock::SystemBlock(const std::string &name, const double T_s) : name_(name), T_s_(T_s)
     {
     }
-    void SystemBlock::Run()
+    void SystemBlock::Run(double d_t)
     {
+        // TODO: Update time etc and skip if not ready
+        if(T_s_ > 0)
+        {
+            // Check Time to Run
+            // return;
+        }
+        
         // TODO: Skip here based on decimation
-        std::cout << "Running System: " << name_ <<std::endl;
+       // std::cout << "Running System: " << name_ <<std::endl;
         // Update function for stateful outputs
         UpdateStateOutputs();
 

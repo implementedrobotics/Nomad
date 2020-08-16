@@ -65,7 +65,7 @@ namespace Realtime
         // rt_core_id = CPU Core to pin the task.  -1 for no affinity
         // stack_size = Task Thread Stack Size -> PTHREAD_STACK_MIN
         RealTimeTaskNode(const std::string &name,
-                         const long rt_period,
+                         const double rt_period,
                          const unsigned int rt_priority,
                          const int rt_core_id,
                          const unsigned int stack_size);
@@ -96,9 +96,8 @@ namespace Realtime
         void SetTaskFrequency(const unsigned int freqeuncy_hz);
 
         // Set Task Period (Microseconds)
-        void SetTaskPeriod(const long period) { 
+        void SetTaskPeriod(const double period) { 
             rt_period_ = period; 
-            dt_nominal_ = rt_period_ * 1e-6;
         }
 
         // Set CPU Core Affinity
@@ -135,11 +134,11 @@ namespace Realtime
         // Task Priority (0 to 99)
         unsigned int rt_priority_;
 
-        // Task Period (microseconds)
-        long rt_period_;
-
         // Task Period (seconds)
-        double dt_nominal_;
+        double rt_period_;
+
+        // Task Period Actual (seconds)
+        double dt_actual_;
 
         // Timing Stats
         long unsigned int tick_count_;

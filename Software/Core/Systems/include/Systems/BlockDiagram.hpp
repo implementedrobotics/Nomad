@@ -33,7 +33,7 @@
 
 // Project Include Files
 #include <Realtime/RealTimeTask.hpp>
-#include <Controllers/SystemBlock.hpp>
+#include <Systems/SystemBlock.hpp>
 
 namespace Controllers::Systems
 {
@@ -43,8 +43,8 @@ namespace Controllers::Systems
     public:
         // Block Diagram Class For Systems Task Node
         // name = Task Name
-        // T_s = Sample Time
-        BlockDiagram(const std::string &name, const double T_s);
+        // T_s = Sample Time (-1 for inherit)
+        BlockDiagram(const std::string &name, const double T_s = -1);
 
         // Add system to diagram
         void AddSystem(std::shared_ptr<SystemBlock> system);
@@ -57,6 +57,9 @@ namespace Controllers::Systems
 
         // Set Transport Configuration for Port
         void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
+
+        // Connect Function
+        void Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input);
 
     protected:
 

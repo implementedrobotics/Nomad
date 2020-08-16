@@ -210,6 +210,8 @@ namespace Communications
         // Message Buffer
         std::deque<T> msg_buffer_;
 
+        T data_;
+
         // Thread mutex
         std::mutex mutex_;
 

@@ -82,7 +82,7 @@ namespace Robot::Nomad::Controllers
         //nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
         // Run FSM
-        nomad_control_FSM_->Run(dt_nominal_);
+        nomad_control_FSM_->Run(rt_period_);
 
         // TODO: Leg Command to control data
 

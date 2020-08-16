@@ -22,7 +22,7 @@
  */
 
 // Primary Include
-#include <Controllers/BlockDiagram.hpp>
+#include <Systems/BlockDiagram.hpp>
 
 // C System Includes
 
@@ -33,30 +33,32 @@
 // Third-Party Includes
 
 // Project Includes
+#include <Common/Time.hpp>
 #include <Realtime/RealTimeTask.hpp>
 
 namespace Controllers::Systems
 {
 
     //using namespace RealTimeControl;
-    BlockDiagram::BlockDiagram(const std::string &name, const double T_s) : Realtime::RealTimeTaskNode(name, long(T_s*1e6), Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
+    BlockDiagram::BlockDiagram(const std::string &name, const double T_s) : Realtime::RealTimeTaskNode(name, T_s, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN),
                                                                             T_s_(T_s)
     {
     }
     void BlockDiagram::Run()
     {
-        std::cout << "Running: " << std::endl;
-        for(auto system : systems_)
+       // std::cout << "Starting! " << std::endl;
+       // ::Systems::Time t;
+        for (auto system : systems_)
         {
-            system->Run();
+            system->Run(T_s_);
         }
     }
     void BlockDiagram::Setup()
     {
         // Bind any active output ports
-        for( auto &port : output_port_map_)
+        for (auto &port : output_port_map_)
         {
-            if(port != nullptr)
+            if (port != nullptr)
             {
                 port->Bind();
             }
@@ -68,8 +70,9 @@ namespace Controllers::Systems
     {
         // Call Setup
         system->Setup();
+        system->parent_ = this;
 
-        // Add to Vector List
+        // Add to Vector List Registry
         systems_.push_back(std::move(system));
     }
 
@@ -93,5 +96,9 @@ namespace Controllers::Systems
         output_port_map_[port_id]->SetTransport(transport, transport_url, channel);
     }
 
+    void BlockDiagram::Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input)
+    {
+        Communications::Port::Map(input, output);
+    }
 
 } // namespace Controllers::Systems

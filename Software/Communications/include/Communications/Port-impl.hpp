@@ -66,15 +66,17 @@ namespace Communications
     {
         //printf("Received message on channel \"%s\" and %s:\n", chan.c_str(), channel_.c_str());
         //printf("  Message   = %ld\n", msg->sequence_num);
-
+        // TODO: Need explicit buffer path as it is not as optimal and honestly not as necessary
         // TODO: CV Notify...
         std::unique_lock<std::mutex> lck(mutex_);
-        if (msg_buffer_.size() >= queue_size_)
-        {
-            // Kill Old Message
-            msg_buffer_.pop_front();
-        }
-        msg_buffer_.push_back(*msg);
+        // if (msg_buffer_.size() >= queue_size_)
+        // {
+        //     // Kill Old Message
+        //     msg_buffer_.pop_front();
+        // }
+        // msg_buffer_.push_back(*msg);
+
+        data_ = *msg;
 
         //Increase Num Unread
         num_unread_++;
@@ -83,13 +85,15 @@ namespace Communications
     }
     template <class T>
     void PortHandler<T>::HandleMessage(T &rx_msg)
-    {
-        if (msg_buffer_.size() >= queue_size_)
-        {
-            // Kill Old Message
-            msg_buffer_.pop_front();
-        }
-        msg_buffer_.push_back(rx_msg);
+    {     
+        // if (msg_buffer_.size() >= queue_size_)
+        // {
+        //     // Kill Old Message
+        //     msg_buffer_.pop_front();
+        // }
+        
+        // msg_buffer_.push_back(rx_msg);
+        data_ = rx_msg;
     }
 
     template <class T>
@@ -101,8 +105,8 @@ namespace Communications
         if(num_unread_ > 0)
         {
             num_unread_ = 0; // Reset Unread count
-            rx_msg = msg_buffer_.back();
-            msg_buffer_.pop_back();
+            rx_msg = data_;//msg_buffer_.back();
+            //msg_buffer_.pop_back();
             mutex_.unlock();
             return true;
         }
@@ -187,6 +191,7 @@ namespace Communications
     bool Port::Send(T &tx_msg)
     {
         //std::cout << "Sending Channel: " << channel_ << std::endl;
+        //::Systems::Time t;
         if (channel_.empty())
         {
             std::cout << "[PORT]: ERROR: Output channel is NOT defined!" << std::endl;
@@ -240,19 +245,19 @@ namespace Communications
         {
             context_->flush();
         }
-        auto start_time = std::chrono::high_resolution_clock::now(); 
+        // auto start_time = std::chrono::high_resolution_clock::now(); 
 
-        PortHandler<T> *handler = static_cast<PortHandler<T> *>(handler_);
-        while(!handler->Read(rx_msg, timeout))
-        {
-            auto time_now = std::chrono::high_resolution_clock::now(); 
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
-            if(duration >= timeout)
-                return false;
-            //usleep(50);
-        }
-        return true;
-        //return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
+        // PortHandler<T> *handler = static_cast<PortHandler<T> *>(handler_);
+        // while(!handler->Read(rx_msg, timeout))
+        // {
+        //     auto time_now = std::chrono::high_resolution_clock::now(); 
+        //     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+        //     if(duration >= timeout)
+        //         return false;
+        //     //usleep(50);
+        // }
+        // return true;
+        return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
     }
 
 } // namespace Communications

@@ -2,6 +2,8 @@
 set(SYSTEMS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Systems/src/DynamicalSystem.cpp
 ${PROJECT_SOURCE_DIR}/Core/Systems/src/RigidBody.cpp
 ${PROJECT_SOURCE_DIR}/Core/Systems/src/NomadPlant.cpp
+${PROJECT_SOURCE_DIR}/Core/Systems/src/BlockDiagram.cpp
+${PROJECT_SOURCE_DIR}/Core/Systems/src/SystemBlock.cpp
 )
 
 #set(required_components)

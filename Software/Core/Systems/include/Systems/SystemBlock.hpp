@@ -36,16 +36,21 @@
 #include <Communications/Port.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 
+
+
 namespace Controllers::Systems
 {
+    class BlockDiagram;
     class SystemBlock
     {
-        static const int MAX_PORTS = 16;
+        
+        friend class BlockDiagram;
 
     public:
         // Base Class System Block Node
         // name = Task Name
-        SystemBlock(const std::string &name);
+        // T_s = Sample Time (-1 for inherit)
+        SystemBlock(const std::string &name, const double T_s = -1);
 
         // Add Subsystem to System Block
         void AddSubSystem();
@@ -60,18 +65,15 @@ namespace Controllers::Systems
         void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
 
         // Overriden Run Function
-        virtual void Run();
+        virtual void Run(double d_t);
 
         // Overriden Setup Function
         virtual void Setup();
 
-        // Connect Function
-        virtual void Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input);
-
     protected:
 
-
-
+        static const int MAX_PORTS = 16;
+        
         // Update function for stateful outputs
         virtual void UpdateStateOutputs() {}
 
@@ -83,6 +85,9 @@ namespace Controllers::Systems
 
         // Sampling Time (s)
         double T_s_;
+
+        // Parent Block Diagram/System
+        BlockDiagram *parent_;
 
         // System Name
         std::string name_;
@@ -110,7 +115,7 @@ namespace Controllers::Systems
             Eigen::Map<Eigen::VectorXd>(constant_.data.data(), constant_.length) = value;
 
             // Create Output Port
-            output_port_map_[0] = Communications::Port::CreateOutput("CONSTANT", T_s_);
+            output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONSTANT", T_s_));
         }
 
     protected:
@@ -125,8 +130,6 @@ namespace Controllers::Systems
         void UpdateStatelessOutputs()
         {
             GetOutputPort(0)->Send(constant_);
-
-            std::cout << "SENDING!" << std::endl;
         }
 
         // Update fucntion for next state from inputs
@@ -145,35 +148,55 @@ namespace Controllers::Systems
     {
 
     public:
+
+        // Transport Type Enum
+        enum OperandType
+        {
+            ADD = 0,
+            MINUS
+        };
+
         // Constant System Block Node
         // name = Task Name
         AddBlock() : SystemBlock("ADD")
         {
-
-            // TODO: From Connect/Verify all vectors same length
-            result.length = 3;//value.size();
-            result.data.resize(result.length);
-
-            // TODO: Move to Connect/Setup
-            operands[0].length = 3;//value.size();
-            operands[0].data.resize(operands[0].length);
-
-            operands[1].length = 3;//value.size();
-            operands[1].data.resize(operands[1].length);
-            
-            input_port_map_[0] = Communications::Port::CreateInput<double_vec_t>("A", T_s_);
-            input_port_map_[1] = Communications::Port::CreateInput<double_vec_t>("B", T_s_);
-
-            // Zero Outputs
-            Eigen::Map<Eigen::VectorXd>(operands[0].data.data(), operands[0].length) = Eigen::Vector3d::Zero(3);
-            Eigen::Map<Eigen::VectorXd>(operands[1].data.data(), operands[0].length) = Eigen::Vector3d::Zero(3);
-
-            Eigen::Map<Eigen::VectorXd>(result.data.data(), result.length) = Eigen::Vector3d::Zero(3);
-
-
             // Create Output Port
             output_port_map_[0] = Communications::Port::CreateOutput("ADD", T_s_);
         }
+
+        void AddInput(OperandType op_type, const int dimension)
+        {
+            // Update Dimension
+            if(!operands_.empty())
+            {
+                assert(dimension_ == dimension || operands_.size() > MAX_PORTS);
+            }
+            else 
+            {
+                dimension_ = dimension;
+                result_.length = dimension_;
+                result_.data.resize(result_.length);
+
+                // Zero output result
+                Eigen::Map<Eigen::VectorXd>(result_.data.data(), result_.length) = Eigen::Vector3d::Zero(dimension_);
+            }
+
+            // Create Port
+            input_port_map_[operands_.size()] = Communications::Port::CreateInput<double_vec_t>(std::to_string(operands_.size()), T_s_);
+            
+            // Update Operation Type
+            operation_types_.push_back(op_type);
+
+            // Add Operand Input
+            double_vec_t operand;
+            operand.length = dimension;
+            operand.data.resize(operand.length);
+
+            // Zero initial state
+            Eigen::Map<Eigen::VectorXd>(operand.data.data(), operand.length) = Eigen::Vector3d::Zero(dimension_);
+            operands_.push_back(operand);
+        }
+        
 
     protected:
 
@@ -186,23 +209,38 @@ namespace Controllers::Systems
         // Update function for stateless outputs
         void UpdateStatelessOutputs()
         {
+            if(operands_.empty())
+            {
+                return;
+            }          
             
             // Read Input
-            GetInputPort(0)->Receive(operands[0]);
-            GetInputPort(1)->Receive(operands[1]);
-            
-            Eigen::VectorXd A = Eigen::Map<Eigen::VectorXd>(operands[0].data.data(), 3);
-            Eigen::VectorXd B = Eigen::Map<Eigen::VectorXd>(operands[1].data.data(), 3);
+            GetInputPort(0)->Receive(operands_[0]);
+            Eigen::VectorXd out_result = Eigen::Map<Eigen::VectorXd>(operands_[0].data.data(), dimension_);
 
-            Eigen::VectorXd out_vec = A + B;
+            for(int i = 1; i < operands_.size(); i++)
+            {
+                GetInputPort(i)->Receive(operands_[i]);
+                Eigen::VectorXd operand = Eigen::Map<Eigen::VectorXd>(operands_[i].data.data(), dimension_);
+                switch (operation_types_[i])
+                {
+                case MINUS:
+                    operand = operand * -1; // Negate it
+                    break;
+                
+                default:
+                    break;
+                }
+
+                out_result = out_result + operand;
+            }
 
             // Map to output message.  Would love to have this be eigen types...
-            Eigen::Map<Eigen::VectorXd>(result.data.data(), result.length) = out_vec;
+            Eigen::Map<Eigen::VectorXd>(result_.data.data(), result_.length) = out_result;
 
+            GetOutputPort(0)->Send(result_);
 
-            GetOutputPort(0)->Send(result);
-
-            std::cout << "SENDING: " << out_vec << std::endl;
+            std::cout << "SENDING: " << out_result << std::endl;
         }
 
         // Update fucntion for next state from inputs
@@ -211,10 +249,14 @@ namespace Controllers::Systems
 
         }
 
-        //
-        //Eigen::VectorXd constant_;
-        double_vec_t operands[2]; 
-        double_vec_t result;
+        // Dimension of operand vectors.  Must be equal 
+        int dimension_;
+
+        std::vector<double_vec_t> operands_;
+
+        std::vector<OperandType> operation_types_;
+        
+        double_vec_t result_;
     };
 
 
