@@ -38,7 +38,7 @@
 
 
 
-namespace Controllers::Systems
+namespace Core::Systems
 {
     class BlockDiagram;
     class SystemBlock

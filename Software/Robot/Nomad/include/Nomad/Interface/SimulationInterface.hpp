@@ -28,31 +28,34 @@
 #include <stdint.h>
 
 // C++ System Files
-#include <iostream>
 #include <string>
 
 // Third Party Includes
 #include <Eigen/Dense>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
+#include <Systems/SystemBlock.hpp>
 #include <Nomad/MessageTypes/imu_data_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
 #include <Nomad/MessageTypes/joint_control_cmd_t.hpp>
 #include <Nomad/MessageTypes/sim_data_t.hpp>
 
+
+
+
 namespace Robot::Nomad::Interface
 {
-    class SimulationInterface : public Realtime::RealTimeTaskNode
+
+    class SimulationInterface : public Core::Systems::SystemBlock
     {
 
     public:
         enum OutputPort
         {
-            JOINT_STATE = 0, // Joint State Estimate from Plant
-            IMU_STATE = 1,   // IMU State from Sensors
-            COM_STATE = 2,   // Ground Truth Body Pose State from Sim
+            JOINT_STATE = 0,           // Joint State Estimate from Plant
+            IMU_STATE = 1,             // IMU State from Sensors
+            COM_STATE = 2,             // Ground Truth Body Pose State from Sim
             JOINT_CONTROL_CMD_OUT = 3, // Control Message for Servo -> Sim
             NUM_OUTPUTS = 4
         };
@@ -64,32 +67,92 @@ namespace Robot::Nomad::Interface
             NUM_INPUTS = 2
         };
 
-        // Plant Simulation Task Node
+        // Simulation Interface System Block Node
         // name = Task Name
-        // stack_size = Task Thread Stack Size
-        // rt_priority = Task Thread Priority
-        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-        SimulationInterface(const std::string &name = "Nomad_Simulation_Interface",
-                            const long rt_period = 10000,
-                            const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                            const int rt_core_id = -1,
-                            const unsigned int stack_size = PTHREAD_STACK_MIN);
+        SimulationInterface(const double T_s = -1) : SystemBlock("Nomad_Simulation_Interface", T_s)
+        {
+            // Map to output message.  Would love to have this be eigen types...
+            //Eigen::Map<Eigen::VectorXd>(constant_.data.data(), constant_.length) = value;
+
+            // Create Output Port
+            //output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONSTANT", T_s_));
+        }
+
+        std::shared_ptr<Communications::Port> GetCOMStateOut();
 
     protected:
-        // Overriden Run Function
-        virtual void Run();
 
-        // Pre-Run Setup Routine.  Setup any one time initialization here.
-        virtual void Setup();
+        // Update function for stateful outputs
+        void UpdateStateOutputs()
+        {
 
-        // Messages
+        }
+
+        // Update function for stateless outputs
+        void UpdateStatelessOutputs()
+        {
+            //GetOutputPort(0)->Send(constant_);
+        }
+
+        // Update fucntion for next state from inputs
+        void UpdateState()
+        {
+
+        }
+
         sim_data_t sim_data_;
         imu_data_t imu_data_;
         com_state_t com_state_;
         joint_state_t joint_state_;
         joint_control_cmd_t joint_command_;
     };
+
+    // class SimulationInterface : public Realtime::RealTimeTaskNode
+    // {
+
+    // public:
+    //     enum OutputPort
+    //     {
+    //         JOINT_STATE = 0, // Joint State Estimate from Plant
+    //         IMU_STATE = 1,   // IMU State from Sensors
+    //         COM_STATE = 2,   // Ground Truth Body Pose State from Sim
+    //         JOINT_CONTROL_CMD_OUT = 3, // Control Message for Servo -> Sim
+    //         NUM_OUTPUTS = 4
+    //     };
+
+    //     enum InputPort
+    //     {
+    //         JOINT_CONTROL_CMD_IN = 0, // Control Message for Servo -> Sim
+    //         SIM_DATA = 1,             // SIM Data State <- Sim
+    //         NUM_INPUTS = 2
+    //     };
+
+    //     // Plant Simulation Task Node
+    //     // name = Task Name
+    //     // stack_size = Task Thread Stack Size
+    //     // rt_priority = Task Thread Priority
+    //     // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
+    //     // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+    //     SimulationInterface(const std::string &name = "Nomad_Simulation_Interface",
+    //                         const long rt_period = 10000,
+    //                         const unsigned int rt_priority = Realtime::Priority::MEDIUM,
+    //                         const int rt_core_id = -1,
+    //                         const unsigned int stack_size = PTHREAD_STACK_MIN);
+
+    // protected:
+    //     // Overriden Run Function
+    //     virtual void Run();
+
+    //     // Pre-Run Setup Routine.  Setup any one time initialization here.
+    //     virtual void Setup();
+
+    //     // Messages
+    //     sim_data_t sim_data_;
+    //     imu_data_t imu_data_;
+    //     com_state_t com_state_;
+    //     joint_state_t joint_state_;
+    //     joint_control_cmd_t joint_command_;
+    // };
 } // namespace Robot::Nomad::Interface
 
 #endif // ROBOT_NOMAD_SIMULATIONINTERFACE_H_

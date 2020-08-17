@@ -36,7 +36,7 @@
 #include <Common/Time.hpp>
 #include <Realtime/RealTimeTask.hpp>
 
-namespace Controllers::Systems
+namespace Core::Systems
 {
 
     //using namespace RealTimeControl;

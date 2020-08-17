@@ -1,7 +1,7 @@
 /*
- * BlockDiagram.hpp
+ * ControlTask.hpp
  *
- *  Created on: August 15, 2020
+ *  Created on: August 17, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,8 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMAD_CORE_CONTROLLERS_BLOCKDIAGRAM_H_
-#define NOMAD_CORE_CONTROLLERS_BLOCKDIAGRAM_H_
+#ifndef ROBOT_NOMAD_CONTROLLERS_CONTROLTASK_H_
+#define ROBOT_NOMAD_CONTROLLERS_CONTROLTASK_H_
 
 // C System Files
 
@@ -32,34 +32,20 @@
 #include <memory>
 
 // Project Include Files
-#include <Realtime/RealTimeTask.hpp>
-#include <Systems/SystemBlock.hpp>
+#include <Systems/BlockDiagram.hpp>
 
-namespace Core::Systems
+namespace Robot::Nomad::Controllers
 {
-    class BlockDiagram : public Realtime::RealTimeTaskNode
+    class ControlTask : public Core::Systems::BlockDiagram
     {
 
     public:
         // Block Diagram Class For Systems Task Node
         // name = Task Name
         // T_s = Sample Time (-1 for inherit)
-        BlockDiagram(const std::string &name, const double T_s = -1);
+        ControlTask(const std::string &name, const double T_s = -1);
 
-        // Add system to diagram
-        void AddSystem(std::shared_ptr<SystemBlock> system);
-
-        // Get Output Port
-        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
-
-        // Get Input Port
-        std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
-
-        // Set Transport Configuration for Port
-        void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
-
-        // Connect Function
-        void Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input);
+        // Create Factory Function
 
     protected:
 
@@ -69,19 +55,7 @@ namespace Core::Systems
         // Pre-Run Setup Routine.  Setup any one time initialization here.
         virtual void Setup();
 
-        // Sampling Time (s)
-        double T_s_;
-
-        // Input Port Map
-        std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
-
-        // Output Port Map
-        std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
-
-        // Systems that belong to this block diagram
-        std::vector<std::shared_ptr<SystemBlock>> systems_;
-
     };
-} // namespace Systems
+} // namespace Core::Systems
 
-#endif // NOMAD_CORE_CONTROLLERS_BLOCKDIAGRAM_H_
+#endif // ROBOT_NOMAD_CONTROLLERS_CONTROLTASK_H_

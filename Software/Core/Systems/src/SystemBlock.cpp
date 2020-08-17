@@ -35,7 +35,7 @@
 // Project Includes
 #include <Systems/BlockDiagram.hpp>
 
-namespace Controllers::Systems
+namespace Core::Systems
 {
 
     SystemBlock::SystemBlock(const std::string &name, const double T_s) : name_(name), T_s_(T_s), T_(0), T_prev_(0)
