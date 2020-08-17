@@ -46,7 +46,7 @@ namespace Controllers::Systems
     }
     void BlockDiagram::Run()
     {
-       // std::cout << "Starting! " << std::endl;
+        std::cout << "Run Diagram: " << task_name_ << std::endl;
        // ::Systems::Time t;
         for (auto system : systems_)
         {

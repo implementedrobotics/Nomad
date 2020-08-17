@@ -26,21 +26,21 @@ int main(int argc, char *argv[])
 
 
     // Create Block Diagram
-    BlockDiagram diagram("Test", 0.002); //10hz
+    BlockDiagram diagram("Test", 0.5); //10hz
     diagram.SetStackSize(1024 * 1024);
     diagram.SetTaskPriority(Realtime::Priority::HIGH);
     diagram.SetCoreAffinity(2);
 
     Eigen::Vector3d vec = Eigen::Vector3d::Ones();
-    std::shared_ptr<ConstantBlock> cb = std::make_shared<ConstantBlock>(vec);
+    std::shared_ptr<ConstantBlock> cb = std::make_shared<ConstantBlock>(vec, 2.0);
     cb->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.A");
     diagram.AddSystem(cb);
 
-    std::shared_ptr<ConstantBlock> cb2 = std::make_shared<ConstantBlock>(vec*2);
+    std::shared_ptr<ConstantBlock> cb2 = std::make_shared<ConstantBlock>(vec*2, 2.0);
     cb2->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.B");
     diagram.AddSystem(cb2);
 
-    std::shared_ptr<AddBlock> ab = std::make_shared<AddBlock>();
+    std::shared_ptr<AddBlock> ab = std::make_shared<AddBlock>(2.0);
     ab->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.C");
     diagram.AddSystem(ab);
 

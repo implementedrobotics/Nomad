@@ -38,20 +38,21 @@
 namespace Controllers::Systems
 {
 
-    SystemBlock::SystemBlock(const std::string &name, const double T_s) : name_(name), T_s_(T_s)
+    SystemBlock::SystemBlock(const std::string &name, const double T_s) : name_(name), T_s_(T_s), T_(0), T_prev_(0)
     {
     }
     void SystemBlock::Run(double d_t)
     {
-        // TODO: Update time etc and skip if not ready
-        if(T_s_ > 0)
-        {
-            // Check Time to Run
-            // return;
+
+        // Update current time
+        T_ += d_t;
+
+        // Check Time to Run
+        if((T_s_ > 0) && ((T_prev_ + T_s_) > T_))
+        {   
+            return;     
         }
-        
-        // TODO: Skip here based on decimation
-       // std::cout << "Running System: " << name_ <<std::endl;
+
         // Update function for stateful outputs
         UpdateStateOutputs();
 
@@ -60,6 +61,9 @@ namespace Controllers::Systems
 
         // Update fucntion for next state from inputs
         UpdateState();
+
+        // Update last run time
+        T_prev_ = T_;
     }
 
     void SystemBlock::Setup()

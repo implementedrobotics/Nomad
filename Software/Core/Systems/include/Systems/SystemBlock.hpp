@@ -86,6 +86,12 @@ namespace Controllers::Systems
         // Sampling Time (s)
         double T_s_;
 
+        // Current Time (s)
+        double T_;
+
+        // Last Sample Time (s)
+        double T_prev_;
+
         // Parent Block Diagram/System
         BlockDiagram *parent_;
 
@@ -106,7 +112,7 @@ namespace Controllers::Systems
     public:
         // Constant System Block Node
         // name = Task Name
-        ConstantBlock(const Eigen::VectorXd &value) : SystemBlock("CONSTANT")
+        ConstantBlock(const Eigen::VectorXd &value, const double T_s = -1) : SystemBlock("CONSTANT", T_s)
         {
             constant_.length = value.size();
             constant_.data.resize(constant_.length);
@@ -158,7 +164,7 @@ namespace Controllers::Systems
 
         // Constant System Block Node
         // name = Task Name
-        AddBlock() : SystemBlock("ADD")
+        AddBlock(const double T_s = -1) : SystemBlock("ADD", T_s)
         {
             // Create Output Port
             output_port_map_[0] = Communications::Port::CreateOutput("ADD", T_s_);
