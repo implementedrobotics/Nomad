@@ -249,7 +249,7 @@ namespace Core::Systems
             std::cout << "SENDING: " << out_result << std::endl;
         }
 
-        // Update fucntion for next state from inputs
+        // Update function for next state from inputs
         void UpdateState()
         {
 

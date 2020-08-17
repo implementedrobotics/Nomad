@@ -1,38 +1,94 @@
 #include <Realtime/RealTimeTask.hpp>
 #include <Communications/Port.hpp>
-#include <Controllers/LegController.hpp>
-#include <Nomad/NomadControl.hpp>
-#include <Nomad/OperatorInterface/RemoteTeleop.hpp>
-#include <Common/Time.hpp>
-#include <Nomad/NomadRobot.hpp>
-#include <Nomad/FSM/NomadControlFSM.hpp>
-#include <Nomad/NomadDynamics.hpp>
-#include <Controllers/StateEstimator.hpp>
+#include <Systems/BlockDiagram.hpp>
+#include <Systems/SystemBlock.hpp>
 #include <Nomad/Interface/SimulationInterface.hpp>
-#include <Nomad/Estimators/FusedLegKinematicsStateEstimator.hpp>
+#include <Common/Time.hpp>
 #include <memory>
 
 #include <unistd.h>
 #include <sys/mman.h>
 
-using Communications::Port;
-using Communications::PortManager;
-using Realtime::RealTimeTaskManager;
-using Realtime::RealTimeTaskNode;
+using namespace Core::Systems;
 
-using Robot::Nomad::NomadRobot;
-using Robot::Nomad::Controllers::NomadControl;
-using Robot::Nomad::Dynamics::NomadDynamics;
+// using Communications::Port;
+// using Communications::PortManager;
+// using Realtime::RealTimeTaskManager;
+// using Realtime::RealTimeTaskNode;
+
+// using Robot::Nomad::NomadRobot;
+// using Robot::Nomad::Controllers::NomadControl;
+// using Robot::Nomad::Dynamics::NomadDynamics;
 using Robot::Nomad::Interface::SimulationInterface;
 
-using Controllers::Locomotion::LegController;
+// using Controllers::Locomotion::LegController;
 
-using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
+// using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
 
-using OperatorInterface::Teleop::RemoteTeleop;
+//using OperatorInterface::Teleop::RemoteTeleop;
 
 int main(int argc, char *argv[])
 {
+
+    // Create Manager Class Instance Singleton.
+    // Must make sure this is done before any thread tries to access.
+    // And thus tries to allocate memory inside the thread heap.
+    Realtime::RealTimeTaskManager::Instance();
+    Communications::PortManager::Instance();
+
+    // if (!Realtime::RealTimeTaskManager::EnableRTMemory(500 * 1024 * 1024)) // 500MB
+    // {
+    //     // exit(-2);
+    //     std::cout << "Error configuring Realtime Memory Requiremets!  Realtime Execution NOT guaranteed." << std::endl;
+    // }
+
+
+    // Create Block Diagram
+    BlockDiagram diagram("Test", 0.5); //10hz
+    diagram.SetStackSize(1024 * 1024);
+    diagram.SetTaskPriority(Realtime::Priority::HIGH);
+    diagram.SetCoreAffinity(2);
+
+    std::shared_ptr<SimulationInterface> sim = std::make_shared<SimulationInterface>(1.0);
+    diagram.AddSystem(sim);
+
+    // Eigen::Vector3d vec = Eigen::Vector3d::Ones();
+    // std::shared_ptr<ConstantBlock> cb = std::make_shared<ConstantBlock>(vec, 2.0);
+    // cb->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.A");
+    // diagram.AddSystem(cb);
+
+    // std::shared_ptr<ConstantBlock> cb2 = std::make_shared<ConstantBlock>(vec*2, 2.0);
+    // cb2->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.B");
+    // diagram.AddSystem(cb2);
+
+    // std::shared_ptr<AddBlock> ab = std::make_shared<AddBlock>(2.0);
+    // ab->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.C");
+    // diagram.AddSystem(ab);
+
+    // ab->AddInput(AddBlock::ADD, 3);
+    // ab->AddInput(AddBlock::MINUS, 3);
+    // ab->AddInput(AddBlock::ADD, 3);
+
+    // diagram.Connect(cb->GetOutputPort(0), ab->GetInputPort(0));
+    // diagram.Connect(cb2->GetOutputPort(0), ab->GetInputPort(1));
+    // diagram.Connect(cb2->GetOutputPort(0), ab->GetInputPort(2));
+
+    // diagram.Connect(ab->GetOutputPort(0), ab2->GetInputPort(0));
+    // diagram.Connect(cb2->GetOutputPort(0), ab2->GetInputPort(1));
+
+    // Start Run
+    diagram.Start();
+
+    // Print Threads
+    Realtime::RealTimeTaskManager::Instance()->PrintActiveTasks();
+
+    // Start Inproc Context Process Thread
+    Communications::PortManager::Instance()->GetInprocContext()->start();
+
+    getchar();
+
+    diagram.Stop();
+
     // // Task Periods.
     // int hz_25 = 25;
     // int hz_500 = 500;

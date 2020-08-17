@@ -40,7 +40,7 @@ namespace Robot::Nomad::Controllers
     {
 
     public:
-        // Block Diagram Class For Systems Task Node
+        // Block Diagram Class For Control Task Node
         // name = Task Name
         // T_s = Sample Time (-1 for inherit)
         ControlTask(const std::string &name, const double T_s = -1);

@@ -221,7 +221,10 @@ namespace Realtime
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
 
             // Wait for timer to laps
-            read(fd, &num_exp, sizeof(uint64_t));
+            if(read(fd, &num_exp, sizeof(uint64_t)) < 1)
+            {
+                // Error In Timer Read
+            }
             
             auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
             
