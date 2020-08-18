@@ -240,7 +240,7 @@ namespace Realtime
             //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
            // if((task->tick_count_ % 1000) == 0)
            // {
-            //    std::cout << "Total Task Time: " <<  total_elapsed << " Frequency: " <<  1.0 / ((total_elapsed) * 1e-6) << " HZ" << std::endl;
+               // std::cout << "Total Task Time: " <<  total_elapsed << " Frequency: " <<  1.0 / ((total_elapsed) * 1e-6) << " HZ" << std::endl;
                 //std::cout << "Stats : " << stats.Min() << " | " << stats.Mean() << " | " << stats.StandardDeviation() << " | " << stats.Max() << std::endl;
            // }
             //std::cout << "Missed: " << missed << std::endl;
@@ -327,6 +327,7 @@ namespace Realtime
 
         // Give thread some time to init
         usleep(1e5);
+        return thread_status_;
     }
 
     void RealTimeTaskNode::Stop()

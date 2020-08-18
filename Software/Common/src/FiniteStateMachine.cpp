@@ -55,6 +55,7 @@ namespace Common
     bool FiniteStateMachine::SetInitialState(StatePtr state)
     {
         initial_state_ = current_state_ = state;
+        return true;
     }
 
     bool FiniteStateMachine::Reset(double current_time)
@@ -79,12 +80,15 @@ namespace Common
         }
         current_state_ = initial_state_;
         current_state_->Enter(current_time);
+
+        return true;
     }
 
     bool FiniteStateMachine::Stop(double current_time)
     {
         // 
         end_time_ = current_time;//start_time_ + elapsed_time_;
+        return true;
     }
     bool FiniteStateMachine::Run(double dt)
     {
@@ -112,6 +116,7 @@ namespace Common
         
         elapsed_time_ += dt;
         cycle_count_++;
+        return true;
     }
     void FiniteStateMachine::TransitionTo(const StatePtr &state)
     {

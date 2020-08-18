@@ -75,7 +75,7 @@ namespace Robot::Nomad::Interface
         memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
         {
             //Systems::Time t;
-            //GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+            GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
             //std::cout << "OUT SEND: " << std::endl;
         }
 

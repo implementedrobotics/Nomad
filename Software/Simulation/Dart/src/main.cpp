@@ -43,14 +43,14 @@ public:
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
 
     // TODO: Pass IP Address as a parameter
-    context_ = std::make_unique<zcm::ZCM>("ipc");
+    context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     std::cout << "Nomad DART Sim connecting." << std::endl;
 
     context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
     //context_->start();
     // TODO: Publish state back
-    pub_context_ = std::make_unique<zcm::ZCM>("ipc");
+    pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
     sequence_num_ = 0;
 
