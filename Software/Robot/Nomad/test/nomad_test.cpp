@@ -3,6 +3,9 @@
 #include <Systems/BlockDiagram.hpp>
 #include <Systems/SystemBlock.hpp>
 #include <Nomad/Interface/SimulationInterface.hpp>
+#include <Nomad/Estimators/FusedLegKinematicsStateEstimator.hpp>
+#include <Nomad/NomadDynamics.hpp>
+#include <Nomad/NomadRobot.hpp>
 #include <Common/Time.hpp>
 #include <memory>
 
@@ -11,19 +14,19 @@
 
 using namespace Core::Systems;
 
-// using Communications::Port;
+using Communications::Port;
 // using Communications::PortManager;
 // using Realtime::RealTimeTaskManager;
 // using Realtime::RealTimeTaskNode;
 
-// using Robot::Nomad::NomadRobot;
+using Robot::Nomad::NomadRobot;
 // using Robot::Nomad::Controllers::NomadControl;
-// using Robot::Nomad::Dynamics::NomadDynamics;
+using Robot::Nomad::Dynamics::NomadDynamics;
 using Robot::Nomad::Interface::SimulationInterface;
 
 // using Controllers::Locomotion::LegController;
 
-// using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
+using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
 
 //using OperatorInterface::Teleop::RemoteTeleop;
 
@@ -44,37 +47,45 @@ int main(int argc, char *argv[])
 
 
     // Create Block Diagram
-    BlockDiagram diagram("Test", 0.5); //10hz
+    BlockDiagram diagram("Test", 0.001); //10hz
     diagram.SetStackSize(1024 * 1024);
     diagram.SetTaskPriority(Realtime::Priority::HIGH);
     diagram.SetCoreAffinity(2);
 
-    std::shared_ptr<SimulationInterface> sim = std::make_shared<SimulationInterface>(1.0);
+    std::shared_ptr<SimulationInterface> sim = std::make_shared<SimulationInterface>(0.001);
+    sim->SetPortOutput(SimulationInterface::COM_STATE, Port::TransportType::NATIVE, "native", "nomad.com_state");
+
     diagram.AddSystem(sim);
 
-    // Eigen::Vector3d vec = Eigen::Vector3d::Ones();
-    // std::shared_ptr<ConstantBlock> cb = std::make_shared<ConstantBlock>(vec, 2.0);
-    // cb->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.A");
-    // diagram.AddSystem(cb);
+    std::shared_ptr<FusedLegKinematicsStateEstimator> estimate = std::make_shared<FusedLegKinematicsStateEstimator>(0.001);
+    estimate->SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT, Port::TransportType::NATIVE, "native", "nomad.body.state");
+    diagram.AddSystem(estimate);
 
-    // std::shared_ptr<ConstantBlock> cb2 = std::make_shared<ConstantBlock>(vec*2, 2.0);
-    // cb2->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.B");
-    // diagram.AddSystem(cb2);
 
-    // std::shared_ptr<AddBlock> ab = std::make_shared<AddBlock>(2.0);
-    // ab->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.C");
-    // diagram.AddSystem(ab);
+   // Nomad Dynamics Computation Task
+   std::shared_ptr<NomadDynamics> dynamics = std::make_shared<NomadDynamics>(0.001);
 
-    // ab->AddInput(AddBlock::ADD, 3);
-    // ab->AddInput(AddBlock::MINUS, 3);
-    // ab->AddInput(AddBlock::ADD, 3);
+    // Load DART from URDF
+    std::string urdf = std::getenv("NOMAD_RESOURCE_PATH");
+    urdf.append("/Robot/Nomad.urdf");
 
-    // diagram.Connect(cb->GetOutputPort(0), ab->GetInputPort(0));
-    // diagram.Connect(cb2->GetOutputPort(0), ab->GetInputPort(1));
-    // diagram.Connect(cb2->GetOutputPort(0), ab->GetInputPort(2));
+    //std::cout << "Load: " << urdf << std::endl;
+    dart::dynamics::SkeletonPtr robot = NomadRobot::Load(urdf);
 
-    // diagram.Connect(ab->GetOutputPort(0), ab2->GetInputPort(0));
-    // diagram.Connect(cb2->GetOutputPort(0), ab2->GetInputPort(1));
+    dynamics->SetRobotSkeleton(robot->cloneSkeleton());
+    dynamics->SetPortOutput(NomadDynamics::OutputPort::FULL_STATE, Port::TransportType::NATIVE, "native", "nomad.robot.state");
+
+    
+    // Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::JOINT_STATE),
+    //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE));
+
+    // Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::BODY_STATE_HAT),
+    //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
+
+    diagram.AddSystem(dynamics);
+    
+    diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));
+    diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
 
     // Start Run
     diagram.Start();
@@ -129,8 +140,8 @@ int main(int argc, char *argv[])
     // nomad_simulation_interface.SetPortOutput(SimulationInterface::JOINT_CONTROL_CMD_OUT,
     //                                          Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
 
-    // Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::SIM_DATA),
-    //           SIM_DATA);
+     //Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::SIM_DATA),
+      //         SIM_DATA);
 
     // // Start Dynamics
     // // Nomad Dynamics Computation Task

@@ -35,7 +35,7 @@
 #include <Eigen/Dense>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
+#include <Systems/SystemBlock.hpp>
 #include <Nomad/MessageTypes/imu_data_t.hpp>
 #include <Nomad/MessageTypes/com_state_t.hpp>
 #include <Nomad/MessageTypes/joint_state_t.hpp>
@@ -43,7 +43,7 @@
 
 namespace Robot::Nomad::Estimators
 {
-    class FusedLegKinematicsStateEstimator : public Realtime::RealTimeTaskNode
+    class FusedLegKinematicsStateEstimator : public Core::Systems::SystemBlock
     {
 
     public:
@@ -65,23 +65,20 @@ namespace Robot::Nomad::Estimators
         };
 
         // Base Class State Estimator Task Node
-        // name = Task Name
-        // stack_size = Task Thread Stack Size
-        // rt_priority = Task Thread Priority
-        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-        FusedLegKinematicsStateEstimator(const std::string &name = "Leg_Kin_State_Estimator_Task",
-                                         const long rt_period = 10000,
-                                         const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                                         const int rt_core_id = -1,
-                                         const unsigned int stack_size = PTHREAD_STACK_MIN);
+        // T_s = System sampling time
+        FusedLegKinematicsStateEstimator(const double T_s = -1);
 
     protected:
-        // Overriden Run Function
-        virtual void Run();
 
-        // Pre-Run Setup Routine.  Setup any one time initialization here.
-        virtual void Setup();
+            // Update function for stateful outputs
+        void UpdateStateOutputs();
+
+        // Update function for stateless outputs
+        void UpdateStatelessOutputs();
+
+        // Update fucntion for next state from inputs
+        void UpdateState();
+        
 
         // (Input) Actuated Joint State Estimate
         joint_state_t joint_state_;

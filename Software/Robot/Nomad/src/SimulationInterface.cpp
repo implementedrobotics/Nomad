@@ -35,6 +35,7 @@
 // Third-Party Includes
 
 // Project Includes
+const std::string sim_url = "udpm://239.255.76.67:7667?ttl=0";
 
 namespace Robot::Nomad::Interface
 {
@@ -43,7 +44,9 @@ namespace Robot::Nomad::Interface
     {
         // Create Ports
         // Sim Inputs
-        input_port_map_[InputPort::SIM_DATA] = Communications::Port::CreateInput<sim_data_t>("SIM_DATA");
+        std::shared_ptr<Communications::Port> sim_in = Communications::Port::CreateInput<sim_data_t>("SIM_DATA");
+        sim_in->SetTransport(Communications::Port::TransportType::UDP, sim_url, "nomad.sim.data");
+        input_port_map_[InputPort::SIM_DATA] = sim_in;
 
         // Control Inputs
         input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port::CreateInput<joint_control_cmd_t>("JOINT_CONTROL");
@@ -53,6 +56,8 @@ namespace Robot::Nomad::Interface
         output_port_map_[OutputPort::JOINT_STATE] = Communications::Port::CreateOutput("JOINT_STATE");
         output_port_map_[OutputPort::COM_STATE] = Communications::Port::CreateOutput("POSE_STATE");
         output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL");
+
+        SetPortOutput(SimulationInterface::JOINT_CONTROL_CMD_OUT,  Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
     }
 
     // Update function for stateful outputs
@@ -65,8 +70,29 @@ namespace Robot::Nomad::Interface
     void SimulationInterface::UpdateStatelessOutputs()
     {
         // Send Data
-        std::cout << "RUNNING" << std::endl;
+
+        // Publish/Forward to Sim
+        memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
+        {
+            //Systems::Time t;
+            //GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
+            //std::cout << "OUT SEND: " << std::endl;
+        }
+
         // Receive Data
+        //std::cout << "RUNNING" << std::endl;
+        GetInputPort(InputPort::SIM_DATA)->Receive(sim_data_);
+
+        memcpy(com_state_.pos, sim_data_.com_pos, sizeof(double) * 3);
+        memcpy(com_state_.theta, sim_data_.com_theta, sizeof(double)*3);
+        memcpy(com_state_.vel, sim_data_.com_vel, sizeof(double)*3);
+        memcpy(com_state_.omega, sim_data_.com_omega, sizeof(double)*3);
+        memcpy(com_state_.orientation, sim_data_.com_orientation, sizeof(double)*4);
+        GetOutputPort(OutputPort::COM_STATE)->Send(com_state_);
+
+
+        //std::cout << sim_data_.sequence_num;
+        
     }
 
     // Update function for next state from inputs

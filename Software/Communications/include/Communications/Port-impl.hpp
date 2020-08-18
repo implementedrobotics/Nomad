@@ -243,7 +243,7 @@ namespace Communications
         }
         if(transport_type_ != NATIVE)
         {
-            context_->flush();
+            //context_->flush();
         }
         // auto start_time = std::chrono::high_resolution_clock::now(); 
 

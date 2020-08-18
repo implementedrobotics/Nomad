@@ -43,14 +43,14 @@ public:
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
 
     // TODO: Pass IP Address as a parameter
-    context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+    context_ = std::make_unique<zcm::ZCM>("ipc");
 
     std::cout << "Nomad DART Sim connecting." << std::endl;
 
     context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
     //context_->start();
     // TODO: Publish state back
-    pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
+    pub_context_ = std::make_unique<zcm::ZCM>("ipc");
 
     sequence_num_ = 0;
 
@@ -59,12 +59,12 @@ public:
 
   void ReceiveCommand()
   {
-    //std::cout << "START RECEIVE" << std::endl;
+    std::cout << "START RECEIVE" << std::endl;
     //std::unique_lock <std::mutex> lock(mtx);
     //cv.wait(lock);
     context_->handle();
 
-    //std::cout << "Recevied! " << std::endl;
+    std::cout << "Recevied! " << std::endl;
   }
 
   void customPreStep()
@@ -85,7 +85,7 @@ public:
    // std::cout << joint_torques_cmd << std::endl;
 
   //  std::cout << "OUT OF PRE STEP!" << std::endl;
-    nomad_->Skeleton()->setForces(joint_torques_cmd);
+   // nomad_->Skeleton()->setForces(joint_torques_cmd);
 
     //context_->handle();
     
@@ -230,7 +230,7 @@ public:
     int rc = pub_context_->publish("nomad.sim.data", &sim_data);
 
     //std::cout << " OUT SIM: " << sim_data.sequence_num << std::endl;
-    pub_context_->flush();
+    //pub_context_->flush();
   }
 
 protected:
