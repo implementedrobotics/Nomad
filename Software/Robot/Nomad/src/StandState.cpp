@@ -46,7 +46,7 @@ namespace Robot::Nomad::FSM
     }
     void StandState::Run_(double dt)
     {
-       // std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+        //std::cout << "Stand Running: " << elapsed_time_ << std::endl;
         
         // if (input_->Receive(nomad_state_))
         // {

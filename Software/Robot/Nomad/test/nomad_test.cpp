@@ -4,6 +4,7 @@
 #include <Systems/SystemBlock.hpp>
 #include <Nomad/Interface/SimulationInterface.hpp>
 #include <Nomad/Estimators/FusedLegKinematicsStateEstimator.hpp>
+#include <Nomad/NomadControl.hpp>
 #include <Nomad/NomadDynamics.hpp>
 #include <Nomad/NomadRobot.hpp>
 #include <Common/Time.hpp>
@@ -20,7 +21,7 @@ using Communications::Port;
 // using Realtime::RealTimeTaskNode;
 
 using Robot::Nomad::NomadRobot;
-// using Robot::Nomad::Controllers::NomadControl;
+using Robot::Nomad::Controllers::NomadControl;
 using Robot::Nomad::Dynamics::NomadDynamics;
 using Robot::Nomad::Interface::SimulationInterface;
 
@@ -83,10 +84,15 @@ int main(int argc, char *argv[])
     //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
 
     diagram.AddSystem(dynamics);
+
+    std::shared_ptr<NomadControl> control = std::make_shared<NomadControl>(0.001);
+    control->SetPortOutput(NomadControl::OutputPort::LEG_COMMAND, Port::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
     
+    diagram.AddSystem(control);
+
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));
     diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
-
+    //diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
     // Start Run
     diagram.Start();
 

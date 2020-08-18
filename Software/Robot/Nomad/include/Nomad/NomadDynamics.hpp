@@ -71,11 +71,7 @@ namespace Robot::Nomad::Dynamics
         };
 
         // Base Class Nomad Dynamics Task Node
-        // name = Task Name
-        // stack_size = Task Thread Stack Size
-        // rt_priority = Task Thread Priority
-        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
+        // T_s = System sampling time
         NomadDynamics(const double T_s = -1);
 
         // Set Dart Robot Skeleton

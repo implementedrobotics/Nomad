@@ -40,7 +40,7 @@ namespace Robot::Nomad::FSM
     }
     void OffState::Run_(double dt)
     {
-       // std::cout << "Off Running"
+       //std::cout << "Off Running" << std::endl;
         //          << " " << data_->control_mode << std::endl;
 
         // Set mode to idle
