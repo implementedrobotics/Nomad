@@ -31,6 +31,7 @@
 #include <assert.h>
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <chrono>
 #include <map>
@@ -220,7 +221,7 @@ namespace Realtime
             task->Run();
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
 
-            // Wait for timer to laps
+            // Wait for timer to lapse
             if(read(fd, &num_exp, sizeof(uint64_t)) < 1)
             {
                 // Error In Timer Read
@@ -228,21 +229,21 @@ namespace Realtime
             
             auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
             
-            stats.Add((double)total_elapsed);
+            stats.Add((double)1.0 / ((total_elapsed) * 1e-6) );
 
             //std::cout << "Name: " << task->task_name_ << " | " << stats.StandardDeviation() << " | " << stats.Mean() << " | " << task->rt_period_ << " | " << total_elapsed <<  std::endl;
-            //std::cout << "Stats : " << stats.Min() << " | " << stats.Mean() << " | " << stats.StandardDeviation() << " | " << stats.Max() << std::endl;
+          //  std::cout << "Stats : " << std::setw(6) << stats.Min() << " | " << std::setw(6) << stats.Mean() << " | " << std::setw(6) << stats.StandardDeviation() << " | " << std::setw(6) << stats.Max() << std::endl;
             
             // Do timing statistics
             task->tick_count_++;
 
             //std::cout << "Period: " << task->rt_period_ << std::endl;
             //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
-           // if((task->tick_count_ % 1000) == 0)
-           // {
-               // std::cout << "Total Task Time: " <<  total_elapsed << " Frequency: " <<  1.0 / ((total_elapsed) * 1e-6) << " HZ" << std::endl;
+            // if((task->tick_count_ % 1000) == 0)
+            //{
+               //std::cout << "Total Task Time: " <<  total_elapsed << " Frequency: " <<  1.0 / ((total_elapsed) * 1e-6) << " HZ" << std::endl;
                 //std::cout << "Stats : " << stats.Min() << " | " << stats.Mean() << " | " << stats.StandardDeviation() << " | " << stats.Max() << std::endl;
-           // }
+           //}
             //std::cout << "Missed: " << missed << std::endl;
             
             //}
@@ -279,33 +280,33 @@ namespace Realtime
                       << "POSIX Thread failed to set stack size!" << std::endl;
             return thread_status_;
         }
-        // // TODO: Back off RT Priority until PREEMPT Kernel.
-        // // Set Scheduler Policy to RT(SCHED_FIFO)
-        // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set schedule policy!" << std::endl;
-        //     return thread_status_;
-        // }
-        // // // Set Thread Priority
-        // param.sched_priority = rt_priority_;
-        // thread_status_ = pthread_attr_setschedparam(&attr, &param);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set thread priority!" << std::endl;
-        //     return thread_status_;
-        // }
+        // TODO: Back off RT Priority until PREEMPT Kernel.
+        // Set Scheduler Policy to RT(SCHED_FIFO)
+        thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set schedule policy!" << std::endl;
+            return thread_status_;
+        }
+        // // Set Thread Priority
+        param.sched_priority = rt_priority_;
+        thread_status_ = pthread_attr_setschedparam(&attr, &param);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set thread priority!" << std::endl;
+            return thread_status_;
+        }
 
-        // // Use Scheduling Policy from Attributes.
-        // thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
-        //     return thread_status_;
-        // }
+        // Use Scheduling Policy from Attributes.
+        thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
+            return thread_status_;
+        }
 
         // Create our pthread.  Pass an instance of 'this' class as a parameter
         thread_status_ = pthread_create(&thread_id_, &attr, &RunTask, this);
