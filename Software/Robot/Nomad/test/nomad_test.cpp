@@ -46,21 +46,20 @@ int main(int argc, char *argv[])
         std::cout << "Error configuring Realtime Memory Requiremets!  Realtime Execution NOT guaranteed." << std::endl;
     }
 
-
     // Create Block Diagram
     BlockDiagram diagram("Test", 0.001); //10hz
     diagram.SetStackSize(1024 * 1024);
     diagram.SetTaskPriority(Realtime::Priority::HIGHEST);
-    diagram.SetCoreAffinity(5);
+    diagram.SetCoreAffinity(-1);
 
     std::shared_ptr<SimulationInterface> sim = std::make_shared<SimulationInterface>(0.001);
     sim->SetPortOutput(SimulationInterface::COM_STATE, Port::TransportType::NATIVE, "native", "nomad.com_state");
 
-    //diagram.AddSystem(sim);
+    diagram.AddSystem(sim);
 
     std::shared_ptr<FusedLegKinematicsStateEstimator> estimate = std::make_shared<FusedLegKinematicsStateEstimator>(0.001);
     estimate->SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT, Port::TransportType::NATIVE, "native", "nomad.body.state");
-    //diagram.AddSystem(estimate);
+    diagram.AddSystem(estimate);
 
 
    // Nomad Dynamics Computation Task
@@ -83,16 +82,20 @@ int main(int argc, char *argv[])
     // Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::BODY_STATE_HAT),
     //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
 
-   // diagram.AddSystem(dynamics);
+    diagram.AddSystem(dynamics);
 
     std::shared_ptr<NomadControl> control = std::make_shared<NomadControl>(0.001);
+             
     control->SetPortOutput(NomadControl::OutputPort::LEG_COMMAND, Port::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
     
-    //diagram.AddSystem(control);
+    diagram.AddSystem(control);
 
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));
-    diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
-    //diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
+    
+     diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
+    diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
+    
+     std::cout << "Starting Here!" << std::endl;
     // Start Run
     diagram.Start();
 
