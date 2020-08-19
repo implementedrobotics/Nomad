@@ -38,8 +38,13 @@
 namespace Core::Systems
 {
 
-    SystemBlock::SystemBlock(const std::string &name, const double T_s) : name_(name), T_s_(T_s), T_(0), T_prev_(0)
+    SystemBlock::SystemBlock(const std::string &name, const double T_s) : name_(name), T_s_(T_s), T_(0), T_prev_(0), parent_(nullptr)
     {
+        for (auto &port : output_port_map_)
+        {
+            port = nullptr;
+            //port->Bind();
+        }
     }
     void SystemBlock::Run(double d_t)
     {

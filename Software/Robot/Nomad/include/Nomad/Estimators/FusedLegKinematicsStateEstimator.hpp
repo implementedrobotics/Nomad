@@ -70,7 +70,7 @@ namespace Robot::Nomad::Estimators
 
     protected:
 
-            // Update function for stateful outputs
+        // Update function for stateful outputs
         void UpdateStateOutputs();
 
         // Update function for stateless outputs

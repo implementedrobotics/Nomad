@@ -46,13 +46,14 @@ namespace Robot::Nomad::Interface
         // Sim Inputs
         std::shared_ptr<Communications::Port> sim_in = Communications::Port::CreateInput<sim_data_t>("SIM_DATA");
         sim_in->SetTransport(Communications::Port::TransportType::UDP, sim_url, "nomad.sim.data");
+        // TODO: SetPortInput
         input_port_map_[InputPort::SIM_DATA] = sim_in;
 
         // Control Inputs
         input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port::CreateInput<joint_control_cmd_t>("JOINT_CONTROL");
 
         // Outputs
-        output_port_map_[OutputPort::IMU_STATE] = Communications::Port::CreateOutput("IMU_STATE");
+        output_port_map_[OutputPort::IMU_DATA] = Communications::Port::CreateOutput("IMU_DATA");
         output_port_map_[OutputPort::JOINT_STATE] = Communications::Port::CreateOutput("JOINT_STATE");
         output_port_map_[OutputPort::COM_STATE] = Communications::Port::CreateOutput("POSE_STATE");
         output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL");
@@ -69,6 +70,12 @@ namespace Robot::Nomad::Interface
     // Update function for stateless outputs
     void SimulationInterface::UpdateStatelessOutputs()
     {
+        static uint64_t last_control_time = 0; 
+        static int lost_control = 0;
+
+        // Get Input Leg Command
+        GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_);
+
         // Send Data
 
         // Publish/Forward to Sim
@@ -88,10 +95,23 @@ namespace Robot::Nomad::Interface
         memcpy(com_state_.vel, sim_data_.com_vel, sizeof(double)*3);
         memcpy(com_state_.omega, sim_data_.com_omega, sizeof(double)*3);
         memcpy(com_state_.orientation, sim_data_.com_orientation, sizeof(double)*4);
+
+        memcpy(imu_data_.omega, sim_data_.imu_omega, sizeof(double)*3);
+        memcpy(imu_data_.orientation, sim_data_.imu_orientation, sizeof(double)*4);
+        memcpy(imu_data_.accel, sim_data_.imu_accel, sizeof(double)*3);
+
+        memcpy(joint_state_.q, sim_data_.q, sizeof(double)*12);
+        memcpy(joint_state_.q_dot, sim_data_.q_dot, sizeof(double)*12);
+        memcpy(joint_state_.tau, sim_data_.tau, sizeof(double)*12);
+
         GetOutputPort(OutputPort::COM_STATE)->Send(com_state_);
+        GetOutputPort(OutputPort::IMU_DATA)->Send(imu_data_);
+        GetOutputPort(OutputPort::JOINT_STATE)->Send(joint_state_);
 
 
         //std::cout << sim_data_.sequence_num;
+        std::cout << "Loop Frequency: " << 1000000.0 / (double)(Systems::Time::GetTimeStamp() - last_control_time) << std::endl;
+        last_control_time = Systems::Time::GetTimeStamp();
         
     }
 

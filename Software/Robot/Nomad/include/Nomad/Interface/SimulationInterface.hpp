@@ -54,7 +54,7 @@ namespace Robot::Nomad::Interface
         enum OutputPort
         {
             JOINT_STATE = 0,           // Joint State Estimate from Plant
-            IMU_STATE = 1,             // IMU State from Sensors
+            IMU_DATA = 1,             // IMU State from Sensors
             COM_STATE = 2,             // Ground Truth Body Pose State from Sim
             JOINT_CONTROL_CMD_OUT = 3, // Control Message for Servo -> Sim
             NUM_OUTPUTS = 4

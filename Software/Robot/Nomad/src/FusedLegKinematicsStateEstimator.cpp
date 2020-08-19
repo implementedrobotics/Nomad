@@ -57,7 +57,7 @@ namespace Robot::Nomad::Estimators
         output_port_map_[OutputPort::BODY_STATE_ACTUAL] = Communications::Port::CreateOutput("BODY_STATE_ACTUAL");
     }
 
-        // Update function for stateful outputs
+    // Update function for stateful outputs
     void FusedLegKinematicsStateEstimator::UpdateStateOutputs()
     {
         // Receive Data
