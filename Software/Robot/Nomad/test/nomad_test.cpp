@@ -92,10 +92,9 @@ int main(int argc, char *argv[])
 
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));
     
-     diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
+    diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
     diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
     
-     std::cout << "Starting Here!" << std::endl;
     // Start Run
     diagram.Start();
 
