@@ -103,7 +103,7 @@ namespace Robot::Nomad::FSM
         // Setup Transitions
         off->AddTransitionEvent(transition_idle, idle);
         idle->AddTransitionEvent(transition_stand, stand);
-        // stand->AddTransitionEvent(down_event, sit);
+        stand->AddTransitionEvent(transition_idle, idle);
         // sit->AddTransitionEvent(up_event, stand);
 
         // Add the states to the FSM

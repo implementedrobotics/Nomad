@@ -42,7 +42,7 @@
 
 namespace Robot::Nomad::Controllers
 {
-    NomadControl::NomadControl(const double T_s)  : SystemBlock("Leg_Kin_State_Estimator_Task", T_s)
+    NomadControl::NomadControl(const double T_s)  : SystemBlock("FSM_Controller", T_s)
     {
         // Create Ports
         // Primary Controller Input Port
@@ -64,10 +64,11 @@ namespace Robot::Nomad::Controllers
     // Update function for stateless outputs
     void NomadControl::UpdateStatelessOutputs()
     {
+        // Read teleop data
         GetInputPort(InputPort::TELEOP_DATA)->Receive(teleop_data_);
 
         // Update Data
-        // TODO: Map port into FSM
+        // TODO: Map/Forward port into FSM
         nomad_control_FSM_->GetData()->control_mode = teleop_data_.control_mode;
         //nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
@@ -82,9 +83,11 @@ namespace Robot::Nomad::Controllers
 
     }
 
-
     void NomadControl::Setup()
     {
+        // Run Base Setup Routine
+        SystemBlock::Setup();
+
         // Start FSM
         nomad_control_FSM_->Start(Systems::Time::GetTime<double>());
 

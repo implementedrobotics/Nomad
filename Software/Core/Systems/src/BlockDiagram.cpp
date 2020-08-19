@@ -46,8 +46,8 @@ namespace Core::Systems
     }
     void BlockDiagram::Run()
     {
-       // std::cout << "Run Diagram: " << task_name_ << std::endl;
-        ::Systems::Time t;
+        //std::cout << "Run Diagram: " << task_name_ << std::endl;
+        //::Systems::Time t;
         for (auto system : systems_)
         {
             system->Run(T_s_);

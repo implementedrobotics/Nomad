@@ -8,6 +8,7 @@
 #include <Nomad/NomadControl.hpp>
 #include <Nomad/NomadDynamics.hpp>
 #include <Nomad/NomadRobot.hpp>
+#include <Nomad/OperatorInterface/RemoteTeleop.hpp>
 #include <Common/Time.hpp>
 #include <memory>
 
@@ -30,7 +31,7 @@ using Controllers::Locomotion::LegController;
 
 using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
 
-//using OperatorInterface::Teleop::RemoteTeleop;
+using OperatorInterface::Teleop::RemoteTeleop;
 
 int main(int argc, char *argv[])
 {
@@ -58,8 +59,6 @@ int main(int argc, char *argv[])
     sim->SetPortOutput(SimulationInterface::COM_STATE, Port::TransportType::NATIVE, "native", "nomad.com_state");
     sim->SetPortOutput(SimulationInterface::IMU_DATA, Port::TransportType::NATIVE, "native", "nomad.imu");
     sim->SetPortOutput(SimulationInterface::JOINT_STATE, Port::TransportType::NATIVE, "native", "nomad.joint_state");
-
-
     diagram.AddSystem(sim);
 
     // Estimator
@@ -78,14 +77,14 @@ int main(int argc, char *argv[])
 
     dynamics->SetRobotSkeleton(robot->cloneSkeleton());
     dynamics->SetPortOutput(NomadDynamics::OutputPort::FULL_STATE, Port::TransportType::NATIVE, "native", "nomad.robot.state");
-
+    diagram.AddSystem(dynamics);
     
     // Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::JOINT_STATE),
     //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE));
 
     // Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::BODY_STATE_HAT),
     //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
-    diagram.AddSystem(dynamics);
+    
 
     // Control FSM Task
     std::shared_ptr<NomadControl> control = std::make_shared<NomadControl>(0.001);
@@ -97,15 +96,22 @@ int main(int argc, char *argv[])
     leg_controller->SetPortOutput(LegController::OutputPort::SERVO_COMMAND, Port::TransportType::NATIVE, "native", "nomad.control.servo_cmd");
     diagram.AddSystem(leg_controller);
 
+    std::shared_ptr<RemoteTeleop> teleop = std::make_shared<RemoteTeleop>(0.1);
+    teleop->SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA, Port::TransportType::NATIVE, "native", "nomad.teleop.data");
+    diagram.AddSystem(teleop);
 
     // Connect the graph
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::JOINT_STATE));
-    diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE), estimate->GetInputPort(NomadDynamics::InputPort::JOINT_STATE));
-
+    diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::JOINT_STATE), dynamics->GetInputPort(NomadDynamics::InputPort::JOINT_STATE));
     diagram.Connect(estimate->GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT), dynamics->GetInputPort(NomadDynamics::BODY_STATE_HAT));
+
+    diagram.Connect(dynamics->GetOutputPort(NomadDynamics::OutputPort::FULL_STATE), control->GetInputPort(NomadControl::InputPort::FULL_STATE));
+    
     diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), leg_controller->GetInputPort(LegController::InputPort::LEG_COMMAND));
-    diagram.Connect(control->GetOutputPort(LegController::OutputPort::SERVO_COMMAND), sim->GetInputPort(SimulationInterface::InputPort::JOINT_CONTROL_CMD_IN));
+    diagram.Connect(leg_controller->GetOutputPort(LegController::OutputPort::SERVO_COMMAND), sim->GetInputPort(SimulationInterface::InputPort::JOINT_CONTROL_CMD_IN));
+    
+    diagram.Connect(teleop->GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA), control->GetInputPort(NomadControl::InputPort::TELEOP_DATA));
 
     // Start Run
     diagram.Start();
@@ -147,17 +153,6 @@ int main(int argc, char *argv[])
     //                                   Port::TransportType::NATIVE, "native", "nomad.robot.state");
 
 
-    // // State Estimator Task
-    // FusedLegKinematicsStateEstimator estimator_node("Estimator_Task");
-    // estimator_node.SetStackSize(1024 * 1024); // 1MB
-    // estimator_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // estimator_node.SetTaskFrequency(hz_1000); // 1000 HZ
-    // estimator_node.SetCoreAffinity(-1);
-    // estimator_node.SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT,
-    //                              Port::TransportType::NATIVE, "native", "nomad.body.state");
-
-    // estimator_node.SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_ACTUAL,
-    //                              Port::TransportType::NATIVE, "native", "nomad.body.state2");
 
     // Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::FOOT_STATE),
     //           nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
@@ -171,85 +166,10 @@ int main(int argc, char *argv[])
     // Port::Map(estimator_node.GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE),
     //           nomad_simulation_interface.GetOutputPort(SimulationInterface::OutputPort::COM_STATE));
 
-    // //estimator_node.Start();
-
-    // // Remote Teleop Task
-    // RemoteTeleop teleop_node("Remote_Teleop");
-    // teleop_node.SetStackSize(1024 * 1024); // 1MB
-    // teleop_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // teleop_node.SetTaskFrequency(hz_25); // 50 HZ
-    // teleop_node.SetCoreAffinity(-1);
-    // teleop_node.SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA,
-    //                           Port::TransportType::NATIVE, "native", "nomad.teleop.data");
-
-    // //teleop_node.Start();
-
-    // // FSM Task
-    // NomadControl nomad_controller_node("Nomad_Controller");
-
-    // nomad_controller_node.SetStackSize(1024 * 1024); // 1MB
-    // nomad_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // nomad_controller_node.SetTaskFrequency(hz_1000); // 50 HZ
-    // nomad_controller_node.SetCoreAffinity(-1);
-    // nomad_controller_node.SetPortOutput(NomadControl::OutputPort::LEG_COMMAND,
-    //                                     Communications::Port::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
-
-    // Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::TELEOP_DATA),
-    //           teleop_node.GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA));
 
     // Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::FULL_STATE),
     //           nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
 
-    // //nomad_controller_node.Start();
-
-    // // Port Mappings
-    // //Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::BODY_STATE_HAT),
-    // //          estimator_node.GetOutputPort(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT));
-
-    // // Leg Controller Task
-    // LegController leg_controller_node("Leg_Controller");
-
-    // leg_controller_node.SetStackSize(1024 * 1024); // 1MB
-    // leg_controller_node.SetTaskPriority(Realtime::Priority::MEDIUM);
-    // leg_controller_node.SetTaskFrequency(hz_1000); // 50 HZ
-    // leg_controller_node.SetCoreAffinity(-1);
-    // leg_controller_node.SetPortOutput(LegController::OutputPort::SERVO_COMMAND,
-    //                                   Communications::Port::TransportType::NATIVE, "native", "nomad.control.servo_cmd");
-
-    // Port::Map(leg_controller_node.GetInputPort(LegController::InputPort::LEG_COMMAND),
-    //           nomad_controller_node.GetOutputPort(NomadControl::OutputPort::LEG_COMMAND));
-
-    // Port::Map(nomad_simulation_interface.GetInputPort(SimulationInterface::InputPort::JOINT_CONTROL_CMD_IN),
-    //           leg_controller_node.GetOutputPort(LegController::OutputPort::SERVO_COMMAND));
-
-    // //leg_controller_node.Start();
-
-    // nomad_simulation_interface.Start();
-
-    // // Print Threads
-    // RealTimeTaskManager::Instance()->PrintActiveTasks();
-
-    // // Start Inproc Context Process Thread
-    // PortManager::Instance()->GetInprocContext()->start();
-
-    // // // Run for 10 Seconds
-    // // int j = 0;
-    // // while (j < 2)
-    // // {
-
-    // //     usleep(1e6);
-    // //     j++;
-    // // }
-
-    // getchar();
-
-    // //nomad.Stop();
-    // // scope.Stop();
-    // // scope2.Stop();
-    // //  ref_generator_node.Stop();
-    // // convex_mpc_node.Stop();
-    // // estimator_node.Stop();
-    // // teleop_node.Stop();
 
     // //  scope.DumpCSV("test.csv");
     // //scope2.DumpCSV("test2.csv");

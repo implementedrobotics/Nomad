@@ -91,7 +91,7 @@ namespace OperatorInterface::Teleop
         // Setup Transitions
         off->AddTransitionEvent(start_event, idle);
         idle->AddTransitionEvent(up_event, stand);
-        stand->AddTransitionEvent(down_event, sit);
+        stand->AddTransitionEvent(down_event, idle);
         sit->AddTransitionEvent(up_event, stand);
 
         // Add the stated to the FSM

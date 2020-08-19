@@ -39,14 +39,10 @@
 
 namespace OperatorInterface::Teleop
 {
-    RemoteTeleop::RemoteTeleop(const std::string &name,
-                               const long rt_period,
-                               unsigned int rt_priority,
-                               const int rt_core_id,
-                               const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
+    RemoteTeleop::RemoteTeleop(const double T_s)  : SystemBlock("Gamepad_Teleop", T_s)
     {
         // Create Ports
-        output_port_map_[OutputPort::TELEOP_DATA] = Communications::Port::CreateOutput("TELEOP_DATA", rt_period_);
+        output_port_map_[OutputPort::TELEOP_DATA] = Communications::Port::CreateOutput("TELEOP_DATA");
 
         // Create Gamepad Object
         // TODO: Needs to be a parameter for game pad device
@@ -56,10 +52,17 @@ namespace OperatorInterface::Teleop
         gamepad_FSM_ = std::make_unique<GamepadTeleopFSM>(gamepad_);
     }
 
-    void RemoteTeleop::Run()
+
+    void RemoteTeleop::UpdateStateOutputs()
+    {
+        // Receive Data
+    }
+
+    // Update function for stateless outputs
+    void RemoteTeleop::UpdateStatelessOutputs()
     {
         // Run FSM
-        gamepad_FSM_->Run(0);
+        gamepad_FSM_->Run(T_s_);
 
         // Get Mode from FSM
         teleop_data_.control_mode = gamepad_FSM_->GetMode(); // Mode Type
@@ -68,12 +71,18 @@ namespace OperatorInterface::Teleop
         GetOutputPort(OutputPort::TELEOP_DATA)->Send(teleop_data_);
     }
 
+    // Update function for next state from inputs
+    void RemoteTeleop::UpdateState()
+    {
+
+    }
+
     void RemoteTeleop::Setup()
     {
+        // Run base class setup
+        SystemBlock::Setup();
+
         // Start FSM
         gamepad_FSM_->Start(Systems::Time::GetTime<double>());
-
-        // TODO: Autobind NON-NULL output port
-        GetOutputPort(OutputPort::TELEOP_DATA)->Bind();
     }
 } // namespace OperatorInterface::Teleop

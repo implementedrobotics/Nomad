@@ -91,7 +91,9 @@ namespace Controllers::Locomotion
 
         // TODO: Wait for some timeout, if control deadline missed -> ZERO OUTPUTS
         // Read Command
-        GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_);
+        bool input = GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_);
+
+        //std::cout << "INPUT: " << input << " | " << leg_command_input_.sequence_num << std::endl;
 
         // Setup Vars
         // Read any Feed Forwards

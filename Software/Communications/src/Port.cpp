@@ -109,6 +109,7 @@ namespace Communications
 
         // Add to listeners
         output->listeners_.push_back(input);
+        return true;
 
        // std::cout << "Map: " << input->transport_url_ << " " << input->channel_ << std::endl;
     }

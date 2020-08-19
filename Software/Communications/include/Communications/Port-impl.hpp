@@ -245,19 +245,22 @@ namespace Communications
         {
             //context_->flush();
         }
-        // auto start_time = std::chrono::high_resolution_clock::now(); 
+        auto start_time = std::chrono::high_resolution_clock::now(); 
 
-        // PortHandler<T> *handler = static_cast<PortHandler<T> *>(handler_);
-        // while(!handler->Read(rx_msg, timeout))
-        // {
-        //     auto time_now = std::chrono::high_resolution_clock::now(); 
-        //     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
-        //     if(duration >= timeout)
-        //         return false;
-        //     //usleep(50);
-        // }
-        // return true;
-        return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
+        PortHandler<T> *handler = static_cast<PortHandler<T> *>(handler_);
+        bool read_status = false;
+        while(!(read_status = handler->Read(rx_msg, timeout)))
+        {
+            auto time_now = std::chrono::high_resolution_clock::now(); 
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(time_now - start_time); 
+            if(duration >= timeout)
+                return false;
+
+            // TODO: Verify how to make a less busy wait here...
+            usleep(25);
+        }
+        return read_status;
+        //return static_cast<PortHandler<T> *>(handler_)->Read(rx_msg, timeout);
     }
 
 } // namespace Communications

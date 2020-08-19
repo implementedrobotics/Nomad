@@ -30,8 +30,11 @@
 // Third Party Includes
 
 // Project Include Files
-
 #include <Nomad/FSM/IdleState.hpp>
+#include <Nomad/NomadControl.hpp>
+#include <Controllers/Messages/leg_controller_cmd_t.hpp>
+
+using Robot::Nomad::Controllers::NomadControl;
 
 namespace Robot::Nomad::FSM
 {
@@ -41,11 +44,30 @@ namespace Robot::Nomad::FSM
     void IdleState::Run_(double dt)
     {
        // std::cout << "Idle Running" << std::endl;
+
         // Set mode to idle
+
+        // Zero out leg command
+        leg_controller_cmd_t leg_command;
+        memset(&leg_command, 0, sizeof(leg_controller_cmd_t));
+
+        // Output Leg Command
+        GetOutputPort(NomadControl::OutputPort::LEG_COMMAND)->Send(leg_command);
+
     }
     void IdleState::Enter_(double current_time)
     {
         std::cout << "Entering Idle State!!!" << std::endl;
         // current_mode_ = ControlMode::OFF;
+        // Zero out leg command
+        leg_controller_cmd_t leg_command;
+        memset(&leg_command, 0, sizeof(leg_controller_cmd_t));
+
+        Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Zero(12);
+        Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 25;
+
+        // Output Leg Command
+        GetOutputPort(NomadControl::OutputPort::LEG_COMMAND)->Send(leg_command);
+
     }
 } // namespace Robot::Nomad::FSM

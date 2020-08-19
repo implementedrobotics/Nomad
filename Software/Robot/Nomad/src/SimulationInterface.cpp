@@ -75,20 +75,20 @@ namespace Robot::Nomad::Interface
 
         // Get Input Leg Command
         GetInputPort(InputPort::JOINT_CONTROL_CMD_IN)->Receive(joint_command_);
-
+        //std::cout << "Got Input!! - " << joint_command_.sequence_num << std::endl;
         // Send Data
 
         // Publish/Forward to Sim
-        memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
-        {
+        //memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
+        //{
             //Systems::Time t;
             GetOutputPort(OutputPort::JOINT_CONTROL_CMD_OUT)->Send(joint_command_);
             //std::cout << "OUT SEND: " << std::endl;
-        }
+        //}
 
         // Receive Data
         //std::cout << "RUNNING" << std::endl;
-        GetInputPort(InputPort::SIM_DATA)->Receive(sim_data_);
+        GetInputPort(InputPort::SIM_DATA)->Receive(sim_data_, std::chrono::microseconds(5000));
 
         memcpy(com_state_.pos, sim_data_.com_pos, sizeof(double) * 3);
         memcpy(com_state_.theta, sim_data_.com_theta, sizeof(double)*3);
@@ -110,7 +110,7 @@ namespace Robot::Nomad::Interface
 
 
         //std::cout << sim_data_.sequence_num;
-        std::cout << "Loop Frequency: " << 1000000.0 / (double)(Systems::Time::GetTimeStamp() - last_control_time) << std::endl;
+        //std::cout << "Loop Frequency: " << 1000000.0 / (double)(Systems::Time::GetTimeStamp() - last_control_time) << " AND " << got << std::endl;
         last_control_time = Systems::Time::GetTimeStamp();
         
     }

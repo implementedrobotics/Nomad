@@ -59,12 +59,12 @@ public:
 
   void ReceiveCommand()
   {
-    std::cout << "START RECEIVE" << std::endl;
+    //std::cout << "START RECEIVE" << std::endl;
     //std::unique_lock <std::mutex> lock(mtx);
     //cv.wait(lock);
     context_->handle();
 
-    std::cout << "Recevied! " << std::endl;
+    //std::cout << "Recevied! " << std::endl;
   }
 
   void customPreStep()
@@ -85,7 +85,7 @@ public:
    // std::cout << joint_torques_cmd << std::endl;
 
   //  std::cout << "OUT OF PRE STEP!" << std::endl;
-   // nomad_->Skeleton()->setForces(joint_torques_cmd);
+   nomad_->Skeleton()->setForces(joint_torques_cmd);
 
     //context_->handle();
     

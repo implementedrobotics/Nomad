@@ -70,6 +70,9 @@ namespace Core::Systems
         // Overriden Setup Function
         virtual void Setup();
 
+        // Return System Name
+        const std::string& Name() const { return name_;}
+
     protected:
 
         static const int MAX_PORTS = 16;

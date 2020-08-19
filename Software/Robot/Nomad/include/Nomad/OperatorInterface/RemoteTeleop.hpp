@@ -33,7 +33,7 @@
 #include <memory>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
+#include <Systems/SystemBlock.hpp>
 #include <Nomad/OperatorInterface/GamepadInterface.hpp>
 #include <Nomad/OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
 #include <Nomad/MessageTypes/teleop_data_t.hpp>
@@ -42,7 +42,7 @@
 // Also this a good place to put test trajectory setpoints since we don't have a remote control UI yet.
 namespace OperatorInterface::Teleop
 {
-    class RemoteTeleop : public Realtime::RealTimeTaskNode
+    class RemoteTeleop : public Core::Systems::SystemBlock
     {
 
     public:
@@ -62,20 +62,20 @@ namespace OperatorInterface::Teleop
 
         // Base Class Remote Teleop Task Node
         // name = Task Name
-        // stack_size = Task Thread Stack Size
-        // rt_priority = Task Thread Priority
-        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-        RemoteTeleop(const std::string &name = "Remote_Teleop",
-                     const long rt_period = 10000,
-                     const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                     const int rt_core_id = -1,
-                     const unsigned int stack_size = PTHREAD_STACK_MIN);
+        // T_s = System sampling time
+        RemoteTeleop(const double T_s = -1);
 
     protected:
-        // Overriden Run Function
-        virtual void Run();
 
+        // Update function for stateful outputs
+        void UpdateStateOutputs();
+
+        // Update function for stateless outputs
+        void UpdateStatelessOutputs();
+
+        // Update fucntion for next state from inputs
+        void UpdateState();
+        
         // Pre-Run Setup Routine.  Setup any one time initialization here.
         virtual void Setup();
 
