@@ -27,14 +27,17 @@
 #include <pthread.h>
 #include <sched.h>
 #include <unistd.h>
+
 #include <assert.h>
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <chrono>
 #include <map>
 #include <sys/mman.h>
 #include <sys/resource.h>
+#include <sys/timerfd.h>
 #include <malloc.h>
 
 
@@ -68,7 +71,7 @@
 namespace Realtime
 {
     RealTimeTaskNode::RealTimeTaskNode(const std::string &name,
-                                       const long rt_period,
+                                       const double rt_period,
                                        unsigned int rt_priority,
                                        const int rt_core_id,
                                        const unsigned int stack_size) : task_name_(name),
@@ -83,9 +86,6 @@ namespace Realtime
     {
         // Add to task manager
         RealTimeTaskManager::Instance()->AddTask(this);
-    
-        // Sample Rate (Seconds)
-        dt_nominal_ = rt_period_ * 1e-3;
     }
 
     RealTimeTaskNode::~RealTimeTaskNode()
@@ -190,11 +190,29 @@ namespace Realtime
         // Call Setup
         task->Setup();
 
+        // Setup timing stats
         Statistics::RollingStats<double> stats;
+
+        // Create Timer for thread period sleep
+        int fd = timerfd_create(CLOCK_MONOTONIC, 0);
+        int secs = (int)task->rt_period_;
+        int nanosecs = (int)(std::fmod(task->rt_period_, 1.0)*1e9);
+        
+        itimerspec timer;
+        timer.it_interval.tv_sec = secs;
+        timer.it_value.tv_sec = secs;
+        timer.it_value.tv_nsec = nanosecs;
+        timer.it_interval.tv_nsec = nanosecs;
+
+        timerfd_settime(fd, 0, &timer, nullptr);
+
+        uint64_t num_exp = 0;
 
         // TODO:  Check Control deadlines as well.  If run over we can throw exception here
         while (1)
         {
+            //{
+            //Systems::Time t;
             if (task->IsCancelled())
             {
                 break;
@@ -202,24 +220,33 @@ namespace Realtime
             auto start = std::chrono::high_resolution_clock::now();
             task->Run();
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
-            long long total_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-            //std::cout << "Run Time: " << total_us << std::endl;
 
-            long int remainder = TaskDelay(task->rt_period_ - total_us);
-
+            // Wait for timer to lapse
+            if(read(fd, &num_exp, sizeof(uint64_t)) < 1)
+            {
+                // Error In Timer Read
+            }
+            
             auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
             
-            stats.Add((double)total_elapsed);
+            stats.Add((double)1.0 / ((total_elapsed) * 1e-6) );
 
             //std::cout << "Name: " << task->task_name_ << " | " << stats.StandardDeviation() << " | " << stats.Mean() << " | " << task->rt_period_ << " | " << total_elapsed <<  std::endl;
-            //std::cout << "Stats : " << stats.Min() << " | " << stats.Mean() << " | " << stats.StandardDeviation() << " | " << stats.Max() << std::endl;
+          //  std::cout << "Stats : " << std::setw(6) << stats.Min() << " | " << std::setw(6) << stats.Mean() << " | " << std::setw(6) << stats.StandardDeviation() << " | " << std::setw(6) << stats.Max() << std::endl;
             
             // Do timing statistics
             task->tick_count_++;
 
             //std::cout << "Period: " << task->rt_period_ << std::endl;
             //std::cout << "Target: " <<  task->rt_period_ - total_us << " Overrun: " << remainder << " Total: " << task->rt_period_ - total_us + remainder << std::endl;
-            //std::cout << "Total Task Time: " <<  task->rt_period_ - total_us + remainder + total_us << " Frequency: " <<  1.0 / ((task->rt_period_ - total_us + remainder + total_us) * 1e-6) << " HZ" << std::endl;
+            // if((task->tick_count_ % 1000) == 0)
+            //{
+               //std::cout << "Total Task Time: " <<  total_elapsed << " Frequency: " <<  1.0 / ((total_elapsed) * 1e-6) << " HZ" << std::endl;
+                //std::cout << "Stats : " << stats.Min() << " | " << stats.Mean() << " | " << stats.StandardDeviation() << " | " << stats.Max() << std::endl;
+           //}
+            //std::cout << "Missed: " << missed << std::endl;
+            
+            //}
         }
         std::cout << "[RealTimeTaskNode]: "
                   << "Ending Task: " << task->task_name_ << std::endl;
@@ -255,31 +282,31 @@ namespace Realtime
         }
         // TODO: Back off RT Priority until PREEMPT Kernel.
         // Set Scheduler Policy to RT(SCHED_FIFO)
-        // thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set schedule policy!" << std::endl;
-        //     return thread_status_;
-        // }
-        // // // Set Thread Priority
-        // param.sched_priority = rt_priority_;
-        // thread_status_ = pthread_attr_setschedparam(&attr, &param);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set thread priority!" << std::endl;
-        //     return thread_status_;
-        // }
+        thread_status_ = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set schedule policy!" << std::endl;
+            return thread_status_;
+        }
+        // // Set Thread Priority
+        param.sched_priority = rt_priority_;
+        thread_status_ = pthread_attr_setschedparam(&attr, &param);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set thread priority!" << std::endl;
+            return thread_status_;
+        }
 
-        // // Use Scheduling Policy from Attributes.
-        // thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-        // if (thread_status_)
-        // {
-        //     std::cout << "[RealTimeTaskNode]: "
-        //               << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
-        //     return thread_status_;
-        // }
+        // Use Scheduling Policy from Attributes.
+        thread_status_ = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+        if (thread_status_)
+        {
+            std::cout << "[RealTimeTaskNode]: "
+                      << "POSIX Thread failed to set scheduling policy from attributes!" << std::endl;
+            return thread_status_;
+        }
 
         // Create our pthread.  Pass an instance of 'this' class as a parameter
         thread_status_ = pthread_create(&thread_id_, &attr, &RunTask, this);
@@ -301,6 +328,7 @@ namespace Realtime
 
         // Give thread some time to init
         usleep(1e5);
+        return thread_status_;
     }
 
     void RealTimeTaskNode::Stop()
@@ -351,17 +379,18 @@ namespace Realtime
         }
 
         // Get the start time of the delay.  To be used to know over and underruns
-        clock_gettime(CLOCK_MONOTONIC_RAW, &ats);
+        clock_gettime(CLOCK_MONOTONIC, &ats);
 
         // Add the delay offset to know when this SHOULD end.
         ats.tv_sec += delay.tv_sec;
         ats.tv_nsec += delay.tv_nsec;
 
         // Sleep for delay
-        clock_nanosleep(CLOCK_MONOTONIC_RAW, 0, &delay, &remainder);
+        clock_nanosleep(CLOCK_MONOTONIC, 0, &delay, &remainder);
 
         // Get the time now after the delay.
-        clock_gettime(CLOCK_MONOTONIC_RAW, &remainder);
+        clock_gettime(CLOCK_MONOTONIC, &remainder);
+
 
         // Compute difference and calculcate over/underrun
         remainder.tv_sec -= ats.tv_sec;

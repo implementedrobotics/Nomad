@@ -40,22 +40,19 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 0.5;
+    double stance_time = 1.0;
     StandState::StandState() : NomadState("STAND", 2)
     {
     }
     void StandState::Run_(double dt)
     {
-       // std::cout << "Stand Running: " << elapsed_time_ << std::endl;
+        //std::cout << "Stand Running: " << elapsed_time_ << std::endl;
         
         // if (input_->Receive(nomad_state_))
         // {
         // }
         static full_state_t nomad_state_;
-        if(!GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_, std::chrono::microseconds(5000)))
-        {
-            //std::cout << "FAILED TO RECEIVED" << std::endl;
-        }
+        GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_);
 
         // Zero out leg command
         leg_controller_cmd_t leg_command;
@@ -72,7 +69,7 @@ namespace Robot::Nomad::FSM
             // Copy Initial
             Eigen::Vector3d foot_pos = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos[foot_id]);
             Eigen::Vector3d foot_pos_desired = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos[foot_id]);
-            foot_pos_desired.z() = -stance_height;
+            foot_pos_desired.z() = h_t;
 
             //std::cout << "HT" << foot_pos_desired << std::endl;
 
@@ -80,12 +77,22 @@ namespace Robot::Nomad::FSM
             Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos[foot_id], 3) = foot_pos;
 
             //std::cout << leg_command.foot_pos_desired[2] << std::endl;
-            Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 200;
-            Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 25;
+
+            // F = ma
+            // Eigen::Vector3d force_ff = 8.0 / 4 * Eigen::Vector3d(0, 0, -9.81);
+            // if (elapsed_time_ <= stance_time)
+            // {
+            //     //std::cout << g_Controller->Skeleton()->getMass() << " : " << std::endl;
+            //     force_ff += 8.0 / 4 * Eigen::Vector3d(0, 0, -a_t);
+            // }
+            // Eigen::Map<Eigen::VectorXd>(&leg_command.force_ff [foot_id], 3) = force_ff;
 
             //std::cout << "Got: " << leg_command.foot_pos_desired[foot_id] << std::endl;
             //std::cout << "Got2: " << nomad_state_initial_.foot_pos[leg_id * 3+2] << std::endl;
         }
+
+        Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 850;
+        Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 200;
         
 
         // Get Trimmed Jaobian

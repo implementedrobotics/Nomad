@@ -39,12 +39,12 @@
 #include <Controllers/Messages/joint_control_cmd_t.hpp>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
+#include <Systems/SystemBlock.hpp>
 
 namespace Controllers::Locomotion
 {
 
-    class LegController : public Realtime::RealTimeTaskNode
+    class LegController : public Core::Systems::SystemBlock
     {
 
     public:
@@ -63,23 +63,19 @@ namespace Controllers::Locomotion
         // FL = 0, FR = 1, RL = 2, RR = 3
 
         // Base Class Leg ControllerTask Node
-        // name = Task Name
-        // stack_size = Task Thread Stack Size
-        // rt_priority = Task Thread Priority
-        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-        LegController(const std::string &name = "Leg_Controller_Task",
-                      const long rt_period = 10000,
-                      const unsigned int rt_priority = Realtime::Priority::HIGH,
-                      const int rt_core_id = -1,
-                      const unsigned int stack_size = PTHREAD_STACK_MIN);
+        // T_s = System sampling time
+        LegController(const double T_s = -1);
 
     protected:
-        // Overriden Run Function
-        virtual void Run();
+        
+        // Update function for stateful outputs
+        void UpdateStateOutputs();
 
-        // Pre-Run Setup Routine.  Setup any one time initialization here.
-        virtual void Setup();
+        // Update function for stateless outputs
+        void UpdateStatelessOutputs();
+
+        // Update fucntion for next state from inputs
+        void UpdateState();
 
         // Number of legs
         unsigned int num_legs_;

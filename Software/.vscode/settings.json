@@ -76,6 +76,12 @@
         "readerwriter": "cpp",
         "graphicscontext": "cpp",
         "shader": "cpp",
-        "eventqueue": "cpp"
+        "eventqueue": "cpp",
+        "any": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "bit": "cpp",
+        "charconv": "cpp",
+        "variant": "cpp"
     }
 }

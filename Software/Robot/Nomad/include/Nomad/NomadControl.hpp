@@ -42,13 +42,13 @@
 #include <Nomad/MessageTypes/teleop_data_t.hpp>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
+#include <Systems/SystemBlock.hpp>
 #include <Controllers/LegController.hpp>
 #include <Nomad/FSM/NomadControlFSM.hpp>
 
 namespace Robot::Nomad::Controllers
 {
-    class NomadControl : public Realtime::RealTimeTaskNode
+    class NomadControl : public Core::Systems::SystemBlock
     {
 
     public:
@@ -66,23 +66,22 @@ namespace Robot::Nomad::Controllers
         };
 
         // Base Class Nomad Control Task Node
-        // name = Task Name
-        // stack_size = Task Thread Stack Size
-        // rt_priority = Task Thread Priority
-        // rt_period = Task Execution Period (microseconds), default = 10000uS/100hz
-        // rt_core_id = CPU Core to pin the task.  -1 for no affinity
-        NomadControl(const std::string &name = "Nomad_Control_FSM",
-                     const long rt_period = 10000,
-                     const unsigned int rt_priority = Realtime::Priority::MEDIUM,
-                     const int rt_core_id = -1,
-                     const unsigned int stack_size = PTHREAD_STACK_MIN);
+        // T_s = System sampling time
+        NomadControl(const double T_s = -1);
 
     protected:
-        // Overriden Run Function
-        virtual void Run();
 
-        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        // Do any pre run setup here
         virtual void Setup();
+
+        // Update function for stateful outputs
+        void UpdateStateOutputs();
+
+        // Update function for stateless outputs
+        void UpdateStatelessOutputs();
+
+        // Update fucntion for next state from inputs
+        void UpdateState();
 
         // (Input) Full Robot State
         full_state_t full_state_;

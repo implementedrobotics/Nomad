@@ -36,7 +36,6 @@
 #include <zcm/zcm-cpp.hpp>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
 #include <Controllers/LegController.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
@@ -44,12 +43,7 @@
 
 namespace Robot::Nomad::Dynamics
 {
-
-    NomadDynamics::NomadDynamics(const std::string &name,
-                                 const long rt_period,
-                                 unsigned int rt_priority,
-                                 const int rt_core_id,
-                                 const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size)
+    NomadDynamics::NomadDynamics(const double T_s)  : SystemBlock("Nomad_Dynamics_Handler", T_s)
     {
 
         // Matrix pre setup
@@ -64,30 +58,24 @@ namespace Robot::Nomad::Dynamics
 
         // Create Ports
         // Input Ports
-        input_port_map_[InputPort::BODY_STATE_HAT] = Communications::Port::CreateInput<com_state_t>("BODY_STATE_HAT", rt_period_);
-        input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
+        input_port_map_[InputPort::BODY_STATE_HAT] = Communications::Port::CreateInput<com_state_t>("BODY_STATE_HAT");
+        input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE");
 
         // Output Ports
-        output_port_map_[OutputPort::FULL_STATE] = Communications::Port::CreateOutput("FULL_STATE", rt_period_);
+        output_port_map_[OutputPort::FULL_STATE] = Communications::Port::CreateOutput("FULL_STATE");
     }
 
-    void NomadDynamics::Run()
+    void NomadDynamics::UpdateStateOutputs()
     {
-        // TODO: Time this function  Would be nice if we could run this at 2x sample rate
-        // Read Inputs
-        if (!GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_, std::chrono::microseconds(1000000)))
-        {
-            std::cout << "[DYNAMICS]: FAILED TO GET SYNCED BODY STATE MESSAGE!!: " << std::endl;
-            // TODO: What to do.
-        }
+        // Receive Data
+    }
 
-        if (!GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_, std::chrono::microseconds(1000000)))
-        {
-            std::cout << "[DYNAMICS]: FAILED TO GET SYNCED JOINT STATE MESSAGE!!: " << std::endl;
-            // TODO: What to do.
-        }
+    // Update function for stateless outputs
+    void NomadDynamics::UpdateStatelessOutputs()
+    {
+        GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_);
+        GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_);
 
-        //std::cout << "JOINT STATE: " << joint_state_.sequence_num << std::endl;
         //std::cout << "BODY STATE: " << com_state_.sequence_num << std::endl;
 
         // Setup some state vectors
@@ -149,26 +137,16 @@ namespace Robot::Nomad::Dynamics
         // std::cout << " End " << std::endl;
 
         // Publish Leg Command
-        bool send_status = GetOutputPort(OutputPort::FULL_STATE)->Send(full_state_);
+        GetOutputPort(OutputPort::FULL_STATE)->Send(full_state_);
 
-       //std::cout << "[NomadDynamics]: Publishing: Send: " << send_status << std::endl;
     }
 
-    void NomadDynamics::Setup()
+    // Update function for next state from inputs
+    void NomadDynamics::UpdateState()
     {
-        bool outputs_bound = true;
-        for (int i = 0; i < NUM_OUTPUTS; i++) // Bind all of our output ports
-        {
-            if (!GetOutputPort(i)->Bind())
-            {
-                outputs_bound = false;
-            }
-        }
 
-        std::cout << "[NomadDynamics]: "
-                  << "Nomad Dynamics  Publisher Running!: " << outputs_bound << std::endl;
     }
-
+    
     void NomadDynamics::SetRobotSkeleton(dart::dynamics::SkeletonPtr robot)
     {
         robot_ = robot;

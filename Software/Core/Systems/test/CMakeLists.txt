@@ -3,6 +3,13 @@ include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/Core/
 set(SYSTEMS_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Systems/test/dynamical_system_test.cpp)
 set(SYSTEMS_TEST_LIBS Systems)
 
+set(DIAGRAM_TEST_SOURCES ${PROJECT_SOURCE_DIR}/Core/Systems/test/diagram_test.cpp)
+set(DIAGRAM_TEST_LIBS Systems Controllers Common Communications zcm)
+
 add_executable(dynamical_system_test ${SYSTEMS_TEST_SOURCES})
 target_link_libraries(dynamical_system_test ${SYSTEMS_TEST_LIBS} )
+
+add_executable(diagram_test ${DIAGRAM_TEST_SOURCES})
+target_link_libraries(diagram_test ${DIAGRAM_TEST_LIBS} )
+
 #add_test(QuickStartTest test_main COMMAND test_main)

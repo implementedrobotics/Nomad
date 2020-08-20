@@ -1,8 +1,7 @@
-
 /*
- * OffState.cpp
+ * ControlTask.hpp
  *
- *  Created on: June 27, 2020
+ *  Created on: August 17, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,32 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef ROBOT_NOMAD_CONTROLLERS_CONTROLTASK_H_
+#define ROBOT_NOMAD_CONTROLLERS_CONTROLTASK_H_
+
 // C System Files
 
 // C++ System Files
 #include <iostream>
-
-// Third Party Includes
+#include <string>
+#include <memory>
 
 // Project Include Files
+#include <Systems/BlockDiagram.hpp>
 
-#include <Nomad/FSM/OffState.hpp>
-
-namespace Robot::Nomad::FSM
+namespace Robot::Nomad::Controllers
 {
-    OffState::OffState() : NomadState("OFF", 0)
+    class ControlTask : public Core::Systems::BlockDiagram
     {
-    }
-    void OffState::Run_(double dt)
-    {
-       //std::cout << "Off Running" << std::endl;
-        //          << " " << data_->control_mode << std::endl;
 
-        // Set mode to idle
-    }
-    void OffState::Enter_(double current_time)
-    {
-        std::cout << "Entering Off State!!!!" << std::endl;
-        // current_mode_ = ControlMode::OFF;
-    }
-} // namespace Robot::Nomad::FSM
+    public:
+        // Block Diagram Class For Control Task Node
+        // name = Task Name
+        // T_s = Sample Time (-1 for inherit)
+        ControlTask(const std::string &name, const double T_s = -1);
+
+        // Create Factory Function
+
+    protected:
+
+        // Overriden Run Function
+        virtual void Run();
+
+        // Pre-Run Setup Routine.  Setup any one time initialization here.
+        virtual void Setup();
+
+    };
+} // namespace Core::Systems
+
+#endif // ROBOT_NOMAD_CONTROLLERS_CONTROLTASK_H_

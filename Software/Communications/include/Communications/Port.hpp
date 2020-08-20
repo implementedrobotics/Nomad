@@ -84,8 +84,8 @@ namespace Communications
         ~Port();
 
         template <typename T>
-        static std::shared_ptr<Port> CreateInput(const std::string &name, int period);
-        static std::shared_ptr<Port> CreateOutput(const std::string &name, int period);
+        static std::shared_ptr<Port> CreateInput(const std::string &name, int period = -1);
+        static std::shared_ptr<Port> CreateOutput(const std::string &name, int period = -1);
 
         Port::DataType GetDataType();
         int GetDimension() { return dimension_; }
@@ -209,6 +209,8 @@ namespace Communications
 
         // Message Buffer
         std::deque<T> msg_buffer_;
+
+        T data_;
 
         // Thread mutex
         std::mutex mutex_;

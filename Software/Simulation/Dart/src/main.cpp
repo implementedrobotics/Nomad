@@ -85,7 +85,7 @@ public:
    // std::cout << joint_torques_cmd << std::endl;
 
   //  std::cout << "OUT OF PRE STEP!" << std::endl;
-    nomad_->Skeleton()->setForces(joint_torques_cmd);
+   nomad_->Skeleton()->setForces(joint_torques_cmd);
 
     //context_->handle();
     
@@ -230,7 +230,7 @@ public:
     int rc = pub_context_->publish("nomad.sim.data", &sim_data);
 
     //std::cout << " OUT SIM: " << sim_data.sequence_num << std::endl;
-    pub_context_->flush();
+    //pub_context_->flush();
   }
 
 protected:

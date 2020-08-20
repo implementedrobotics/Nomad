@@ -2,12 +2,14 @@
 set(SYSTEMS_SOURCES ${PROJECT_SOURCE_DIR}/Core/Systems/src/DynamicalSystem.cpp
 ${PROJECT_SOURCE_DIR}/Core/Systems/src/RigidBody.cpp
 ${PROJECT_SOURCE_DIR}/Core/Systems/src/NomadPlant.cpp
+${PROJECT_SOURCE_DIR}/Core/Systems/src/BlockDiagram.cpp
+${PROJECT_SOURCE_DIR}/Core/Systems/src/SystemBlock.cpp
 )
 
 #set(required_components)
 set(required_libraries dart)
 
-set(SYSTEMS_LIBS Realtime pthread rt)
+set(SYSTEMS_LIBS Common Realtime pthread rt)
 
 include_directories("${PROJECT_SOURCE_DIR}/Common/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")

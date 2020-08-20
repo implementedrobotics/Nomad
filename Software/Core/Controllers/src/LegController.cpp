@@ -33,22 +33,15 @@
 #include <memory>
 
 // Third-Party Includes
-#include <zcm/zcm-cpp.hpp>
-#include <dart/utils/urdf/DartLoader.hpp>
 
 // Project Includes
-#include <Realtime/RealTimeTask.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Common/Time.hpp>
 
 namespace Controllers::Locomotion
 {
-    LegController::LegController(const std::string &name,
-                                 const long rt_period,
-                                 unsigned int rt_priority,
-                                 const int rt_core_id,
-                                 const unsigned int stack_size) : Realtime::RealTimeTaskNode(name, rt_period, rt_priority, rt_core_id, stack_size),
+    LegController::LegController(const double T_s)  : SystemBlock("Leg_Kin_State_Estimator_Task", T_s),
                                                                   num_legs_(4), num_dofs_(3)
     {
         // Member Variables //
@@ -69,14 +62,20 @@ namespace Controllers::Locomotion
 
         // Create Ports
         // Leg Controller Input Port
-        input_port_map_[InputPort::LEG_COMMAND] = Communications::Port::CreateInput<leg_controller_cmd_t>("LEG_COMMAND", rt_period_);
+        input_port_map_[InputPort::LEG_COMMAND] = Communications::Port::CreateInput<leg_controller_cmd_t>("LEG_COMMAND");
         
-
         // Leg Controller Output Ports
-        output_port_map_[OutputPort::SERVO_COMMAND] = Communications::Port::CreateOutput("SERVO_COMMAND", rt_period_);
+        output_port_map_[OutputPort::SERVO_COMMAND] = Communications::Port::CreateOutput("SERVO_COMMAND");
     }
 
-    void LegController::Run()
+    // Update function for stateful outputs
+    void LegController::UpdateStateOutputs()
+    {
+        // Receive Data
+    }
+
+    // Update function for stateless outputs
+    void LegController::UpdateStatelessOutputs()
     {
         // Zero Force Outputs
         Eigen::VectorXd tau_output = Eigen::VectorXd::Zero(total_dofs_);
@@ -92,10 +91,9 @@ namespace Controllers::Locomotion
 
         // TODO: Wait for some timeout, if control deadline missed -> ZERO OUTPUTS
         // Read Command
-        if(!GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_, std::chrono::microseconds(1000)))
-        {
-            //std::cout << "Got: " << imu_data_.accel[2] << std::endl;
-        }
+        bool input = GetInputPort(InputPort::LEG_COMMAND)->Receive(leg_command_input_);
+
+        //std::cout << "INPUT: " << input << " | " << leg_command_input_.sequence_num << std::endl;
 
         // Setup Vars
         // Read any Feed Forwards
@@ -147,27 +145,16 @@ namespace Controllers::Locomotion
 
         // Publish Forces
 
-        bool send_status = GetOutputPort(OutputPort::SERVO_COMMAND)->Send(servo_command_output_);
+        GetOutputPort(OutputPort::SERVO_COMMAND)->Send(servo_command_output_);
 
-        //std::cout << "[LegController]: Publishing: " << send_status << std::endl;
+        //std::cout << "[LegController]: Publishing: " << std::endl;
 
     }
 
-    void LegController::Setup()
+    // Update function for next state from inputs
+    void LegController::UpdateState()
     {
-        // TODO: Validate Ports being valid etc.  Error check
 
-        bool outputs_bound = true;
-        for (int i = 0; i < NUM_OUTPUTS; i++) // Bind all of our output ports
-        {
-            if (!GetOutputPort(i)->Bind())
-            {
-                outputs_bound = false;
-            }
-        }
-        std::cout << "[LegController]: "
-                  << "Leg Controller Publisher Running!: "
-                  << "[OUTPUTS]: " << outputs_bound << std::endl;
     }
 
     void LegController::ResetState()

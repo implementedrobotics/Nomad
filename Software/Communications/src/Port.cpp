@@ -44,8 +44,8 @@ namespace Communications
     Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension), started_(false)
     {
         queue_size_ = 1;
-        transport_type_ = TransportType::INPROC;
-        transport_url_ = "inproc"; // TODO: Noblock?
+        transport_type_ = TransportType::NATIVE;
+        transport_url_ = "native"; // TODO: Noblock?
 
         // If Input Port Create Handlers
         if (direction == Direction::INPUT)
@@ -75,7 +75,7 @@ namespace Communications
     {
         queue_size_ = 1;
         transport_type_ = TransportType::NATIVE;
-        transport_url_ = "thread"; // TODO: Noblock?
+        transport_url_ = "native"; // TODO: Noblock?
 
         if(direction == Direction::OUTPUT)
             listeners_.reserve(MAX_LISTENERS); // Reserve Space for Output Listeners
@@ -109,6 +109,7 @@ namespace Communications
 
         // Add to listeners
         output->listeners_.push_back(input);
+        return true;
 
        // std::cout << "Map: " << input->transport_url_ << " " << input->channel_ << std::endl;
     }
