@@ -7,7 +7,7 @@ NOMAD is a 12-DOF quadruped walking robot using Linear and Nonlinear Optimizatio
 
 # Installation
 
-The following instructions are for setup of a development environment for building executable code for Ubuntu 18.04.
+The following instructions are for setup of a development environment for building executable code for Ubuntu 20.04.
 
 Build Dependencies
 ```
@@ -16,7 +16,7 @@ sudo apt-get install build-essential cmake pkg-config git
 
 Install Python Dependencies:
 ```
-sudo apt-get install python-pip
+sudo apt-get install python3-pip
 sudo apt-get install python-tk # GUI for plotting
 pip install matplotlib # Plottling Library
 
@@ -54,7 +54,7 @@ Install [qpOASES 3.2.1](https://projects.coin-or.org/qpOASES/wiki/QpoasesDownloa
 unzip qpOASES-3.2.1.zip
 cd qpOASES-3.2.1
 ```
-There seems to be a compilation/linking bug in 3.2.1. To fix it search for and  delete "-DUSE_LONG_INTEGERS" in make_linux.mk under CPPFLAGS.
+If you get link issues to qpOases library it is most likely because qpOases uses long integers.  You must match this.
 ```
 make
 sudo cp bin/libqpOASES.so /usr/local/lib
@@ -80,14 +80,6 @@ sudo cp -r Eigen /usr/local/include
  Matlab to Eigen:
  https://eigen.tuxfamily.org/dox/AsciiQuickReference.txt
  
-Install [bullet3](https://github.com/bulletphysics/bullet3):
- ```
-git clone https://github.com/bulletphysics/bullet3
-sudo apt-get install freeglut3-dev
-cd bullet3/build3
-cmake ..
-make 
- ```
 
 Install [DART](http://dartsim.github.io/install_dart_on_ubuntu.html):
 
@@ -199,12 +191,12 @@ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `ls
 
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
-sudo apt-get updatapt-get install libzmq3-deve
+sudo apt-get update
 ```
 
 ```
-sudo apt-get install gazebo10
-sudo apt-get install libgazebo10-dev
+sudo apt-get install gazebo11
+sudo apt-get install libgazebo11-dev
 
 gazebo
 ```
