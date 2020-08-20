@@ -117,8 +117,8 @@ namespace OptimalControl::LinearOptimalControl
         //qpOASES::QProblem qp_;
         qpOASES::QProblemB qp_; // This will probably go away.  Just use QProblem with 0 constraints. Will be slighly less efficient
         qpOASES::SQProblem sqp_;
-        int num_vars_; // Number of Variables in QP Problem
-        int num_cons_; // Number of Constraints in QP Problem
+        int64_t num_vars_; // Number of Variables in QP Problem
+        int64_t num_cons_; // Number of Constraints in QP Problem
 
         bool is_hot;         // Is the QP Problem warmed up?
         bool time_varying_;  // Is system a LTV?

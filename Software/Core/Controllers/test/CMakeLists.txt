@@ -24,6 +24,9 @@ set(LEG_CONTROLLER_TEST_LIBS Controllers Common Robot zcm)
 
 # Definitions
 add_definitions(-D_GNU_SOURCE)
+add_definitions(-D__USE_LONG_INTEGERS__)
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wfloat-equal -Wshadow -DLINUX")
+
 
 add_executable(qp_solver_test ${CONTROLLER_TEST_SOURCES})
 target_link_libraries(qp_solver_test ${CONTROLLER_TEST_LIBS} )

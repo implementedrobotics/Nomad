@@ -120,7 +120,7 @@ int main()
      //myOptions.enableRamping = BT_FALSE;
      //myOptions.maxPrimalJump = 1;
      //myOptions.setToMPC();
-    int nWSR = 10;
+    int64_t nWSR = 10;
     qp.setPrintLevel(qpOASES::PL_HIGH);
     qp.setOptions(myOptions);
     qp.init(H.data(), g.data(), A.data(), NULL, NULL, NULL, ubA.data(), nWSR);
