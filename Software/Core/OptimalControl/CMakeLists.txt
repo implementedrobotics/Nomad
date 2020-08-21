@@ -5,6 +5,7 @@ include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 set(OPTIMAL_CONTROL_SOURCES ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/ControlsLibrary.cpp 
 ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/OptimalControlProblem.cpp
 ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/LinearCondensedOCP.cpp
+${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/ConvexMatrixEquationSolverQP.cpp
 )
 
 # Set Required Libraries

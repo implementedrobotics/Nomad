@@ -82,6 +82,11 @@
         "hash_set": "cpp",
         "bit": "cpp",
         "charconv": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "boundingbox": "cpp",
+        "boundingsphere": "cpp",
+        "timer": "cpp",
+        "cameramanipulator": "cpp",
+        "graphicswindow": "cpp"
     }
 }
