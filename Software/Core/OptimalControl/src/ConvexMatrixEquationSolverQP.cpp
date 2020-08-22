@@ -67,6 +67,11 @@ namespace Core::OptimalControl
         H_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_vars, num_vars);
         A_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_constraints_, num_vars);
         g_qp_.resize(num_vars);
+
+        solver_time_ = 100;
+
+        std::cout << "In Constructor" << num_eq << " " << num_vars << " " << num_constraints << std::endl;
+        std::cout << "A SIZE: " << &solver_time_ << std::endl;
     }
 
     void ConvexLinearSystemSolverQP::Solve()

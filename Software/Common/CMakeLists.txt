@@ -5,6 +5,7 @@ ${PROJECT_SOURCE_DIR}/Common/src/State.cpp
 ${PROJECT_SOURCE_DIR}/Common/src/TransitionEvent.cpp
 ${PROJECT_SOURCE_DIR}/Common/src/Time.cpp
 ${PROJECT_SOURCE_DIR}/Common/src/Math/CubicPolynomialTrajectory.cpp
+${PROJECT_SOURCE_DIR}/Common/src/Math/MathUtils.cpp
 )
 
 set(COMMON_LIBS Realtime pthread rt)

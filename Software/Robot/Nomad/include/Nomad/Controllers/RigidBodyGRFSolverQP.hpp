@@ -29,6 +29,7 @@
 // C++ System Files
 #include <iostream>
 #include <string>
+#include <vector>
 #include <memory>
 
 // Project Include Files
@@ -40,7 +41,7 @@ namespace Robot::Nomad::Controllers
     {
         int contact;                            // 1 = Contact, 0 = No Contact
         double mu;                              // Friction at Contact
-        Eigen::Vector3d pos;                    // Position of Contact in WCS (Undefined when not in contact)
+        Eigen::Vector3d pos_world;                    // Position of Contact in WCS (Undefined when not in contact)
         Eigen::MatrixXd J;                      // Contact Jacobian (Undefined when not in contact)
         Eigen::Quaterniond surface_orientation; // Contact Surface Orientation.  (Undefined when not in contact)
                                                 // For Normal and Tangetial Friction Cone Computations (Undefined when not in contact)
@@ -55,15 +56,23 @@ namespace Robot::Nomad::Controllers
         // num_contacts = Number of ground contacts in system
         RigidBodyGRFSolverQP(const int num_contacts);
 
-        // Set allowable force range for optimization
-        void SetForceEnvelope(Eigen::Vector3d force_min, Eigen::Vector3d force_max);
+        // Body Dynamic Parameters
+        void SetMass(double mass) { mass_ = mass; }
+        void SetCentroidalMOI(double inertia) { I_g_ = Eigen::Matrix3d::Identity() * inertia; }
+        void SetCentroidalMOI(Eigen::Vector3d inertia) { I_g_ = inertia.asDiagonal(); }
+
+        // World Parameters
+        void SetGravity(Eigen::Vector3d gravity) { gravity_ = gravity; }
+
+        // Set allowable force range for optimization in the surface normal direction
+        void SetNormalForceEnvelope(double force_min, double force_max);
 
         // Set Weights
-        void SetAlpha(double alpha) { alpha_ = alpha; }            // Force Minimization Influence
-        void SetBeta(double beta) { beta_ = beta; };                   // Solution Filtering Influence
-        void SetControlWeights(Eigen::VectorXd weights) { S_ = weights;}           // Control weights between base position and orientation
-        void SetMinimizationWeights(Eigen::VectorXd weights) { W_1_ = weights;}   // Force minimization Weight
-        void SetSolutionFilteringWeights(Eigen::VectorXd weights) { W_2_ = weights;} // Solution Filtering Weight
+        void SetAlpha(double alpha) { alpha_ = alpha; }                               // Force Minimization Influence
+        void SetBeta(double beta) { beta_ = beta; };                                  // Solution Filtering Influence
+        void SetControlWeights(Eigen::VectorXd weights) { S_ = weights; }             // Control weights between base position and orientation
+        void SetMinimizationWeights(Eigen::VectorXd weights) { W_1_ = weights; }      // Force minimization Weight
+        void SetSolutionFilteringWeights(Eigen::VectorXd weights) { W_2_ = weights; } // Solution Filtering Weight
 
         // idx = Index of contact
         // contact = New contact state
@@ -73,6 +82,10 @@ namespace Robot::Nomad::Controllers
         // x = [Θ^T, p^T, ω^T, p_dot^T]^T | Θ = orientation, p = position, ω = angular velocity, p_dot = velocity
         void SetDesiredState(Eigen::VectorXd x);
 
+        // Set Current State for Force Computation
+        // x = [Θ^T, p^T, ω^T, p_dot^T]^T | Θ = orientation, p = position, ω = angular velocity, p_dot = velocity
+        void SetCurrentState(Eigen::VectorXd x);
+
         // Update Problem parameters and solve
         void Solve();
 
@@ -80,24 +93,31 @@ namespace Robot::Nomad::Controllers
         // Update QP Problem information prior to solve
         void UpdateConstraints();
 
-        Eigen::Vector3d force_min_;
-        Eigen::Vector3d force_max_;
+        // Normal Force Envelope Values
+        double normal_force_min_;
+        double normal_force_max_;
+
         Eigen::Vector3d com_pos_;             // WCS Position of Floating Base CoM
         Eigen::Quaterniond base_orientation_; // Orientation of Floating Base
 
-        // Translational P/D Gains
-        Eigen::MatrixXd k_P_pos_;
-        Eigen::MatrixXd k_D_pos_;
+        // State Information
+        Eigen::VectorXd x_desired_; // Desired State
+        Eigen::VectorXd x_;         // Current State
 
-        // Orientation P/D Gains
-        Eigen::MatrixXd k_P_orientation_;
-        Eigen::MatrixXd k_D_orientation_;
+        // Translational P/D Gains (Positive Definite Diagonal Matrix)
+        Eigen::Matrix3d K_p_com_;
+        Eigen::Matrix3d K_d_com_;
 
-        Eigen::MatrixXd inetia; // System Inertia
-        double mass_;           // System mass
+        // Orientation P/D Gains (Positive Definite Diagonal Matrix)
+        Eigen::Matrix3d K_p_base_;
+        Eigen::Matrix3d K_d_base_;
+
+        Eigen::Vector3d gravity_; // World Gravity
+        Eigen::Matrix3d I_g_;  // System Inertia
+        double mass_;             // System mass
 
         std::vector<ContactState> contacts_; // List of contacts in system
-        int num_contacts_;                   // Number of ground contacts in system
+        int num_contacts_; // Number of ground contacts in system
     };
 } // namespace Robot::Nomad::Controllers
 

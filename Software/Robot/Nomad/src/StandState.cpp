@@ -32,8 +32,9 @@
 // Project Include Files
 #include <Nomad/FSM/StandState.hpp>
 #include <Nomad/NomadControl.hpp>
+#include <Nomad/Controllers/RigidBodyGRFSolverQP.hpp>
 #include <Controllers/Messages/leg_controller_cmd_t.hpp>
-
+#include <Common/Math/MathUtils.hpp>
 
 using Robot::Nomad::Controllers::NomadControl;
 
@@ -41,16 +42,15 @@ namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
     double stance_time = 1.0;
+    Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
+
     StandState::StandState() : NomadState("STAND", 2)
     {
     }
     void StandState::Run_(double dt)
     {
         //std::cout << "Stand Running: " << elapsed_time_ << std::endl;
-        
-        // if (input_->Receive(nomad_state_))
-        // {
-        // }
+        return;
         static full_state_t nomad_state_;
         GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_);
 
@@ -64,7 +64,6 @@ namespace Robot::Nomad::FSM
             double a_t = stand_traj_[leg_id].Acceleration(elapsed_time_);
 
             int foot_id = leg_id * 3;
-
 
             // Copy Initial
             Eigen::Vector3d foot_pos = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos[foot_id]);
@@ -117,9 +116,37 @@ namespace Robot::Nomad::FSM
        // std::cout << "Got Message: " << nomad_state_initial_.foot_pos[2] << std::endl;;
         
         // Create Cubic Trajectory
-        stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
-        stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
-        stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
-        stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        // stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        // stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        // stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+        // stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
+
+        // 
+        for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
+        {
+            int foot_id = leg_id * 3;
+
+            Robot::Nomad::Controllers::ContactState contact;
+            contact.mu = 0.06; // TODO: From YAML
+            contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
+            contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos_wcs[foot_id]);
+            qp_solver_.SetContactState(leg_id, contact);
+        }
+        
+        // x = [Θ^T, p^T, ω^T, p_dot^T]^T | Θ = orientation, p = position, ω = angular velocity, p_dot = velocity
+        Eigen::VectorXd x = Eigen::VectorXd::Zero(12);
+        Eigen::VectorXd x_desired = Eigen::VectorXd::Zero(12);
+
+        // TODO: GetCOMState Function
+        x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
+        x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q_dot, 6);
+        x_desired = x;
+        qp_solver_.SetCurrentState(x);
+        qp_solver_.SetDesiredState(x_desired);
+        qp_solver_.SetCentroidalMOI(0.11);
+
+        std::cout << "State Vector: " << std::endl << x << std::endl;
+        // Test out QP Solver
+        qp_solver_.Solve();
     }
 } // namespace Robot::Nomad::FSM

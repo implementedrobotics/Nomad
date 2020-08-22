@@ -22,7 +22,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #ifndef NOMAD_CORE_OPTIMALCONTROL_CONVEXMATRIXEQUATIONSOLVERQP_H_
 #define NOMAD_CORE_OPTIMALCONTROL_CONVEXMATRIXEQUATIONSOLVERQP_H_
 
@@ -37,17 +36,16 @@
 
 // Project Includes
 
- 
 // Helper class to solve a system of linear equations of the form: A * x = b
 // In general you would use this is there is reduncancy in the system (Number of equations/Number of unknowns)
-// Therefore this is only solved in a somewhat "least squares sense" by exploiting variable weighting and inequality constraints to handle 
+// Therefore this is only solved in a somewhat "least squares sense" by exploiting variable weighting and inequality constraints to handle
 // the reduncancy in the sysytem.  This is good because the redundancy in the system allows you to meet secondary objectives.
 
 // x* = min(Ax-b)^T * S * (A*x-b) + alpha*x^T*W1*x + beta*(x-x_prev)^T * W2 * (x-x_prev))
 // s.t. lb < C*x < ub
 
 // Maps to a standard QP Formulation using qpOases:
-// 
+//
 // min x      1/2*x^T*H*x + x^t*g
 // s.t. lb < A_qp*x > ub // Inequality Contraints
 
@@ -61,7 +59,7 @@
 
 namespace Core::OptimalControl
 {
-    class ConvexLinearSystemSolverQP 
+    class ConvexLinearSystemSolverQP
     {
 
     public:
@@ -81,48 +79,45 @@ namespace Core::OptimalControl
         void PrintDebug();
 
     protected:
-
         //qpOASES::QProblem qp_;
         qpOASES::QProblemB qp_; // This will probably go away.  Just use QProblem with 0 constraints. Will be slighly less efficient
 
-        Eigen::MatrixXd A_;         // Coefficient Matrix
-        Eigen::VectorXd x_star_;         // Solution Vector
-        Eigen::VectorXd x_star_prev_;    // Previous Solutions Vector
-        Eigen::VectorXd b_;         // Constant Vector
+        Eigen::MatrixXd A_;           // Coefficient Matrix
+        Eigen::VectorXd x_star_;      // Solution Vector
+        Eigen::VectorXd x_star_prev_; // Previous Solutions Vector
+        Eigen::VectorXd b_;           // Constant Vector
 
-        Eigen::MatrixXd S_;         // Relative Priority Weighting of Values
-        Eigen::MatrixXd W_1_;       // Relative Priority Weighting of Solution Minimization
-        Eigen::MatrixXd W_2_;       // Relative Priority Weighting of Solution Filtering Minimization
+        Eigen::MatrixXd S_;           // Relative Priority Weighting of Values
+        Eigen::MatrixXd W_1_;         // Relative Priority Weighting of Solution Minimization
+        Eigen::MatrixXd W_2_;         // Relative Priority Weighting of Solution Filtering Minimization
         //Eigen::MatrixXd C_;         // Inequality Constraint Matrix
 
-        Eigen::VectorXd lbA_;        // Lower Bound of Inequality Constraint Matrix
-        Eigen::VectorXd ubA_;        // Upper Bound of Inequality Constraint Matrix
+        Eigen::VectorXd lbA_; // Lower Bound of Inequality Constraint Matrix
+        Eigen::VectorXd ubA_; // Upper Bound of Inequality Constraint Matrix
 
-        Eigen::MatrixXd H_qp_;         // QP Hessian
-        Eigen::MatrixXd A_qp_;      // Inequality Constraint Matrix QP
-        Eigen::VectorXd g_qp_;      // Linear 
+        Eigen::MatrixXd H_qp_; // QP Hessian
+        Eigen::MatrixXd A_qp_; // Inequality Constraint Matrix QP
+        Eigen::VectorXd g_qp_; // Linear
 
-        double alpha_;               // Influence of Solution Minimization
-        double beta_;                // Influece of Solution Filtering
+        double alpha_; // Influence of Solution Minimization
+        double beta_;  // Influece of Solution Filtering
 
-        int64_t num_equations_;     // Number of System Equations
-        int64_t num_variables_;     // Number of System Variables
-        int64_t num_constraints_;   // Number of Inequality Constraints
+        int64_t num_equations_;   // Number of System Equations
+        int64_t num_variables_;   // Number of System Variables
+        int64_t num_constraints_; // Number of Inequality Constraints
 
         int64_t max_iterations_;    // Max Iterations for Solver
         int64_t solver_iterations_; // Total number of Solver iterations for solution
 
-        double solver_time_;        // Total time for Solver to compute a solution
+        double solver_time_; // Total time for Solver to compute a solution
 
-        bool solved_;               // Valid Solution?
+        bool solved_; // Valid Solution?
 
-        bool is_hot_;               // We have a warm QP and can use hotstarting
+        bool is_hot_; // We have a warm QP and can use hotstarting
 
         // TODO:
         // Infeasible, BlahBlah
     };
-
-} // namespace OptimalControl
-
+} // namespace Core::OptimalControl
 
 #endif // NOMAD_CORE_OPTIMALCONTROL_CONVEXMATRIXEQUATIONSOLVERQP_H_

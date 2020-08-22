@@ -127,6 +127,9 @@ namespace Robot::Nomad::Dynamics
         {
             // Foot Position
             Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos[i * 3], 3) = foot_body_[i]->getTransform(hip_base_body_[i]).translation();
+
+            // Foot Position World
+            Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos_wcs[i * 3], 3) = foot_body_[i]->getTransform(dart::dynamics::Frame::World()).translation();
         }
 
         //std::cout << "VELS: " << robot_->getVelocities().head(6) << std::endl;

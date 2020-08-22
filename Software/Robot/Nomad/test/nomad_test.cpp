@@ -42,11 +42,11 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance();
     Communications::PortManager::Instance();
 
-    // if (!Realtime::RealTimeTaskManager::EnableRTMemory(500 * 1024 * 1024)) // 500MB
-    // {
-    //     // exit(-2);
-    //     std::cout << "Error configuring Realtime Memory Requiremets!  Realtime Execution NOT guaranteed." << std::endl;
-    // }
+    if (!Realtime::RealTimeTaskManager::EnableRTMemory(500 * 1024 * 1024)) // 500MB
+    {
+        // exit(-2);
+        std::cout << "Error configuring Realtime Memory Requiremets!  Realtime Execution NOT guaranteed." << std::endl;
+    }
 
     // Create Block Diagram
     BlockDiagram diagram("Test", 0.001); //10hz

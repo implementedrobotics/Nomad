@@ -26,6 +26,10 @@ class full_state_t
 
         double     foot_vel[12];
 
+        double     foot_pos_wcs[12];
+
+        double     foot_vel_wcs[12];
+
         double     M[324];
 
         double     g[18];
@@ -156,6 +160,12 @@ int full_state_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) con
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_vel[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_pos_wcs[0], 12);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->foot_vel_wcs[0], 12);
+    if(thislen < 0) return thislen; else pos += thislen;
+
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->M[0], 324);
     if(thislen < 0) return thislen; else pos += thislen;
 
@@ -194,6 +204,12 @@ int full_state_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxle
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_vel[0], 12);
     if(thislen < 0) return thislen; else pos += thislen;
 
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_pos_wcs[0], 12);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->foot_vel_wcs[0], 12);
+    if(thislen < 0) return thislen; else pos += thislen;
+
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->M[0], 324);
     if(thislen < 0) return thislen; else pos += thislen;
 
@@ -218,6 +234,8 @@ uint32_t full_state_t::_getEncodedSizeNoHash() const
     enc_size += __double_encoded_array_size(NULL, 18);
     enc_size += __double_encoded_array_size(NULL, 12);
     enc_size += __double_encoded_array_size(NULL, 12);
+    enc_size += __double_encoded_array_size(NULL, 12);
+    enc_size += __double_encoded_array_size(NULL, 12);
     enc_size += __double_encoded_array_size(NULL, 324);
     enc_size += __double_encoded_array_size(NULL, 18);
     enc_size += __double_encoded_array_size(NULL, 18);
@@ -227,7 +245,7 @@ uint32_t full_state_t::_getEncodedSizeNoHash() const
 
 uint64_t full_state_t::_computeHash(const __zcm_hash_ptr*)
 {
-    uint64_t hash = (uint64_t)0x8b04b8feb546413fLL;
+    uint64_t hash = (uint64_t)0x6d05ed2c802998b0LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

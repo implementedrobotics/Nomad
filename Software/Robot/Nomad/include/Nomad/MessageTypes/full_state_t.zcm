@@ -7,6 +7,9 @@ struct full_state_t
     double q_dot[18];    // Robot Velocity State
     double foot_pos[12]; // Foot Position State (Hip Base Relative)
     double foot_vel[12]; // Foot Velocity State (Hip Base Relative)
+    
+    double foot_pos_wcs[12]; // Foot Position State (World Inertial Frame Relative)
+    double foot_vel_wcs[12]; // Foot Velocity State (World Inertial Frame Relative)
 
     double M[324];       // Mass Inertia Matrix (324 = 18 * 18)
     double g[18];                      // Gravity Terms Vector

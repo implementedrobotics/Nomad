@@ -1,6 +1,8 @@
 
 cmake_minimum_required (VERSION 3.10)
 
+add_definitions(-D__USE_LONG_INTEGERS__)
+
 set(ROBOT_SOURCES ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControlFSM.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadRobot.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/NomadControl.cpp
@@ -11,6 +13,7 @@ ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/StandState.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/SimulationInterface.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/StandController.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/FusedLegKinematicsStateEstimator.cpp
+${PROJECT_SOURCE_DIR}/Robot/Nomad/src/RigidBodyGRFSolverQP.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/RemoteTeleop.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/GamepadInterface.cpp
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.cpp
@@ -30,6 +33,7 @@ include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
 
 add_library(Robot STATIC ${ROBOT_SOURCES})
 target_link_libraries(Robot ${ROBOT_LIBS})
+
 #add_test(QuickStartTest test_main COMMAND test_main)
 
 # TODO: Make Options "Build Test/Examples etc"
