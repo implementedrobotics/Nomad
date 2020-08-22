@@ -59,11 +59,11 @@ namespace Robot::Nomad::Controllers
         void SetForceEnvelope(Eigen::Vector3d force_min, Eigen::Vector3d force_max);
 
         // Set Weights
-        void SetAlpha(double alpha);
-        void SetBeta(double beta);
-        void SetControlWeights(Eigen::VectorXd weights);
-        void SetMinimizationWeights(Eigen::VectorXd weights);
-        void SetSolutionFilteringWeights(Eigen::VectorXd weights);
+        void SetAlpha(double alpha) { alpha_ = alpha; }            // Force Minimization Influence
+        void SetBeta(double beta) { beta_ = beta; };                   // Solution Filtering Influence
+        void SetControlWeights(Eigen::VectorXd weights) { S_ = weights;}           // Control weights between base position and orientation
+        void SetMinimizationWeights(Eigen::VectorXd weights) { W_1_ = weights;}   // Force minimization Weight
+        void SetSolutionFilteringWeights(Eigen::VectorXd weights) { W_2_ = weights;} // Solution Filtering Weight
 
         // idx = Index of contact
         // contact = New contact state
@@ -80,6 +80,8 @@ namespace Robot::Nomad::Controllers
         // Update QP Problem information prior to solve
         void UpdateConstraints();
 
+        Eigen::Vector3d force_min_;
+        Eigen::Vector3d force_max_;
         Eigen::Vector3d com_pos_;             // WCS Position of Floating Base CoM
         Eigen::Quaterniond base_orientation_; // Orientation of Floating Base
 

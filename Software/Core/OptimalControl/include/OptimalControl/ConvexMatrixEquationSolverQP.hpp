@@ -68,7 +68,7 @@ namespace Core::OptimalControl
         // Base Class ConvexLinearSystemSolverQP
         // num_eq = Number of equations of OCP
         // num_vars = Number of veriables of OCP
-        ConvexLinearSystemSolverQP(const unsigned int num_eq, const unsigned int num_vars);
+        ConvexLinearSystemSolverQP(const unsigned int num_eq, const unsigned int num_vars, const unsigned int num_constraints);
 
         // Solve
         virtual void Solve();
@@ -93,17 +93,17 @@ namespace Core::OptimalControl
         Eigen::MatrixXd S_;         // Relative Priority Weighting of Values
         Eigen::MatrixXd W_1_;       // Relative Priority Weighting of Solution Minimization
         Eigen::MatrixXd W_2_;       // Relative Priority Weighting of Solution Filtering Minimization
-        Eigen::MatrixXd C_;         // Inequality Constraint Matrix
+        //Eigen::MatrixXd C_;         // Inequality Constraint Matrix
 
-        Eigen::VectorXd lb_;        // Lower Bound of Inequality Constraint Matrix
-        Eigen::VectorXd ub_;        // Upper Bound of Inequality Constraint Matrix
+        Eigen::VectorXd lbA_;        // Lower Bound of Inequality Constraint Matrix
+        Eigen::VectorXd ubA_;        // Upper Bound of Inequality Constraint Matrix
 
         Eigen::MatrixXd H_qp_;         // QP Hessian
         Eigen::MatrixXd A_qp_;      // Inequality Constraint Matrix QP
         Eigen::VectorXd g_qp_;      // Linear 
 
-        double alpha;               // Influence of Solution Minimization
-        double beta;                // Influece of Solution Filtering
+        double alpha_;               // Influence of Solution Minimization
+        double beta_;                // Influece of Solution Filtering
 
         int64_t num_equations_;     // Number of System Equations
         int64_t num_variables_;     // Number of System Variables
@@ -114,7 +114,9 @@ namespace Core::OptimalControl
 
         double solver_time_;        // Total time for Solver to compute a solution
 
-        bool solved_;               // Valid Solution
+        bool solved_;               // Valid Solution?
+
+        bool is_hot_;               // We have a warm QP and can use hotstarting
 
         // TODO:
         // Infeasible, BlahBlah

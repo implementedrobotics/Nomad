@@ -38,14 +38,20 @@ namespace Core::OptimalControl
 
     ConvexLinearSystemSolverQP::ConvexLinearSystemSolverQP(
         const unsigned int num_eq,
-        const unsigned int num_vars) : num_equations_(num_eq),
+        const unsigned int num_vars,
+        const unsigned int num_constraints) : num_equations_(num_eq),
                                        num_variables_(num_vars),
+                                       num_constraints_(num_constraints),
                                        max_iterations_(5000),
-                                       solved_(false)
+                                       solved_(false),
+                                       is_hot_(false),
+                                       alpha_(1e-3),
+                                       beta_(1e-3)
     {
+        // Resize Matrices
         A_.resize(num_eq, num_vars);
-        x_star_.resize(num_eq);
-        x_star_prev_.resize(num_eq);
+        x_star_ = Eigen::VectorXd::Zero(num_vars);
+        x_star_prev_ = Eigen::VectorXd::Zero(num_vars);
         b_.resize(num_eq);
 
         // Default to equal weights/Identity
@@ -53,15 +59,14 @@ namespace Core::OptimalControl
         W_1_ = Eigen::MatrixXd::Identity(num_vars, num_vars);
         W_2_ = Eigen::MatrixXd::Identity(num_vars, num_vars);
 
-        lb_.resize(num_constraints_);
-        ub_.resize(num_constraints_);
+        // Resize Matrices
+        lbA_.resize(num_constraints_);
+        ubA_.resize(num_constraints_);
 
-        H_qp_.resize(num_vars, num_vars);
-        A_qp_.resize(num_constraints_, num_vars);
-        C_.resize(num_constraints_, num_vars);
-
+        // qpOases is Row Major Formatted. Eigen defaults to Column Major
+        H_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_vars, num_vars);
+        A_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_constraints_, num_vars);
         g_qp_.resize(num_vars);
-
     }
 
     void ConvexLinearSystemSolverQP::Solve()
@@ -73,21 +78,21 @@ namespace Core::OptimalControl
         x_star_prev_ = x_star_;
 
         // Setup Problem
-        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha * (W_1_ + beta * W_2_));
-        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta * (x_star_prev_ * W_2_));
+        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * (W_1_ + beta_ * W_2_));
+        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (x_star_prev_ * W_2_));
 
         // Get ending timepoint
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
         solver_iterations_ = max_iterations_;
-        // if (is_hot)
-        //      qp_.hotstart(g_qp_.data(), lb_.data(), ub_.data(), solver_iterations_);
-        //  else
+        if (is_hot_)
+              qp_.hotstart(g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
+        else
         {
             //qp_.init(H_.data(), g_.data(), NULL, NULL, NULL, NULL, NULL, max_iterations_); (Constraint Version)
-            qp_.init(H_qp_.data(), g_qp_.data(), lb_.data(), ub_.data(), solver_iterations_);
-            //      is_hot = true;
+            qp_.init(H_qp_.data(), g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
+            is_hot_ = true;
         }
 
         // Get Solution
@@ -99,7 +104,7 @@ namespace Core::OptimalControl
 
     void ConvexLinearSystemSolverQP::PrintDebug()
     {
-
+        // TODO: Print solver times, solution, iterations, etc
     }
 
 } // namespace Core::OptimalControl
