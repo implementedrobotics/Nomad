@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+#include <qpOASES.hpp>
 
 #ifndef NOMAD_CORE_OPTIMALCONTROL_OPTIMALCONTROLPROBLEM_H_
 #define NOMAD_CORE_OPTIMALCONTROL_OPTIMALCONTROLPROBLEM_H_
@@ -83,16 +84,16 @@ namespace OptimalControl
         Eigen::MatrixXd Q_; // State Weights
         Eigen::MatrixXd R_; // Input Weights
 
-        int64_t num_states_; // Number of System States
-        int64_t num_inputs_; // Number of System Inputs
+        int num_states_; // Number of System States
+        int num_inputs_; // Number of System Inputs
 
-        int64_t N_; // Number of Prediction Steps
+        int N_; // Number of Prediction Steps
 
         double T_s_; // Sample Time
         double T_;   // Horizon Length
 
-        int64_t max_iterations_;    // Max Iterations for Solver
-        int64_t solver_iterations_; // Total number of Solver iterations for solution
+        qpOASES::int_t max_iterations_;    // Max Iterations for Solver
+        qpOASES::int_t solver_iterations_; // Total number of Solver iterations for solution
         double solver_time_;    // Total time for Solver to compute a solution
 
         bool solved_;

@@ -71,8 +71,10 @@ int main()
     //cout << qp.getObjVal() << endl;
 
 
+     qpOASES::int_t vars = 2;
+     qpOASES::int_t cons = 2;
 
-    QProblem qp(2,2);
+    QProblem qp(vars,cons);
 
      Eigen::Matrix<double, 2, 2, Eigen::RowMajor> H;
      Eigen::Matrix<double, 2, 2, Eigen::RowMajor> A;
@@ -120,7 +122,7 @@ int main()
      //myOptions.enableRamping = BT_FALSE;
      //myOptions.maxPrimalJump = 1;
      //myOptions.setToMPC();
-    int64_t nWSR = 10;
+    qpOASES::int_t nWSR = 10;
     qp.setPrintLevel(qpOASES::PL_HIGH);
     qp.setOptions(myOptions);
     qp.init(H.data(), g.data(), A.data(), NULL, NULL, NULL, ubA.data(), nWSR);

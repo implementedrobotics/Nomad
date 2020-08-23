@@ -42,7 +42,7 @@ namespace Core::OptimalControl
         const unsigned int num_constraints) : num_equations_(num_eq),
                                        num_variables_(num_vars),
                                        num_constraints_(num_constraints),
-                                       max_iterations_(20),
+                                       max_iterations_(200),
                                        solved_(false),
                                        is_hot_(false),
                                        alpha_(1e-3),
@@ -55,6 +55,10 @@ namespace Core::OptimalControl
         A_.resize(num_eq, num_vars);
         x_star_ = Eigen::VectorXd::Zero(num_vars);
         x_star_prev_ = Eigen::VectorXd::Zero(num_vars);
+        x_star_prev_[2] = 100;
+        x_star_prev_[5] = 100;
+        x_star_prev_[8] = 100;
+        x_star_prev_[11] = 100;
         b_.resize(num_eq);
 
         // Default to equal weights/Identity
@@ -84,12 +88,13 @@ namespace Core::OptimalControl
         x_star_prev_ = x_star_;
 
         // Setup Problem
-        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
-        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
+        //H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
+        //g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
 
-        // Get ending timepoint
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+        H_qp_ =  2 * (A_.transpose() * S_ * A_ + (alpha_ * W_1_));
+        g_qp_ = -2 * (A_.transpose() * S_ * b_);// - 2 * (x_star_prev_ * alpha_);
+
+
 
         solver_iterations_ = max_iterations_;
         //if (is_hot_)
@@ -105,7 +110,7 @@ namespace Core::OptimalControl
 
             // std::cout << "lbA: " << std::endl;
             // std::cout << lbA_ << std::endl;
-            //int64_t cpu_time;
+            double cpu_time;
             qp_.init(H_qp_.data(), g_qp_.data(), A_qp_.data(), NULL, NULL, lbA_.data(), ubA_.data(), solver_iterations_);
             is_hot_ = true;
         }
@@ -113,8 +118,13 @@ namespace Core::OptimalControl
         // Get Solution
         // TODO: Check solved here
         qp_.getPrimalSolution(x_star_.data());
-
+        
+        // Get ending timepoint
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         std::cout << "Solver Time: " << duration.count() << " microseconds" << std::endl;
+        std::cout << "Value: " << std::endl;
+        std::cout << x_star_ << std::endl;
     }
 
     void ConvexLinearSystemSolverQP::PrintDebug()

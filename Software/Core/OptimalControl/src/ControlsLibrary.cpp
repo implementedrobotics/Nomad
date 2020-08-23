@@ -62,6 +62,35 @@ namespace ControlsLibrary
             Matrix_ = Eigen::MatrixXd::Constant(Matrix_.rows(), Matrix_.cols(), init_val);
         }
 
+        BlockMatrixXd::BlockMatrixXd(const unsigned int Rows,
+                                     const unsigned int Cols,
+                                     const unsigned int BlockHeight,
+                                     const unsigned int BlockWidth) : Rows_(Rows),
+                                                           Cols_(Cols),
+                                                           BlockHeight_(BlockHeight),
+                                                           BlockWidth_(BlockWidth)
+        {
+            assert(Rows > 0 && Cols > 0);
+            assert(BlockHeight > 0 && BlockWidth > 0);
+            Matrix_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(Rows_ * BlockHeight, Cols_ * BlockWidth);
+        }
+
+
+        BlockMatrixXd::BlockMatrixXd(const unsigned int Rows,
+                                     const unsigned int Cols,
+                                     const unsigned int BlockHeight,
+                                     const unsigned int BlockWidth,
+                                     Eigen::MatrixXd &matrix) : Rows_(Rows),
+                                                           Cols_(Cols),
+                                                           BlockHeight_(BlockHeight),
+                                                           BlockWidth_(BlockWidth)
+        {
+            assert(Rows > 0 && Cols > 0);
+            assert(BlockHeight > 0 && BlockWidth > 0);
+            Matrix_ = matrix;
+        }
+
+
         // Operator Overload:
         void BlockMatrixXd::operator()(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val)
         {
@@ -69,12 +98,12 @@ namespace ControlsLibrary
             Matrix_.block(Row * BlockHeight_, Col * BlockWidth_, BlockHeight_, BlockWidth_) = block_val;
         }
 
-        const Eigen::MatrixXd BlockMatrixXd::operator()(const unsigned int Row, const unsigned int Col)
+        Eigen::Block<Eigen::MatrixXd, -1, -1, false> BlockMatrixXd::operator()(const unsigned int Row, const unsigned int Col)
         {
             assert(Row < Rows_ && Col < Cols_);
             return Matrix_.block(Row * BlockHeight_, Col * BlockWidth_, BlockHeight_, BlockWidth_);
         }
-
+        
         void BlockMatrixXd::SetBlock(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val)
         {
             assert(Row < Rows_ && Col < Cols_);

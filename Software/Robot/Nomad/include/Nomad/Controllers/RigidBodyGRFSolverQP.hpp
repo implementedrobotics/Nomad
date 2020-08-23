@@ -57,6 +57,7 @@ namespace Robot::Nomad::Controllers
         RigidBodyGRFSolverQP(const int num_contacts);
 
         // Body Dynamic Parameters
+        // Set Mass - Units = kg
         void SetMass(double mass) { mass_ = mass; }
         void SetCentroidalMOI(double inertia) { I_g_ = Eigen::Matrix3d::Identity() * inertia; }
         void SetCentroidalMOI(Eigen::Vector3d inertia) { I_g_ = inertia.asDiagonal(); }

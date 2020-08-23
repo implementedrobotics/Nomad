@@ -55,14 +55,16 @@ namespace ControlsLibrary
         {
         public:
             BlockMatrixXd() {}
-            BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, const int init_val = 0);
+            BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, const int init_val);
+            BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth, Eigen::MatrixXd &matrix);
+            BlockMatrixXd(const unsigned int Rows, const unsigned int Cols, const unsigned int BlockHeight, const unsigned int BlockWidth);
 
             friend std::ostream &operator<<(std::ostream &os, BlockMatrixXd const &bm) { return os << bm.Matrix_; }
             // Operator Overload:
             void operator()(const unsigned int Row, const unsigned int Col, const Eigen::MatrixXd &block_val);
 
             // TODO: Fix Templated Hack so we can set this directly... i.e. matrix(1,1) = block
-            const Eigen::MatrixXd operator()(const unsigned int Row, const unsigned int Col);
+            Eigen::Block<Eigen::MatrixXd, -1, -1, false> operator()(const unsigned int Row, const unsigned int Col);
 
             // Cast Overload
             operator Eigen::MatrixXd() { return Matrix_; }
@@ -82,6 +84,7 @@ namespace ControlsLibrary
             unsigned int BlockHeight_;
 
             Eigen::MatrixXd Matrix_;
+
         };
     } // namespace EigenHelpers
 } // namespace ControlsLibrary

@@ -102,12 +102,12 @@ namespace Core::OptimalControl
         double alpha_; // Influence of Solution Minimization
         double beta_;  // Influece of Solution Filtering
 
-        int64_t num_equations_;   // Number of System Equations
-        int64_t num_variables_;   // Number of System Variables
-        int64_t num_constraints_; // Number of Inequality Constraints
+        int num_equations_;   // Number of System Equations
+        int num_variables_;   // Number of System Variables
+        int num_constraints_; // Number of Inequality Constraints
 
-        int64_t max_iterations_;    // Max Iterations for Solver
-        int64_t solver_iterations_; // Total number of Solver iterations for solution
+        qpOASES::int_t max_iterations_;    // Max Iterations for Solver
+        qpOASES::int_t solver_iterations_; // Total number of Solver iterations for solution
 
         double solver_time_; // Total time for Solver to compute a solution
 
