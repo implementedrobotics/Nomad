@@ -52,10 +52,9 @@ namespace Robot::Nomad::Controllers
     {
         // Reserve Contact List
         contacts_.reserve(num_contacts);
+
         // Update MOI Values
         SetCentroidalMOI(0.01);
-
-        std::cout << "Here now: " << &solver_time_ << std::endl;
     }
 
     void RigidBodyGRFSolverQP::SetNormalForceEnvelope(double force_min, double force_max)
@@ -119,7 +118,6 @@ namespace Robot::Nomad::Controllers
 
         // Update Solver Parameters
 
-        std::cout << "A: " << A_.rows() << " " << A_.cols() << std::endl;
         // Update A Matrix
         for(int i = 0; i < num_contacts_; i++)
         {
@@ -140,6 +138,10 @@ namespace Robot::Nomad::Controllers
     void RigidBodyGRFSolverQP::UpdateConstraints()
     {
         // TODO: Add Constraints
+        lbA_ = Eigen::VectorXd::Ones(num_constraints_) * -10;
+        ubA_ = Eigen::VectorXd::Ones(num_constraints_) * 10;
+
+       // std::cout << "Updating to:"
     }
 
 } // namespace Robot::Nomad::Controllers

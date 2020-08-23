@@ -42,12 +42,15 @@ namespace Core::OptimalControl
         const unsigned int num_constraints) : num_equations_(num_eq),
                                        num_variables_(num_vars),
                                        num_constraints_(num_constraints),
-                                       max_iterations_(5000),
+                                       max_iterations_(20),
                                        solved_(false),
                                        is_hot_(false),
                                        alpha_(1e-3),
                                        beta_(1e-3)
     {
+
+
+
         // Resize Matrices
         A_.resize(num_eq, num_vars);
         x_star_ = Eigen::VectorXd::Zero(num_vars);
@@ -68,10 +71,8 @@ namespace Core::OptimalControl
         A_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_constraints_, num_vars);
         g_qp_.resize(num_vars);
 
-        solver_time_ = 100;
+        qp_ = qpOASES::QProblem(num_vars, num_constraints);
 
-        std::cout << "In Constructor" << num_eq << " " << num_vars << " " << num_constraints << std::endl;
-        std::cout << "A SIZE: " << &solver_time_ << std::endl;
     }
 
     void ConvexLinearSystemSolverQP::Solve()
@@ -83,20 +84,29 @@ namespace Core::OptimalControl
         x_star_prev_ = x_star_;
 
         // Setup Problem
-        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * (W_1_ + beta_ * W_2_));
-        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (x_star_prev_ * W_2_));
+        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
+        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
 
         // Get ending timepoint
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
         solver_iterations_ = max_iterations_;
-        if (is_hot_)
-              qp_.hotstart(g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
-        else
+        //if (is_hot_)
+        //      qp_.hotstart(g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
+        //else
         {
-            //qp_.init(H_.data(), g_.data(), NULL, NULL, NULL, NULL, NULL, max_iterations_); (Constraint Version)
-            qp_.init(H_qp_.data(), g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
+            //qp_.init(H_qp_.data(), g_qp_.data(), NULL, NULL, NULL, NULL, NULL, solver_iterations_); //(Constraint Version)
+            // std::cout << "H_qp: " << std::endl;
+            // std::cout << H_qp_ << std::endl;
+
+            // std::cout << "g_qp: " << std::endl;
+            // std::cout << g_qp_ << std::endl;
+
+            // std::cout << "lbA: " << std::endl;
+            // std::cout << lbA_ << std::endl;
+            //int64_t cpu_time;
+            qp_.init(H_qp_.data(), g_qp_.data(), A_qp_.data(), NULL, NULL, lbA_.data(), ubA_.data(), solver_iterations_);
             is_hot_ = true;
         }
 

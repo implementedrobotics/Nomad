@@ -79,8 +79,8 @@ namespace Core::OptimalControl
         void PrintDebug();
 
     protected:
-        //qpOASES::QProblem qp_;
-        qpOASES::QProblemB qp_; // This will probably go away.  Just use QProblem with 0 constraints. Will be slighly less efficient
+
+        qpOASES::QProblem qp_;        // qpOases Solver Object
 
         Eigen::MatrixXd A_;           // Coefficient Matrix
         Eigen::VectorXd x_star_;      // Solution Vector
