@@ -152,6 +152,7 @@ namespace Core::OptimalControl
             qp_.setPrintLevel(qpOASES::PL_NONE);
         }
     }
+    
     void ConvexLinearSystemSolverQP::PrintDebug()
     {
         // TODO: Print solver times, solution, iterations, etc

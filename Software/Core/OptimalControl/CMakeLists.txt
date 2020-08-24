@@ -1,5 +1,5 @@
 # Required Include Directories
-include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
+
 
 # Set Compiler Sources
 set(OPTIMAL_CONTROL_SOURCES ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/ControlsLibrary.cpp 
@@ -8,8 +8,11 @@ ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/LinearCondensedOCP.cpp
 ${PROJECT_SOURCE_DIR}/Core/OptimalControl/src/ConvexMatrixEquationSolverQP.cpp
 )
 
+include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
+include_directories("${PROJECT_SOURCE_DIR}/Common/include/")
+
 # Set Required Libraries
-set(OPTIMAL_CONTROL_LIBS pthread rt qpOASES)
+set(OPTIMAL_CONTROL_LIBS Common pthread rt qpOASES)
 
 # Crashes on large multiplies otherwise
 #add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)

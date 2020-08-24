@@ -35,6 +35,8 @@
 #include <qpOASES.hpp>
 
 // Project Includes
+#include <Common/Math/MathUtils.hpp>
+
 
 // Helper class to solve a system of linear equations of the form: A * x = b
 // In general you would use this is there is reduncancy in the system (Number of equations/Number of unknowns)

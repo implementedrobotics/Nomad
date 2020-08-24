@@ -21,15 +21,17 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#ifndef NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
+#define NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 
 #include <qpOASES.hpp>
 #include <OptimalControl/ControlsLibrary.hpp>
 #include <OptimalControl/OptimalControlProblem.hpp>
+
 #include <vector>
 
-#ifndef NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
-#define NOMAD_CORE_OPTIMALCONTROL_LINEARCONDENSEDOCP_H_
 
+#include <Common/Math/MathUtils.hpp>
 namespace OptimalControl::LinearOptimalControl
 {
     class LinearCondensedOCP : public LinearOptimalControlProblem
@@ -102,8 +104,8 @@ namespace OptimalControl::LinearOptimalControl
         std::vector<Eigen::MatrixXd> A_; // System State Transition Matrix (Vector List for Time Varying)
         std::vector<Eigen::MatrixXd> B_; // Input Matrix (Vector List for Time Varying)
 
-        ControlsLibrary::EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
-        ControlsLibrary::EigenHelpers::BlockMatrixXd B_N_; // Condensed Control Input Matrix for QP
+        Common::Math::EigenHelpers::BlockMatrixXd A_N_; // Condensed System State Transition Matrix for QP
+        Common::Math::EigenHelpers::BlockMatrixXd B_N_; // Condensed Control Input Matrix for QP
 
         Eigen::MatrixXd H_;   // Hessian Matrix
         Eigen::MatrixXd g_;   // Gradient Vector

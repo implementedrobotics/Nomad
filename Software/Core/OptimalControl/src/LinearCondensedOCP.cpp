@@ -37,8 +37,8 @@ namespace OptimalControl::LinearOptimalControl
                                            const unsigned int max_iterations) : LinearOptimalControlProblem(N, T, num_states, num_inputs, max_iterations)
     {
 
-        A_N_ = EigenHelpers::BlockMatrixXd(N, 1, num_states, num_states);
-        B_N_ = EigenHelpers::BlockMatrixXd(N, N - 1, num_states, num_inputs);
+        A_N_ = Common::Math::EigenHelpers::BlockMatrixXd(N, 1, num_states, num_states);
+        B_N_ = Common::Math::EigenHelpers::BlockMatrixXd(N, N - 1, num_states, num_inputs);
 
         num_vars_ = num_inputs * (N - 1);
         num_cons_ = num_inputs * (N - 1);

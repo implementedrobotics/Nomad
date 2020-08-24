@@ -148,7 +148,7 @@ namespace Robot::Nomad::Controllers
         // Eq. (7) and Eq. (8) High-slope Terrain Locomotion for Torque-Controlled Quadruped Robots
 
         // TODO: Move this to subclass variables
-        EigenHelpers::BlockMatrixXd C = EigenHelpers::BlockMatrixXd(num_contacts_, num_contacts_, 5, 3, 0);
+        Common::Math::EigenHelpers::BlockMatrixXd C = Common::Math::EigenHelpers::BlockMatrixXd(num_contacts_, num_contacts_, 5, 3, 0);
         
         Eigen::MatrixXd C_i = Eigen::MatrixXd(5,3);
 
