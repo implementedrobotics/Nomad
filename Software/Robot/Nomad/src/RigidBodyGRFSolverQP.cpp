@@ -47,7 +47,7 @@ namespace Robot::Nomad::Controllers
     RigidBodyGRFSolverQP::RigidBodyGRFSolverQP(const int num_contacts) : 
     Core::OptimalControl::ConvexLinearSystemSolverQP(6, num_contacts * 3, num_contacts * 5), 
     num_contacts_(num_contacts),
-    normal_force_min_(0),
+    normal_force_min_(10),
     normal_force_max_(150.0),
     mass_(1.0),
     gravity_(0,0,9.81)
@@ -96,7 +96,7 @@ namespace Robot::Nomad::Controllers
         Eigen::Vector3d omega_base_desired = x_desired_.segment(6, 3);
         Eigen::Vector3d x_com_dot_desired = x_desired_.segment(9, 3);
 
-        std::cout << "COM POS: " << std::endl << x_com << std::endl;
+        //std::cout << "COM POS: " << std::endl << x_com << std::endl;
 
         // RPY -> Quaternion -> Orientation Error
         Eigen::Quaterniond orientation = Eigen::AngleAxisd(theta_base(0), Eigen::Vector3d::UnitX()) *
@@ -109,17 +109,28 @@ namespace Robot::Nomad::Controllers
 
         // Compute Orientation Error
         Eigen::Quaterniond orientation_error = orientation_desired * orientation.conjugate();
+       // std::cout << "ORIENT: " << orientation.vec() << std::endl;
+       // std::cout << "ORIENT DES: " << orientation_desired.vec() << std::endl;
 
-        std::cout << "Orientation Error: " << std::endl << orientation_error.vec() << std::endl;
+       // std::cout << "Orientation Error: " << std::endl << orientation_error.vec() << std::endl;
+        //std::cout << "COM Error: " << std::endl << (x_com_desired - ssx_com) << std::endl;
 
+        Eigen::VectorXd w = Eigen::VectorXd(6);
+        w << 1,1,1,20,20,20;
+        SetControlWeights(w);
+        K_p_com_ = Eigen::Vector3d(50,50,50).asDiagonal();
+        K_d_com_ = Eigen::Vector3d(10,10,10).asDiagonal();
+
+        K_p_base_ = Eigen::Vector3d(500,400,200).asDiagonal();
+        K_d_base_ = Eigen::Vector3d(20,10,10).asDiagonal();
         // PD Control Law
-        Eigen::Vector3d x_com_dd_desired = Eigen::Vector3d(0,0,10);// K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);
-        Eigen::Vector3d omega_base_dot_desired = Eigen::Vector3d(0,0,0);//K_p_base_ * (orientation_error.vec() * Common::Math::sgn(orientation_error.w())) + K_d_base_ * (omega_base_desired - omega_base);
+        Eigen::Vector3d x_com_dd_desired = K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);
+        Eigen::Vector3d omega_base_dot_desired = K_p_base_ * (orientation_error.vec() * Common::Math::sgn(orientation_error.w())) + K_d_base_ * (omega_base_desired - omega_base);
 
         //std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
         //x_com_dd_desired[0] = 0.0;
 
-        std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
+        //std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
         // Update Solver Parameters
 
         // Update A Matrix
@@ -127,18 +138,17 @@ namespace Robot::Nomad::Controllers
         {
             ContactState contact = contacts_[i];
             A_.block<3, 3>(0, i * 3) = Eigen::Matrix3d::Identity();
-            A_.block<3, 3>(3, i * 3) = Common::Math::SkewSymmetricCrossProduct(x_com - contact.pos_world);
+            A_.block<3, 3>(3, i * 3) = Common::Math::SkewSymmetricCrossProduct(contact.pos_world - x_com);
         }
 
         // Update B Matrix
         b_.head(3) = mass_ * (x_com_dd_desired + gravity_);
         b_.tail(3) = I_g_ * omega_base_dot_desired;
 
-        std::cout << "A: " << std::endl << A_ << std::endl;
-        std::cout << "B: " << std::endl << b_ << std::endl; 
+       // std::cout << "A: " << std::endl << A_ << std::endl;
+       // std::cout << "B: " << std::endl << b_ << std::endl; 
 
         UpdateConstraints();
-        Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
         Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
     }
 

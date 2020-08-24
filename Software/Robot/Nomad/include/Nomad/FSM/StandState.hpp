@@ -59,6 +59,7 @@ namespace Robot::Nomad::FSM
     private:
         full_state_t nomad_state_initial_;
         Common::CubicPolynomialTrajectory stand_traj_[Robot::Nomad::NUM_LEGS];
+        Common::CubicPolynomialTrajectory com_traj_;
 
     };
 } // namespace Robot::Nomad::FSM

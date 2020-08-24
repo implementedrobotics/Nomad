@@ -71,9 +71,9 @@ namespace Robot::Nomad::Controllers
         // Set Weights
         void SetAlpha(double alpha) { alpha_ = alpha; }                               // Force Minimization Influence
         void SetBeta(double beta) { beta_ = beta; };                                  // Solution Filtering Influence
-        void SetControlWeights(Eigen::VectorXd weights) { S_ = weights; }             // Control weights between base position and orientation
-        void SetMinimizationWeights(Eigen::VectorXd weights) { W_1_ = weights; }      // Force minimization Weight
-        void SetSolutionFilteringWeights(Eigen::VectorXd weights) { W_2_ = weights; } // Solution Filtering Weight
+        void SetControlWeights(Eigen::VectorXd weights) { S_ = weights.asDiagonal(); }             // Control weights between base position and orientation
+        void SetMinimizationWeights(Eigen::VectorXd weights) { W_1_ = weights.asDiagonal(); }      // Force minimization Weight
+        void SetSolutionFilteringWeights(Eigen::VectorXd weights) { W_2_ = weights.asDiagonal(); } // Solution Filtering Weight
 
         // idx = Index of contact
         // contact = New contact state

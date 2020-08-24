@@ -41,7 +41,7 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 1.0;
+    double stance_time = 0.5;
     Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
 
     StandState::StandState() : NomadState("STAND", 2)
@@ -50,7 +50,6 @@ namespace Robot::Nomad::FSM
     void StandState::Run_(double dt)
     {
         //std::cout << "Stand Running: " << elapsed_time_ << std::endl;
-        return;
         static full_state_t nomad_state_;
         GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_);
 
@@ -58,40 +57,85 @@ namespace Robot::Nomad::FSM
         leg_controller_cmd_t leg_command;
         memset(&leg_command, 0, sizeof(leg_controller_cmd_t));
 
+        double com_z_pos_t = com_traj_.Position(elapsed_time_);
+        double com_z_vel_t = com_traj_.Velocity(elapsed_time_);
+
         for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         {
-            double h_t = stand_traj_[leg_id].Position(elapsed_time_);
-            double a_t = stand_traj_[leg_id].Acceleration(elapsed_time_);
-
             int foot_id = leg_id * 3;
 
-            // Copy Initial
-            Eigen::Vector3d foot_pos = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos[foot_id]);
-            Eigen::Vector3d foot_pos_desired = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos[foot_id]);
-            foot_pos_desired.z() = h_t;
+            Robot::Nomad::Controllers::ContactState contact;
 
-            //std::cout << "HT" << foot_pos_desired << std::endl;
-
-            Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos_desired[foot_id], 3) = foot_pos_desired;
-            Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos[foot_id], 3) = foot_pos;
-
-            //std::cout << leg_command.foot_pos_desired[2] << std::endl;
-
-            // F = ma
-            // Eigen::Vector3d force_ff = 8.0 / 4 * Eigen::Vector3d(0, 0, -9.81);
-            // if (elapsed_time_ <= stance_time)
-            // {
-            //     //std::cout << g_Controller->Skeleton()->getMass() << " : " << std::endl;
-            //     force_ff += 8.0 / 4 * Eigen::Vector3d(0, 0, -a_t);
-            // }
-            // Eigen::Map<Eigen::VectorXd>(&leg_command.force_ff [foot_id], 3) = force_ff;
-
-            //std::cout << "Got: " << leg_command.foot_pos_desired[foot_id] << std::endl;
-            //std::cout << "Got2: " << nomad_state_initial_.foot_pos[leg_id * 3+2] << std::endl;
+            contact.contact = 1; // In Contact.  TODO: From Contact State Estimator
+            contact.mu = 0.5;    // TODO: From YAML
+            contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
+            contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos_wcs[foot_id]);
+            qp_solver_.SetContactState(leg_id, contact);
         }
 
-        Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 850;
-        Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 200;
+        // x = [Θ^T, p^T, ω^T, p_dot^T]^T | Θ = orientation, p = position, ω = angular velocity, p_dot = velocity
+        Eigen::VectorXd x = Eigen::VectorXd::Zero(12);
+        Eigen::VectorXd x_desired = Eigen::VectorXd::Zero(12);
+
+        // TODO: GetCOMState Function
+        x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q, 6);
+        x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
+
+        //x_desired = x;
+        x_desired[0] = 0.0;
+        //x_desired[1] = 0.0;
+        //x_desired[2] = 0.0;
+        x_desired[3] = 0.08;
+        x_desired[4] = 0.0;
+        x_desired[5] = com_z_pos_t;
+        x_desired[11] = com_z_vel_t;
+
+        qp_solver_.SetAlpha(0.005);
+        qp_solver_.SetCurrentState(x);
+        qp_solver_.SetDesiredState(x_desired);
+        qp_solver_.SetMass(8.2); // kgs // TODO: From Robot Parameter
+        qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.025, 0.0585, 0.07));
+
+        //std::cout << "State Vector: " << std::endl << x << std::endl;
+        // Test out QP Solver
+        qp_solver_.Solve();
+
+        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, 12) = -qp_solver_.X();
+
+        // for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
+        // {
+        //     double h_t = stand_traj_[leg_id].Position(elapsed_time_);
+        //     double a_t = stand_traj_[leg_id].Acceleration(elapsed_time_);
+
+        //     int foot_id = leg_id * 3;
+
+        //     // Copy Initial
+        //     Eigen::Vector3d foot_pos = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos[foot_id]);
+        //     Eigen::Vector3d foot_pos_desired = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos[foot_id]);
+        //     foot_pos_desired.z() = h_t;
+
+        //     //std::cout << "HT" << foot_pos_desired << std::endl;
+
+        //     Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos_desired[foot_id], 3) = foot_pos_desired;
+        //     Eigen::Map<Eigen::VectorXd>(&leg_command.foot_pos[foot_id], 3) = foot_pos;
+
+        //     //std::cout << leg_command.foot_pos_desired[2] << std::endl;
+
+        //     // F = ma
+        //     // Eigen::Vector3d force_ff = 8.0 / 4 * Eigen::Vector3d(0, 0, -9.81);
+        //     // if (elapsed_time_ <= stance_time)
+        //     // {
+        //     //     //std::cout << g_Controller->Skeleton()->getMass() << " : " << std::endl;
+        //     //     force_ff += 8.0 / 4 * Eigen::Vector3d(0, 0, -a_t);
+        //     // }
+        //     // Eigen::Map<Eigen::VectorXd>(&leg_command.force_ff [foot_id], 3) = force_ff;
+
+        //     //std::cout << "Got: " << leg_command.foot_pos_desired[foot_id] << std::endl;
+        //     //std::cout << "Got2: " << nomad_state_initial_.foot_pos[leg_id * 3+2] << std::endl;
+        // }
+
+        // Eigen::Map<Eigen::VectorXd>(leg_command.k_p_cartesian, 12) = Eigen::VectorXd::Ones(12) * 850;
+        // Eigen::Map<Eigen::VectorXd>(leg_command.k_d_cartesian, 12) = Eigen::VectorXd::Ones(12) * 200;
         
 
         // Get Trimmed Jaobian
@@ -121,37 +165,42 @@ namespace Robot::Nomad::FSM
         // stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
         // stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
 
-        // 
-        for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
-        {
-            int foot_id = leg_id * 3;
+        Eigen::VectorXd com = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
+        com_traj_.Generate(com[5], stance_height, 0.0, 0.0, 0.0, stance_time);
 
-            Robot::Nomad::Controllers::ContactState contact;
+        std::cout << "From: " << com[5] << " to: " << stance_height << std::endl;
+
+        // // 
+        // for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
+        // {
+        //     int foot_id = leg_id * 3;
+
+        //     Robot::Nomad::Controllers::ContactState contact;
             
-            contact.contact = 1; // In Contact.  TODO: From Contact State Estimator
-            contact.mu = 0.5; // TODO: From YAML
-            contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
-            contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos_wcs[foot_id]);
-            qp_solver_.SetContactState(leg_id, contact);
-        }
+        //     contact.contact = 1; // In Contact.  TODO: From Contact State Estimator
+        //     contact.mu = 0.5; // TODO: From YAML
+        //     contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
+        //     contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos_wcs[foot_id]);
+        //     qp_solver_.SetContactState(leg_id, contact);
+        // }
         
-        // x = [Θ^T, p^T, ω^T, p_dot^T]^T | Θ = orientation, p = position, ω = angular velocity, p_dot = velocity
-        Eigen::VectorXd x = Eigen::VectorXd::Zero(12);
-        Eigen::VectorXd x_desired = Eigen::VectorXd::Zero(12);
+        // // x = [Θ^T, p^T, ω^T, p_dot^T]^T | Θ = orientation, p = position, ω = angular velocity, p_dot = velocity
+        // Eigen::VectorXd x = Eigen::VectorXd::Zero(12);
+        // Eigen::VectorXd x_desired = Eigen::VectorXd::Zero(12);
 
-        // TODO: GetCOMState Function
-        x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
-        x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q_dot, 6);
+        // // TODO: GetCOMState Function
+        // x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
+        // x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q_dot, 6);
         
-        x_desired = x;
-        qp_solver_.SetAlpha(0.005);
-        qp_solver_.SetCurrentState(x);
-        qp_solver_.SetDesiredState(x_desired);
-        qp_solver_.SetMass(3.2); // kgs // TODO: From Robot Parameter
-        qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.025, 0.0585, 0.07));
+        // x_desired = x;
+        // qp_solver_.SetAlpha(0.005);
+        // qp_solver_.SetCurrentState(x);
+        // qp_solver_.SetDesiredState(x_desired);
+        // qp_solver_.SetMass(3.2); // kgs // TODO: From Robot Parameter
+        // qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.025, 0.0585, 0.07));
 
-        std::cout << "State Vector: " << std::endl << x << std::endl;
-        // Test out QP Solver
-        qp_solver_.Solve();
+        // //std::cout << "State Vector: " << std::endl << x << std::endl;
+        // // Test out QP Solver
+        // qp_solver_.Solve();
     }
 } // namespace Robot::Nomad::FSM
