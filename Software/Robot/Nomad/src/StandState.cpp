@@ -127,12 +127,11 @@ namespace Robot::Nomad::FSM
             int foot_id = leg_id * 3;
 
             Robot::Nomad::Controllers::ContactState contact;
-            contact.contact = 0; // In Contact.  TODO: From Contact State Estimator
+            
+            contact.contact = 1; // In Contact.  TODO: From Contact State Estimator
             contact.mu = 0.5; // TODO: From YAML
             contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
-            contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos_wcs[foot_id]);
-            if(leg_id == 2)
-                contact.contact = 1;
+            contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_initial_.foot_pos_wcs[foot_id]);
             qp_solver_.SetContactState(leg_id, contact);
         }
         
@@ -143,11 +142,18 @@ namespace Robot::Nomad::FSM
         // TODO: GetCOMState Function
         x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q_dot, 6);
+        
+        std::cout << nomad_state_initial_.q[5] << std::endl;
+        //x = Eigen::VectorXd::Zero(12);
+
+       // x.segment(0,3) = Eigen::Vector3d(0,0,0);
+       // x.segment(6,3) = Eigen::Vector3d(0,0,0);
+        //x.tail(3) = Eigen::Vector3d(0,0,0);
         x_desired = x;
-        qp_solver_.SetAlpha(0.1);
+        qp_solver_.SetAlpha(0.005);
         qp_solver_.SetCurrentState(x);
         qp_solver_.SetDesiredState(x_desired);
-        qp_solver_.SetMass(3.2); // kgs
+        qp_solver_.SetMass(1); // kgs
         qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.025, 0.0585, 0.07));
 
         std::cout << "State Vector: " << std::endl << x << std::endl;

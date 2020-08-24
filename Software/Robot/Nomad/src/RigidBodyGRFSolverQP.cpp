@@ -47,10 +47,10 @@ namespace Robot::Nomad::Controllers
     RigidBodyGRFSolverQP::RigidBodyGRFSolverQP(const int num_contacts) : 
     Core::OptimalControl::ConvexLinearSystemSolverQP(6, num_contacts * 3, num_contacts * 5), 
     num_contacts_(num_contacts),
-    normal_force_min_(-500.0),
-    normal_force_max_(500.0),
-    mass_(10.0),
-    gravity_(0,0,9.81)
+    normal_force_min_(3),
+    normal_force_max_(50.0),
+    mass_(1.0),
+    gravity_(0,0,10.0)
     {
         // Reserve Contact List
         contacts_.reserve(num_contacts);
@@ -113,20 +113,21 @@ namespace Robot::Nomad::Controllers
         std::cout << "Orientation Error: " << std::endl << orientation_error.vec() << std::endl;
 
         // PD Control Law
-        Eigen::Vector3d x_com_dd_desired = K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);
-        Eigen::Vector3d omega_base_dot_desired = K_p_base_ * (orientation_error.vec() * Common::Math::sgn(orientation_error.w())) + K_d_base_ * (omega_base_desired - omega_base);
+        Eigen::Vector3d x_com_dd_desired = Eigen::Vector3d(0,0,10);// K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);
+        Eigen::Vector3d omega_base_dot_desired = Eigen::Vector3d(0,0,0);//K_p_base_ * (orientation_error.vec() * Common::Math::sgn(orientation_error.w())) + K_d_base_ * (omega_base_desired - omega_base);
+
+        //std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
+        x_com_dd_desired[0] = 0.0;
 
         std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
-        x_com_dd_desired[2] = 2000.0;
         // Update Solver Parameters
 
         // Update A Matrix
         for(int i = 0; i < num_contacts_; i++)
         {
             ContactState contact = contacts_[i];
-
             A_.block<3, 3>(0, i * 3) = Eigen::Matrix3d::Identity();
-            A_.block<3, 3>(3, i * 3) = Common::Math::SkewSymmetricCrossProduct(x_com-x_com);//x_com-contact.pos_world);
+            A_.block<3, 3>(3, i * 3) = Common::Math::SkewSymmetricCrossProduct(x_com - contact.pos_world);
         }
 
         // Update B Matrix
@@ -134,7 +135,7 @@ namespace Robot::Nomad::Controllers
         b_.tail(3) = I_g_ * omega_base_dot_desired;
 
         std::cout << "A: " << std::endl << A_ << std::endl;
-        std::cout << "B: " << std::endl << b_ << std::endl;
+        std::cout << "B: " << std::endl << b_ << std::endl; 
 
         UpdateConstraints();
         Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
@@ -154,17 +155,25 @@ namespace Robot::Nomad::Controllers
         Eigen::VectorXd d_upper_i = Eigen::VectorXd(5);
 
         // Lower Bounds From Eq. (8)
-        d_lower_i(0) = -qpOASES::INFTY/10000000000;
-        d_lower_i(1) = -qpOASES::INFTY/10000000000;
+        //d_lower_i(0) = -250;
+        //d_lower_i(1) = -250;
+        //d_lower_i(2) = normal_force_min_;
+
+
+        d_lower_i(0) = -qpOASES::INFTY;
+        d_lower_i(1) = -qpOASES::INFTY;
         d_lower_i(2) = 0;
         d_lower_i(3) = 0;
         d_lower_i(4) = normal_force_min_;
 
         // Upper Bounds From Eq. (8)
+        //d_upper_i(0) = 250;
+       // d_upper_i(1) = 250;
+       // d_upper_i(2) = normal_force_max_;
         d_upper_i(0) = 0;
         d_upper_i(1) = 0;
-        d_upper_i(2) = qpOASES::INFTY/100000000000;
-        d_upper_i(3) = qpOASES::INFTY/100000000000;
+        d_upper_i(2) = qpOASES::INFTY;
+        d_upper_i(3) = qpOASES::INFTY;
         d_upper_i(4) = normal_force_max_;
 
         //d_lower_i << -qpOASES::INFTY << -qpOASES::INFTY << 0.0 << 0.0 << normal_force_min_;
@@ -185,20 +194,27 @@ namespace Robot::Nomad::Controllers
             // |F_x| < |mu*F_z| or -mu*F_z <= F_x <= mu*F_z
             // |F_y| < |mu*F_z| or -mu*F_z <= F_y <= mu*F_z
             // 0 < F_min < F_z < F_max 
-            C_i.row(0) = (-contact.mu*n_i + t_1_i).transpose(); // F_x >= -mu*F_z
-            C_i.row(1) = (-contact.mu*n_i + t_2_i).transpose(); // F_y >= -mu*F_z
-            C_i.row(2) = (contact.mu*n_i + t_2_i).transpose();   // F_y <=  mu*F_z
-            C_i.row(3) = (contact.mu*n_i + t_1_i).transpose();   // F_x <=  mu*F_z
+            C_i.row(0) = (-contact.mu*n_i.transpose() + t_1_i.transpose()); // F_x >= -mu*F_z
+            C_i.row(1) = (-contact.mu*n_i.transpose() + t_2_i.transpose()); // F_y >= -mu*F_z
+            C_i.row(2) = (contact.mu*n_i.transpose() + t_2_i.transpose());   // F_y <=  mu*F_z
+            C_i.row(3) = (contact.mu*n_i.transpose() + t_1_i.transpose());   // F_x <=  mu*F_z
+            
+            //C_i.row(0) = (t_1_i).transpose();
+            //C_i.row(1) = (t_2_i).transpose();
             C_i.row(4) = (n_i).transpose();   // F_min <= F_z <= F_max
 
             // Update Big Constraint Matrix
             C(i,i) = C_i;
 
             // Update Bounds.  Zero any forces with legs not in contact.  Can't make force without something to push against.
-            lbA_.segment(i*5,5) = d_lower_i * contact.contact;
-            ubA_.segment(i*5,5) = d_upper_i * contact.contact;
+            lbA_.segment(i*5,5) = d_lower_i;// * contact.contact;
+            ubA_.segment(i*5,5) = d_upper_i;// * contact.contact;
         }
-        A_qp_ = C;
+        A_qp_ = C.MatrixXd();
+        //A_qp_(0,3) = 10;
+        std::cout << "Aqp Test: " << std::endl;
+        std::cout << A_qp_.data()[3] << std::endl;
+
         std::cout << "Aqp: " << std::endl;
         std::cout << A_qp_ << std::endl;
 

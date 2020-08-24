@@ -50,15 +50,15 @@ namespace Core::OptimalControl
     {
 
 
+        std::cout << "EQS: " << num_eq << std::endl;
+        std::cout << "VARS: " << num_vars << std::endl;
+        std::cout << "CONSTRAINTS: " << num_constraints_ << std::endl;
 
         // Resize Matrices
         A_.resize(num_eq, num_vars);
         x_star_ = Eigen::VectorXd::Zero(num_vars);
         x_star_prev_ = Eigen::VectorXd::Zero(num_vars);
-        x_star_prev_[2] = 100;
-        x_star_prev_[5] = 100;
-        x_star_prev_[8] = 100;
-        x_star_prev_[11] = 100;
+
         b_.resize(num_eq);
 
         // Default to equal weights/Identity
@@ -87,12 +87,14 @@ namespace Core::OptimalControl
         // Cache Previous Solution
         x_star_prev_ = x_star_;
 
+       // beta_ = 0.0;
+       // alpha_ = 0.0005;
         // Setup Problem
-        //H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
-        //g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
+        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
+        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
 
         H_qp_ =  2 * (A_.transpose() * S_ * A_ + (alpha_ * W_1_));
-        g_qp_ = -2 * (A_.transpose() * S_ * b_);// - 2 * (x_star_prev_ * alpha_);
+        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (x_star_prev_ * alpha_);
 
 
 
