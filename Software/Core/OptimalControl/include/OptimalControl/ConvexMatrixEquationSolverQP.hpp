@@ -96,7 +96,7 @@ namespace Core::OptimalControl
         Eigen::VectorXd ubA_; // Upper Bound of Inequality Constraint Matrix
 
         Eigen::MatrixXd H_qp_; // QP Hessian
-        Eigen::MatrixXd A_qp_; // Inequality Constraint Matrix QP
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A_qp_; // Inequality Constraint Matrix QP
         Eigen::VectorXd g_qp_; // Linear
 
         double alpha_; // Influence of Solution Minimization

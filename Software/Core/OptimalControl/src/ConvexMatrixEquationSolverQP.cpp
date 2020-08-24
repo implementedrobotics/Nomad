@@ -50,15 +50,15 @@ namespace Core::OptimalControl
     {
 
 
+        std::cout << "EQS: " << num_eq << std::endl;
+        std::cout << "VARS: " << num_vars << std::endl;
+        std::cout << "CONSTRAINTS: " << num_constraints_ << std::endl;
 
         // Resize Matrices
         A_.resize(num_eq, num_vars);
         x_star_ = Eigen::VectorXd::Zero(num_vars);
         x_star_prev_ = Eigen::VectorXd::Zero(num_vars);
-        x_star_prev_[2] = 100;
-        x_star_prev_[5] = 100;
-        x_star_prev_[8] = 100;
-        x_star_prev_[11] = 100;
+
         b_.resize(num_eq);
 
         // Default to equal weights/Identity
@@ -88,19 +88,23 @@ namespace Core::OptimalControl
         x_star_prev_ = x_star_;
 
         // Setup Problem
-        //H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
-        //g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
+        H_qp_ =  2 * (A_.transpose() * S_ * A_ + alpha_ * W_1_ + beta_ * W_2_);
+        g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (beta_ * (W_2_ * x_star_prev_));
 
-        H_qp_ =  2 * (A_.transpose() * S_ * A_ + (alpha_ * W_1_));
-        g_qp_ = -2 * (A_.transpose() * S_ * b_);// - 2 * (x_star_prev_ * alpha_);
-
-
+        // Alternate Formulation 
+        // H_qp_ =  2 * (A_.transpose() * S_ * A_ + (alpha_ * W_1_));
+        // g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (x_star_prev_ * alpha_);
 
         solver_iterations_ = max_iterations_;
         //if (is_hot_)
         //      qp_.hotstart(g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
         //else
         {
+            // Load an initial condition for xstar
+            // x_star_prev_[2] = 100;
+            // x_star_prev_[5] = 100;
+            // x_star_prev_[8] = 100;
+            // x_star_prev_[11] = 100;
             //qp_.init(H_qp_.data(), g_qp_.data(), NULL, NULL, NULL, NULL, NULL, solver_iterations_); //(Constraint Version)
             // std::cout << "H_qp: " << std::endl;
             // std::cout << H_qp_ << std::endl;
