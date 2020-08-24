@@ -76,11 +76,15 @@ namespace Core::OptimalControl
 
         double GetSolverTime() const { return solver_time_; }
 
+        void EnableQPDebug(bool enable);
         void PrintDebug();
 
     protected:
 
-        qpOASES::QProblem qp_;        // qpOases Solver Object
+        qpOASES::SQProblem qp_;        // qpOases Solver Object
+
+        qpOASES::int_t max_iterations_;    // Max Iterations for Solver
+        qpOASES::int_t solver_iterations_; // Total number of Solver iterations for solution
 
         Eigen::MatrixXd A_;           // Coefficient Matrix
         Eigen::VectorXd x_star_;      // Solution Vector
@@ -105,9 +109,6 @@ namespace Core::OptimalControl
         int num_equations_;   // Number of System Equations
         int num_variables_;   // Number of System Variables
         int num_constraints_; // Number of Inequality Constraints
-
-        qpOASES::int_t max_iterations_;    // Max Iterations for Solver
-        qpOASES::int_t solver_iterations_; // Total number of Solver iterations for solution
 
         double solver_time_; // Total time for Solver to compute a solution
 

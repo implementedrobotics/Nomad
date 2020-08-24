@@ -139,6 +139,7 @@ namespace Robot::Nomad::Controllers
 
         UpdateConstraints();
         Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
+        Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
     }
 
     void RigidBodyGRFSolverQP::UpdateConstraints()

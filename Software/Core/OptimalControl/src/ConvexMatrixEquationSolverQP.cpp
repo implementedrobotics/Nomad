@@ -46,14 +46,9 @@ namespace Core::OptimalControl
                                        solved_(false),
                                        is_hot_(false),
                                        alpha_(1e-3),
-                                       beta_(1e-3)
+                                       beta_(1e-3),
+                                       qp_(num_vars, num_constraints)
     {
-
-
-        std::cout << "EQS: " << num_eq << std::endl;
-        std::cout << "VARS: " << num_vars << std::endl;
-        std::cout << "CONSTRAINTS: " << num_constraints_ << std::endl;
-
         // Resize Matrices
         A_.resize(num_eq, num_vars);
         x_star_ = Eigen::VectorXd::Zero(num_vars);
@@ -75,8 +70,8 @@ namespace Core::OptimalControl
         A_qp_ = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(num_constraints_, num_vars);
         g_qp_.resize(num_vars);
 
-        qp_ = qpOASES::QProblem(num_vars, num_constraints);
-
+        // Disable debug by default
+        EnableQPDebug(false);
     }
 
     void ConvexLinearSystemSolverQP::Solve()
@@ -96,16 +91,14 @@ namespace Core::OptimalControl
         // g_qp_ = -2 * (A_.transpose() * S_ * b_) - 2 * (x_star_prev_ * alpha_);
 
         solver_iterations_ = max_iterations_;
-        //if (is_hot_)
-        //      qp_.hotstart(g_qp_.data(), lbA_.data(), ubA_.data(), solver_iterations_);
-        //else
+
+        qpOASES::int_t qp_ret;
+        if (is_hot_)
         {
-            // Load an initial condition for xstar
-            // x_star_prev_[2] = 100;
-            // x_star_prev_[5] = 100;
-            // x_star_prev_[8] = 100;
-            // x_star_prev_[11] = 100;
-            //qp_.init(H_qp_.data(), g_qp_.data(), NULL, NULL, NULL, NULL, NULL, solver_iterations_); //(Constraint Version)
+            qp_ret = qp_.hotstart(H_qp_.data(), g_qp_.data(), A_qp_.data(), NULL, NULL, lbA_.data(), ubA_.data(), solver_iterations_);
+        }
+        else
+        {
             // std::cout << "H_qp: " << std::endl;
             // std::cout << H_qp_ << std::endl;
 
@@ -114,23 +107,51 @@ namespace Core::OptimalControl
 
             // std::cout << "lbA: " << std::endl;
             // std::cout << lbA_ << std::endl;
-            double cpu_time;
-            qp_.init(H_qp_.data(), g_qp_.data(), A_qp_.data(), NULL, NULL, lbA_.data(), ubA_.data(), solver_iterations_);
+
+            // TODO: For some reason can't set from contructor variable when using cpu_time flag
+            qp_ret = qp_.init(H_qp_.data(), g_qp_.data(), A_qp_.data(), NULL, NULL, lbA_.data(), ubA_.data(), solver_iterations_);
             is_hot_ = true;
         }
 
-        // Get Solution
-        // TODO: Check solved here
-        qp_.getPrimalSolution(x_star_.data());
-        
         // Get ending timepoint
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-        std::cout << "Solver Time: " << duration.count() << " microseconds" << std::endl;
-        std::cout << "Value: " << std::endl;
-        std::cout << x_star_ << std::endl;
+
+        // Get Solution
+        // TODO: Check solved here
+        if(qp_ret == qpOASES::SUCCESSFUL_RETURN)
+        {
+            // Successful now get the solution
+            qp_.getPrimalSolution(x_star_.data());
+            std::cout << "Successful Solve: " << solver_iterations_ << " iterations" << "| Time: " << duration.count() << " microseconds" << std::endl;
+            std::cout << "Value: " << std::endl;
+            std::cout << x_star_ << std::endl;
+        }
+        else
+        {
+            std::cout << "Failed to solve QP! " << qp_ret << std::endl;
+
+            // TODO: Switch error codes possible here
+
+        }
     }
 
+    void ConvexLinearSystemSolverQP::EnableQPDebug(bool enable)
+    {
+        qpOASES::Options qp_opts;
+        if(enable)
+        {
+            qp_opts.printLevel = qpOASES::PL_MEDIUM;
+            qp_.setOptions(qp_opts);
+            qp_.setPrintLevel(qpOASES::PL_MEDIUM);
+        }
+        else
+        {
+            qp_opts.printLevel = qpOASES::PL_NONE;
+            qp_.setOptions(qp_opts);
+            qp_.setPrintLevel(qpOASES::PL_NONE);
+        }
+    }
     void ConvexLinearSystemSolverQP::PrintDebug()
     {
         // TODO: Print solver times, solution, iterations, etc
