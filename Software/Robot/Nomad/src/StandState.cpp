@@ -143,17 +143,11 @@ namespace Robot::Nomad::FSM
         x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q_dot, 6);
         
-        std::cout << nomad_state_initial_.q[5] << std::endl;
-        //x = Eigen::VectorXd::Zero(12);
-
-       // x.segment(0,3) = Eigen::Vector3d(0,0,0);
-       // x.segment(6,3) = Eigen::Vector3d(0,0,0);
-        //x.tail(3) = Eigen::Vector3d(0,0,0);
         x_desired = x;
         qp_solver_.SetAlpha(0.005);
         qp_solver_.SetCurrentState(x);
         qp_solver_.SetDesiredState(x_desired);
-        qp_solver_.SetMass(1); // kgs
+        qp_solver_.SetMass(3.2); // kgs // TODO: From Robot Parameter
         qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.025, 0.0585, 0.07));
 
         std::cout << "State Vector: " << std::endl << x << std::endl;
