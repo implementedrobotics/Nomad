@@ -43,6 +43,16 @@ namespace Robot::Nomad::FSM
     {
         int control_mode;
 
+        double     x_dot;
+        double     y_dot;
+        double     yaw_dot;
+
+        double     phi;
+        double     theta;
+        double     psi;
+        
+        double     z_com;
+
         // State
         full_state_t nomad_state;
 

@@ -82,6 +82,12 @@ namespace OperatorInterface::Teleop
         switch (gamepad_FSM_->GetMode())
         {
         case GamepadState::STAND:
+        // TODO: Max Min Values. and map from -1:1
+
+            // Invert theta from gamepad Y +/-
+            teleop_data_.phi = gamepad_->GetAxisState(GamepadInterface::ANALOG_RIGHT_STICK_X).value;
+            teleop_data_.theta = -1 * gamepad_->GetAxisState(GamepadInterface::ANALOG_RIGHT_STICK_Y).value;
+            //std::cout << "Theta: " << teleop_data_.theta << std::endl;
             break;
 
         default:

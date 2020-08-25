@@ -4,4 +4,14 @@ struct teleop_data_t
     int64_t sequence_num;
 
     int8_t control_mode;
+
+    double x_dot;
+    double y_dot;
+    double yaw_dot;
+
+    double phi; // Pitch
+    double theta; // Roll
+    double psi; // Yaw
+
+    double z_com;
 }

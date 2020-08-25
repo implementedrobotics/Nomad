@@ -87,6 +87,7 @@
         "boundingsphere": "cpp",
         "timer": "cpp",
         "cameramanipulator": "cpp",
-        "graphicswindow": "cpp"
+        "graphicswindow": "cpp",
+        "guieventadapter": "cpp"
     }
 }

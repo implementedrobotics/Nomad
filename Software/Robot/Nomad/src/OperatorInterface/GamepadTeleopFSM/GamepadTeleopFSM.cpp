@@ -88,11 +88,16 @@ namespace OperatorInterface::Teleop
         std::shared_ptr<DPadEvent> up_event = std::make_shared<DPadEvent>("UP BUTTON", GamepadInterface::DPadType::D_PAD_UP, gamepad_);
         std::shared_ptr<DPadEvent> down_event = std::make_shared<DPadEvent>("DOWN BUTTON", GamepadInterface::DPadType::D_PAD_DOWN, gamepad_);
 
+        std::shared_ptr<ButtonEvent> A_event = std::make_shared<ButtonEvent>("A BUTTON", GamepadInterface::ButtonType::BUTTON_A, ButtonEvent::EventType::EVENT_PRESSED, gamepad_);
+        std::shared_ptr<ButtonEvent> B_event = std::make_shared<ButtonEvent>("B BUTTON", GamepadInterface::ButtonType::BUTTON_B, ButtonEvent::EventType::EVENT_PRESSED, gamepad_);
+        std::shared_ptr<ButtonEvent> X_event = std::make_shared<ButtonEvent>("X BUTTON", GamepadInterface::ButtonType::BUTTON_X, ButtonEvent::EventType::EVENT_PRESSED, gamepad_);
+        std::shared_ptr<ButtonEvent> Y_event = std::make_shared<ButtonEvent>("Y BUTTON", GamepadInterface::ButtonType::BUTTON_Y, ButtonEvent::EventType::EVENT_PRESSED, gamepad_);
+
         // Setup Transitions
         off->AddTransitionEvent(start_event, idle);
-        idle->AddTransitionEvent(up_event, stand);
-        stand->AddTransitionEvent(down_event, idle);
-        sit->AddTransitionEvent(up_event, stand);
+        idle->AddTransitionEvent(Y_event, stand);
+        stand->AddTransitionEvent(A_event, idle);
+        sit->AddTransitionEvent(Y_event, stand);
 
         // Add the stated to the FSM
         AddState(off);

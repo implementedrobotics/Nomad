@@ -20,6 +20,20 @@ class teleop_data_t
 
         int8_t     control_mode;
 
+        double     x_dot;
+
+        double     y_dot;
+
+        double     yaw_dot;
+
+        double     phi;
+
+        double     theta;
+
+        double     psi;
+
+        double     z_com;
+
     public:
         /**
          * Destructs a message properly if anything inherits from it
@@ -133,6 +147,27 @@ int teleop_data_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) co
     thislen = __int8_t_encode_array(buf, offset + pos, maxlen - pos, &this->control_mode, 1);
     if(thislen < 0) return thislen; else pos += thislen;
 
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->x_dot, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->y_dot, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->yaw_dot, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->phi, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->theta, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->psi, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->z_com, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
     return pos;
 }
 
@@ -150,6 +185,27 @@ int teleop_data_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxl
     thislen = __int8_t_decode_array(buf, offset + pos, maxlen - pos, &this->control_mode, 1);
     if(thislen < 0) return thislen; else pos += thislen;
 
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->x_dot, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->y_dot, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->yaw_dot, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->phi, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->theta, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->psi, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->z_com, 1);
+    if(thislen < 0) return thislen; else pos += thislen;
+
     return pos;
 }
 
@@ -159,12 +215,19 @@ uint32_t teleop_data_t::_getEncodedSizeNoHash() const
     enc_size += __int64_t_encoded_array_size(NULL, 1);
     enc_size += __int64_t_encoded_array_size(NULL, 1);
     enc_size += __int8_t_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
+    enc_size += __double_encoded_array_size(NULL, 1);
     return enc_size;
 }
 
 uint64_t teleop_data_t::_computeHash(const __zcm_hash_ptr*)
 {
-    uint64_t hash = (uint64_t)0x8067b2ad13cbdcdcLL;
+    uint64_t hash = (uint64_t)0xe68540c7380d9e61LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

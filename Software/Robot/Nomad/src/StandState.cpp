@@ -82,8 +82,8 @@ namespace Robot::Nomad::FSM
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
 
         //x_desired = x;
-        x_desired[0] = 0.0; // Roll
-        x_desired[1] = -0.5; // Pitch
+        x_desired[0] = data_->phi; // Roll
+        x_desired[1] = data_->theta; // Pitch
         x_desired[2] = 0.0; // Yaw
         x_desired[3] = 0.08; // X
         x_desired[4] = 0.0;  // Y
