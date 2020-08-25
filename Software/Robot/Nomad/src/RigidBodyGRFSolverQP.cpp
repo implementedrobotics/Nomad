@@ -42,15 +42,21 @@
 
 using namespace ControlsLibrary;
 
+static constexpr int kNumConstraintsPerContact = 5;
+static constexpr int kNumBodyDOF = 6;
+static constexpr int kNumContactDOF = 3;
+
 namespace Robot::Nomad::Controllers
 {
-    RigidBodyGRFSolverQP::RigidBodyGRFSolverQP(const int num_contacts) : 
-    Core::OptimalControl::ConvexLinearSystemSolverQP(6, num_contacts * 3, num_contacts * 5), 
-    num_contacts_(num_contacts),
-    normal_force_min_(10),
-    normal_force_max_(150.0),
-    mass_(1.0),
-    gravity_(0,0,9.81)
+
+    RigidBodyGRFSolverQP::RigidBodyGRFSolverQP(const int num_contacts) : Core::OptimalControl::ConvexLinearSystemSolverQP(kNumBodyDOF,
+                                                                                                                          num_contacts * kNumContactDOF,
+                                                                                                                          num_contacts * kNumConstraintsPerContact),
+                                                                         num_contacts_(num_contacts),
+                                                                         normal_force_min_(10),
+                                                                         normal_force_max_(150.0),
+                                                                         mass_(1.0),
+                                                                         gravity_(0, 0, 9.81)
     {
         // Reserve Contact List
         contacts_.reserve(num_contacts);
@@ -96,26 +102,10 @@ namespace Robot::Nomad::Controllers
         Eigen::Vector3d omega_base_desired = x_desired_.segment(6, 3);
         Eigen::Vector3d x_com_dot_desired = x_desired_.segment(9, 3);
 
-        //std::cout << "COM POS: " << std::endl << x_com << std::endl;
+        Eigen::Vector3d theta_base_error = Common::Math::ComputeOrientationError(theta_base, theta_base_desired);
 
-        // RPY -> Quaternion -> Orientation Error
-        Eigen::Quaterniond orientation = Eigen::AngleAxisd(theta_base(0), Eigen::Vector3d::UnitX()) *
-                                         Eigen::AngleAxisd(theta_base(1), Eigen::Vector3d::UnitY()) *
-                                         Eigen::AngleAxisd(theta_base(2), Eigen::Vector3d::UnitZ());
 
-        Eigen::Quaterniond orientation_desired = Eigen::AngleAxisd(theta_base_desired(0), Eigen::Vector3d::UnitX()) *
-                                                 Eigen::AngleAxisd(theta_base_desired(1), Eigen::Vector3d::UnitY()) *
-                                                 Eigen::AngleAxisd(theta_base_desired(2), Eigen::Vector3d::UnitZ());
-
-        // Compute Orientation Error
-        Eigen::Quaterniond orientation_error = orientation_desired * orientation.conjugate();
-       // std::cout << "ORIENT: " << orientation.vec() << std::endl;
-       // std::cout << "ORIENT DES: " << orientation_desired.vec() << std::endl;
-
-       // std::cout << "Orientation Error: " << std::endl << orientation_error.vec() << std::endl;
-        //std::cout << "COM Error: " << std::endl << (x_com_desired - ssx_com) << std::endl;
-
-        Eigen::VectorXd w = Eigen::VectorXd(6);
+        Eigen::VectorXd w = Eigen::VectorXd(kNumBodyDOF);
         w << 1,1,1,20,20,20;
         SetControlWeights(w);
         K_p_com_ = Eigen::Vector3d(50,50,50).asDiagonal();
@@ -123,16 +113,12 @@ namespace Robot::Nomad::Controllers
 
         K_p_base_ = Eigen::Vector3d(500,400,200).asDiagonal();
         K_d_base_ = Eigen::Vector3d(20,10,10).asDiagonal();
+
         // PD Control Law
         Eigen::Vector3d x_com_dd_desired = K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);
-        Eigen::Vector3d omega_base_dot_desired = K_p_base_ * (orientation_error.vec() * Common::Math::sgn(orientation_error.w())) + K_d_base_ * (omega_base_desired - omega_base);
+        Eigen::Vector3d omega_base_dot_desired = K_p_base_ * (theta_base_error) + K_d_base_ * (omega_base_desired - omega_base);
 
-        //std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
-        //x_com_dd_desired[0] = 0.0;
-
-        //std::cout << "X_COM DD: " << std::endl << x_com_dd_desired << std::endl;
         // Update Solver Parameters
-
         // Update A Matrix
         for(int i = 0; i < num_contacts_; i++)
         {
@@ -145,9 +131,6 @@ namespace Robot::Nomad::Controllers
         b_.head(3) = mass_ * (x_com_dd_desired + gravity_);
         b_.tail(3) = I_g_ * omega_base_dot_desired;
 
-       // std::cout << "A: " << std::endl << A_ << std::endl;
-       // std::cout << "B: " << std::endl << b_ << std::endl; 
-
         UpdateConstraints();
         Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
     }
@@ -158,12 +141,12 @@ namespace Robot::Nomad::Controllers
         // Eq. (7) and Eq. (8) High-slope Terrain Locomotion for Torque-Controlled Quadruped Robots
 
         // TODO: Move this to subclass variables
-        Common::Math::EigenHelpers::BlockMatrixXd C = Common::Math::EigenHelpers::BlockMatrixXd(num_contacts_, num_contacts_, 5, 3, 0);
+        Common::Math::EigenHelpers::BlockMatrixXd C = Common::Math::EigenHelpers::BlockMatrixXd(num_contacts_, num_contacts_, kNumConstraintsPerContact, kNumContactDOF, 0);
         
-        Eigen::MatrixXd C_i = Eigen::MatrixXd(5,3);
+        Eigen::MatrixXd C_i = Eigen::MatrixXd(kNumConstraintsPerContact,kNumContactDOF);
 
-        Eigen::VectorXd d_lower_i = Eigen::VectorXd(5);
-        Eigen::VectorXd d_upper_i = Eigen::VectorXd(5);
+        Eigen::VectorXd d_lower_i = Eigen::VectorXd(kNumConstraintsPerContact);
+        Eigen::VectorXd d_upper_i = Eigen::VectorXd(kNumConstraintsPerContact);
 
         // Lower Bounds From Eq. (8)
         d_lower_i(0) = -qpOASES::INFTY;
@@ -188,27 +171,28 @@ namespace Robot::Nomad::Controllers
             ContactState contact = contacts_[i];
 
             // TODO: Convert Surface Normal Orientation -> Plane Normal and Tangent Vector
-            Eigen::Vector3d n_i = Eigen::Vector3d::UnitZ();
             Eigen::Vector3d t_1_i = Eigen::Vector3d::UnitX();
             Eigen::Vector3d t_2_i = Eigen::Vector3d::UnitY();
+            Eigen::Vector3d n_i = Eigen::Vector3d::UnitZ();
+
 
             // Friction Cone Constraints
             // Eq. (22), Eq. (23) and Eq. (24) Dynamic Locomotion in the MIT Cheetah 3 Through Convex Model-Predictive Control
             // |F_x| < |mu*F_z| or -mu*F_z <= F_x <= mu*F_z
             // |F_y| < |mu*F_z| or -mu*F_z <= F_y <= mu*F_z
             // 0 < F_min < F_z < F_max 
-            C_i.row(0) = (-contact.mu*n_i.transpose() + t_1_i.transpose());  // F_x >= -mu*F_z
-            C_i.row(1) = (-contact.mu*n_i.transpose() + t_2_i.transpose());  // F_y >= -mu*F_z
-            C_i.row(2) = (contact.mu*n_i.transpose() + t_2_i.transpose());   // F_y <=  mu*F_z
-            C_i.row(3) = (contact.mu*n_i.transpose() + t_1_i.transpose());   // F_x <=  mu*F_z
+            C_i.row(0) = (-contact.mu * n_i.transpose() + t_1_i.transpose());  // F_x >= -mu*F_z
+            C_i.row(1) = (-contact.mu * n_i.transpose() + t_2_i.transpose());  // F_y >= -mu*F_z
+            C_i.row(2) = (contact.mu  * n_i.transpose() + t_2_i.transpose());   // F_y <=  mu*F_z
+            C_i.row(3) = (contact.mu  * n_i.transpose() + t_1_i.transpose());   // F_x <=  mu*F_z
             C_i.row(4) = (n_i).transpose();   // F_min <= F_z <= F_max
 
             // Update Big Constraint Matrix
             C(i,i) = C_i;
 
             // Update Bounds.  Zero any forces with legs not in contact.  Can't make force without something to push against.
-            lbA_.segment(i*5,5) = d_lower_i * contact.contact;
-            ubA_.segment(i*5,5) = d_upper_i * contact.contact;
+            lbA_.segment(i*kNumConstraintsPerContact, kNumConstraintsPerContact) = d_lower_i * contact.contact;
+            ubA_.segment(i*kNumConstraintsPerContact, kNumConstraintsPerContact) = d_upper_i * contact.contact;
         }
 
         A_qp_ = C.MatrixXd();

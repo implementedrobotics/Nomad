@@ -78,15 +78,13 @@ namespace OperatorInterface::Teleop
         // Left Stick Y +/- adjust desired COM Height from "Base" stance height
         // Switch stand sit to A/Y
         // Up/Down change base stance height
-        
-        switch (gamepad_FSM_->GetMode() )
+
+        switch (gamepad_FSM_->GetMode())
         {
         case GamepadState::STAND:
-            std::cout << "stand---------------------------------------------------------------------------------" << std::endl;
             break;
-        
+
         default:
-        std::cout << "$*$*(%$(%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*---------------------------------------------------------------------------------" << std::endl;
             break;
         }
 

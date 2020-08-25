@@ -34,7 +34,7 @@
 namespace Common::Math
 {
     // https://en.wikipedia.org/wiki/Skew-symmetric_matrix#Cross_product
-    Eigen::Matrix3d SkewSymmetricCrossProduct(Eigen::Vector3d a)
+    Eigen::Matrix3d SkewSymmetricCrossProduct(const Eigen::Vector3d& a)
     {
         Eigen::Matrix3d skew_matrix;
         skew_matrix << 0, -a(2), a(1),
@@ -44,6 +44,38 @@ namespace Common::Math
         return skew_matrix;
     }
 
+    // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
+    Eigen::Quaterniond EulerToQuaternion(const Eigen::Vector3d& euler)
+    {
+        return Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX()) *
+               Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
+               Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ());
+    }
+
+    // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
+    Eigen::Vector3d QuaterionToEuler(const Eigen::Quaterniond& q)
+    {
+        return q.toRotationMatrix().eulerAngles(0, 1, 2);
+    }
+
+    // Compute Orientation Error between theta_1 -> theta_2 Euler orientations
+    Eigen::Vector3d ComputeOrientationError(const Eigen::Vector3d& theta_1, const Eigen::Vector3d& theta_2)
+    {
+        Eigen::Quaterniond q_1 = Eigen::AngleAxisd(theta_1(0), Eigen::Vector3d::UnitX()) *
+                                         Eigen::AngleAxisd(theta_1(1), Eigen::Vector3d::UnitY()) *
+                                         Eigen::AngleAxisd(theta_1(2), Eigen::Vector3d::UnitZ());
+
+        Eigen::Quaterniond q_2 = Eigen::AngleAxisd(theta_2(0), Eigen::Vector3d::UnitX()) *
+                                                 Eigen::AngleAxisd(theta_2(1), Eigen::Vector3d::UnitY()) *
+                                                 Eigen::AngleAxisd(theta_2(2), Eigen::Vector3d::UnitZ());
+
+        // Compute Orientation Error
+        Eigen::Quaterniond q_error = q_2 * q_1.conjugate();
+
+        // Return shortest path orientation error.  The sgn * q_error_W prevents long path tranversals
+        // See https://studywolf.wordpress.com/2018/12/03/force-control-of-task-space-orientation/
+        return q_error.vec() * Common::Math::sgn(q_error.w());
+    }
     namespace EigenHelpers
     {
 

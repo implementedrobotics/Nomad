@@ -42,7 +42,16 @@ namespace Common::Math
     }
 
     // https://en.wikipedia.org/wiki/Skew-symmetric_matrix#Cross_product
-    Eigen::Matrix3d SkewSymmetricCrossProduct(Eigen::Vector3d a);
+    Eigen::Matrix3d SkewSymmetricCrossProduct(const Eigen::Vector3d& a);
+
+    // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
+    Eigen::Quaterniond EulerToQuaternion(const Eigen::Vector3d& euler);
+
+    // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
+    Eigen::Vector3d QuaterionToEuler(const Eigen::Quaterniond& q);
+
+    // Compute Orientation Error between 2 Euler orientations
+    Eigen::Vector3d ComputeOrientationError(const Eigen::Vector3d& theta_1, const Eigen::Vector3d& theta_2);
 
     namespace EigenHelpers
     {

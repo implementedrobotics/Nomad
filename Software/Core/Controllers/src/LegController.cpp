@@ -134,7 +134,13 @@ namespace Controllers::Locomotion
         tau_output += force_to_tau;
 
         Eigen::Map<Eigen::VectorXd>(servo_command_output_.tau_ff, 12) = tau_output;
+        // static double max = 0.0;
+        // static double min = 10000000;
+        // max = std::max(max, tau_output.maxCoeff());
+        // min = std::min(min, tau_output.minCoeff());
 
+        // std::cout << " MAX TORQUE: " << max << std::endl;
+        // std::cout << " MIN TORQUE: " << min << std::endl;
         //std::cout << "Error: " << (foot_pos_desired - foot_pos_) <<std::endl;
         //std::cout << "Force: " << force_output <<std::endl;
         //std::cout << "in leg Send: " << tau_output <<std::endl;
@@ -144,11 +150,9 @@ namespace Controllers::Locomotion
         //servo_command_output_.tau_ff[1] = 5;
 
         // Publish Forces
-
         GetOutputPort(OutputPort::SERVO_COMMAND)->Send(servo_command_output_);
 
         //std::cout << "[LegController]: Publishing: " << std::endl;
-
     }
 
     // Update function for next state from inputs

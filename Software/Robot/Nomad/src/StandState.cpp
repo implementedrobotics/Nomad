@@ -82,25 +82,25 @@ namespace Robot::Nomad::FSM
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
 
         //x_desired = x;
-        x_desired[0] = 0.0;
-        //x_desired[1] = 0.0;
-        //x_desired[2] = 0.0;
-        x_desired[3] = 0.08;
-        x_desired[4] = 0.0;
-        x_desired[5] = com_z_pos_t;
+        x_desired[0] = 0.0; // Roll
+        x_desired[1] = -0.5; // Pitch
+        x_desired[2] = 0.0; // Yaw
+        x_desired[3] = 0.08; // X
+        x_desired[4] = 0.0;  // Y
+        x_desired[5] = com_z_pos_t; // Z
         x_desired[11] = com_z_vel_t;
 
         qp_solver_.SetAlpha(0.005);
         qp_solver_.SetCurrentState(x);
         qp_solver_.SetDesiredState(x_desired);
-        qp_solver_.SetMass(8.2); // kgs // TODO: From Robot Parameter
-        qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.025, 0.0585, 0.07));
+        qp_solver_.SetMass(7.3); // kgs // TODO: From Robot Parameter
+        qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.09165, 0.2716, 0.3391));
 
         //std::cout << "State Vector: " << std::endl << x << std::endl;
         // Test out QP Solver
         qp_solver_.Solve();
 
-        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, 12) = -qp_solver_.X();
+        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -qp_solver_.X();
 
         // for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         // {
