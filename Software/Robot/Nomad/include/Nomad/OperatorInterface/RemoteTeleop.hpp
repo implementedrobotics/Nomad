@@ -36,6 +36,7 @@
 #include <Systems/SystemBlock.hpp>
 #include <Nomad/OperatorInterface/GamepadInterface.hpp>
 #include <Nomad/OperatorInterface/GamepadTeleopFSM/GamepadTeleopFSM.hpp>
+#include <Nomad/OperatorInterface/GamepadTeleopFSM/States/GamepadState.hpp>
 #include <Nomad/MessageTypes/teleop_data_t.hpp>
 
 // TODO: Evaluate the need for the class... Could be handled all in the Trajectory Generator.  But if latency permits this is a good intermediate layer to handle translation of network/gamepad calls etc.

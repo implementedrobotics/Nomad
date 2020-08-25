@@ -67,6 +67,29 @@ namespace OperatorInterface::Teleop
         // Get Mode from FSM
         teleop_data_.control_mode = gamepad_FSM_->GetMode(); // Mode Type
 
+        // TODO: For now...  Switch control mode here and set setpoint data in teleop data
+        // Basically for now this is a teleop handler specifically for the gamepad. 
+        // Eventually need this more generic maybe in a trajectory generator?  We will need
+        // one anyway for the more advanced controllers that have long horizon windows
+
+        // TODO: Parameters for some of these values like robot limits
+
+        // Also Stance Height Here.
+        // Left Stick Y +/- adjust desired COM Height from "Base" stance height
+        // Switch stand sit to A/Y
+        // Up/Down change base stance height
+        
+        switch (gamepad_FSM_->GetMode() )
+        {
+        case GamepadState::STAND:
+            std::cout << "stand---------------------------------------------------------------------------------" << std::endl;
+            break;
+        
+        default:
+        std::cout << "$*$*(%$(%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*---------------------------------------------------------------------------------" << std::endl;
+            break;
+        }
+
         // Publish Messages
         GetOutputPort(OutputPort::TELEOP_DATA)->Send(teleop_data_);
     }

@@ -123,9 +123,9 @@ namespace Core::OptimalControl
         {
             // Successful now get the solution
             qp_.getPrimalSolution(x_star_.data());
-            std::cout << "Successful Solve: " << solver_iterations_ << " iterations" << "| Time: " << duration.count() << " microseconds" << std::endl;
-            std::cout << "Value: " << std::endl;
-            std::cout << x_star_ << std::endl;
+           // std::cout << "Successful Solve: " << solver_iterations_ << " iterations" << "| Time: " << duration.count() << " microseconds" << std::endl;
+           // std::cout << "Value: " << std::endl;
+           // std::cout << x_star_ << std::endl;
         }
         else
         {

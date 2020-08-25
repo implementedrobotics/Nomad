@@ -66,7 +66,7 @@ RigidBlock1D::RigidBlock1D(const double &mass,
         1.0 / mass_;
 
     // Cache Discrete Time Variant
-   // ControlsLibrary::ContinuousToDiscrete(A_, B_, T_s_, A_d_, B_d_);
+//    ControlsLibrary::ContinuousToDiscrete(A_, B_, T_s_, A_d_, B_d_);
 }
 
 void RigidBlock1D::Step(const Eigen::VectorXd &u)
