@@ -52,6 +52,10 @@ namespace Common::Math
 
     // Compute Orientation Error between 2 Euler orientations
     Eigen::Vector3d ComputeOrientationError(const Eigen::Vector3d& theta_1, const Eigen::Vector3d& theta_2);
+    
+    Eigen::Matrix3d RotationX(double rad);
+    Eigen::Matrix3d RotationY(double rad);
+    Eigen::Matrix3d RotationZ(double rad);
 
     namespace EigenHelpers
     {

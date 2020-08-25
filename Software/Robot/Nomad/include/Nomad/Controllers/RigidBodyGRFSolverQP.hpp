@@ -59,8 +59,8 @@ namespace Robot::Nomad::Controllers
         // Body Dynamic Parameters
         // Set Mass - Units = kg
         void SetMass(double mass) { mass_ = mass; }
-        void SetCentroidalMOI(double inertia) { I_g_ = Eigen::Matrix3d::Identity() * inertia; }
-        void SetCentroidalMOI(Eigen::Vector3d inertia) { I_g_ = inertia.asDiagonal(); }
+        void SetCentroidalMOI(double inertia) { I_b_ = Eigen::Matrix3d::Identity() * inertia; }
+        void SetCentroidalMOI(Eigen::Vector3d inertia) { I_b_ = inertia.asDiagonal(); }
 
         // World Parameters
         void SetGravity(Eigen::Vector3d gravity) { gravity_ = gravity; }
@@ -114,7 +114,7 @@ namespace Robot::Nomad::Controllers
         Eigen::Matrix3d K_d_base_;
 
         Eigen::Vector3d gravity_; // World Gravity
-        Eigen::Matrix3d I_g_;  // System Inertia
+        Eigen::Matrix3d I_b_;     // System Inertia ( Body Coordinate System )
         double mass_;             // System mass
 
         std::vector<ContactState> contacts_; // List of contacts in system

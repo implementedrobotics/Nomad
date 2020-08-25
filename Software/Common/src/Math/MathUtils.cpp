@@ -76,6 +76,7 @@ namespace Common::Math
         // See https://studywolf.wordpress.com/2018/12/03/force-control-of-task-space-orientation/
         return q_error.vec() * Common::Math::sgn(q_error.w());
     }
+
     namespace EigenHelpers
     {
 

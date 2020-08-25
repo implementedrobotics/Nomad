@@ -72,6 +72,8 @@ namespace Robot::Nomad::Controllers
         nomad_control_FSM_->GetData()->control_mode = teleop_data_.control_mode;
         nomad_control_FSM_->GetData()->theta = teleop_data_.theta;
         nomad_control_FSM_->GetData()->phi = teleop_data_.phi;
+        nomad_control_FSM_->GetData()->psi = teleop_data_.psi;
+        nomad_control_FSM_->GetData()->z_com = teleop_data_.z_com;
         //nomad_control_FSM_->GetData()->nomad_state = full_state_;
 
         // Run FSM

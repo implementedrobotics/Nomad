@@ -41,7 +41,7 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 0.5;
+    double stance_time = 1.0;
     Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
 
     StandState::StandState() : NomadState("STAND", 2)
@@ -59,6 +59,11 @@ namespace Robot::Nomad::FSM
 
         double com_z_pos_t = com_traj_.Position(elapsed_time_);
         double com_z_vel_t = com_traj_.Velocity(elapsed_time_);
+
+        if(elapsed_time_ >stance_time)
+        {
+            com_z_pos_t = data_->z_com;
+        }
 
         for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         {
@@ -82,10 +87,10 @@ namespace Robot::Nomad::FSM
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
 
         //x_desired = x;
-        x_desired[0] = data_->phi; // Roll
-        x_desired[1] = data_->theta; // Pitch
-        x_desired[2] = 0.0; // Yaw
-        x_desired[3] = 0.08; // X
+        x_desired[0] = 0;//data_->phi; // Roll
+        x_desired[1] = 0;//data_->theta; // Pitch
+        x_desired[2] = M_PI;//data_->psi; // Yaw
+        x_desired[3] = 0.0;   // X
         x_desired[4] = 0.0;  // Y
         x_desired[5] = com_z_pos_t; // Z
         x_desired[11] = com_z_vel_t;
