@@ -102,17 +102,21 @@ namespace Robot::Nomad::Controllers
         Eigen::Vector3d omega_base_desired = x_desired_.segment(6, 3);
         Eigen::Vector3d x_com_dot_desired = x_desired_.segment(9, 3);
 
+       //std::cout << "Base: " << std::endl << (omega_base) << std::endl;
+      // std::cout << "Desired: " << std::endl << (omega_base_desired) << std::endl;
+
         Eigen::Vector3d theta_base_error = Common::Math::ComputeOrientationError(theta_base, theta_base_desired);
 
+      //  std::cout << "Error: " << std::endl << (theta_base_error) << std::endl;
 
         Eigen::VectorXd w = Eigen::VectorXd(kNumBodyDOF);
-        w << 1,1,1,20,20,20;
+        w << 1,1,10,20,10,10;
         SetControlWeights(w);
         K_p_com_ = Eigen::Vector3d(50,50,50).asDiagonal();
         K_d_com_ = Eigen::Vector3d(10,10,10).asDiagonal();
 
-        K_p_base_ = Eigen::Vector3d(200,200,200).asDiagonal();
-        K_d_base_ = Eigen::Vector3d(10,10,10).asDiagonal();
+        K_p_base_ = Eigen::Vector3d(50,50,50).asDiagonal();
+        K_d_base_ = Eigen::Vector3d(20,10,10).asDiagonal();
 
         // PD Control Law
         Eigen::Vector3d x_com_dd_desired = K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);
@@ -125,19 +129,22 @@ namespace Robot::Nomad::Controllers
             ContactState contact = contacts_[i];
             A_.block<3, 3>(0, i * 3) = Eigen::Matrix3d::Identity();
             A_.block<3, 3>(3, i * 3) = Common::Math::SkewSymmetricCrossProduct(contact.pos_world - x_com);
+
+           // std::cout << "Vec: i: " << i << std::endl << (contact.pos_world - x_com) << std::endl;
         }
 
         // Update B Matrix
         Eigen::Matrix3d R_z;
-        R_z = Eigen::AngleAxisd(theta_base(2),Eigen::Vector3d::UnitZ());
-       // std::cout << R_z << std::endl;
+        R_z = Eigen::AngleAxisd(M_PI_2,Eigen::Vector3d::UnitZ());
         Eigen::Matrix3d I_g = R_z * I_b_ * R_z.transpose();
+
+
         b_.head(3) = mass_ * (x_com_dd_desired + gravity_);
         b_.tail(3) = I_g * omega_base_dot_desired;
 
-        // std::cout << "X_com: " << x_com << std::endl;
-        // std::cout << "X_com_d: " << x_com_desired << std::endl;
-        // std::cout << "X_dd: " << x_com_dd_desired << std::endl;
+         std::cout << "X_com: " << x_com << std::endl;
+         std::cout << "X_com_d: " << x_com_desired << std::endl;
+        std::cout << "X_dd: " << x_com_dd_desired << std::endl;
         UpdateConstraints();
         Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
 

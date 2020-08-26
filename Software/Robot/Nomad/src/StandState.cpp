@@ -41,7 +41,8 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 5.0;
+    double stance_time = 1.0;
+    Eigen::VectorXd x_initial = Eigen::VectorXd::Zero(12);
     Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
 
     StandState::StandState() : NomadState("STAND", 2)
@@ -60,10 +61,10 @@ namespace Robot::Nomad::FSM
         double com_z_pos_t = com_traj_.Position(elapsed_time_);
         double com_z_vel_t = com_traj_.Velocity(elapsed_time_);
 
-        if(elapsed_time_ >stance_time)
-        {
-            com_z_pos_t = data_->z_com;
-        }
+        // if(elapsed_time_ >stance_time)
+        // {
+        //     com_z_pos_t = data_->z_com;
+        // }
 
         for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         {
@@ -89,9 +90,9 @@ namespace Robot::Nomad::FSM
         //x_desired = x;
         x_desired[0] = 0;//data_->phi; // Roll
         x_desired[1] = 0;//data_->theta; // Pitch
-        x_desired[2] = -M_PI;//data_->psi; // Yaw
-        x_desired[3] = 0.0;   // X
-        x_desired[4] = 0.0;  // Y
+        x_desired[2] = 0;// M_PI_2;//data_->psi; // Yaw
+        x_desired[3] = x_initial(3);   // X
+        x_desired[4] = x_initial(4);  // Y
         x_desired[5] = com_z_pos_t; // Z
         x_desired[11] = com_z_vel_t;
 
@@ -108,26 +109,27 @@ namespace Robot::Nomad::FSM
 
 
         Eigen::Vector3d theta_base = x.segment(0, 3);
-        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(Eigen::Vector3d(0,0,theta_base(2)));
-        std::cout << "Theta Base: " << std::endl << theta_base << std::endl;
-        std::cout << "Theta Desired: " << std::endl << x_desired.segment(0, 3) << std::endl;
+        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(Eigen::Vector3d(theta_base(0),theta_base(1),theta_base(2))).transpose();
+        // std::cout << "Theta Base: " << std::endl << theta_base << std::endl;
+        // std::cout << "Theta Desired: " << std::endl << x_desired.segment(0, 3) << std::endl;
         
-      //  std::cout << "Rb: " << std::endl << R_b_T << std::endl;
-      //  std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitX() << std::endl;
-      //  std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitY() << std::endl;
-      //  std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitZ() << std::endl;
+        //std::cout << "Rb: " << std::endl << R_b_T << std::endl;
+        //std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitX() * 10 << std::endl;
+        // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitY() << std::endl;
+        // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitZ() << std::endl;
 
         //Eigen::VectorXd test = Eigen::VectorXd(12);
        // test << 1,0,0,1,0,0,1,0,0,1,0,0;
-        Common::Math::EigenHelpers::BlockMatrixXd R_bBlock = Common::Math::EigenHelpers::BlockMatrixXd(4, 4, 3, 3, 0);
+        Common::Math::EigenHelpers::BlockMatrixXd R_bBlock = Common::Math::EigenHelpers::BlockMatrixXd(Robot::Nomad::NUM_LEGS, Robot::Nomad::NUM_LEGS, 3, 3, 0);
         R_bBlock.FillDiagonal(R_b_T);
 
+    std::cout << "FORCE: " << std::endl << qp_solver_.X() << std::endl;
        // std::cout << "Rotation: " << R_bBlock.MatrixXd() * test << std::endl;
-        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -(R_bBlock.MatrixXd() * qp_solver_.X());
+        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -(qp_solver_.X());
 
-        std::cout << "X_opt: " << std::endl << -qp_solver_.X() << std::endl;
+     //   std::cout << "X_opt: " << std::endl << -qp_solver_.X() << std::endl;
 
-        std::cout << std::endl << "X_opt^T: " << std::endl << -(R_bBlock.MatrixXd() * qp_solver_.X()) << std::endl;
+       // std::cout << std::endl << "X_opt^T: " << std::endl << -(R_bBlock.MatrixXd() * qp_solver_.X()) << std::endl;
 
         // for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         // {
@@ -192,7 +194,9 @@ namespace Robot::Nomad::FSM
         // stand_traj_[Robot::Nomad::REAR_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
         // stand_traj_[Robot::Nomad::REAR_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_RR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
 
+        
         Eigen::VectorXd com = Eigen::Map<Eigen::VectorXd>(nomad_state_initial_.q, 6);
+        x_initial.head(6) = com;
         com_traj_.Generate(com[5], stance_height, 0.0, 0.0, 0.0, stance_time);
 
         std::cout << "From: " << com[5] << " to: " << stance_height << std::endl;

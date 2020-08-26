@@ -106,10 +106,10 @@ namespace Robot::Nomad::Dynamics
         
         // Setup our Augemented Contact Jacobian
         // TODO: All foot positions/velocities and jacobians are in the hip frame.  Should we make these world frame?
-        J_legs_ << robot_->getLinearJacobian(foot_body_[0], hip_base_body_[0]),
-            robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1]),
-            robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2]),
-            robot_->getLinearJacobian(foot_body_[3], hip_base_body_[3]);
+        J_legs_ << robot_->getLinearJacobian(foot_body_[0], hip_base_body_[0], hip_base_body_[0]),
+            robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1], hip_base_body_[1]),
+            robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2], hip_base_body_[2]),
+            robot_->getLinearJacobian(foot_body_[3], hip_base_body_[3], hip_base_body_[3]);
 
         // Copy Data over for our Full Robot State Message
 
@@ -122,6 +122,7 @@ namespace Robot::Nomad::Dynamics
 
         Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, kNumActuatedDofs) = (J_legs_.rightCols(12) * robot_->getVelocities().tail(12));
 
+        //std::cout << "J: " << std::endl << J_legs_.rightCols(12)  << std::endl;
         // Compute Foot Positions
         for (int i = 0; i < NUM_LEGS; i++)
         {

@@ -86,7 +86,7 @@ public:
 
   //  std::cout << "OUT OF PRE STEP!" << std::endl;
    nomad_->Skeleton()->setForces(joint_torques_cmd);
-
+   // nomad_->Skeleton()->getDof("omega_y")->setVelocity(.2);
     //context_->handle();
     
   }
@@ -141,6 +141,7 @@ public:
     Eigen::Quaterniond body_orientation = nomad_->GetBodyOrientation();
     Eigen::Vector3d accel = nomad_->GetLinearAcceleration();
     Eigen::Vector3d angular = nomad_->GetAngularVelocity();
+    //std::cout << "Angular: " << std::endl << angular << std::endl;
 
     // Cheater Orientation
     sim_data.timestamp = time_now;

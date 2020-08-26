@@ -50,6 +50,12 @@ namespace Common::Math
         rotation = Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ()) *
                    Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
                    Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX());
+
+            // rotation = 
+                       
+            //            Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX()) *
+            //            Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
+            //            Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ());
         return rotation;
     }
 
@@ -70,13 +76,13 @@ namespace Common::Math
     // Compute Orientation Error between theta_1 -> theta_2 Euler orientations
     Eigen::Vector3d ComputeOrientationError(const Eigen::Vector3d& theta_1, const Eigen::Vector3d& theta_2)
     {
-        Eigen::Quaterniond q_1 = Eigen::AngleAxisd(theta_1(0), Eigen::Vector3d::UnitX()) *
+        Eigen::Quaterniond q_1 = Eigen::AngleAxisd(theta_1(2), Eigen::Vector3d::UnitZ()) *
                                          Eigen::AngleAxisd(theta_1(1), Eigen::Vector3d::UnitY()) *
-                                         Eigen::AngleAxisd(theta_1(2), Eigen::Vector3d::UnitZ());
+                                         Eigen::AngleAxisd(theta_1(0), Eigen::Vector3d::UnitX());
 
-        Eigen::Quaterniond q_2 = Eigen::AngleAxisd(theta_2(0), Eigen::Vector3d::UnitX()) *
+        Eigen::Quaterniond q_2 = Eigen::AngleAxisd(theta_2(2), Eigen::Vector3d::UnitZ()) *
                                                  Eigen::AngleAxisd(theta_2(1), Eigen::Vector3d::UnitY()) *
-                                                 Eigen::AngleAxisd(theta_2(2), Eigen::Vector3d::UnitZ());
+                                                 Eigen::AngleAxisd(theta_2(0), Eigen::Vector3d::UnitX());
 
         // Compute Orientation Error
         Eigen::Quaterniond q_error = q_2 * q_1.conjugate();
