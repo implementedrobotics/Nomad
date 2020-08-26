@@ -41,7 +41,7 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 1.0;
+    double stance_time = 5.0;
     Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
 
     StandState::StandState() : NomadState("STAND", 2)
@@ -89,7 +89,7 @@ namespace Robot::Nomad::FSM
         //x_desired = x;
         x_desired[0] = 0;//data_->phi; // Roll
         x_desired[1] = 0;//data_->theta; // Pitch
-        x_desired[2] = M_PI;//data_->psi; // Yaw
+        x_desired[2] = -M_PI;//data_->psi; // Yaw
         x_desired[3] = 0.0;   // X
         x_desired[4] = 0.0;  // Y
         x_desired[5] = com_z_pos_t; // Z
@@ -105,7 +105,29 @@ namespace Robot::Nomad::FSM
         // Test out QP Solver
         qp_solver_.Solve();
 
-        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -qp_solver_.X();
+
+
+        Eigen::Vector3d theta_base = x.segment(0, 3);
+        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(Eigen::Vector3d(0,0,theta_base(2)));
+        std::cout << "Theta Base: " << std::endl << theta_base << std::endl;
+        std::cout << "Theta Desired: " << std::endl << x_desired.segment(0, 3) << std::endl;
+        
+      //  std::cout << "Rb: " << std::endl << R_b_T << std::endl;
+      //  std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitX() << std::endl;
+      //  std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitY() << std::endl;
+      //  std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitZ() << std::endl;
+
+        //Eigen::VectorXd test = Eigen::VectorXd(12);
+       // test << 1,0,0,1,0,0,1,0,0,1,0,0;
+        Common::Math::EigenHelpers::BlockMatrixXd R_bBlock = Common::Math::EigenHelpers::BlockMatrixXd(4, 4, 3, 3, 0);
+        R_bBlock.FillDiagonal(R_b_T);
+
+       // std::cout << "Rotation: " << R_bBlock.MatrixXd() * test << std::endl;
+        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -(R_bBlock.MatrixXd() * qp_solver_.X());
+
+        std::cout << "X_opt: " << std::endl << -qp_solver_.X() << std::endl;
+
+        std::cout << std::endl << "X_opt^T: " << std::endl << -(R_bBlock.MatrixXd() * qp_solver_.X()) << std::endl;
 
         // for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         // {
@@ -146,7 +168,7 @@ namespace Robot::Nomad::FSM
         // Get Trimmed Jaobian
         Eigen::MatrixXd J_c = Eigen::Map<Eigen::MatrixXd>(nomad_state_.J_c, 12, 18).rightCols(12);
         Eigen::Map<Eigen::MatrixXd>(leg_command.J_c, Robot::Nomad::NUM_LEGS * 3, 12) = J_c;
-        //std::cout << J_c << std::endl;
+       // std::cout << "J_C_" << J_c << std::endl;
 
         // Output Leg Command
         GetOutputPort(NomadControl::OutputPort::LEG_COMMAND)->Send(leg_command);

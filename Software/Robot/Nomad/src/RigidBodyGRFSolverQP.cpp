@@ -106,9 +106,9 @@ namespace Robot::Nomad::Controllers
 
 
         Eigen::VectorXd w = Eigen::VectorXd(kNumBodyDOF);
-        w << 1,1,1,200,200,200;
+        w << 1,1,1,20,20,20;
         SetControlWeights(w);
-        K_p_com_ = Eigen::Vector3d(50,50,150).asDiagonal();
+        K_p_com_ = Eigen::Vector3d(50,50,50).asDiagonal();
         K_d_com_ = Eigen::Vector3d(10,10,10).asDiagonal();
 
         K_p_base_ = Eigen::Vector3d(200,200,200).asDiagonal();
@@ -129,14 +129,19 @@ namespace Robot::Nomad::Controllers
 
         // Update B Matrix
         Eigen::Matrix3d R_z;
-        R_z = Eigen::AngleAxisd(-theta_base(2),Eigen::Vector3d::UnitZ());
-        std::cout << R_z << std::endl;
+        R_z = Eigen::AngleAxisd(theta_base(2),Eigen::Vector3d::UnitZ());
+       // std::cout << R_z << std::endl;
         Eigen::Matrix3d I_g = R_z * I_b_ * R_z.transpose();
         b_.head(3) = mass_ * (x_com_dd_desired + gravity_);
         b_.tail(3) = I_g * omega_base_dot_desired;
 
+        // std::cout << "X_com: " << x_com << std::endl;
+        // std::cout << "X_com_d: " << x_com_desired << std::endl;
+        // std::cout << "X_dd: " << x_com_dd_desired << std::endl;
         UpdateConstraints();
         Core::OptimalControl::ConvexLinearSystemSolverQP::Solve();
+
+        
     }
 
     void RigidBodyGRFSolverQP::UpdateConstraints()

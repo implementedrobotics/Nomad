@@ -44,6 +44,15 @@ namespace Common::Math
         return skew_matrix;
     }
 
+    Eigen::Matrix3d EulerToRotationMatrix(const Eigen::Vector3d &euler)
+    {
+        Eigen::Matrix3d rotation;
+        rotation = Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ()) *
+                   Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
+                   Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX());
+        return rotation;
+    }
+
     // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
     Eigen::Quaterniond EulerToQuaternion(const Eigen::Vector3d& euler)
     {
