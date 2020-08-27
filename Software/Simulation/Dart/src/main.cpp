@@ -86,7 +86,7 @@ public:
 
   //  std::cout << "OUT OF PRE STEP!" << std::endl;
    nomad_->Skeleton()->setForces(joint_torques_cmd);
-   // nomad_->Skeleton()->getDof("omega_y")->setVelocity(.2);
+  //  nomad_->Skeleton()->getDof("omega_y")->setVelocity(.2);
     //context_->handle();
     
   }
@@ -165,6 +165,8 @@ public:
     sim_data.com_omega[0] = angular[0];
     sim_data.com_omega[1] = angular[1];
     sim_data.com_omega[2] = angular[2];
+
+   // std::cout << "Angular: " <<std::endl << angular << std::endl;
 
     // Orientation
     sim_data.imu_orientation[0] = body_orientation.x();
@@ -275,8 +277,8 @@ int main(int argc, char *argv[])
   g_world = World::create();
 
   // Update Gravity vector to Z down
-  Eigen::Vector3d gravity(0.0, 0.0, -9.81);
-  //Eigen::Vector3d gravity(0.0, 0.0, 0.0);
+  //Eigen::Vector3d gravity(0.0, 0.0, -9.81);
+  Eigen::Vector3d gravity(0.0, 0.0, 0.0);
   g_world->setGravity(gravity);
 
   // Create and add ground to world

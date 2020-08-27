@@ -73,7 +73,7 @@ namespace Robot::Nomad::FSM
             Robot::Nomad::Controllers::ContactState contact;
 
             contact.contact = 1; // In Contact.  TODO: From Contact State Estimator
-            contact.mu = 0.5;    // TODO: From YAML
+            contact.mu = 10.0;    // TODO: From YAML
             contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
             contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos_wcs[foot_id]);
             qp_solver_.SetContactState(leg_id, contact);
@@ -104,28 +104,46 @@ namespace Robot::Nomad::FSM
 
         //std::cout << "State Vector: " << std::endl << x << std::endl;
         // Test out QP Solver
-        qp_solver_.Solve();
+      //  qp_solver_.Solve();
 
 
 
-        Eigen::Vector3d theta_base = x.segment(0, 3);
-        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(Eigen::Vector3d(theta_base(0),theta_base(1),theta_base(2))).transpose();
+        Eigen::Vector3d theta_base = Eigen::Vector3d(1,-.5,.8);//x.segment(0, 3);
+        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(theta_base);
         // std::cout << "Theta Base: " << std::endl << theta_base << std::endl;
         // std::cout << "Theta Desired: " << std::endl << x_desired.segment(0, 3) << std::endl;
-        
-        //std::cout << "Rb: " << std::endl << R_b_T << std::endl;
-        //std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitX() * 10 << std::endl;
+        std::cout << "Euler 1: " << std::endl << theta_base << std::endl;
+
+        std::cout << "Rb Me: " << std::endl << R_b_T << std::endl;
+
+        //R_b_T.setIdentity();
+        //Common::Math::rpyToR(R_b_T, theta_base.data());
+        //std::cout << "Rb Other: " << std::endl << R_b_T.transpose() << std::endl;
+
+        // RPY
+        std::cout << "Euler 2: " << Common::Math::RotationMatrixToEuler(R_b_T) << std::endl;
+
+        Eigen::Quaterniond q1 = Common::Math::EulerToQuaternion(theta_base);
+        std::cout << "Euler 3: " << std::endl << Common::Math::QuaterionToEuler(q1) << std::endl;
+
+        std::cout << "Matrix: 3" << q1.toRotationMatrix() << std::endl;
+
+        // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitX() * 10 << std::endl;
         // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitY() << std::endl;
         // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitZ() << std::endl;
 
-        //Eigen::VectorXd test = Eigen::VectorXd(12);
+        //Eigen::VectorXd test = Eigen::VectorXd(12);W
        // test << 1,0,0,1,0,0,1,0,0,1,0,0;
         Common::Math::EigenHelpers::BlockMatrixXd R_bBlock = Common::Math::EigenHelpers::BlockMatrixXd(Robot::Nomad::NUM_LEGS, Robot::Nomad::NUM_LEGS, 3, 3, 0);
         R_bBlock.FillDiagonal(R_b_T);
 
-    std::cout << "FORCE: " << std::endl << qp_solver_.X() << std::endl;
-       // std::cout << "Rotation: " << R_bBlock.MatrixXd() * test << std::endl;
-        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -(qp_solver_.X());
+       std::cout << "FORCE: " << std::endl << qp_solver_.X() << std::endl;
+      // std::cout << "Rotation: " << R_b_T << std::endl;
+
+        Eigen::VectorXd force_test(12);
+        force_test << 0,1,0,1,0,0,1,0,0,1,0,0;
+  
+        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = (R_bBlock.MatrixXd()*qp_solver_.X());
 
      //   std::cout << "X_opt: " << std::endl << -qp_solver_.X() << std::endl;
 

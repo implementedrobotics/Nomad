@@ -70,18 +70,18 @@ Eigen::Quaterniond NomadRobot::GetBodyOrientation() const
 Eigen::Vector3d NomadRobot::GetAngularAcceleration() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
-    return base_link->getAngularAcceleration(dart::dynamics::Frame::World(), dart::dynamics::Frame::World());
+    return base_link->getAngularAcceleration(dart::dynamics::Frame::World(), base_link);
 }
 Eigen::Vector3d NomadRobot::GetLinearAcceleration() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
-    return base_link->getLinearAcceleration(dart::dynamics::Frame::World(), dart::dynamics::Frame::World());
+    return base_link->getLinearAcceleration(dart::dynamics::Frame::World(), base_link);
 }
 
 Eigen::Vector3d NomadRobot::GetAngularVelocity() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
-    return base_link->getAngularVelocity(dart::dynamics::Frame::World(), dart::dynamics::Frame::World());
+    return base_link->getAngularVelocity(dart::dynamics::Frame::World(), base_link);
 }
 
 void NomadRobot::LoadFromURDF(const std::string &urdf)
@@ -124,21 +124,28 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
 
 void NomadRobot::SetInitialPose()
 {
-    //robot_->getDof("omega_z")->setPosition(M_PI);
-    robot_->getDof("base_x")->setPosition(0.85);
+    robot_->getDof("omega_z")->setPosition(M_PI_2);
+    //robot_->getDof("base_x")->setPosition(0.85);
     robot_->getDof("base_z")->setPosition(0.85);
-    robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
-    robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
-    robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
-    robot_->getDof("j_hfe_RR")->setPosition(M_PI_2);
+    // robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
+    // robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
+    // robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
+    // robot_->getDof("j_hfe_RR")->setPosition(M_PI_2);
+
+    robot_->getDof("j_hfe_FL")->setPosition(-0);
+    robot_->getDof("j_hfe_FR")->setPosition(0);
+    robot_->getDof("j_hfe_RL")->setPosition(-0);
+    robot_->getDof("j_hfe_RR")->setPosition(0);
+
+
 
     robot_->getDof("j_kfe_FL")->setPositionLimits(-2.2, 0.0);
     robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, 2.2);
     robot_->getDof("j_kfe_RL")->setPositionLimits(-2.2, 0.0);
     robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, 2.2);
 
-    //robot_->getDof("j_kfe_RL")->setPosition(-2.2);
-    //robot_->getDof("j_kfe_FL")->setPosition(-2.2);
-    //robot_->getDof("j_kfe_RR")->setPosition(2.2);
-    //robot_->getDof("j_kfe_FR")->setPosition(2.2);
+    robot_->getDof("j_kfe_RL")->setPosition(-2.2);
+    robot_->getDof("j_kfe_FL")->setPosition(-2.2);
+    robot_->getDof("j_kfe_RR")->setPosition(2.2);
+    robot_->getDof("j_kfe_FR")->setPosition(2.2);
 }
