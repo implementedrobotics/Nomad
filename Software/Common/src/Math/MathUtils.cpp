@@ -44,6 +44,7 @@ namespace Common::Math
         return skew_matrix;
     }
 
+    // Convert Euler RPY -> Rotation Matrix.  TODO: Add support for rotation order
     Eigen::Matrix3d EulerToRotationMatrix(const Eigen::Vector3d &euler)
     {
         Eigen::Matrix3d rotation;
@@ -51,27 +52,32 @@ namespace Common::Math
                    Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
                    Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX());
 
-            // rotation = 
-                       
-            //            Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX()) *
-            //            Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
-            //            Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ());
         return rotation;
+    }
+
+    // Convert Rotation -> Euler RPY
+    Eigen::Vector3d RotationMatrixToEuler(const Eigen::Matrix3d& R)
+    {
+        //Eigen::Vector3d euler;
+        // Reverse to order RPY
+        return R.eulerAngles(2,1,0).reverse();
     }
 
     // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
     Eigen::Quaterniond EulerToQuaternion(const Eigen::Vector3d& euler)
     {
-        return Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX()) *
+        return Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ()) *
                Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY()) *
-               Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitZ());
+               Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitX());
     }
 
     // Convert Euler RPY -> Quaternion.  TODO: Add support for rotation order
     Eigen::Vector3d QuaterionToEuler(const Eigen::Quaterniond& q)
     {
-        return q.toRotationMatrix().eulerAngles(0, 1, 2);
+        return q.toRotationMatrix().eulerAngles(2, 1, 0).reverse();
     }
+
+
 
     // Compute Orientation Error between theta_1 -> theta_2 Euler orientations
     Eigen::Vector3d ComputeOrientationError(const Eigen::Vector3d& theta_1, const Eigen::Vector3d& theta_2)

@@ -44,6 +44,11 @@ namespace Common::Math
     // https://en.wikipedia.org/wiki/Skew-symmetric_matrix#Cross_product
     Eigen::Matrix3d SkewSymmetricCrossProduct(const Eigen::Vector3d& a);
 
+    void rpyToR(Eigen::Matrix3d &R, double *rpy_in);
+
+        // Convert Rotation -> Euler RPY
+    Eigen::Vector3d RotationMatrixToEuler(const Eigen::Matrix3d& R);
+
     // Convert Euler RPY -> Rotation Matrix.  TODO: Add support for rotation order
     Eigen::Matrix3d EulerToRotationMatrix(const Eigen::Vector3d& euler);
     
