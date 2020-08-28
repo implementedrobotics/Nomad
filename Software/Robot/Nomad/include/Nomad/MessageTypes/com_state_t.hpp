@@ -20,13 +20,11 @@ class com_state_t
 
         double     orientation[4];
 
-        double     theta[3];
+        double     pos_world[3];
 
-        double     pos[3];
+        double     omega_body[3];
 
-        double     omega[3];
-
-        double     vel[3];
+        double     vel_world[3];
 
     public:
         /**
@@ -141,16 +139,13 @@ int com_state_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) cons
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->orientation[0], 4);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->theta[0], 3);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->pos_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->pos[0], 3);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->omega_body[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->omega[0], 3);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->vel[0], 3);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->vel_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
     return pos;
@@ -170,16 +165,13 @@ int com_state_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->orientation[0], 4);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->theta[0], 3);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->pos_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->pos[0], 3);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->omega_body[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->omega[0], 3);
-    if(thislen < 0) return thislen; else pos += thislen;
-
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->vel[0], 3);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->vel_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
     return pos;
@@ -194,13 +186,12 @@ uint32_t com_state_t::_getEncodedSizeNoHash() const
     enc_size += __double_encoded_array_size(NULL, 3);
     enc_size += __double_encoded_array_size(NULL, 3);
     enc_size += __double_encoded_array_size(NULL, 3);
-    enc_size += __double_encoded_array_size(NULL, 3);
     return enc_size;
 }
 
 uint64_t com_state_t::_computeHash(const __zcm_hash_ptr*)
 {
-    uint64_t hash = (uint64_t)0x1b7176b73497d837LL;
+    uint64_t hash = (uint64_t)0xd73c473787fad6e6LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

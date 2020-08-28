@@ -69,51 +69,46 @@ namespace Robot::Nomad::Estimators
         // Read Inputs
         GetInputPort(InputPort::COM_STATE)->Receive(com_state_in_);
 
-        com_state_out_.orientation[0] = com_state_in_.orientation[0];
-        com_state_out_.orientation[1] = com_state_in_.orientation[1];
-        com_state_out_.orientation[2] = com_state_in_.orientation[2];
-        com_state_out_.orientation[3] = com_state_in_.orientation[3];
+        // This is the "perfect" state estimate.  For now we pretend that we actually
+        // are estimating
+        com_state_out_.orientation[0] = com_state_in_.orientation[0]; // X
+        com_state_out_.orientation[1] = com_state_in_.orientation[1]; // Y
+        com_state_out_.orientation[2] = com_state_in_.orientation[2]; // Z
+        com_state_out_.orientation[3] = com_state_in_.orientation[3]; // W
 
-        com_state_out_.theta[0] = com_state_in_.theta[0];
-        com_state_out_.theta[1] = com_state_in_.theta[1];
-        com_state_out_.theta[2] = com_state_in_.theta[2];
+        com_state_out_.pos_world[0] = com_state_in_.pos_world[0];
+        com_state_out_.pos_world[1] = com_state_in_.pos_world[1];
+        com_state_out_.pos_world[2] = com_state_in_.pos_world[2];
 
-        com_state_out_.pos[0] = com_state_in_.pos[0];
-        com_state_out_.pos[1] = com_state_in_.pos[1];
-        com_state_out_.pos[2] = com_state_in_.pos[2];
+        com_state_out_.omega_body[0] = com_state_in_.omega_body[0];
+        com_state_out_.omega_body[1] = com_state_in_.omega_body[1];
+        com_state_out_.omega_body[2] = com_state_in_.omega_body[2];
 
-        com_state_out_.omega[0] = com_state_in_.omega[0];
-        com_state_out_.omega[1] = com_state_in_.omega[1];
-        com_state_out_.omega[2] = com_state_in_.omega[2];
+        com_state_out_.vel_world[0] = com_state_in_.vel_world[0];
+        com_state_out_.vel_world[1] = com_state_in_.vel_world[1];
+        com_state_out_.vel_world[2] = com_state_in_.vel_world[2];
 
-        com_state_out_.vel[0] = com_state_in_.vel[0];
-        com_state_out_.vel[1] = com_state_in_.vel[1];
-        com_state_out_.vel[2] = com_state_in_.vel[2];
+        // Compute State "Estimate".  For now this is just a direct copy from the sim, i.e. "perfect"
+        // TODO: Could add noise here to make it a bit more interesting
+        com_state_hat_.orientation[0] = com_state_in_.orientation[0]; // X
+        com_state_hat_.orientation[1] = com_state_in_.orientation[1]; // Y
+        com_state_hat_.orientation[2] = com_state_in_.orientation[2]; // Z
+        com_state_hat_.orientation[3] = com_state_in_.orientation[3]; // W
 
-        // Compute State Estimate
-        com_state_hat_.orientation[0] = com_state_in_.orientation[0];
-        com_state_hat_.orientation[1] = com_state_in_.orientation[1];
-        com_state_hat_.orientation[2] = com_state_in_.orientation[2];
-        com_state_hat_.orientation[3] = com_state_in_.orientation[3];
+        com_state_hat_.pos_world[0] = com_state_in_.pos_world[0];
+        com_state_hat_.pos_world[1] = com_state_in_.pos_world[1];
+        com_state_hat_.pos_world[2] = com_state_in_.pos_world[2];
 
-        com_state_hat_.theta[0] = com_state_in_.theta[0];
-        com_state_hat_.theta[1] = com_state_in_.theta[1];
-        com_state_hat_.theta[2] = com_state_in_.theta[2];
+        com_state_hat_.omega_body[0] = com_state_in_.omega_body[0];
+        com_state_hat_.omega_body[1] = com_state_in_.omega_body[1];
+        com_state_hat_.omega_body[2] = com_state_in_.omega_body[2];
 
-        com_state_hat_.pos[0] = com_state_in_.pos[0];
-        com_state_hat_.pos[1] = com_state_in_.pos[1];
-        com_state_hat_.pos[2] = com_state_in_.pos[2];
+        com_state_hat_.vel_world[0] = com_state_in_.vel_world[0];
+        com_state_hat_.vel_world[1] = com_state_in_.vel_world[1];
+        com_state_hat_.vel_world[2] = com_state_in_.vel_world[2];
 
-        com_state_hat_.omega[0] = com_state_in_.omega[0];
-        com_state_hat_.omega[1] = com_state_in_.omega[1];
-        com_state_hat_.omega[2] = com_state_in_.omega[2];
-
-        com_state_hat_.vel[0] = com_state_in_.vel[0];
-        com_state_hat_.vel[1] = com_state_in_.vel[1];
-        com_state_hat_.vel[2] = com_state_in_.vel[2];
-
+        // Send out the Body State
         GetOutputPort(OutputPort::BODY_STATE_HAT)->Send(com_state_hat_);
-
     }
 
     // Update function for next state from inputs

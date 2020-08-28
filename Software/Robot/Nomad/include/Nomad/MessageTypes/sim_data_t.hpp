@@ -32,8 +32,6 @@ class sim_data_t
 
         double     com_orientation[4];
 
-        double     com_theta[3];
-
         double     com_pos[3];
 
         double     com_omega[3];
@@ -171,9 +169,6 @@ int sim_data_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) const
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->com_orientation[0], 4);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->com_theta[0], 3);
-    if(thislen < 0) return thislen; else pos += thislen;
-
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->com_pos[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
@@ -218,9 +213,6 @@ int sim_data_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen)
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->com_orientation[0], 4);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->com_theta[0], 3);
-    if(thislen < 0) return thislen; else pos += thislen;
-
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->com_pos[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
@@ -248,13 +240,12 @@ uint32_t sim_data_t::_getEncodedSizeNoHash() const
     enc_size += __double_encoded_array_size(NULL, 3);
     enc_size += __double_encoded_array_size(NULL, 3);
     enc_size += __double_encoded_array_size(NULL, 3);
-    enc_size += __double_encoded_array_size(NULL, 3);
     return enc_size;
 }
 
 uint64_t sim_data_t::_computeHash(const __zcm_hash_ptr*)
 {
-    uint64_t hash = (uint64_t)0x1d2b5aca8bd59466LL;
+    uint64_t hash = (uint64_t)0x32287bb6c6e34d45LL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

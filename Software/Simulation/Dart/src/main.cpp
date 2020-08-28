@@ -48,7 +48,7 @@ public:
     std::cout << "Nomad DART Sim connecting." << std::endl;
 
     context_->subscribe("nomad.sim.joint_cmd", &NomadSimWorldNode::OnJointControlMsg, this);
-    //context_->start();
+
     // TODO: Publish state back
     pub_context_ = std::make_unique<zcm::ZCM>("udpm://239.255.76.67:7667?ttl=0");
 
@@ -59,12 +59,7 @@ public:
 
   void ReceiveCommand()
   {
-    //std::cout << "START RECEIVE" << std::endl;
-    //std::unique_lock <std::mutex> lock(mtx);
-    //cv.wait(lock);
     context_->handle();
-
-    //std::cout << "Recevied! " << std::endl;
   }
 
   void customPreStep()
@@ -75,25 +70,17 @@ public:
     }
     if(b_first)
     {
-    //  std::cout << "PUBLISHING " << std::endl;
       PublishState();
       b_first = false;
     }
 
     ReceiveCommand();
 
-   // std::cout << joint_torques_cmd << std::endl;
-
-  //  std::cout << "OUT OF PRE STEP!" << std::endl;
    nomad_->Skeleton()->setForces(joint_torques_cmd);
-  //  nomad_->Skeleton()->getDof("omega_y")->setVelocity(.2);
-    //context_->handle();
-    
   }
 
   void customPostStep()
   {
-   // std::cout << "POST STEP!" << std::endl;
     PublishState();
 
     //joint_torques = Eigen::VectorXd::Zero(18);
@@ -102,13 +89,9 @@ public:
 
   void OnJointControlMsg(const zcm::ReceiveBuffer *rbuf, const std::string &chan, const joint_control_cmd_t *msg)
   {
-    //std::unique_lock <std::mutex> lock(mtx);
-   // std::cout << "Received Message on Channel: " << chan << std::endl;
-   // std::cout << "Got :" << msg->sequence_num << std::endl;
-
     // Read Input
 
-    Eigen::VectorXd tau_cmd(12);// = Eigen::VectorXd::Zero(12);
+    Eigen::VectorXd tau_cmd(12);
 
     tau_cmd[0] = msg->tau_ff[0];
     tau_cmd[1] = msg->tau_ff[1];
@@ -124,112 +107,58 @@ public:
     tau_cmd[11] = msg->tau_ff[11];
 
     joint_torques_cmd.tail(12) = tau_cmd;
-
-    // Send Output
-    //std::cout << "MISSED: " << "ID: " << msg->sequence_num << " MISSED: " << control_missed << std::endl;
-   // cv.notify_one();
   }
 
   void PublishState()
   {
-
     sim_data_t sim_data;
 
     uint64_t time_now = sequence_num_;
 
     // Get Relevant State Data
-    Eigen::Quaterniond body_orientation = nomad_->GetBodyOrientation();
-    Eigen::Vector3d accel = nomad_->GetLinearAcceleration();
-    Eigen::Vector3d angular = nomad_->GetAngularVelocity();
-    //std::cout << "Angular: " << std::endl << angular << std::endl;
+    Eigen::Quaterniond body_orientation = nomad_->GetBaseOrientation();
+    Eigen::Vector3d body_pos = nomad_->GetBasePosition(); // World
+    Eigen::Vector3d accel_body = nomad_->GetBaseLinearAcceleration(); // Body
+    Eigen::Vector3d angular_body = nomad_->GetBaseAngularVelocity(); // Body
+    Eigen::Vector3d vel_body = nomad_->GetBaseAngularVelocity(); // Body
 
     // Cheater Orientation
     sim_data.timestamp = time_now;
     sim_data.sequence_num = sequence_num_;
 
-    sim_data.com_theta[0] = nomad_->Skeleton()->getDof(0)->getPosition();
-    sim_data.com_theta[1] = nomad_->Skeleton()->getDof(1)->getPosition();
-    sim_data.com_theta[2] = nomad_->Skeleton()->getDof(2)->getPosition();
+    // Copy Body World Position
+    Eigen::Map<Eigen::VectorXd>(sim_data.com_pos, 3) = body_pos;
 
-    // std::cout << "Roll: " << sim_data.com_theta[0] <<
-    // " Pitch: " << sim_data.com_theta[1] <<
-    // " Yaw: " << sim_data.com_theta[2] << std::endl;
+    // Copy Body World Velocity(should this be local?)
+    Eigen::Map<Eigen::VectorXd>(sim_data.com_vel, 3) = body_orientation.toRotationMatrix() * vel_body;
 
-    //         Eigen::Matrix3d R0;
-    //     R0 = Eigen::AngleAxisd(sim_data.com_theta[2], Eigen::Vector3d::UnitZ()) *
-    //                Eigen::AngleAxisd(sim_data.com_theta[1], Eigen::Vector3d::UnitY()) *
-    //                Eigen::AngleAxisd(sim_data.com_theta[0], Eigen::Vector3d::UnitX());
+    // Eigen::Map<Eigen::Quaterniond>(sim_data.com_orientation, 4) = body_orientation.coeffs();
 
-    // std::cout << "R0: " <<  std::endl << R0 << std::endl;
-
-
-    dart::dynamics::BodyNodePtr base_link = g_nomad->Skeleton()->getBodyNode("base_link");
-    Eigen::Quaterniond body_orientation2;
-    //body_orientation = base_link->getWorldTransform().rotation().eulerAngles(2,1,0).reverse();
-
-    Eigen::Vector3d test = base_link->getWorldTransform().rotation().eulerAngles(2,1,0).reverse();
-    // std::cout << "POS: " << std::endl << base_link->getParentJoint()->getPositions() << std::endl;
-   // std::cout << "Relative: " << base_link->getParentJoint()->getRelativeTransform().rotation().eulerAngles(2,1,0).reverse() << std::endl;
-
-     std::cout << "Roll2: " << test[0] <<
-     " Pitch2: " << test[1] <<
-     " Yaw2: " << test[2] << std::endl;
-
-
-   // std::cout << "R1: " <<  std::endl << base_link->getWorldTransform().rotation() << std::endl;
-
-
-        Eigen::Matrix3d R2;
-        R2 = Eigen::AngleAxisd(test[2], Eigen::Vector3d::UnitZ()) *
-                   Eigen::AngleAxisd(test[1], Eigen::Vector3d::UnitY()) *
-                   Eigen::AngleAxisd(test[0], Eigen::Vector3d::UnitX());
-
-    std::cout << "R2: " <<  std::endl << R2 << std::endl;
-    
-
-        R2 = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()) *
-                   Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY()) *
-                   Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX());
-
-    std::cout << "R_base2: " <<  std::endl << R2.transpose() << std::endl;
-
-
-    std::cout << "OUt test: " << std::endl << R2.transpose() * Eigen::Vector3d::UnitX() << std::endl; 
-
-    sim_data.com_pos[0] = nomad_->Skeleton()->getDof(3)->getPosition();
-    sim_data.com_pos[1] = nomad_->Skeleton()->getDof(4)->getPosition();
-    sim_data.com_pos[2] = nomad_->Skeleton()->getDof(5)->getPosition();
-    sim_data.com_vel[0] = nomad_->Skeleton()->getDof(3)->getVelocity();
-    sim_data.com_vel[1] = nomad_->Skeleton()->getDof(4)->getVelocity();
-    sim_data.com_vel[2] = nomad_->Skeleton()->getDof(5)->getVelocity();
-
+    // Copy Body Orientation 
     sim_data.com_orientation[0] = body_orientation.x();
     sim_data.com_orientation[1] = body_orientation.y();
     sim_data.com_orientation[2] = body_orientation.z();
     sim_data.com_orientation[3] = body_orientation.w();
 
-    sim_data.com_omega[0] = angular[0];
-    sim_data.com_omega[1] = angular[1];
-    sim_data.com_omega[2] = angular[2];
+    // Copy Body Angular Velocity (Local)
+    Eigen::Map<Eigen::VectorXd>(sim_data.com_omega, 3) = angular_body;
 
-   // std::cout << "Angular: " <<std::endl << angular << std::endl;
-
-    // Orientation
+    // IMU Orientation
+     // Copy Body Orientation 
     sim_data.imu_orientation[0] = body_orientation.x();
     sim_data.imu_orientation[1] = body_orientation.y();
     sim_data.imu_orientation[2] = body_orientation.z();
     sim_data.imu_orientation[3] = body_orientation.w();
 
+    // IMU Linear Acceleration
     // Accelerometer
-    sim_data.imu_accel[0] = accel[0];
-    sim_data.imu_accel[1] = accel[1];
-    sim_data.imu_accel[2] = accel[2];
+    Eigen::Map<Eigen::VectorXd>(sim_data.imu_accel, 3) = accel_body;
 
     // Gyro
-    sim_data.imu_omega[0] = angular[0];
-    sim_data.imu_omega[1] = angular[1];
-    sim_data.imu_omega[2] = angular[2];
+    // Copy Body Angular Velocity (Local)
+    Eigen::Map<Eigen::VectorXd>(sim_data.imu_omega, 3) = angular_body;
 
+    // Copy Joint State "Estimates"
     Eigen::VectorXd joint_pos = nomad_->Skeleton()->getPositions();
     Eigen::VectorXd joint_vel = nomad_->Skeleton()->getVelocities();
     Eigen::VectorXd joint_tau = nomad_->Skeleton()->getForces();
@@ -277,8 +206,6 @@ public:
 
     // Publish
     int rc = pub_context_->publish("nomad.sim.data", &sim_data);
-
-    //std::cout << " OUT SIM: " << sim_data.sequence_num << std::endl;
     //pub_context_->flush();
   }
 
@@ -323,8 +250,8 @@ int main(int argc, char *argv[])
   g_world = World::create();
 
   // Update Gravity vector to Z down
-  //Eigen::Vector3d gravity(0.0, 0.0, -9.81);
-  Eigen::Vector3d gravity(0.0, 0.0, 0.0);
+  Eigen::Vector3d gravity(0.0, 0.0, -9.81);
+  //Eigen::Vector3d gravity(0.0, 0.0, 0.0);
   g_world->setGravity(gravity);
 
   // Create and add ground to world

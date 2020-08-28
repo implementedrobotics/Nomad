@@ -34,12 +34,14 @@
 
 // Third-Party Includes
 #include <zcm/zcm-cpp.hpp>
+#include <dart/dynamics/FreeJoint.hpp>
 
 // Project Includes
 #include <Controllers/LegController.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
 #include <Common/Time.hpp>
+#include <Common/Math/MathUtils.hpp>
 
 namespace Robot::Nomad::Dynamics
 {
@@ -73,29 +75,43 @@ namespace Robot::Nomad::Dynamics
     // Update function for stateless outputs
     void NomadDynamics::UpdateStatelessOutputs()
     {
+        // Receive Body COM State Estimate
         GetInputPort(InputPort::BODY_STATE_HAT)->Receive(com_state_);
-        GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_);
 
-        //std::cout << "BODY STATE: " << com_state_.sequence_num << std::endl;
+        // Receive Joint State Estimate from Plant Interface
+        GetInputPort(InputPort::JOINT_STATE)->Receive(joint_state_);
 
         // Setup some state vectors
         Eigen::VectorXd q = Eigen::VectorXd::Zero(kNumTotalDofs);
         Eigen::VectorXd q_dot = Eigen::VectorXd::Zero(kNumTotalDofs);
         Eigen::VectorXd tau = Eigen::VectorXd::Zero(kNumTotalDofs);
 
+        Eigen::Quaterniond orientation = Eigen::Map<Eigen::Quaterniond>(com_state_.orientation);
+
+       // Eigen::Vector3d euler = Common::Math::QuaterionToEuler(orientation);
+       // Eigen::Matrix3d R = Common::Math::EulerToRotationMatrix(euler);
+
+        // TODO: Function/Wrap This to set floating base state
+        Eigen::Isometry3d tf;
+        tf.linear() = orientation.toRotationMatrix();
+        tf.translation() = Eigen::Map<Eigen::VectorXd>(com_state_.pos_world, 3);
+
+        Eigen::VectorXd floating_pos = dart::dynamics::FreeJoint::convertToPositions(tf);
+        
+        //robot_->getRootJoint()->setPositions(pos); // Floating Base Position
+
         // Copy into our state vectors
-        q.segment(0, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.theta, 3);
-        q.segment(3, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.pos, 3);
+        q.head(kNumFloatingDofs) = floating_pos;
         q.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.q, kNumActuatedDofs);
 
-        q_dot.segment(0, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.omega, 3);
-        q_dot.segment(3, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.vel, 3);
+        q_dot.segment(0, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.omega_body, 3);
+        q_dot.segment(3, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.vel_world, 3);
         q_dot.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.q_dot, kNumActuatedDofs);
 
+        // Update Joint Torques
         tau.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.tau, kNumActuatedDofs);
 
-        //std::cout << "Got Pos 1: " << q << std::endl;
-        //std::cout << "Got Vel: " << q_dot << std::endl;
+        // Copy to internal dynamics model
         robot_->setPositions(q);
         robot_->setVelocities(q_dot);
         robot_->setForces(tau);
@@ -103,16 +119,16 @@ namespace Robot::Nomad::Dynamics
         // Update Dynamics State
         robot_->computeForwardKinematics();
         robot_->computeForwardDynamics();
-        
+
         // Setup our Augemented Contact Jacobian
         // TODO: All foot positions/velocities and jacobians are in the hip frame.  Should we make these world frame?
+        // TODO: Also should loop num legs
         J_legs_ << robot_->getLinearJacobian(foot_body_[0], hip_base_body_[0], hip_base_body_[0]),
             robot_->getLinearJacobian(foot_body_[1], hip_base_body_[1], hip_base_body_[1]),
             robot_->getLinearJacobian(foot_body_[2], hip_base_body_[2], hip_base_body_[2]),
             robot_->getLinearJacobian(foot_body_[3], hip_base_body_[3], hip_base_body_[3]);
 
         // Copy Data over for our Full Robot State Message
-
         Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, 3 * kNumContacts, kNumTotalDofs) = J_legs_;
         Eigen::Map<Eigen::VectorXd>(full_state_.q, kNumTotalDofs) = robot_->getPositions();
         Eigen::Map<Eigen::VectorXd>(full_state_.q_dot, kNumTotalDofs) = robot_->getVelocities();
@@ -122,7 +138,6 @@ namespace Robot::Nomad::Dynamics
 
         Eigen::Map<Eigen::VectorXd>(full_state_.foot_vel, kNumActuatedDofs) = (J_legs_.rightCols(12) * robot_->getVelocities().tail(12));
 
-        //std::cout << "J: " << std::endl << J_legs_.rightCols(12)  << std::endl;
         // Compute Foot Positions
         for (int i = 0; i < NUM_LEGS; i++)
         {
@@ -133,16 +148,8 @@ namespace Robot::Nomad::Dynamics
             Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos_wcs[i * 3], 3) = foot_body_[i]->getTransform(dart::dynamics::Frame::World()).translation();
         }
 
-        //std::cout << "VELS: " << robot_->getVelocities().head(6) << std::endl;
-        //std::cout << "Size: " << (J_legs_ * robot_->getVelocities()) << std::endl;
-        //std::cout << "Row: " << (J_legs_ * robot_->getVelocities()).rows() << std::endl;
-        //std::cout << "Col: " << (J_legs_ * robot_->getVelocities()).cols() << std::endl;
-        // std::cout << std::setprecision (3) << std::fixed << "Jacobian: " << " [" << J_legs_.rows() << " , " << J_legs_.cols() << "]:" << std::endl << J_legs_ << std::endl;
-        // std::cout << " End " << std::endl;
-
         // Publish Leg Command
         GetOutputPort(OutputPort::FULL_STATE)->Send(full_state_);
-
     }
 
     // Update function for next state from inputs

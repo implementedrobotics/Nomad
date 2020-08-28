@@ -60,7 +60,7 @@ void NomadRobot::UpdateState()
 void NomadRobot::Reset()
 {
 }
-Eigen::Quaterniond NomadRobot::GetBodyOrientation() const
+Eigen::Quaterniond NomadRobot::GetBaseOrientation() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
 
@@ -68,21 +68,34 @@ Eigen::Quaterniond NomadRobot::GetBodyOrientation() const
     body_orientation = base_link->getWorldTransform().rotation();
     return body_orientation;
 }
-Eigen::Vector3d NomadRobot::GetAngularAcceleration() const
+
+Eigen::Vector3d NomadRobot::GetBasePosition() const
+{
+    dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
+    return base_link->getWorldTransform().translation();
+}
+
+Eigen::Vector3d NomadRobot::GetBaseAngularAcceleration() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
     return base_link->getAngularAcceleration(dart::dynamics::Frame::World(), base_link);
 }
-Eigen::Vector3d NomadRobot::GetLinearAcceleration() const
+Eigen::Vector3d NomadRobot::GetBaseLinearAcceleration() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
     return base_link->getLinearAcceleration(dart::dynamics::Frame::World(), base_link);
 }
 
-Eigen::Vector3d NomadRobot::GetAngularVelocity() const
+Eigen::Vector3d NomadRobot::GetBaseAngularVelocity() const
 {
     dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
     return base_link->getAngularVelocity(dart::dynamics::Frame::World(), base_link);
+}
+
+Eigen::Vector3d NomadRobot::GetBaseLinearVelocity() const
+{
+    dart::dynamics::BodyNodePtr base_link = robot_->getBodyNode("base_link");
+    return base_link->getLinearVelocity(dart::dynamics::Frame::World(), base_link);
 }
 
 void NomadRobot::LoadFromURDF(const std::string &urdf)
@@ -118,47 +131,49 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
 
     // Add to world
     world_->addSkeleton(robot_);
-
-    //std::cout << "Mass Matrix: " << robot_->getMassMatrix() << std::endl;
-    //std::cout << "Mass: " << robot_->getMass() << std::endl;
 }
 
 void NomadRobot::SetInitialPose()
 {
+    double roll = 0;
+    double pitch = 0;
+    double yaw = 0;
+   
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.75;
 
-        Eigen::Matrix3d R2;
-        R2 = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()) *
-                   Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY()) *
-                   Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX());
+    // TODO: Function/Wrap This to set floating base state
+    Eigen::Matrix3d orientation;
+    orientation = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
+         Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+         Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+
+    std::cout << "Initial: " << orientation << std::endl;
 
     Eigen::Isometry3d tf;
-    tf.linear() = R2;//Eigen::Matrix3d::Identity();
+    tf.linear() = orientation;
+    tf.translation() = Eigen::Vector3d(0.0, 0.0, 0.85);
+
     Eigen::VectorXd pos = dart::dynamics::FreeJoint::convertToPositions(tf);
-    robot_->getRootJoint()->setPositions(pos);
-    //robot_->getDof("theta_y")->setPosition(M_PI_2);
-    //robot_->getDof("theta_x")->setPosition(M_PI_2);
-     //robot_->getDof("omega_y")->setPosition(-.5);
-    //robot_->getDof("base_x")->setPosition(0.85);
-    robot_->getDof("base_z")->setPosition(0.75);
-    // robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
-    // robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
-    // robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
-    // robot_->getDof("j_hfe_RR")->setPosition(M_PI_2);
+    robot_->getRootJoint()->setPositions(pos); // Floating Base Position
+    
+    // robot_->getDof("theta_x")->setVelocity(.5);
+    // robot_->getDof("theta_y")->setVelocity(.2);
+    // robot_->getDof("theta_z")->setVelocity(.2);
 
-    robot_->getDof("j_hfe_FL")->setPosition(-0);
-    robot_->getDof("j_hfe_FR")->setPosition(0);
-    robot_->getDof("j_hfe_RL")->setPosition(-0);
-    robot_->getDof("j_hfe_RR")->setPosition(0);
-
-
+    robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
+    robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
+    robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
+    robot_->getDof("j_hfe_RR")->setPosition(M_PI_2);
 
     robot_->getDof("j_kfe_FL")->setPositionLimits(-2.2, 0.0);
     robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, 2.2);
     robot_->getDof("j_kfe_RL")->setPositionLimits(-2.2, 0.0);
     robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, 2.2);
 
-    robot_->getDof("j_kfe_RL")->setPosition(-2.2);
-    robot_->getDof("j_kfe_FL")->setPosition(-2.2);
-    robot_->getDof("j_kfe_RR")->setPosition(2.2);
-    robot_->getDof("j_kfe_FR")->setPosition(2.2);
+    //robot_->getDof("j_kfe_RL")->setPosition(-2.2);
+    //robot_->getDof("j_kfe_FL")->setPosition(-2.2);
+    //robot_->getDof("j_kfe_RR")->setPosition(2.2);
+    //robot_->getDof("j_kfe_FR")->setPosition(2.2);
 }

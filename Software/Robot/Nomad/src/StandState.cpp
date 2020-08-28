@@ -41,7 +41,8 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 1.0;
+    double stance_time = 2.5;
+
     Eigen::VectorXd x_initial = Eigen::VectorXd::Zero(12);
     Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
 
@@ -50,7 +51,6 @@ namespace Robot::Nomad::FSM
     }
     void StandState::Run_(double dt)
     {
-        //std::cout << "Stand Running: " << elapsed_time_ << std::endl;
         static full_state_t nomad_state_;
         GetInputPort(NomadControl::InputPort::FULL_STATE)->Receive(nomad_state_);
 
@@ -61,11 +61,6 @@ namespace Robot::Nomad::FSM
         double com_z_pos_t = com_traj_.Position(elapsed_time_);
         double com_z_vel_t = com_traj_.Velocity(elapsed_time_);
 
-        // if(elapsed_time_ >stance_time)
-        // {
-        //     com_z_pos_t = data_->z_com;
-        // }
-
         for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         {
             int foot_id = leg_id * 3;
@@ -73,7 +68,7 @@ namespace Robot::Nomad::FSM
             Robot::Nomad::Controllers::ContactState contact;
 
             contact.contact = 1; // In Contact.  TODO: From Contact State Estimator
-            contact.mu = 10.0;    // TODO: From YAML
+            contact.mu = 0.5;    // TODO: From YAML
             contact.surface_orientation = Eigen::Quaterniond(Eigen::Matrix3d::Identity());
             contact.pos_world = Eigen::Map<Eigen::Vector3d>(&nomad_state_.foot_pos_wcs[foot_id]);
             qp_solver_.SetContactState(leg_id, contact);
@@ -87,14 +82,18 @@ namespace Robot::Nomad::FSM
         x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q, 6);
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
 
+        
         //x_desired = x;
         x_desired[0] = 0;//data_->phi; // Roll
         x_desired[1] = 0;//data_->theta; // Pitch
-        x_desired[2] = 0;// M_PI_2;//data_->psi; // Yaw
+        x_desired[2] = 0;//data_->psi; // Yaw
         x_desired[3] = x_initial(3);   // X
         x_desired[4] = x_initial(4);  // Y
         x_desired[5] = com_z_pos_t; // Z
-        x_desired[11] = com_z_vel_t;
+        x_desired[11] = 0;
+
+      //  std::cout << "X_" << std::endl << x;
+       // std::cout << "X_des" << std::endl << x_desired;
 
         qp_solver_.SetAlpha(0.005);
         qp_solver_.SetCurrentState(x);
@@ -104,50 +103,18 @@ namespace Robot::Nomad::FSM
 
         //std::cout << "State Vector: " << std::endl << x << std::endl;
         // Test out QP Solver
-      //  qp_solver_.Solve();
+        qp_solver_.Solve();
 
+        // TODO: From Quaternion in state?
+        Eigen::Vector3d theta_base = x.segment(0, 3);
 
+        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(theta_base).transpose();
 
-        Eigen::Vector3d theta_base = Eigen::Vector3d(1,-.5,.8);//x.segment(0, 3);
-        Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(theta_base);
-        // std::cout << "Theta Base: " << std::endl << theta_base << std::endl;
-        // std::cout << "Theta Desired: " << std::endl << x_desired.segment(0, 3) << std::endl;
-        std::cout << "Euler 1: " << std::endl << theta_base << std::endl;
-
-        std::cout << "Rb Me: " << std::endl << R_b_T << std::endl;
-
-        //R_b_T.setIdentity();
-        //Common::Math::rpyToR(R_b_T, theta_base.data());
-        //std::cout << "Rb Other: " << std::endl << R_b_T.transpose() << std::endl;
-
-        // RPY
-        std::cout << "Euler 2: " << Common::Math::RotationMatrixToEuler(R_b_T) << std::endl;
-
-        Eigen::Quaterniond q1 = Common::Math::EulerToQuaternion(theta_base);
-        std::cout << "Euler 3: " << std::endl << Common::Math::QuaterionToEuler(q1) << std::endl;
-
-        std::cout << "Matrix: 3" << q1.toRotationMatrix() << std::endl;
-
-        // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitX() * 10 << std::endl;
-        // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitY() << std::endl;
-        // std::cout << "X world->Body: " << R_b_T * Eigen::Vector3d::UnitZ() << std::endl;
-
-        //Eigen::VectorXd test = Eigen::VectorXd(12);W
-       // test << 1,0,0,1,0,0,1,0,0,1,0,0;
         Common::Math::EigenHelpers::BlockMatrixXd R_bBlock = Common::Math::EigenHelpers::BlockMatrixXd(Robot::Nomad::NUM_LEGS, Robot::Nomad::NUM_LEGS, 3, 3, 0);
         R_bBlock.FillDiagonal(R_b_T);
-
-       std::cout << "FORCE: " << std::endl << qp_solver_.X() << std::endl;
-      // std::cout << "Rotation: " << R_b_T << std::endl;
-
-        Eigen::VectorXd force_test(12);
-        force_test << 0,1,0,1,0,0,1,0,0,1,0,0;
   
-        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = (R_bBlock.MatrixXd()*qp_solver_.X());
-
-     //   std::cout << "X_opt: " << std::endl << -qp_solver_.X() << std::endl;
-
-       // std::cout << std::endl << "X_opt^T: " << std::endl << -(R_bBlock.MatrixXd() * qp_solver_.X()) << std::endl;
+        // Solved for GRF.  Actual leg force needs to be equal and opposite.  Cause Newton.
+        Eigen::Map<Eigen::VectorXd>(leg_command.force_ff, Robot::Nomad::NUM_LEGS * 3) = -(R_bBlock.MatrixXd() * qp_solver_.X());
 
         // for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         // {
