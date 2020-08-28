@@ -29,6 +29,7 @@
 #include <dart/dynamics/Skeleton.hpp>
 #include <dart/utils/urdf/DartLoader.hpp>
 #include <dart/dynamics/DegreeOfFreedom.hpp>
+#include <dart/dynamics/FreeJoint.hpp>
 #include <dart/gui/osg/osg.hpp>
 
 // Project Include Files
@@ -90,9 +91,9 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
     robot_ = loader.parseSkeleton(urdf);
 
     // Rename the floating base dofs
-    robot_->getDof(0)->setName("omega_x");
-    robot_->getDof(1)->setName("omega_y");
-    robot_->getDof(2)->setName("omega_z");
+    robot_->getDof(0)->setName("theta_x");
+    robot_->getDof(1)->setName("theta_y");
+    robot_->getDof(2)->setName("theta_z");
     robot_->getDof(3)->setName("base_x");
     robot_->getDof(4)->setName("base_y");
     robot_->getDof(5)->setName("base_z");
@@ -124,11 +125,21 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
 
 void NomadRobot::SetInitialPose()
 {
-    robot_->getDof("omega_y")->setPosition(M_PI_2);
-    robot_->getDof("omega_x")->setPosition(0.7);
+
+        Eigen::Matrix3d R2;
+        R2 = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()) *
+                   Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitY()) *
+                   Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX());
+
+    Eigen::Isometry3d tf;
+    tf.linear() = R2;//Eigen::Matrix3d::Identity();
+    Eigen::VectorXd pos = dart::dynamics::FreeJoint::convertToPositions(tf);
+    robot_->getRootJoint()->setPositions(pos);
+    //robot_->getDof("theta_y")->setPosition(M_PI_2);
+    //robot_->getDof("theta_x")->setPosition(M_PI_2);
      //robot_->getDof("omega_y")->setPosition(-.5);
     //robot_->getDof("base_x")->setPosition(0.85);
-    robot_->getDof("base_z")->setPosition(0.35);
+    robot_->getDof("base_z")->setPosition(0.75);
     // robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
     // robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
     // robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
