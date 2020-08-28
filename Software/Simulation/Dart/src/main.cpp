@@ -150,12 +150,58 @@ public:
     sim_data.com_theta[0] = nomad_->Skeleton()->getDof(0)->getPosition();
     sim_data.com_theta[1] = nomad_->Skeleton()->getDof(1)->getPosition();
     sim_data.com_theta[2] = nomad_->Skeleton()->getDof(2)->getPosition();
+
+    std::cout << "Roll: " << sim_data.com_theta[0] <<
+    " Pitch: " << sim_data.com_theta[1] <<
+    " Yaw: " << sim_data.com_theta[2] << std::endl;
+
+            Eigen::Matrix3d R0;
+        R0 = Eigen::AngleAxisd(sim_data.com_theta[2], Eigen::Vector3d::UnitZ()) *
+                   Eigen::AngleAxisd(sim_data.com_theta[1], Eigen::Vector3d::UnitY()) *
+                   Eigen::AngleAxisd(sim_data.com_theta[0], Eigen::Vector3d::UnitX());
+
+    std::cout << "R0: " <<  std::endl << R0 << std::endl;
+
+
+    dart::dynamics::BodyNodePtr base_link = g_nomad->Skeleton()->getBodyNode("base_link");
+    Eigen::Quaterniond body_orientation2;
+    //body_orientation = base_link->getWorldTransform().rotation().eulerAngles(2,1,0).reverse();
+
+    Eigen::Vector3d test = base_link->getWorldTransform().rotation().eulerAngles(2,1,0).reverse();
+    std::cout << "POS: " << std::endl << base_link->getParentJoint()->getPositions() << std::endl;
+    std::cout << "Relative: " << base_link->getParentJoint()->getRelativeTransform().rotation().eulerAngles(2,1,0).reverse() << std::endl;
+
+     std::cout << "Roll2: " << test[0] <<
+     " Pitch2: " << test[1] <<
+     " Yaw2: " << test[2] << std::endl;
+
+
+   // std::cout << "R1: " <<  std::endl << base_link->getWorldTransform().rotation() << std::endl;
+
+
+        Eigen::Matrix3d R2;
+        R2 = Eigen::AngleAxisd(test[2], Eigen::Vector3d::UnitZ()) *
+                   Eigen::AngleAxisd(test[1], Eigen::Vector3d::UnitY()) *
+                   Eigen::AngleAxisd(test[0], Eigen::Vector3d::UnitX());
+
+   // std::cout << "R2: " <<  std::endl << R2 << std::endl;
+    
     sim_data.com_pos[0] = nomad_->Skeleton()->getDof(3)->getPosition();
     sim_data.com_pos[1] = nomad_->Skeleton()->getDof(4)->getPosition();
     sim_data.com_pos[2] = nomad_->Skeleton()->getDof(5)->getPosition();
     sim_data.com_vel[0] = nomad_->Skeleton()->getDof(3)->getVelocity();
     sim_data.com_vel[1] = nomad_->Skeleton()->getDof(4)->getVelocity();
     sim_data.com_vel[2] = nomad_->Skeleton()->getDof(5)->getVelocity();
+
+    std::cout << "X: " << sim_data.com_pos[0] <<
+    " Y: " << sim_data.com_pos[1] <<
+    " Z: " << sim_data.com_pos[2] << std::endl;
+
+    std::cout << "X2: " << base_link->getWorldTransform().translation().x() <<
+    " Y2: " << base_link->getWorldTransform().translation().y() <<
+    " Z2: " << base_link->getWorldTransform().translation().z() << std::endl;
+
+
 
     sim_data.com_orientation[0] = body_orientation.x();
     sim_data.com_orientation[1] = body_orientation.y();
@@ -188,6 +234,7 @@ public:
     Eigen::VectorXd joint_vel = nomad_->Skeleton()->getVelocities();
     Eigen::VectorXd joint_tau = nomad_->Skeleton()->getForces();
 
+    std::cout << "Positions: " << std::endl << joint_pos << std::endl;
     sim_data.q[0] = joint_pos[6];
     sim_data.q[1] = joint_pos[7];
     sim_data.q[2] = joint_pos[8];

@@ -124,9 +124,11 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
 
 void NomadRobot::SetInitialPose()
 {
-    robot_->getDof("omega_z")->setPosition(M_PI_2);
+    robot_->getDof("omega_y")->setPosition(M_PI_2);
+    robot_->getDof("omega_x")->setPosition(0.7);
+     //robot_->getDof("omega_y")->setPosition(-.5);
     //robot_->getDof("base_x")->setPosition(0.85);
-    robot_->getDof("base_z")->setPosition(0.85);
+    robot_->getDof("base_z")->setPosition(0.35);
     // robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
     // robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
     // robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
