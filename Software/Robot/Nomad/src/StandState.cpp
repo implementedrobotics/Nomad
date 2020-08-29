@@ -92,8 +92,8 @@ namespace Robot::Nomad::FSM
         x_desired[0] = data_->phi; // Roll
         x_desired[1] = data_->theta; // Pitch
         x_desired[2] = data_->psi; // Yaw
-        x_desired[3] = 0.08;//x_initial(3);   // X
-        x_desired[4] = 0;//x_initial(4);  // Y
+        x_desired[3] = x_initial(3);   // X
+        x_desired[4] = x_initial(4);  // Y
         x_desired[5] = com_z_pos; // Z
         x_desired[11] = com_z_vel;
 
@@ -171,7 +171,6 @@ namespace Robot::Nomad::FSM
             std::cout << "COULD NOT GET INITIAL STATE" << std::endl;
         }
 
-        
         // Create Cubic Trajectory
         // stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
         // stand_traj_[Robot::Nomad::FRONT_RIGHT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FR_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);
