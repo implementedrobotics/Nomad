@@ -51,7 +51,7 @@ namespace Robot::Nomad::Dynamics
         // Matrix pre setup
         J_legs_ = Eigen::MatrixXd(3 * kNumContacts, kNumTotalDofs);
 
-        // Selection MAtrices
+        // Selection Matrices
         S_f_ = Eigen::MatrixXd::Zero(kNumFloatingDofs, kNumTotalDofs);
         S_f_.block(0, 0, kNumFloatingDofs, kNumTotalDofs).setIdentity();
 
@@ -88,23 +88,23 @@ namespace Robot::Nomad::Dynamics
 
         Eigen::Quaterniond orientation = Eigen::Map<Eigen::Quaterniond>(com_state_.orientation);
 
-       // Eigen::Vector3d euler = Common::Math::QuaterionToEuler(orientation);
-       // Eigen::Matrix3d R = Common::Math::EulerToRotationMatrix(euler);
-
         // TODO: Function/Wrap This to set floating base state
         Eigen::Isometry3d tf;
         tf.linear() = orientation.toRotationMatrix();
         tf.translation() = Eigen::Map<Eigen::VectorXd>(com_state_.pos_world, 3);
 
+        // Use special helper to set orientation. Could be a better way to do this.  But it doesn't seem you
+        // Angles are exponentially mapped so direct RPY is not supported
         Eigen::VectorXd floating_pos = dart::dynamics::FreeJoint::convertToPositions(tf);
         
-        //robot_->getRootJoint()->setPositions(pos); // Floating Base Position
+       
+        Eigen::Vector3d euler = Common::Math::QuaterionToEuler(orientation);
 
         // Copy into our state vectors
         q.head(kNumFloatingDofs) = floating_pos;
         q.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.q, kNumActuatedDofs);
 
-        q_dot.segment(0, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.omega_body, 3);
+        q_dot.segment(0, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.omega_world, 3);
         q_dot.segment(3, 3) = Eigen::Map<Eigen::VectorXd>(com_state_.vel_world, 3);
         q_dot.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.q_dot, kNumActuatedDofs);
 
@@ -120,6 +120,12 @@ namespace Robot::Nomad::Dynamics
         robot_->computeForwardKinematics();
         robot_->computeForwardDynamics();
 
+        // Get Updated q state (we need to modify it for the floating base orientation)
+        Eigen::VectorXd q_new = robot_->getPositions();
+
+         // Get Euler Angles from Orientation Quaternion
+        q_new.head(3) = Common::Math::QuaterionToEuler(orientation);
+
         // Setup our Augemented Contact Jacobian
         // TODO: All foot positions/velocities and jacobians are in the hip frame.  Should we make these world frame?
         // TODO: Also should loop num legs
@@ -130,7 +136,7 @@ namespace Robot::Nomad::Dynamics
 
         // Copy Data over for our Full Robot State Message
         Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, 3 * kNumContacts, kNumTotalDofs) = J_legs_;
-        Eigen::Map<Eigen::VectorXd>(full_state_.q, kNumTotalDofs) = robot_->getPositions();
+        Eigen::Map<Eigen::VectorXd>(full_state_.q, kNumTotalDofs) = q_new;
         Eigen::Map<Eigen::VectorXd>(full_state_.q_dot, kNumTotalDofs) = robot_->getVelocities();
         Eigen::Map<Eigen::MatrixXd>(full_state_.M, kNumTotalDofs, kNumTotalDofs) = robot_->getMassMatrix();
         Eigen::Map<Eigen::VectorXd>(full_state_.b, kNumTotalDofs) = robot_->getCoriolisForces();

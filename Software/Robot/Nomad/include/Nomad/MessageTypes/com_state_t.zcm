@@ -5,6 +5,6 @@ struct com_state_t
 
     double orientation[4];        // Body Orientation Quaternion (Body Coordinates)
     double pos_world[3];      // Body Position XYZ (World Coordinates)
-    double omega_body[3];    // Body Rotational Velocity (Body Coordinates)
+    double omega_world[3];    // Body Rotational Velocity (World Coordinates)
     double vel_world[3];      // Body Velocity XYZ (World Coordinates)
 }

@@ -91,7 +91,7 @@ namespace Robot::Nomad::Interface
 
         memcpy(com_state_.pos_world, sim_data_.com_pos, sizeof(double) * 3);
         memcpy(com_state_.vel_world, sim_data_.com_vel, sizeof(double) * 3);
-        memcpy(com_state_.omega_body, sim_data_.com_omega, sizeof(double) * 3);
+        memcpy(com_state_.omega_world, sim_data_.com_omega, sizeof(double) * 3);
         memcpy(com_state_.orientation, sim_data_.com_orientation, sizeof(double) * 4);
 
         // Body Coordinates

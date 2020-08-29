@@ -41,7 +41,7 @@ using Robot::Nomad::Controllers::NomadControl;
 namespace Robot::Nomad::FSM
 {
     double stance_height = .35; // TODO: From Parameter/ControlData
-    double stance_time = 2.5;
+    double stance_time = 0.5;
 
     Eigen::VectorXd x_initial = Eigen::VectorXd::Zero(12);
     Robot::Nomad::Controllers::RigidBodyGRFSolverQP qp_solver_(Robot::Nomad::NUM_LEGS);
@@ -58,8 +58,14 @@ namespace Robot::Nomad::FSM
         leg_controller_cmd_t leg_command;
         memset(&leg_command, 0, sizeof(leg_controller_cmd_t));
 
-        double com_z_pos_t = com_traj_.Position(elapsed_time_);
-        double com_z_vel_t = com_traj_.Velocity(elapsed_time_);
+        double com_z_pos = com_traj_.Position(elapsed_time_);
+        double com_z_vel = com_traj_.Velocity(elapsed_time_);
+
+        // TODO: This needs to be better
+        if(elapsed_time_ >stance_time) 
+        {
+            com_z_pos = data_->z_com;
+        }
 
         for (int leg_id = 0; leg_id < Robot::Nomad::NUM_LEGS; leg_id++)
         {
@@ -78,22 +84,18 @@ namespace Robot::Nomad::FSM
         Eigen::VectorXd x = Eigen::VectorXd::Zero(12);
         Eigen::VectorXd x_desired = Eigen::VectorXd::Zero(12);
 
-        // TODO: GetCOMState Function
+        // TODO: Input COM state as input
         x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q, 6);
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
 
-        
         //x_desired = x;
-        x_desired[0] = 0;//data_->phi; // Roll
-        x_desired[1] = 0;//data_->theta; // Pitch
-        x_desired[2] = 0;//data_->psi; // Yaw
-        x_desired[3] = x_initial(3);   // X
-        x_desired[4] = x_initial(4);  // Y
-        x_desired[5] = com_z_pos_t; // Z
-        x_desired[11] = 0;
-
-      //  std::cout << "X_" << std::endl << x;
-       // std::cout << "X_des" << std::endl << x_desired;
+        x_desired[0] = data_->phi; // Roll
+        x_desired[1] = data_->theta; // Pitch
+        x_desired[2] = data_->psi; // Yaw
+        x_desired[3] = 0.08;//x_initial(3);   // X
+        x_desired[4] = 0;//x_initial(4);  // Y
+        x_desired[5] = com_z_pos; // Z
+        x_desired[11] = com_z_vel;
 
         qp_solver_.SetAlpha(0.005);
         qp_solver_.SetCurrentState(x);
@@ -101,13 +103,11 @@ namespace Robot::Nomad::FSM
         qp_solver_.SetMass(7.3); // kgs // TODO: From Robot Parameter
         qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.09165, 0.2716, 0.3391));
 
-        //std::cout << "State Vector: " << std::endl << x << std::endl;
         // Test out QP Solver
         qp_solver_.Solve();
 
         // TODO: From Quaternion in state?
         Eigen::Vector3d theta_base = x.segment(0, 3);
-
         Eigen::Matrix3d R_b_T = Common::Math::EulerToRotationMatrix(theta_base).transpose();
 
         Common::Math::EigenHelpers::BlockMatrixXd R_bBlock = Common::Math::EigenHelpers::BlockMatrixXd(Robot::Nomad::NUM_LEGS, Robot::Nomad::NUM_LEGS, 3, 3, 0);
@@ -171,7 +171,6 @@ namespace Robot::Nomad::FSM
             std::cout << "COULD NOT GET INITIAL STATE" << std::endl;
         }
 
-       // std::cout << "Got Message: " << nomad_state_initial_.foot_pos[2] << std::endl;;
         
         // Create Cubic Trajectory
         // stand_traj_[Robot::Nomad::FRONT_LEFT].Generate(nomad_state_initial_.foot_pos[Robot::Nomad::FOOT_FL_Z], -stance_height, 0.0, 0.0, 0.0, stance_time);

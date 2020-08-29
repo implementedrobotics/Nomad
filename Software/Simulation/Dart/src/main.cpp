@@ -2,6 +2,7 @@
 //#include <dart/collision/bullet/BulletCollisionDetector.hpp>
 #include <dart/dynamics/Skeleton.hpp>
 #include <dart/dynamics/DegreeOfFreedom.hpp>
+#include <dart/dynamics/FreeJoint.hpp>
 #include <dart/dynamics/WeldJoint.hpp>
 #include <dart/dynamics/SphereShape.hpp>
 #include <dart/simulation/World.hpp>
@@ -120,7 +121,7 @@ public:
     Eigen::Vector3d body_pos = nomad_->GetBasePosition(); // World
     Eigen::Vector3d accel_body = nomad_->GetBaseLinearAcceleration(); // Body
     Eigen::Vector3d angular_body = nomad_->GetBaseAngularVelocity(); // Body
-    Eigen::Vector3d vel_body = nomad_->GetBaseAngularVelocity(); // Body
+    Eigen::Vector3d vel_body = nomad_->GetBaseLinearVelocity(); // Body
 
     // Cheater Orientation
     sim_data.timestamp = time_now;
@@ -129,10 +130,8 @@ public:
     // Copy Body World Position
     Eigen::Map<Eigen::VectorXd>(sim_data.com_pos, 3) = body_pos;
 
-    // Copy Body World Velocity(should this be local?)
+    // Copy Body World Velocity
     Eigen::Map<Eigen::VectorXd>(sim_data.com_vel, 3) = body_orientation.toRotationMatrix() * vel_body;
-
-    // Eigen::Map<Eigen::Quaterniond>(sim_data.com_orientation, 4) = body_orientation.coeffs();
 
     // Copy Body Orientation 
     sim_data.com_orientation[0] = body_orientation.x();
@@ -140,18 +139,18 @@ public:
     sim_data.com_orientation[2] = body_orientation.z();
     sim_data.com_orientation[3] = body_orientation.w();
 
-    // Copy Body Angular Velocity (Local)
-    Eigen::Map<Eigen::VectorXd>(sim_data.com_omega, 3) = angular_body;
-
+    // Copy Body Angular Velocity (World)
+    Eigen::Map<Eigen::VectorXd>(sim_data.com_omega, 3) = body_orientation.toRotationMatrix() * angular_body;
+    
     // IMU Orientation
-     // Copy Body Orientation 
+    // Copy Body Orientation 
     sim_data.imu_orientation[0] = body_orientation.x();
     sim_data.imu_orientation[1] = body_orientation.y();
     sim_data.imu_orientation[2] = body_orientation.z();
     sim_data.imu_orientation[3] = body_orientation.w();
 
     // IMU Linear Acceleration
-    // Accelerometer
+    // Accelerometer (Local)
     Eigen::Map<Eigen::VectorXd>(sim_data.imu_accel, 3) = accel_body;
 
     // Gyro

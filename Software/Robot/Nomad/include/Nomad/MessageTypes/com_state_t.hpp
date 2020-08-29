@@ -22,7 +22,7 @@ class com_state_t
 
         double     pos_world[3];
 
-        double     omega_body[3];
+        double     omega_world[3];
 
         double     vel_world[3];
 
@@ -142,7 +142,7 @@ int com_state_t::_encodeNoHash(void* buf, uint32_t offset, uint32_t maxlen) cons
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->pos_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->omega_body[0], 3);
+    thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->omega_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_encode_array(buf, offset + pos, maxlen - pos, &this->vel_world[0], 3);
@@ -168,7 +168,7 @@ int com_state_t::_decodeNoHash(const void* buf, uint32_t offset, uint32_t maxlen
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->pos_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
-    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->omega_body[0], 3);
+    thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->omega_world[0], 3);
     if(thislen < 0) return thislen; else pos += thislen;
 
     thislen = __double_decode_array(buf, offset + pos, maxlen - pos, &this->vel_world[0], 3);

@@ -80,9 +80,9 @@ namespace Robot::Nomad::Estimators
         com_state_out_.pos_world[1] = com_state_in_.pos_world[1];
         com_state_out_.pos_world[2] = com_state_in_.pos_world[2];
 
-        com_state_out_.omega_body[0] = com_state_in_.omega_body[0];
-        com_state_out_.omega_body[1] = com_state_in_.omega_body[1];
-        com_state_out_.omega_body[2] = com_state_in_.omega_body[2];
+        com_state_out_.omega_world[0] = com_state_in_.omega_world[0];
+        com_state_out_.omega_world[1] = com_state_in_.omega_world[1];
+        com_state_out_.omega_world[2] = com_state_in_.omega_world[2];
 
         com_state_out_.vel_world[0] = com_state_in_.vel_world[0];
         com_state_out_.vel_world[1] = com_state_in_.vel_world[1];
@@ -99,9 +99,9 @@ namespace Robot::Nomad::Estimators
         com_state_hat_.pos_world[1] = com_state_in_.pos_world[1];
         com_state_hat_.pos_world[2] = com_state_in_.pos_world[2];
 
-        com_state_hat_.omega_body[0] = com_state_in_.omega_body[0];
-        com_state_hat_.omega_body[1] = com_state_in_.omega_body[1];
-        com_state_hat_.omega_body[2] = com_state_in_.omega_body[2];
+        com_state_hat_.omega_world[0] = com_state_in_.omega_world[0];
+        com_state_hat_.omega_world[1] = com_state_in_.omega_world[1];
+        com_state_hat_.omega_world[2] = com_state_in_.omega_world[2];
 
         com_state_hat_.vel_world[0] = com_state_in_.vel_world[0];
         com_state_hat_.vel_world[1] = com_state_in_.vel_world[1];
