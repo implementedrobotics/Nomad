@@ -141,7 +141,7 @@ public:
 
     // Copy Body Angular Velocity (World)
     Eigen::Map<Eigen::VectorXd>(sim_data.com_omega, 3) = body_orientation.toRotationMatrix() * angular_body;
-    
+
     // IMU Orientation
     // Copy Body Orientation 
     sim_data.imu_orientation[0] = body_orientation.x();
@@ -282,6 +282,10 @@ int main(int argc, char *argv[])
   ::osg::ref_ptr<dart::gui::osg::GridVisual> grid = new dart::gui::osg::GridVisual();
 
   viewer.addAttachment(grid);
+
+  viewer.addAttachment(
+      new dart::gui::osg::SupportPolygonVisual(g_nomad->Skeleton(), 0.025));
+
 
   // Print out instructions for the viewer
   std::cout << viewer.getInstructions() << std::endl;

@@ -135,22 +135,22 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
 
 void NomadRobot::SetInitialPose()
 {
-    // double roll = 0.0;
-    // double pitch = 0.0;
-    // double yaw = 0.0;
+    double roll = 0.0;
+    double pitch = 0.0;
+    double yaw = 0.0;
    
-    // double x = 0.0;
-    // double y = 0.0;
-    // double z = 0.75;
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.75;
 
-    // // TODO: Function/Wrap This to set floating base state
-    // Eigen::Matrix3d orientation;
-    // orientation = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
-    //      Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
-    //      Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+    // TODO: Function/Wrap This to set floating base state
+    Eigen::Matrix3d orientation;
+    orientation = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) *
+         Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+         Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
 
     Eigen::Isometry3d tf;
-    tf.linear() = Eigen::Matrix3d::Identity();
+    tf.linear() = orientation;
     tf.translation() = Eigen::Vector3d(0.0, 0.0, 0.85);
 
     Eigen::VectorXd pos = dart::dynamics::FreeJoint::convertToPositions(tf);
