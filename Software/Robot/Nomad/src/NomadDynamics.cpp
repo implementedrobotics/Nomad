@@ -104,8 +104,8 @@ namespace Robot::Nomad::Dynamics
         q.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.q, kNumActuatedDofs);
 
         // TODO: Need to verify this.  These values need to be in body coordinates.  Can't tell an actual difference in the control?
-        q_dot.segment(0, 3) = R_b.transpose() * Eigen::Map<Eigen::VectorXd>(com_state_.omega_world, 3);
-        q_dot.segment(3, 3) = R_b.transpose() * Eigen::Map<Eigen::VectorXd>(com_state_.vel_world, 3);
+        q_dot.segment(0, 3) = /* R_b.transpose() * */Eigen::Map<Eigen::VectorXd>(com_state_.omega_world, 3);
+        q_dot.segment(3, 3) = /* R_b.transpose() * */Eigen::Map<Eigen::VectorXd>(com_state_.vel_world, 3);
         q_dot.tail(kNumActuatedDofs) = Eigen::Map<Eigen::VectorXd>(joint_state_.q_dot, kNumActuatedDofs);
 
         // Update Joint Torques
