@@ -138,22 +138,34 @@ namespace Robot::Nomad::Dynamics
         Eigen::Map<Eigen::VectorXd>(full_state_.g, kNumTotalDofs) = robot_->getGravityForces();
 
         // Compute Foot Positions
+        double x_sum = 0.0;
+        double y_sum = 0.0;
         for (int i = 0; i < NUM_LEGS; i++)
         {
             // Foot Position
             Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos[i * 3], 3) = foot_body_[i]->getTransform(hip_base_body_[i]).translation();
 
             // Foot Position World
-            Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos_wcs[i * 3], 3) = foot_body_[i]->getTransform(dart::dynamics::Frame::World()).translation();
+            Eigen::Vector3d foot_pos_world = foot_body_[i]->getTransform(dart::dynamics::Frame::World()).translation();
+            Eigen::Map<Eigen::Vector3d>(&full_state_.foot_pos_wcs[i * 3], 3) = foot_pos_world;
+
+            // TODO: Will eventually need to be projected to estimated ground beneath robot
+            x_sum += foot_pos_world.x();
+            y_sum += foot_pos_world.y();
 
             // Update Augmented Contact Jacobian
             J_legs_.block<3, kNumTotalDofs>(i*3, 0) = robot_->getLinearJacobian(foot_body_[i], hip_base_body_[i], base_body_);
         }
 
         // Compute Center of Support
-        
+        // TODO: Need Contact Schedule to compute.  TBH this is going to need to be somewhere else.
+        Eigen::Vector3d CoS_world;
+        CoS_world.x() = x_sum/kNumContacts;
+        CoS_world.y() = y_sum/kNumContacts;
+        CoS_world.z() = 0.0;
 
-
+        Eigen::Map<Eigen::Vector3d>(full_state_.CoS_wcs) = CoS_world;
+        Eigen::Map<Eigen::Vector3d>(full_state_.CoS) = R_b.transpose() * CoS_world;
 
         // Update Jacobian for our Full Robot State Message
         Eigen::Map<Eigen::MatrixXd>(full_state_.J_c, 3 * kNumContacts, kNumTotalDofs) = J_legs_;

@@ -84,16 +84,20 @@ namespace Robot::Nomad::FSM
         Eigen::VectorXd x = Eigen::VectorXd::Zero(12);
         Eigen::VectorXd x_desired = Eigen::VectorXd::Zero(12);
 
-        // TODO: Input COM state as input
+        // TODO: Input COM state message as input
         x.head(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q, 6);
         x.tail(6) = Eigen::Map<Eigen::VectorXd>(nomad_state_.q_dot, 6);
 
+        // Get Center of Support
+        Eigen::Vector3d CoS_world = Eigen::Map<Eigen::Vector3d>(nomad_state_.CoS_wcs);
+
+        //std::cout << "COS: " << CoS_world << std::endl;
         //x_desired = x;
         x_desired[0] = data_->phi; // Roll
         x_desired[1] = data_->theta; // Pitch
         x_desired[2] = data_->psi; // Yaw
-        x_desired[3] = x_initial(3);   // X
-        x_desired[4] = x_initial(4);  // Y
+        x_desired[3] = CoS_world.x();//x_initial(3);   // X
+        x_desired[4] = CoS_world.y();// x_initial(4);  // Y
         x_desired[5] = com_z_pos; // Z
         x_desired[11] = com_z_vel;
 
