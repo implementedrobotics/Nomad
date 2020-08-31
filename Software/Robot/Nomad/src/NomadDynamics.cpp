@@ -90,34 +90,6 @@ namespace Robot::Nomad::Dynamics
         Eigen::Quaterniond orientation = Eigen::Map<Eigen::Quaterniond>(com_state_.orientation);
         Eigen::Matrix3d R_b = orientation.toRotationMatrix();
 
-
-        // Get Root Joint
-        dart::dynamics::Joint *root = robot_->getRootJoint();
-        
-        auto floatingJoint = dynamic_cast<dart::dynamics::FreeJoint *>(root);
-
-        floatingJoint->setTransform()
-        //dart::dynamics::Joint *dtJoint = robot_>getRootJoint();
-
-        // A free (root) joint won't be in the Gazebo model, so handle it seperately.
-//         auto floatingBase = 
-//   auto dtFreeJoint = dynamic_cast<dart::dynamics::FreeJoint *>(dtJoint);
-//   if (dtFreeJoint != nullptr)
-//   {
-//     // Set skeleton pose
-//     dtFreeJoint->setTransform(
-//         physics::DARTTypes::ConvPose(this->dataPtr->model->WorldPose()));
-//     // Get model velocity
-//     ignition::math::Vector3d linVel = this->dataPtr->model->WorldLinearVel();
-//     ignition::math::Vector3d angVel = this->dataPtr->model->WorldAngularVel();
-//     // Set skeleton velocity
-//     dtFreeJoint->setLinearVelocity(
-//         Eigen::Vector3d(linVel.X(), linVel.Y(), linVel.Z()));
-//     dtFreeJoint->setAngularVelocity(
-//         Eigen::Vector3d(angVel.X(), angVel.Y(), angVel.Z()));
-
-
-
         // TODO: Function/Wrap This to set floating base state
         Eigen::Isometry3d tf;
         tf.linear() = R_b;
