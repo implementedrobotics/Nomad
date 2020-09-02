@@ -16,7 +16,7 @@ sudo apt-get install gcc-arm-none-eabi
 ```
 sudo apt-get install git build-essential libusb-1.0.0-dev cmake
 cd $HOME
-git clone git@github.com:texane/stlink.git
+git clone https://github.com/stlink-org/stlink
 cd stlink
 make release
 cd build/Release && sudo make install
@@ -52,7 +52,7 @@ git clone https://github.com/implementedrobotics/Nomad
 Change to the Firmware directory:
 
 ```
-cd $HOME/Nomad/Hardware/Actuator/NomadBLDC/Firmware
+cd $HOME/Nomad/Hardware/Actuator/NomadBLDC/FirmwareG4
 ```
 
 If installation is successful you should now be able to do without error:
