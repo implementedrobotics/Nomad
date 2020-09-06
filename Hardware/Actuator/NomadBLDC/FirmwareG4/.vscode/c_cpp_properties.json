@@ -1,0 +1,41 @@
+{
+    "configurations": [
+        {
+            "name": "STM32 Debug",
+            "includePath": [
+                "/usr/lib/gcc/arm-none-eabi/9.2.1/include",
+                "/usr/lib/gcc/arm-none-eabi/9.2.1/include-fixed",
+                "${workspaceRoot}/Drivers/CMSIS/Include/",
+                "${workspaceRoot}/Drivers/CMSIS/Include/",
+                "${workspaceRoot}/Drivers/CMSIS/Device/ST/STM32G4xx/Include/",
+                "${workspaceRoot}/Core/Inc",
+                "${workspaceRoot}/Core/Src",
+                "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc",
+                "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Src"
+            ],
+            "defines": [
+                "DEBUG",
+                "DEFAULT_STACK_SIZE=2048",
+                "HSE_VALUE=8000000",
+                "OS_INCLUDE_STARTUP_INIT_MULTIPLE_RAM_SECTIONS",
+                "PB_MSGID",
+                "STM32G474",
+                "STM32G474xx",
+                "USE_DEVICE_MODE",
+                "USE_FULL_ASSERT",
+                "USE_HAL_DRIVER",
+                "USE_USB_OTG_FS"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceRoot}",
+                    "/usr/bin"
+                ],
+                "limitSymbolsToIncludedHeaders": false,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}

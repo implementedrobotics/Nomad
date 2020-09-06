@@ -1,0 +1,294 @@
+ARM GAS  /tmp/ccc1VNIZ.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"fmac.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.MX_FMAC_Init,"ax",%progbits
+  18              		.align	1
+  19              		.p2align 2,,3
+  20              		.global	MX_FMAC_Init
+  21              		.arch armv7e-m
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  25              		.fpu fpv4-sp-d16
+  27              	MX_FMAC_Init:
+  28              	.LFB925:
+  29              		.file 1 "Core/Src/fmac.c"
+   1:Core/Src/fmac.c **** /**
+   2:Core/Src/fmac.c ****   ******************************************************************************
+   3:Core/Src/fmac.c ****   * File Name          : FMAC.c
+   4:Core/Src/fmac.c ****   * Description        : This file provides code for the configuration
+   5:Core/Src/fmac.c ****   *                      of the FMAC instances.
+   6:Core/Src/fmac.c ****   ******************************************************************************
+   7:Core/Src/fmac.c ****   * @attention
+   8:Core/Src/fmac.c ****   *
+   9:Core/Src/fmac.c ****   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  10:Core/Src/fmac.c ****   * All rights reserved.</center></h2>
+  11:Core/Src/fmac.c ****   *
+  12:Core/Src/fmac.c ****   * This software component is licensed by ST under Ultimate Liberty license
+  13:Core/Src/fmac.c ****   * SLA0044, the "License"; You may not use this file except in compliance with
+  14:Core/Src/fmac.c ****   * the License. You may obtain a copy of the License at:
+  15:Core/Src/fmac.c ****   *                             www.st.com/SLA0044
+  16:Core/Src/fmac.c ****   *
+  17:Core/Src/fmac.c ****   ******************************************************************************
+  18:Core/Src/fmac.c ****   */
+  19:Core/Src/fmac.c **** 
+  20:Core/Src/fmac.c **** /* Includes ------------------------------------------------------------------*/
+  21:Core/Src/fmac.c **** #include "fmac.h"
+  22:Core/Src/fmac.c **** 
+  23:Core/Src/fmac.c **** /* USER CODE BEGIN 0 */
+  24:Core/Src/fmac.c **** 
+  25:Core/Src/fmac.c **** /* USER CODE END 0 */
+  26:Core/Src/fmac.c **** 
+  27:Core/Src/fmac.c **** FMAC_HandleTypeDef hfmac;
+  28:Core/Src/fmac.c **** 
+  29:Core/Src/fmac.c **** /* FMAC init function */
+ARM GAS  /tmp/ccc1VNIZ.s 			page 2
+
+
+  30:Core/Src/fmac.c **** void MX_FMAC_Init(void)
+  31:Core/Src/fmac.c **** {
+  30              		.loc 1 31 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  32:Core/Src/fmac.c **** 
+  33:Core/Src/fmac.c ****   hfmac.Instance = FMAC;
+  34              		.loc 1 33 3 view .LVU1
+  35              		.loc 1 33 18 is_stmt 0 view .LVU2
+  36 0000 0548     		ldr	r0, .L6
+  31:Core/Src/fmac.c **** 
+  37              		.loc 1 31 1 view .LVU3
+  38 0002 08B5     		push	{r3, lr}
+  39              	.LCFI0:
+  40              		.cfi_def_cfa_offset 8
+  41              		.cfi_offset 3, -8
+  42              		.cfi_offset 14, -4
+  43              		.loc 1 33 18 view .LVU4
+  44 0004 054B     		ldr	r3, .L6+4
+  45 0006 0360     		str	r3, [r0]
+  34:Core/Src/fmac.c ****   if (HAL_FMAC_Init(&hfmac) != HAL_OK)
+  46              		.loc 1 34 3 is_stmt 1 view .LVU5
+  47              		.loc 1 34 7 is_stmt 0 view .LVU6
+  48 0008 FFF7FEFF 		bl	HAL_FMAC_Init
+  49              	.LVL0:
+  50              		.loc 1 34 6 view .LVU7
+  51 000c 00B9     		cbnz	r0, .L5
+  35:Core/Src/fmac.c ****   {
+  36:Core/Src/fmac.c ****     Error_Handler();
+  37:Core/Src/fmac.c ****   }
+  38:Core/Src/fmac.c **** 
+  39:Core/Src/fmac.c **** }
+  52              		.loc 1 39 1 view .LVU8
+  53 000e 08BD     		pop	{r3, pc}
+  54              	.L5:
+  36:Core/Src/fmac.c ****   }
+  55              		.loc 1 36 5 is_stmt 1 view .LVU9
+  56              		.loc 1 39 1 is_stmt 0 view .LVU10
+  57 0010 BDE80840 		pop	{r3, lr}
+  58              	.LCFI1:
+  59              		.cfi_restore 14
+  60              		.cfi_restore 3
+  61              		.cfi_def_cfa_offset 0
+  36:Core/Src/fmac.c ****   }
+  62              		.loc 1 36 5 view .LVU11
+  63 0014 FFF7FEBF 		b	Error_Handler
+  64              	.LVL1:
+  65              	.L7:
+  66              		.align	2
+  67              	.L6:
+  68 0018 00000000 		.word	hfmac
+  69 001c 00140240 		.word	1073878016
+  70              		.cfi_endproc
+  71              	.LFE925:
+  73              		.section	.text.HAL_FMAC_MspInit,"ax",%progbits
+  74              		.align	1
+ARM GAS  /tmp/ccc1VNIZ.s 			page 3
+
+
+  75              		.p2align 2,,3
+  76              		.global	HAL_FMAC_MspInit
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+  80              		.fpu fpv4-sp-d16
+  82              	HAL_FMAC_MspInit:
+  83              	.LVL2:
+  84              	.LFB926:
+  40:Core/Src/fmac.c **** 
+  41:Core/Src/fmac.c **** void HAL_FMAC_MspInit(FMAC_HandleTypeDef* fmacHandle)
+  42:Core/Src/fmac.c **** {
+  85              		.loc 1 42 1 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 8
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89              		@ link register save eliminated.
+  43:Core/Src/fmac.c **** 
+  44:Core/Src/fmac.c ****   if(fmacHandle->Instance==FMAC)
+  90              		.loc 1 44 3 view .LVU13
+  91              		.loc 1 44 5 is_stmt 0 view .LVU14
+  92 0000 094B     		ldr	r3, .L15
+  93 0002 0268     		ldr	r2, [r0]
+  94 0004 9A42     		cmp	r2, r3
+  95 0006 00D0     		beq	.L14
+  96 0008 7047     		bx	lr
+  97              	.L14:
+  45:Core/Src/fmac.c ****   {
+  46:Core/Src/fmac.c ****   /* USER CODE BEGIN FMAC_MspInit 0 */
+  47:Core/Src/fmac.c **** 
+  48:Core/Src/fmac.c ****   /* USER CODE END FMAC_MspInit 0 */
+  49:Core/Src/fmac.c ****     /* FMAC clock enable */
+  50:Core/Src/fmac.c ****     __HAL_RCC_FMAC_CLK_ENABLE();
+  98              		.loc 1 50 5 is_stmt 1 view .LVU15
+  99              	.LBB2:
+ 100              		.loc 1 50 5 view .LVU16
+ 101              		.loc 1 50 5 view .LVU17
+ 102 000a A3F58063 		sub	r3, r3, #1024
+ 103              	.LBE2:
+  42:Core/Src/fmac.c **** 
+ 104              		.loc 1 42 1 is_stmt 0 view .LVU18
+ 105 000e 82B0     		sub	sp, sp, #8
+ 106              	.LCFI2:
+ 107              		.cfi_def_cfa_offset 8
+ 108              	.LBB3:
+ 109              		.loc 1 50 5 view .LVU19
+ 110 0010 9A6C     		ldr	r2, [r3, #72]
+ 111 0012 42F01002 		orr	r2, r2, #16
+ 112 0016 9A64     		str	r2, [r3, #72]
+ 113              		.loc 1 50 5 is_stmt 1 view .LVU20
+ 114 0018 9B6C     		ldr	r3, [r3, #72]
+ 115 001a 03F01003 		and	r3, r3, #16
+ 116 001e 0193     		str	r3, [sp, #4]
+ 117              		.loc 1 50 5 view .LVU21
+ 118 0020 019B     		ldr	r3, [sp, #4]
+ 119              	.LBE3:
+ 120              		.loc 1 50 5 view .LVU22
+ARM GAS  /tmp/ccc1VNIZ.s 			page 4
+
+
+  51:Core/Src/fmac.c ****   /* USER CODE BEGIN FMAC_MspInit 1 */
+  52:Core/Src/fmac.c **** 
+  53:Core/Src/fmac.c ****   /* USER CODE END FMAC_MspInit 1 */
+  54:Core/Src/fmac.c ****   }
+  55:Core/Src/fmac.c **** }
+ 121              		.loc 1 55 1 is_stmt 0 view .LVU23
+ 122 0022 02B0     		add	sp, sp, #8
+ 123              	.LCFI3:
+ 124              		.cfi_def_cfa_offset 0
+ 125              		@ sp needed
+ 126 0024 7047     		bx	lr
+ 127              	.L16:
+ 128 0026 00BF     		.align	2
+ 129              	.L15:
+ 130 0028 00140240 		.word	1073878016
+ 131              		.cfi_endproc
+ 132              	.LFE926:
+ 134              		.section	.text.HAL_FMAC_MspDeInit,"ax",%progbits
+ 135              		.align	1
+ 136              		.p2align 2,,3
+ 137              		.global	HAL_FMAC_MspDeInit
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 141              		.fpu fpv4-sp-d16
+ 143              	HAL_FMAC_MspDeInit:
+ 144              	.LVL3:
+ 145              	.LFB927:
+  56:Core/Src/fmac.c **** 
+  57:Core/Src/fmac.c **** void HAL_FMAC_MspDeInit(FMAC_HandleTypeDef* fmacHandle)
+  58:Core/Src/fmac.c **** {
+ 146              		.loc 1 58 1 is_stmt 1 view -0
+ 147              		.cfi_startproc
+ 148              		@ args = 0, pretend = 0, frame = 0
+ 149              		@ frame_needed = 0, uses_anonymous_args = 0
+ 150              		@ link register save eliminated.
+  59:Core/Src/fmac.c **** 
+  60:Core/Src/fmac.c ****   if(fmacHandle->Instance==FMAC)
+ 151              		.loc 1 60 3 view .LVU25
+ 152              		.loc 1 60 5 is_stmt 0 view .LVU26
+ 153 0000 054B     		ldr	r3, .L20
+ 154 0002 0268     		ldr	r2, [r0]
+ 155 0004 9A42     		cmp	r2, r3
+ 156 0006 00D0     		beq	.L19
+  61:Core/Src/fmac.c ****   {
+  62:Core/Src/fmac.c ****   /* USER CODE BEGIN FMAC_MspDeInit 0 */
+  63:Core/Src/fmac.c **** 
+  64:Core/Src/fmac.c ****   /* USER CODE END FMAC_MspDeInit 0 */
+  65:Core/Src/fmac.c ****     /* Peripheral clock disable */
+  66:Core/Src/fmac.c ****     __HAL_RCC_FMAC_CLK_DISABLE();
+  67:Core/Src/fmac.c ****   /* USER CODE BEGIN FMAC_MspDeInit 1 */
+  68:Core/Src/fmac.c **** 
+  69:Core/Src/fmac.c ****   /* USER CODE END FMAC_MspDeInit 1 */
+  70:Core/Src/fmac.c ****   }
+  71:Core/Src/fmac.c **** }
+ 157              		.loc 1 71 1 view .LVU27
+ 158 0008 7047     		bx	lr
+ARM GAS  /tmp/ccc1VNIZ.s 			page 5
+
+
+ 159              	.L19:
+  66:Core/Src/fmac.c ****   /* USER CODE BEGIN FMAC_MspDeInit 1 */
+ 160              		.loc 1 66 5 is_stmt 1 view .LVU28
+ 161 000a 044A     		ldr	r2, .L20+4
+ 162 000c 936C     		ldr	r3, [r2, #72]
+ 163 000e 23F01003 		bic	r3, r3, #16
+ 164 0012 9364     		str	r3, [r2, #72]
+ 165              		.loc 1 71 1 is_stmt 0 view .LVU29
+ 166 0014 7047     		bx	lr
+ 167              	.L21:
+ 168 0016 00BF     		.align	2
+ 169              	.L20:
+ 170 0018 00140240 		.word	1073878016
+ 171 001c 00100240 		.word	1073876992
+ 172              		.cfi_endproc
+ 173              	.LFE927:
+ 175              		.comm	hfmac,56,4
+ 176              		.text
+ 177              	.Letext0:
+ 178              		.file 2 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
+ 179              		.file 3 "Drivers/CMSIS/Include/core_cm4.h"
+ 180              		.file 4 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/system_stm32g4xx.h"
+ 181              		.file 5 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
+ 182              		.file 6 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
+ 183              		.file 7 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_dma.h"
+ 184              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
+ 185              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_fmac.h"
+ 186              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
+ 187              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ 188              		.file 12 "Core/Inc/fmac.h"
+ 189              		.file 13 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
+ 190              		.file 14 "Core/Inc/main.h"
+ARM GAS  /tmp/ccc1VNIZ.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 fmac.c
+     /tmp/ccc1VNIZ.s:18     .text.MX_FMAC_Init:0000000000000000 $t
+     /tmp/ccc1VNIZ.s:27     .text.MX_FMAC_Init:0000000000000000 MX_FMAC_Init
+     /tmp/ccc1VNIZ.s:68     .text.MX_FMAC_Init:0000000000000018 $d
+                            *COM*:0000000000000038 hfmac
+     /tmp/ccc1VNIZ.s:74     .text.HAL_FMAC_MspInit:0000000000000000 $t
+     /tmp/ccc1VNIZ.s:82     .text.HAL_FMAC_MspInit:0000000000000000 HAL_FMAC_MspInit
+     /tmp/ccc1VNIZ.s:130    .text.HAL_FMAC_MspInit:0000000000000028 $d
+     /tmp/ccc1VNIZ.s:135    .text.HAL_FMAC_MspDeInit:0000000000000000 $t
+     /tmp/ccc1VNIZ.s:143    .text.HAL_FMAC_MspDeInit:0000000000000000 HAL_FMAC_MspDeInit
+     /tmp/ccc1VNIZ.s:170    .text.HAL_FMAC_MspDeInit:0000000000000018 $d
+
+UNDEFINED SYMBOLS
+HAL_FMAC_Init
+Error_Handler

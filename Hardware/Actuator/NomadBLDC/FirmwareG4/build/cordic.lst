@@ -1,0 +1,294 @@
+ARM GAS  /tmp/ccTgt5bv.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"cordic.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.MX_CORDIC_Init,"ax",%progbits
+  18              		.align	1
+  19              		.p2align 2,,3
+  20              		.global	MX_CORDIC_Init
+  21              		.arch armv7e-m
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  25              		.fpu fpv4-sp-d16
+  27              	MX_CORDIC_Init:
+  28              	.LFB925:
+  29              		.file 1 "Core/Src/cordic.c"
+   1:Core/Src/cordic.c **** /**
+   2:Core/Src/cordic.c ****   ******************************************************************************
+   3:Core/Src/cordic.c ****   * File Name          : CORDIC.c
+   4:Core/Src/cordic.c ****   * Description        : This file provides code for the configuration
+   5:Core/Src/cordic.c ****   *                      of the CORDIC instances.
+   6:Core/Src/cordic.c ****   ******************************************************************************
+   7:Core/Src/cordic.c ****   * @attention
+   8:Core/Src/cordic.c ****   *
+   9:Core/Src/cordic.c ****   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  10:Core/Src/cordic.c ****   * All rights reserved.</center></h2>
+  11:Core/Src/cordic.c ****   *
+  12:Core/Src/cordic.c ****   * This software component is licensed by ST under Ultimate Liberty license
+  13:Core/Src/cordic.c ****   * SLA0044, the "License"; You may not use this file except in compliance with
+  14:Core/Src/cordic.c ****   * the License. You may obtain a copy of the License at:
+  15:Core/Src/cordic.c ****   *                             www.st.com/SLA0044
+  16:Core/Src/cordic.c ****   *
+  17:Core/Src/cordic.c ****   ******************************************************************************
+  18:Core/Src/cordic.c ****   */
+  19:Core/Src/cordic.c **** 
+  20:Core/Src/cordic.c **** /* Includes ------------------------------------------------------------------*/
+  21:Core/Src/cordic.c **** #include "cordic.h"
+  22:Core/Src/cordic.c **** 
+  23:Core/Src/cordic.c **** /* USER CODE BEGIN 0 */
+  24:Core/Src/cordic.c **** 
+  25:Core/Src/cordic.c **** /* USER CODE END 0 */
+  26:Core/Src/cordic.c **** 
+  27:Core/Src/cordic.c **** CORDIC_HandleTypeDef hcordic;
+  28:Core/Src/cordic.c **** 
+  29:Core/Src/cordic.c **** /* CORDIC init function */
+ARM GAS  /tmp/ccTgt5bv.s 			page 2
+
+
+  30:Core/Src/cordic.c **** void MX_CORDIC_Init(void)
+  31:Core/Src/cordic.c **** {
+  30              		.loc 1 31 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  32:Core/Src/cordic.c **** 
+  33:Core/Src/cordic.c ****   hcordic.Instance = CORDIC;
+  34              		.loc 1 33 3 view .LVU1
+  35              		.loc 1 33 20 is_stmt 0 view .LVU2
+  36 0000 0548     		ldr	r0, .L6
+  31:Core/Src/cordic.c **** 
+  37              		.loc 1 31 1 view .LVU3
+  38 0002 08B5     		push	{r3, lr}
+  39              	.LCFI0:
+  40              		.cfi_def_cfa_offset 8
+  41              		.cfi_offset 3, -8
+  42              		.cfi_offset 14, -4
+  43              		.loc 1 33 20 view .LVU4
+  44 0004 054B     		ldr	r3, .L6+4
+  45 0006 0360     		str	r3, [r0]
+  34:Core/Src/cordic.c ****   if (HAL_CORDIC_Init(&hcordic) != HAL_OK)
+  46              		.loc 1 34 3 is_stmt 1 view .LVU5
+  47              		.loc 1 34 7 is_stmt 0 view .LVU6
+  48 0008 FFF7FEFF 		bl	HAL_CORDIC_Init
+  49              	.LVL0:
+  50              		.loc 1 34 6 view .LVU7
+  51 000c 00B9     		cbnz	r0, .L5
+  35:Core/Src/cordic.c ****   {
+  36:Core/Src/cordic.c ****     Error_Handler();
+  37:Core/Src/cordic.c ****   }
+  38:Core/Src/cordic.c **** 
+  39:Core/Src/cordic.c **** }
+  52              		.loc 1 39 1 view .LVU8
+  53 000e 08BD     		pop	{r3, pc}
+  54              	.L5:
+  36:Core/Src/cordic.c ****   }
+  55              		.loc 1 36 5 is_stmt 1 view .LVU9
+  56              		.loc 1 39 1 is_stmt 0 view .LVU10
+  57 0010 BDE80840 		pop	{r3, lr}
+  58              	.LCFI1:
+  59              		.cfi_restore 14
+  60              		.cfi_restore 3
+  61              		.cfi_def_cfa_offset 0
+  36:Core/Src/cordic.c ****   }
+  62              		.loc 1 36 5 view .LVU11
+  63 0014 FFF7FEBF 		b	Error_Handler
+  64              	.LVL1:
+  65              	.L7:
+  66              		.align	2
+  67              	.L6:
+  68 0018 00000000 		.word	hcordic
+  69 001c 000C0240 		.word	1073875968
+  70              		.cfi_endproc
+  71              	.LFE925:
+  73              		.section	.text.HAL_CORDIC_MspInit,"ax",%progbits
+  74              		.align	1
+ARM GAS  /tmp/ccTgt5bv.s 			page 3
+
+
+  75              		.p2align 2,,3
+  76              		.global	HAL_CORDIC_MspInit
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+  80              		.fpu fpv4-sp-d16
+  82              	HAL_CORDIC_MspInit:
+  83              	.LVL2:
+  84              	.LFB926:
+  40:Core/Src/cordic.c **** 
+  41:Core/Src/cordic.c **** void HAL_CORDIC_MspInit(CORDIC_HandleTypeDef* cordicHandle)
+  42:Core/Src/cordic.c **** {
+  85              		.loc 1 42 1 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 8
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89              		@ link register save eliminated.
+  43:Core/Src/cordic.c **** 
+  44:Core/Src/cordic.c ****   if(cordicHandle->Instance==CORDIC)
+  90              		.loc 1 44 3 view .LVU13
+  91              		.loc 1 44 5 is_stmt 0 view .LVU14
+  92 0000 0A4B     		ldr	r3, .L15
+  93 0002 0268     		ldr	r2, [r0]
+  94 0004 9A42     		cmp	r2, r3
+  95 0006 00D0     		beq	.L14
+  96 0008 7047     		bx	lr
+  97              	.L14:
+  45:Core/Src/cordic.c ****   {
+  46:Core/Src/cordic.c ****   /* USER CODE BEGIN CORDIC_MspInit 0 */
+  47:Core/Src/cordic.c **** 
+  48:Core/Src/cordic.c ****   /* USER CODE END CORDIC_MspInit 0 */
+  49:Core/Src/cordic.c ****     /* CORDIC clock enable */
+  50:Core/Src/cordic.c ****     __HAL_RCC_CORDIC_CLK_ENABLE();
+  98              		.loc 1 50 5 is_stmt 1 view .LVU15
+  99              	.LBB2:
+ 100              		.loc 1 50 5 view .LVU16
+ 101              		.loc 1 50 5 view .LVU17
+ 102 000a D3F84824 		ldr	r2, [r3, #1096]
+ 103 000e 42F00802 		orr	r2, r2, #8
+ 104 0012 C3F84824 		str	r2, [r3, #1096]
+ 105 0016 03F58063 		add	r3, r3, #1024
+ 106              		.loc 1 50 5 view .LVU18
+ 107              	.LBE2:
+  42:Core/Src/cordic.c **** 
+ 108              		.loc 1 42 1 is_stmt 0 view .LVU19
+ 109 001a 82B0     		sub	sp, sp, #8
+ 110              	.LCFI2:
+ 111              		.cfi_def_cfa_offset 8
+ 112              	.LBB3:
+ 113              		.loc 1 50 5 view .LVU20
+ 114 001c 9B6C     		ldr	r3, [r3, #72]
+ 115 001e 03F00803 		and	r3, r3, #8
+ 116 0022 0193     		str	r3, [sp, #4]
+ 117              		.loc 1 50 5 is_stmt 1 view .LVU21
+ 118 0024 019B     		ldr	r3, [sp, #4]
+ 119              	.LBE3:
+ 120              		.loc 1 50 5 view .LVU22
+ARM GAS  /tmp/ccTgt5bv.s 			page 4
+
+
+  51:Core/Src/cordic.c ****   /* USER CODE BEGIN CORDIC_MspInit 1 */
+  52:Core/Src/cordic.c **** 
+  53:Core/Src/cordic.c ****   /* USER CODE END CORDIC_MspInit 1 */
+  54:Core/Src/cordic.c ****   }
+  55:Core/Src/cordic.c **** }
+ 121              		.loc 1 55 1 is_stmt 0 view .LVU23
+ 122 0026 02B0     		add	sp, sp, #8
+ 123              	.LCFI3:
+ 124              		.cfi_def_cfa_offset 0
+ 125              		@ sp needed
+ 126 0028 7047     		bx	lr
+ 127              	.L16:
+ 128 002a 00BF     		.align	2
+ 129              	.L15:
+ 130 002c 000C0240 		.word	1073875968
+ 131              		.cfi_endproc
+ 132              	.LFE926:
+ 134              		.section	.text.HAL_CORDIC_MspDeInit,"ax",%progbits
+ 135              		.align	1
+ 136              		.p2align 2,,3
+ 137              		.global	HAL_CORDIC_MspDeInit
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 141              		.fpu fpv4-sp-d16
+ 143              	HAL_CORDIC_MspDeInit:
+ 144              	.LVL3:
+ 145              	.LFB927:
+  56:Core/Src/cordic.c **** 
+  57:Core/Src/cordic.c **** void HAL_CORDIC_MspDeInit(CORDIC_HandleTypeDef* cordicHandle)
+  58:Core/Src/cordic.c **** {
+ 146              		.loc 1 58 1 is_stmt 1 view -0
+ 147              		.cfi_startproc
+ 148              		@ args = 0, pretend = 0, frame = 0
+ 149              		@ frame_needed = 0, uses_anonymous_args = 0
+ 150              		@ link register save eliminated.
+  59:Core/Src/cordic.c **** 
+  60:Core/Src/cordic.c ****   if(cordicHandle->Instance==CORDIC)
+ 151              		.loc 1 60 3 view .LVU25
+ 152              		.loc 1 60 5 is_stmt 0 view .LVU26
+ 153 0000 054B     		ldr	r3, .L20
+ 154 0002 0268     		ldr	r2, [r0]
+ 155 0004 9A42     		cmp	r2, r3
+ 156 0006 00D0     		beq	.L19
+  61:Core/Src/cordic.c ****   {
+  62:Core/Src/cordic.c ****   /* USER CODE BEGIN CORDIC_MspDeInit 0 */
+  63:Core/Src/cordic.c **** 
+  64:Core/Src/cordic.c ****   /* USER CODE END CORDIC_MspDeInit 0 */
+  65:Core/Src/cordic.c ****     /* Peripheral clock disable */
+  66:Core/Src/cordic.c ****     __HAL_RCC_CORDIC_CLK_DISABLE();
+  67:Core/Src/cordic.c ****   /* USER CODE BEGIN CORDIC_MspDeInit 1 */
+  68:Core/Src/cordic.c **** 
+  69:Core/Src/cordic.c ****   /* USER CODE END CORDIC_MspDeInit 1 */
+  70:Core/Src/cordic.c ****   }
+  71:Core/Src/cordic.c **** }
+ 157              		.loc 1 71 1 view .LVU27
+ 158 0008 7047     		bx	lr
+ARM GAS  /tmp/ccTgt5bv.s 			page 5
+
+
+ 159              	.L19:
+  66:Core/Src/cordic.c ****   /* USER CODE BEGIN CORDIC_MspDeInit 1 */
+ 160              		.loc 1 66 5 is_stmt 1 view .LVU28
+ 161 000a 044A     		ldr	r2, .L20+4
+ 162 000c 936C     		ldr	r3, [r2, #72]
+ 163 000e 23F00803 		bic	r3, r3, #8
+ 164 0012 9364     		str	r3, [r2, #72]
+ 165              		.loc 1 71 1 is_stmt 0 view .LVU29
+ 166 0014 7047     		bx	lr
+ 167              	.L21:
+ 168 0016 00BF     		.align	2
+ 169              	.L20:
+ 170 0018 000C0240 		.word	1073875968
+ 171 001c 00100240 		.word	1073876992
+ 172              		.cfi_endproc
+ 173              	.LFE927:
+ 175              		.comm	hcordic,40,4
+ 176              		.text
+ 177              	.Letext0:
+ 178              		.file 2 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
+ 179              		.file 3 "Drivers/CMSIS/Include/core_cm4.h"
+ 180              		.file 4 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/system_stm32g4xx.h"
+ 181              		.file 5 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
+ 182              		.file 6 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
+ 183              		.file 7 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_dma.h"
+ 184              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_cordic.h"
+ 185              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
+ 186              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
+ 187              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ 188              		.file 12 "Core/Inc/cordic.h"
+ 189              		.file 13 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
+ 190              		.file 14 "Core/Inc/main.h"
+ARM GAS  /tmp/ccTgt5bv.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 cordic.c
+     /tmp/ccTgt5bv.s:18     .text.MX_CORDIC_Init:0000000000000000 $t
+     /tmp/ccTgt5bv.s:27     .text.MX_CORDIC_Init:0000000000000000 MX_CORDIC_Init
+     /tmp/ccTgt5bv.s:68     .text.MX_CORDIC_Init:0000000000000018 $d
+                            *COM*:0000000000000028 hcordic
+     /tmp/ccTgt5bv.s:74     .text.HAL_CORDIC_MspInit:0000000000000000 $t
+     /tmp/ccTgt5bv.s:82     .text.HAL_CORDIC_MspInit:0000000000000000 HAL_CORDIC_MspInit
+     /tmp/ccTgt5bv.s:130    .text.HAL_CORDIC_MspInit:000000000000002c $d
+     /tmp/ccTgt5bv.s:135    .text.HAL_CORDIC_MspDeInit:0000000000000000 $t
+     /tmp/ccTgt5bv.s:143    .text.HAL_CORDIC_MspDeInit:0000000000000000 HAL_CORDIC_MspDeInit
+     /tmp/ccTgt5bv.s:170    .text.HAL_CORDIC_MspDeInit:0000000000000018 $d
+
+UNDEFINED SYMBOLS
+HAL_CORDIC_Init
+Error_Handler
