@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccxo4Mo6.s 			page 1
+ARM GAS  /tmp/ccrBOPz2.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -27,7 +27,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   24              		.thumb_func
   25              		.fpu fpv4-sp-d16
   27              	MX_GPIO_Init:
-  28              	.LFB925:
+  28              	.LFB1311:
   29              		.file 1 "Core/Src/gpio.c"
    1:Core/Src/gpio.c **** /**
    2:Core/Src/gpio.c ****   ******************************************************************************
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   27:Core/Src/gpio.c **** /* Configure GPIO                                                             */
   28:Core/Src/gpio.c **** /*----------------------------------------------------------------------------*/
   29:Core/Src/gpio.c **** /* USER CODE BEGIN 1 */
-ARM GAS  /tmp/ccxo4Mo6.s 			page 2
+ARM GAS  /tmp/ccrBOPz2.s 			page 2
 
 
   30:Core/Src/gpio.c **** 
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   18:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****       Workarounds:
   19:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****       (#) For AHB & APB peripherals, a dummy read to the peripheral register has been
   20:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****           inserted in each LL_{BUS}_GRP{x}_EnableClock() function.
-ARM GAS  /tmp/ccxo4Mo6.s 			page 3
+ARM GAS  /tmp/ccrBOPz2.s 			page 3
 
 
   21:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** 
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   75:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB1_GRP1_PERIPH_DMA1           RCC_AHB1ENR_DMA1EN
   76:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB1_GRP1_PERIPH_DMA2           RCC_AHB1ENR_DMA2EN
   77:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB1_GRP1_PERIPH_DMAMUX1        RCC_AHB1ENR_DMAMUX1EN
-ARM GAS  /tmp/ccxo4Mo6.s 			page 4
+ARM GAS  /tmp/ccrBOPz2.s 			page 4
 
 
   78:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB1_GRP1_PERIPH_CORDIC         RCC_AHB1ENR_CORDICEN
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  132:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   */
  133:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** 
  134:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** /** @defgroup BUS_LL_EC_APB1_GRP1_PERIPH  APB1 GRP1 PERIPH
-ARM GAS  /tmp/ccxo4Mo6.s 			page 5
+ARM GAS  /tmp/ccrBOPz2.s 			page 5
 
 
  135:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @{
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  189:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_APB2_GRP1_PERIPH_ALL            0xFFFFFFFFU
  190:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_APB2_GRP1_PERIPH_SYSCFG         RCC_APB2ENR_SYSCFGEN
  191:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_APB2_GRP1_PERIPH_TIM1           RCC_APB2ENR_TIM1EN
-ARM GAS  /tmp/ccxo4Mo6.s 			page 6
+ARM GAS  /tmp/ccrBOPz2.s 			page 6
 
 
  192:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_APB2_GRP1_PERIPH_SPI1           RCC_APB2ENR_SPI1EN
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  246:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** {
  247:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   __IO uint32_t tmpreg;
  248:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   SET_BIT(RCC->AHB1ENR, Periphs);
-ARM GAS  /tmp/ccxo4Mo6.s 			page 7
+ARM GAS  /tmp/ccrBOPz2.s 			page 7
 
 
  249:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   /* Delay after an RCC peripheral clock enabling */
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  303:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @brief  Force AHB1 peripherals reset.
  304:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @rmtoll AHB1RSTR     DMA1RST       LL_AHB1_GRP1_ForceReset\n
  305:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1RSTR     DMA2RST       LL_AHB1_GRP1_ForceReset\n
-ARM GAS  /tmp/ccxo4Mo6.s 			page 8
+ARM GAS  /tmp/ccrBOPz2.s 			page 8
 
 
  306:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1RSTR     DMAMUXRST     LL_AHB1_GRP1_ForceReset\n
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  360:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1SMENR    SRAM1SMEN     LL_AHB1_GRP1_DisableClockStopSleep\n
  361:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1SMENR    CRCSMEN       LL_AHB1_GRP1_EnableClockStopSleep
  362:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @param  Periphs This parameter can be a combination of the following values:
-ARM GAS  /tmp/ccxo4Mo6.s 			page 9
+ARM GAS  /tmp/ccrBOPz2.s 			page 9
 
 
  363:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         @arg @ref LL_AHB1_GRP1_PERIPH_DMA1
@@ -538,7 +538,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  417:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @brief  Enable AHB2 peripherals clock.
  418:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @rmtoll AHB2ENR      GPIOAEN       LL_AHB2_GRP1_EnableClock\n
  419:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB2ENR      GPIOBEN       LL_AHB2_GRP1_EnableClock\n
-ARM GAS  /tmp/ccxo4Mo6.s 			page 10
+ARM GAS  /tmp/ccrBOPz2.s 			page 10
 
 
  420:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB2ENR      GPIOCEN       LL_AHB2_GRP1_EnableClock\n
@@ -598,7 +598,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   11:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *
   12:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * This software component is licensed by ST under BSD 3-Clause license,
   13:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * the "License"; You may not use this file except in compliance with the
-ARM GAS  /tmp/ccxo4Mo6.s 			page 11
+ARM GAS  /tmp/ccrBOPz2.s 			page 11
 
 
   14:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * License. You may obtain a copy of the License at:
@@ -658,7 +658,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   68:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** 
   69:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /**
   70:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @brief LL GPIO Init Structure definition
-ARM GAS  /tmp/ccxo4Mo6.s 			page 12
+ARM GAS  /tmp/ccrBOPz2.s 			page 12
 
 
   71:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
@@ -718,7 +718,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  125:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** #define LL_GPIO_PIN_9                      GPIO_BSRR_BS9 /*!< Select pin 9 */
  126:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** #define LL_GPIO_PIN_10                     GPIO_BSRR_BS10 /*!< Select pin 10 */
  127:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** #define LL_GPIO_PIN_11                     GPIO_BSRR_BS11 /*!< Select pin 11 */
-ARM GAS  /tmp/ccxo4Mo6.s 			page 13
+ARM GAS  /tmp/ccrBOPz2.s 			page 13
 
 
  128:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** #define LL_GPIO_PIN_12                     GPIO_BSRR_BS12 /*!< Select pin 12 */
@@ -778,7 +778,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  182:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** #define LL_GPIO_PULL_DOWN                  GPIO_PUPDR_PUPD0_1 /*!< Select I/O pull down */
  183:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /**
  184:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @}
-ARM GAS  /tmp/ccxo4Mo6.s 			page 14
+ARM GAS  /tmp/ccrBOPz2.s 			page 14
 
 
  185:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
@@ -838,7 +838,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  239:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /**
  240:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @}
  241:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
-ARM GAS  /tmp/ccxo4Mo6.s 			page 15
+ARM GAS  /tmp/ccrBOPz2.s 			page 15
 
 
  242:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** 
@@ -898,7 +898,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  296:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @param  GPIOx GPIO Port
  297:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @param  Pin This parameter can be one of the following values:
  298:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_0
-ARM GAS  /tmp/ccxo4Mo6.s 			page 16
+ARM GAS  /tmp/ccrBOPz2.s 			page 16
 
 
  299:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_1
@@ -958,7 +958,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  353:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @retval None
  354:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
  355:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** __STATIC_INLINE void LL_GPIO_SetPinOutputType(GPIO_TypeDef *GPIOx, uint32_t PinMask, uint32_t Outpu
-ARM GAS  /tmp/ccxo4Mo6.s 			page 17
+ARM GAS  /tmp/ccrBOPz2.s 			page 17
 
 
  356:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** {
@@ -1018,7 +1018,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  410:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_7
  411:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_8
  412:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_9
-ARM GAS  /tmp/ccxo4Mo6.s 			page 18
+ARM GAS  /tmp/ccrBOPz2.s 			page 18
 
 
  413:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_10
@@ -1078,7 +1078,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  467:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** }
  468:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** 
  469:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /**
-ARM GAS  /tmp/ccxo4Mo6.s 			page 19
+ARM GAS  /tmp/ccrBOPz2.s 			page 19
 
 
  470:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @brief  Configure gpio pull-up or pull-down for a dedicated pin on a dedicated port.
@@ -1138,7 +1138,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  524:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @retval Returned value can be one of the following values:
  525:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PULL_NO
  526:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PULL_UP
-ARM GAS  /tmp/ccxo4Mo6.s 			page 20
+ARM GAS  /tmp/ccrBOPz2.s 			page 20
 
 
  527:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PULL_DOWN
@@ -1198,7 +1198,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  581:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_1
  582:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_2
  583:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_3
-ARM GAS  /tmp/ccxo4Mo6.s 			page 21
+ARM GAS  /tmp/ccrBOPz2.s 			page 21
 
 
  584:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_4
@@ -1258,7 +1258,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  638:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_AF_10
  639:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_AF_11
  640:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_AF_12
-ARM GAS  /tmp/ccxo4Mo6.s 			page 22
+ARM GAS  /tmp/ccrBOPz2.s 			page 22
 
 
  641:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_AF_13
@@ -1318,7 +1318,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  695:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         next reset.
  696:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @note   Each lock bit freezes a specific configuration register
  697:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         (control and alternate function registers).
-ARM GAS  /tmp/ccxo4Mo6.s 			page 23
+ARM GAS  /tmp/ccrBOPz2.s 			page 23
 
 
  698:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @rmtoll LCKR         LCKK          LL_GPIO_LockPin
@@ -1378,7 +1378,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  752:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_ALL
  753:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @retval State of bit (1 or 0).
  754:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
-ARM GAS  /tmp/ccxo4Mo6.s 			page 24
+ARM GAS  /tmp/ccrBOPz2.s 			page 24
 
 
  755:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** __STATIC_INLINE uint32_t LL_GPIO_IsPinLocked(GPIO_TypeDef *GPIOx, uint32_t PinMask)
@@ -1438,7 +1438,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  809:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_14
  810:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_15
  811:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_ALL
-ARM GAS  /tmp/ccxo4Mo6.s 			page 25
+ARM GAS  /tmp/ccrBOPz2.s 			page 25
 
 
  812:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @retval State of bit (1 or 0).
@@ -1498,7 +1498,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  866:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** __STATIC_INLINE uint32_t LL_GPIO_IsOutputPinSet(GPIO_TypeDef *GPIOx, uint32_t PinMask)
  867:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** {
  868:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   return ((READ_BIT(GPIOx->ODR, PinMask) == (PinMask)) ? 1UL : 0UL);
-ARM GAS  /tmp/ccxo4Mo6.s 			page 26
+ARM GAS  /tmp/ccrBOPz2.s 			page 26
 
 
  869:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** }
@@ -1558,7 +1558,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  923:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
  924:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** __STATIC_INLINE void LL_GPIO_ResetOutputPin(GPIO_TypeDef *GPIOx, uint32_t PinMask)
  925:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** {
-ARM GAS  /tmp/ccxo4Mo6.s 			page 27
+ARM GAS  /tmp/ccrBOPz2.s 			page 27
 
 
  926:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   WRITE_REG(GPIOx->BRR, PinMask);
@@ -1618,7 +1618,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  100              		.loc 2 456 3 view .LVU18
  101 0022 DA6C     		ldr	r2, [r3, #76]
  102 0024 42F00102 		orr	r2, r2, #1
-ARM GAS  /tmp/ccxo4Mo6.s 			page 28
+ARM GAS  /tmp/ccrBOPz2.s 			page 28
 
 
  103 0028 DA64     		str	r2, [r3, #76]
@@ -1678,7 +1678,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  456:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   /* Delay after an RCC peripheral clock enabling */
  144              		.loc 2 456 3 view .LVU36
  145 0046 DA6C     		ldr	r2, [r3, #76]
-ARM GAS  /tmp/ccxo4Mo6.s 			page 29
+ARM GAS  /tmp/ccrBOPz2.s 			page 29
 
 
  146 0048 42F00202 		orr	r2, r2, #2
@@ -1738,7 +1738,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   54:Core/Src/gpio.c ****   /**/
   55:Core/Src/gpio.c ****   LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
  192              		.loc 1 55 3 is_stmt 1 view .LVU48
-ARM GAS  /tmp/ccxo4Mo6.s 			page 30
+ARM GAS  /tmp/ccrBOPz2.s 			page 30
 
 
  193              	.LBB44:
@@ -1798,7 +1798,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  231              		.loc 1 61 23 view .LVU62
  232 0074 0493     		str	r3, [sp, #16]
   62:Core/Src/gpio.c ****   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-ARM GAS  /tmp/ccxo4Mo6.s 			page 31
+ARM GAS  /tmp/ccrBOPz2.s 			page 31
 
 
  233              		.loc 1 62 3 is_stmt 1 view .LVU63
@@ -1858,7 +1858,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
   79:Core/Src/gpio.c ****   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   80:Core/Src/gpio.c ****   LL_GPIO_Init(DRV_nFAULT_GPIO_Port, &GPIO_InitStruct);
  264              		.loc 1 80 3 view .LVU81
-ARM GAS  /tmp/ccxo4Mo6.s 			page 32
+ARM GAS  /tmp/ccrBOPz2.s 			page 32
 
 
  265 0098 04A9     		add	r1, sp, #16
@@ -1918,7 +1918,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  299 00bc BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
  300              	.L5:
  301              		.align	2
-ARM GAS  /tmp/ccxo4Mo6.s 			page 33
+ARM GAS  /tmp/ccrBOPz2.s 			page 33
 
 
  302              	.L4:
@@ -1926,7 +1926,7 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  304 00c4 00040048 		.word	1207960576
  305 00c8 00080048 		.word	1207961600
  306              		.cfi_endproc
- 307              	.LFE925:
+ 307              	.LFE1311:
  309              		.text
  310              	.Letext0:
  311              		.file 4 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
@@ -1935,17 +1935,17 @@ ARM GAS  /tmp/ccxo4Mo6.s 			page 1
  314              		.file 7 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
  315              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
  316              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
- 317              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
- 318              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
- 319              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
-ARM GAS  /tmp/ccxo4Mo6.s 			page 34
+ 317              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ 318              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
+ 319              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h"
+ARM GAS  /tmp/ccrBOPz2.s 			page 34
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 gpio.c
-     /tmp/ccxo4Mo6.s:18     .text.MX_GPIO_Init:0000000000000000 $t
-     /tmp/ccxo4Mo6.s:27     .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
-     /tmp/ccxo4Mo6.s:303    .text.MX_GPIO_Init:00000000000000c0 $d
+     /tmp/ccrBOPz2.s:18     .text.MX_GPIO_Init:0000000000000000 $t
+     /tmp/ccrBOPz2.s:27     .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
+     /tmp/ccrBOPz2.s:303    .text.MX_GPIO_Init:00000000000000c0 $d
 
 UNDEFINED SYMBOLS
 LL_GPIO_Init

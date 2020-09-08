@@ -30,8 +30,6 @@
 
 /* USER CODE END Includes */
 
-extern FMAC_HandleTypeDef hfmac;
-
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

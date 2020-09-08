@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccgFPv5r.s 			page 1
+ARM GAS  /tmp/ccbcFmcL.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -27,7 +27,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   24              		.thumb_func
   25              		.fpu fpv4-sp-d16
   27              	NMI_Handler:
-  28              	.LFB925:
+  28              	.LFB1311:
   29              		.file 1 "Core/Src/stm32g4xx_it.c"
    1:Core/Src/stm32g4xx_it.c **** /* USER CODE BEGIN Header */
    2:Core/Src/stm32g4xx_it.c **** /**
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   27:Core/Src/stm32g4xx_it.c **** 
   28:Core/Src/stm32g4xx_it.c **** /* Private typedef -----------------------------------------------------------*/
   29:Core/Src/stm32g4xx_it.c **** /* USER CODE BEGIN TD */
-ARM GAS  /tmp/ccgFPv5r.s 			page 2
+ARM GAS  /tmp/ccbcFmcL.s 			page 2
 
 
   30:Core/Src/stm32g4xx_it.c **** 
@@ -118,11 +118,11 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   79:Core/Src/stm32g4xx_it.c **** }
   35              		.loc 1 79 1 view .LVU1
   36 0000 7047     		bx	lr
-ARM GAS  /tmp/ccgFPv5r.s 			page 3
+ARM GAS  /tmp/ccbcFmcL.s 			page 3
 
 
   37              		.cfi_endproc
-  38              	.LFE925:
+  38              	.LFE1311:
   40 0002 00BF     		.section	.text.HardFault_Handler,"ax",%progbits
   41              		.align	1
   42              		.p2align 2,,3
@@ -132,7 +132,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   46              		.thumb_func
   47              		.fpu fpv4-sp-d16
   49              	HardFault_Handler:
-  50              	.LFB926:
+  50              	.LFB1312:
   80:Core/Src/stm32g4xx_it.c **** 
   81:Core/Src/stm32g4xx_it.c **** /**
   82:Core/Src/stm32g4xx_it.c ****   * @brief This function handles Hard fault interrupt.
@@ -160,7 +160,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   60              		.loc 1 89 9 discriminator 1 view .LVU5
   61 0000 FEE7     		b	.L4
   62              		.cfi_endproc
-  63              	.LFE926:
+  63              	.LFE1312:
   65 0002 00BF     		.section	.text.MemManage_Handler,"ax",%progbits
   66              		.align	1
   67              		.p2align 2,,3
@@ -170,7 +170,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   71              		.thumb_func
   72              		.fpu fpv4-sp-d16
   74              	MemManage_Handler:
-  75              	.LFB927:
+  75              	.LFB1313:
   94:Core/Src/stm32g4xx_it.c **** }
   95:Core/Src/stm32g4xx_it.c **** 
   96:Core/Src/stm32g4xx_it.c **** /**
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   98:Core/Src/stm32g4xx_it.c ****   */
   99:Core/Src/stm32g4xx_it.c **** void MemManage_Handler(void)
  100:Core/Src/stm32g4xx_it.c **** {
-ARM GAS  /tmp/ccgFPv5r.s 			page 4
+ARM GAS  /tmp/ccbcFmcL.s 			page 4
 
 
   76              		.loc 1 100 1 view -0
@@ -202,7 +202,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   85              		.loc 1 104 9 discriminator 1 view .LVU9
   86 0000 FEE7     		b	.L6
   87              		.cfi_endproc
-  88              	.LFE927:
+  88              	.LFE1313:
   90 0002 00BF     		.section	.text.BusFault_Handler,"ax",%progbits
   91              		.align	1
   92              		.p2align 2,,3
@@ -212,7 +212,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
   96              		.thumb_func
   97              		.fpu fpv4-sp-d16
   99              	BusFault_Handler:
- 100              	.LFB928:
+ 100              	.LFB1314:
  109:Core/Src/stm32g4xx_it.c **** }
  110:Core/Src/stm32g4xx_it.c **** 
  111:Core/Src/stm32g4xx_it.c **** /**
@@ -238,13 +238,13 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
  123:Core/Src/stm32g4xx_it.c ****   }
  109              		.loc 1 123 3 discriminator 1 view .LVU12
  119:Core/Src/stm32g4xx_it.c ****   {
-ARM GAS  /tmp/ccgFPv5r.s 			page 5
+ARM GAS  /tmp/ccbcFmcL.s 			page 5
 
 
  110              		.loc 1 119 9 discriminator 1 view .LVU13
  111 0000 FEE7     		b	.L8
  112              		.cfi_endproc
- 113              	.LFE928:
+ 113              	.LFE1314:
  115 0002 00BF     		.section	.text.UsageFault_Handler,"ax",%progbits
  116              		.align	1
  117              		.p2align 2,,3
@@ -254,7 +254,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
  121              		.thumb_func
  122              		.fpu fpv4-sp-d16
  124              	UsageFault_Handler:
- 125              	.LFB929:
+ 125              	.LFB1315:
  124:Core/Src/stm32g4xx_it.c **** }
  125:Core/Src/stm32g4xx_it.c **** 
  126:Core/Src/stm32g4xx_it.c **** /**
@@ -283,7 +283,7 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
  135              		.loc 1 134 9 discriminator 1 view .LVU17
  136 0000 FEE7     		b	.L10
  137              		.cfi_endproc
- 138              	.LFE929:
+ 138              	.LFE1315:
  140 0002 00BF     		.section	.text.DebugMon_Handler,"ax",%progbits
  141              		.align	1
  142              		.p2align 2,,3
@@ -293,27 +293,61 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
  146              		.thumb_func
  147              		.fpu fpv4-sp-d16
  149              	DebugMon_Handler:
- 150              	.LFB933:
+ 150              	.LFB1321:
  151              		.cfi_startproc
  152              		@ args = 0, pretend = 0, frame = 0
  153              		@ frame_needed = 0, uses_anonymous_args = 0
  154              		@ link register save eliminated.
-ARM GAS  /tmp/ccgFPv5r.s 			page 6
+ARM GAS  /tmp/ccbcFmcL.s 			page 6
 
 
  155 0000 7047     		bx	lr
  156              		.cfi_endproc
- 157              	.LFE933:
- 159 0002 00BF     		.section	.text.TIM6_DAC_IRQHandler,"ax",%progbits
+ 157              	.LFE1321:
+ 159 0002 00BF     		.section	.text.DMA1_Channel1_IRQHandler,"ax",%progbits
  160              		.align	1
  161              		.p2align 2,,3
- 162              		.global	TIM6_DAC_IRQHandler
+ 162              		.global	DMA1_Channel1_IRQHandler
  163              		.syntax unified
  164              		.thumb
  165              		.thumb_func
  166              		.fpu fpv4-sp-d16
- 168              	TIM6_DAC_IRQHandler:
- 169              	.LFB931:
+ 168              	DMA1_Channel1_IRQHandler:
+ 169              	.LFB1323:
+ 170              		.cfi_startproc
+ 171              		@ args = 0, pretend = 0, frame = 0
+ 172              		@ frame_needed = 0, uses_anonymous_args = 0
+ 173              		@ link register save eliminated.
+ 174 0000 7047     		bx	lr
+ 175              		.cfi_endproc
+ 176              	.LFE1323:
+ 178 0002 00BF     		.section	.text.DMA1_Channel2_IRQHandler,"ax",%progbits
+ 179              		.align	1
+ 180              		.p2align 2,,3
+ 181              		.global	DMA1_Channel2_IRQHandler
+ 182              		.syntax unified
+ 183              		.thumb
+ 184              		.thumb_func
+ 185              		.fpu fpv4-sp-d16
+ 187              	DMA1_Channel2_IRQHandler:
+ 188              	.LFB1325:
+ 189              		.cfi_startproc
+ 190              		@ args = 0, pretend = 0, frame = 0
+ 191              		@ frame_needed = 0, uses_anonymous_args = 0
+ 192              		@ link register save eliminated.
+ 193 0000 7047     		bx	lr
+ 194              		.cfi_endproc
+ 195              	.LFE1325:
+ 197 0002 00BF     		.section	.text.TIM6_DAC_IRQHandler,"ax",%progbits
+ 198              		.align	1
+ 199              		.p2align 2,,3
+ 200              		.global	TIM6_DAC_IRQHandler
+ 201              		.syntax unified
+ 202              		.thumb
+ 203              		.thumb_func
+ 204              		.fpu fpv4-sp-d16
+ 206              	TIM6_DAC_IRQHandler:
+ 207              	.LFB1319:
  139:Core/Src/stm32g4xx_it.c **** }
  140:Core/Src/stm32g4xx_it.c **** 
  141:Core/Src/stm32g4xx_it.c **** /**
@@ -324,6 +358,9 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
  146:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
  147:Core/Src/stm32g4xx_it.c **** 
  148:Core/Src/stm32g4xx_it.c ****   /* USER CODE END DebugMonitor_IRQn 0 */
+ARM GAS  /tmp/ccbcFmcL.s 			page 7
+
+
  149:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
  150:Core/Src/stm32g4xx_it.c **** 
  151:Core/Src/stm32g4xx_it.c ****   /* USER CODE END DebugMonitor_IRQn 1 */
@@ -337,65 +374,97 @@ ARM GAS  /tmp/ccgFPv5r.s 			page 1
  159:Core/Src/stm32g4xx_it.c **** /******************************************************************************/
  160:Core/Src/stm32g4xx_it.c **** 
  161:Core/Src/stm32g4xx_it.c **** /**
- 162:Core/Src/stm32g4xx_it.c ****   * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interr
+ 162:Core/Src/stm32g4xx_it.c ****   * @brief This function handles DMA1 channel1 global interrupt.
  163:Core/Src/stm32g4xx_it.c ****   */
- 164:Core/Src/stm32g4xx_it.c **** void TIM6_DAC_IRQHandler(void)
+ 164:Core/Src/stm32g4xx_it.c **** void DMA1_Channel1_IRQHandler(void)
  165:Core/Src/stm32g4xx_it.c **** {
- 170              		.loc 1 165 1 view -0
- 171              		.cfi_startproc
- 172              		@ args = 0, pretend = 0, frame = 0
- 173              		@ frame_needed = 0, uses_anonymous_args = 0
- 174              		@ link register save eliminated.
- 166:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+ 166:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
  167:Core/Src/stm32g4xx_it.c **** 
- 168:Core/Src/stm32g4xx_it.c ****   /* USER CODE END TIM6_DAC_IRQn 0 */
- 169:Core/Src/stm32g4xx_it.c ****   HAL_TIM_IRQHandler(&htim6);
- 175              		.loc 1 169 3 view .LVU19
- 176 0000 0148     		ldr	r0, .L13
- 177 0002 FFF7FEBF 		b	HAL_TIM_IRQHandler
- 178              	.LVL0:
- 179              	.L14:
- 180 0006 00BF     		.align	2
- 181              	.L13:
- 182 0008 00000000 		.word	htim6
-ARM GAS  /tmp/ccgFPv5r.s 			page 7
+ 168:Core/Src/stm32g4xx_it.c ****   /* USER CODE END DMA1_Channel1_IRQn 0 */
+ 169:Core/Src/stm32g4xx_it.c **** 
+ 170:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
+ 171:Core/Src/stm32g4xx_it.c **** 
+ 172:Core/Src/stm32g4xx_it.c ****   /* USER CODE END DMA1_Channel1_IRQn 1 */
+ 173:Core/Src/stm32g4xx_it.c **** }
+ 174:Core/Src/stm32g4xx_it.c **** 
+ 175:Core/Src/stm32g4xx_it.c **** /**
+ 176:Core/Src/stm32g4xx_it.c ****   * @brief This function handles DMA1 channel2 global interrupt.
+ 177:Core/Src/stm32g4xx_it.c ****   */
+ 178:Core/Src/stm32g4xx_it.c **** void DMA1_Channel2_IRQHandler(void)
+ 179:Core/Src/stm32g4xx_it.c **** {
+ 180:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
+ 181:Core/Src/stm32g4xx_it.c **** 
+ 182:Core/Src/stm32g4xx_it.c ****   /* USER CODE END DMA1_Channel2_IRQn 0 */
+ 183:Core/Src/stm32g4xx_it.c **** 
+ 184:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
+ 185:Core/Src/stm32g4xx_it.c **** 
+ 186:Core/Src/stm32g4xx_it.c ****   /* USER CODE END DMA1_Channel2_IRQn 1 */
+ 187:Core/Src/stm32g4xx_it.c **** }
+ 188:Core/Src/stm32g4xx_it.c **** 
+ 189:Core/Src/stm32g4xx_it.c **** /**
+ 190:Core/Src/stm32g4xx_it.c ****   * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interr
+ 191:Core/Src/stm32g4xx_it.c ****   */
+ 192:Core/Src/stm32g4xx_it.c **** void TIM6_DAC_IRQHandler(void)
+ 193:Core/Src/stm32g4xx_it.c **** {
+ 208              		.loc 1 193 1 view -0
+ 209              		.cfi_startproc
+ 210              		@ args = 0, pretend = 0, frame = 0
+ 211              		@ frame_needed = 0, uses_anonymous_args = 0
+ 212              		@ link register save eliminated.
+ 194:Core/Src/stm32g4xx_it.c ****   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+ 195:Core/Src/stm32g4xx_it.c **** 
+ 196:Core/Src/stm32g4xx_it.c ****   /* USER CODE END TIM6_DAC_IRQn 0 */
+ 197:Core/Src/stm32g4xx_it.c ****   HAL_TIM_IRQHandler(&htim6);
+ 213              		.loc 1 197 3 view .LVU19
+ 214 0000 0148     		ldr	r0, .L15
+ 215 0002 FFF7FEBF 		b	HAL_TIM_IRQHandler
+ARM GAS  /tmp/ccbcFmcL.s 			page 8
 
 
- 183              		.cfi_endproc
- 184              	.LFE931:
- 186              		.text
- 187              	.Letext0:
- 188              		.file 2 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
- 189              		.file 3 "Drivers/CMSIS/Include/core_cm4.h"
- 190              		.file 4 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/system_stm32g4xx.h"
- 191              		.file 5 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
- 192              		.file 6 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
- 193              		.file 7 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_dma.h"
- 194              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
- 195              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h"
- 196              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
- 197              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
- 198              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
-ARM GAS  /tmp/ccgFPv5r.s 			page 8
+ 216              	.LVL0:
+ 217              	.L16:
+ 218 0006 00BF     		.align	2
+ 219              	.L15:
+ 220 0008 00000000 		.word	htim6
+ 221              		.cfi_endproc
+ 222              	.LFE1319:
+ 224              		.text
+ 225              	.Letext0:
+ 226              		.file 2 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
+ 227              		.file 3 "Drivers/CMSIS/Include/core_cm4.h"
+ 228              		.file 4 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/system_stm32g4xx.h"
+ 229              		.file 5 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
+ 230              		.file 6 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
+ 231              		.file 7 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_dma.h"
+ 232              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
+ 233              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h"
+ 234              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ 235              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
+ 236              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h"
+ARM GAS  /tmp/ccbcFmcL.s 			page 9
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 stm32g4xx_it.c
-     /tmp/ccgFPv5r.s:18     .text.NMI_Handler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:27     .text.NMI_Handler:0000000000000000 NMI_Handler
-     /tmp/ccgFPv5r.s:41     .text.HardFault_Handler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:49     .text.HardFault_Handler:0000000000000000 HardFault_Handler
-     /tmp/ccgFPv5r.s:66     .text.MemManage_Handler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:74     .text.MemManage_Handler:0000000000000000 MemManage_Handler
-     /tmp/ccgFPv5r.s:91     .text.BusFault_Handler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:99     .text.BusFault_Handler:0000000000000000 BusFault_Handler
-     /tmp/ccgFPv5r.s:116    .text.UsageFault_Handler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:124    .text.UsageFault_Handler:0000000000000000 UsageFault_Handler
-     /tmp/ccgFPv5r.s:141    .text.DebugMon_Handler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:149    .text.DebugMon_Handler:0000000000000000 DebugMon_Handler
-     /tmp/ccgFPv5r.s:160    .text.TIM6_DAC_IRQHandler:0000000000000000 $t
-     /tmp/ccgFPv5r.s:168    .text.TIM6_DAC_IRQHandler:0000000000000000 TIM6_DAC_IRQHandler
-     /tmp/ccgFPv5r.s:182    .text.TIM6_DAC_IRQHandler:0000000000000008 $d
+     /tmp/ccbcFmcL.s:18     .text.NMI_Handler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:27     .text.NMI_Handler:0000000000000000 NMI_Handler
+     /tmp/ccbcFmcL.s:41     .text.HardFault_Handler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:49     .text.HardFault_Handler:0000000000000000 HardFault_Handler
+     /tmp/ccbcFmcL.s:66     .text.MemManage_Handler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:74     .text.MemManage_Handler:0000000000000000 MemManage_Handler
+     /tmp/ccbcFmcL.s:91     .text.BusFault_Handler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:99     .text.BusFault_Handler:0000000000000000 BusFault_Handler
+     /tmp/ccbcFmcL.s:116    .text.UsageFault_Handler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:124    .text.UsageFault_Handler:0000000000000000 UsageFault_Handler
+     /tmp/ccbcFmcL.s:141    .text.DebugMon_Handler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:149    .text.DebugMon_Handler:0000000000000000 DebugMon_Handler
+     /tmp/ccbcFmcL.s:160    .text.DMA1_Channel1_IRQHandler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:168    .text.DMA1_Channel1_IRQHandler:0000000000000000 DMA1_Channel1_IRQHandler
+     /tmp/ccbcFmcL.s:179    .text.DMA1_Channel2_IRQHandler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:187    .text.DMA1_Channel2_IRQHandler:0000000000000000 DMA1_Channel2_IRQHandler
+     /tmp/ccbcFmcL.s:198    .text.TIM6_DAC_IRQHandler:0000000000000000 $t
+     /tmp/ccbcFmcL.s:206    .text.TIM6_DAC_IRQHandler:0000000000000000 TIM6_DAC_IRQHandler
+     /tmp/ccbcFmcL.s:220    .text.TIM6_DAC_IRQHandler:0000000000000008 $d
 
 UNDEFINED SYMBOLS
 HAL_TIM_IRQHandler

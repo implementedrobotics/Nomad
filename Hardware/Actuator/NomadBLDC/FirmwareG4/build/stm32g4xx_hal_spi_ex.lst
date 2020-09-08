@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccqJz33r.s 			page 1
+ARM GAS  /tmp/ccxeu0Ig.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccqJz33r.s 			page 1
   26:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi_ex.c **** 
   27:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi_ex.c **** /** @addtogroup STM32G4xx_HAL_Driver
   28:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi_ex.c ****   * @{
-ARM GAS  /tmp/ccqJz33r.s 			page 2
+ARM GAS  /tmp/ccxeu0Ig.s 			page 2
 
 
   29:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi_ex.c ****   */
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccqJz33r.s 			page 1
   32              		.cfi_startproc
   33              		@ args = 0, pretend = 0, frame = 8
   34              		@ frame_needed = 0, uses_anonymous_args = 0
-ARM GAS  /tmp/ccqJz33r.s 			page 3
+ARM GAS  /tmp/ccxeu0Ig.s 			page 3
 
 
   35              		@ link register save eliminated.
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccqJz33r.s 			page 1
   73              	.L4:
   74              		.loc 1 87 28 view .LVU18
   75 0020 D168     		ldr	r1, [r2, #12]
-ARM GAS  /tmp/ccqJz33r.s 			page 4
+ARM GAS  /tmp/ccxeu0Ig.s 			page 4
 
 
   76              		.loc 1 87 12 view .LVU19
@@ -225,14 +225,13 @@ ARM GAS  /tmp/ccqJz33r.s 			page 1
  109              		.file 7 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_dma.h"
  110              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
  111              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi.h"
- 112              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
- 113              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
-ARM GAS  /tmp/ccqJz33r.s 			page 5
+ 112              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ARM GAS  /tmp/ccxeu0Ig.s 			page 5
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 stm32g4xx_hal_spi_ex.c
-     /tmp/ccqJz33r.s:18     .text.HAL_SPIEx_FlushRxFifo:0000000000000000 $t
-     /tmp/ccqJz33r.s:27     .text.HAL_SPIEx_FlushRxFifo:0000000000000000 HAL_SPIEx_FlushRxFifo
+     /tmp/ccxeu0Ig.s:18     .text.HAL_SPIEx_FlushRxFifo:0000000000000000 $t
+     /tmp/ccxeu0Ig.s:27     .text.HAL_SPIEx_FlushRxFifo:0000000000000000 HAL_SPIEx_FlushRxFifo
 
 NO UNDEFINED SYMBOLS

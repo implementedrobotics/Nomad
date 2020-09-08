@@ -26,6 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "thread_interface.h"
 
 /* USER CODE END Includes */
 
@@ -46,6 +47,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+osThreadId_t commsTaskHandle;
+osThreadId_t controlTaskHandle;
+
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -111,13 +115,23 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
 
-    osDelay(1);
-  }
+  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+
+  const osThreadAttr_t commsTask_attributes =
+  {
+    .name = "commsTask",
+    .priority = (osPriority_t)osPriorityNormal1,
+    .stack_size = 128 * 4
+  };
+
+  commsTaskHandle = osThreadNew(comms_thread_entry, NULL, &commsTask_attributes);
+  // //HAL_GPIO_WritePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin, GPIO_PIN_RESET);
+  // vTaskDelete(defaultTaskHandle);
+   while(1)
+   {
+     osDelay(1);
+   }
   /* USER CODE END StartDefaultTask */
 }
 

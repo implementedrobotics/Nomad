@@ -11,7 +11,12 @@
                 "${workspaceRoot}/Core/Inc",
                 "${workspaceRoot}/Core/Src",
                 "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc",
-                "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Src"
+                "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy",
+                "${workspaceRoot}/Drivers/STM32G4xx_HAL_Driver/Src",
+                "${workspaceRoot}/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceRoot}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2",
+                "${workspaceRoot}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
+                "${workspaceRoot}/NomadBLDC/include"
             ],
             "defines": [
                 "DEBUG",
@@ -24,7 +29,7 @@
                 "USE_DEVICE_MODE",
                 "USE_FULL_ASSERT",
                 "USE_HAL_DRIVER",
-                "USE_USB_OTG_FS"
+                "USE_FULL_LL_DRIVER"
             ],
             "intelliSenseMode": "clang-x64",
             "browse": {

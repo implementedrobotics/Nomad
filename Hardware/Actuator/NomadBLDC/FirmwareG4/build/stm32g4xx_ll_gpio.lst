@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccfKn3mS.s 			page 1
+ARM GAS  /tmp/ccnrbqWt.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   26:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** #else
   27:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** #define assert_param(expr) ((void)0U)
   28:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** #endif /* USE_FULL_ASSERT */
-ARM GAS  /tmp/ccfKn3mS.s 			page 2
+ARM GAS  /tmp/ccnrbqWt.s 			page 2
 
 
   29:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** 
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   83:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****                                             ((__VALUE__) == LL_GPIO_AF_12 )   ||\
   84:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****                                             ((__VALUE__) == LL_GPIO_AF_13 )   ||\
   85:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****                                             ((__VALUE__) == LL_GPIO_AF_14 )   ||\
-ARM GAS  /tmp/ccfKn3mS.s 			page 3
+ARM GAS  /tmp/ccnrbqWt.s 			page 3
 
 
   86:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****                                             ((__VALUE__) == LL_GPIO_AF_15 ))
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  124:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****     LL_AHB2_GRP1_ForceReset(LL_AHB2_GRP1_PERIPH_GPIOB);
  125:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****     LL_AHB2_GRP1_ReleaseReset(LL_AHB2_GRP1_PERIPH_GPIOB);
  126:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****   }
-ARM GAS  /tmp/ccfKn3mS.s 			page 4
+ARM GAS  /tmp/ccnrbqWt.s 			page 4
 
 
  127:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****   else if (GPIOx == GPIOC)
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   73 002a 0120     		movs	r0, #1
   74              	.LVL1:
  155:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****   }
-ARM GAS  /tmp/ccfKn3mS.s 			page 5
+ARM GAS  /tmp/ccnrbqWt.s 			page 5
 
 
  156:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** 
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   42:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** extern "C" {
   43:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #endif
   44:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 6
+ARM GAS  /tmp/ccnrbqWt.s 			page 6
 
 
   45:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** /* Includes ------------------------------------------------------------------*/
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   99:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB2_GRP1_PERIPH_SRAM2          RCC_AHB2SMENR_SRAM2SMEN
  100:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB2_GRP1_PERIPH_ADC12          RCC_AHB2ENR_ADC12EN
  101:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #if defined(ADC345_COMMON)
-ARM GAS  /tmp/ccfKn3mS.s 			page 7
+ARM GAS  /tmp/ccnrbqWt.s 			page 7
 
 
  102:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_AHB2_GRP1_PERIPH_ADC345         RCC_AHB2ENR_ADC345EN
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  156:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #if defined(UART5)
  157:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_APB1_GRP1_PERIPH_UART5          RCC_APB1ENR1_UART5EN
  158:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #endif /* UART5 */
-ARM GAS  /tmp/ccfKn3mS.s 			page 8
+ARM GAS  /tmp/ccnrbqWt.s 			page 8
 
 
  159:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** #define LL_APB1_GRP1_PERIPH_I2C1           RCC_APB1ENR1_I2C1EN
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  213:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @}
  214:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   */
  215:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 9
+ARM GAS  /tmp/ccnrbqWt.s 			page 9
 
 
  216:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** /* Exported macro ------------------------------------------------------------*/
@@ -538,7 +538,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  270:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         @arg @ref LL_AHB1_GRP1_PERIPH_CRC
  271:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @retval State of Periphs (1 or 0).
  272:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   */
-ARM GAS  /tmp/ccfKn3mS.s 			page 10
+ARM GAS  /tmp/ccnrbqWt.s 			page 10
 
 
  273:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** __STATIC_INLINE uint32_t LL_AHB1_GRP1_IsEnabledClock(uint32_t Periphs)
@@ -598,7 +598,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  327:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** /**
  328:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @brief  Release AHB1 peripherals reset.
  329:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @rmtoll AHB1RSTR     DMA1RST       LL_AHB1_GRP1_ReleaseReset\n
-ARM GAS  /tmp/ccfKn3mS.s 			page 11
+ARM GAS  /tmp/ccnrbqWt.s 			page 11
 
 
  330:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1RSTR     DMA2RST       LL_AHB1_GRP1_ReleaseReset\n
@@ -658,7 +658,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  384:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @rmtoll AHB1SMENR    DMA1SMEN      LL_AHB1_GRP1_DisableClockStopSleep\n
  385:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1SMENR    DMA2SMEN      LL_AHB1_GRP1_DisableClockStopSleep\n
  386:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1SMENR    DMAMUXSMEN    LL_AHB1_GRP1_DisableClockStopSleep\n
-ARM GAS  /tmp/ccfKn3mS.s 			page 12
+ARM GAS  /tmp/ccnrbqWt.s 			page 12
 
 
  387:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB1SMENR    CORDICSMEN    LL_AHB1_GRP1_DisableClockStopSleep\n
@@ -718,7 +718,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  441:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         @arg @ref LL_AHB2_GRP1_PERIPH_ADC12
  442:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         @arg @ref LL_AHB2_GRP1_PERIPH_ADC345 (*)
  443:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         @arg @ref LL_AHB2_GRP1_PERIPH_DAC1
-ARM GAS  /tmp/ccfKn3mS.s 			page 13
+ARM GAS  /tmp/ccnrbqWt.s 			page 13
 
 
  444:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         @arg @ref LL_AHB2_GRP1_PERIPH_DAC2 (*)
@@ -778,7 +778,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  498:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   */
  499:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** __STATIC_INLINE uint32_t LL_AHB2_GRP1_IsEnabledClock(uint32_t Periphs)
  500:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** {
-ARM GAS  /tmp/ccfKn3mS.s 			page 14
+ARM GAS  /tmp/ccnrbqWt.s 			page 14
 
 
  501:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   return ((READ_BIT(RCC->AHB2ENR, Periphs) == Periphs) ? 1UL : 0UL);
@@ -838,7 +838,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  555:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB2RSTR      ADC12RST       LL_AHB2_GRP1_ForceReset\n
  556:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB2RSTR      ADC345RST      LL_AHB2_GRP1_ForceReset\n
  557:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB2RSTR      DAC1RST        LL_AHB2_GRP1_ForceReset\n
-ARM GAS  /tmp/ccfKn3mS.s 			page 15
+ARM GAS  /tmp/ccnrbqWt.s 			page 15
 
 
  558:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   *         AHB2RSTR      DAC2RST        LL_AHB2_GRP1_ForceReset\n
@@ -898,7 +898,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  587:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** 
  588:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** /**
  589:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @brief  Release AHB2 peripherals reset.
-ARM GAS  /tmp/ccfKn3mS.s 			page 16
+ARM GAS  /tmp/ccnrbqWt.s 			page 16
 
 
  590:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h ****   * @rmtoll AHB2RSTR      GPIOARST       LL_AHB2_GRP1_ReleaseReset\n
@@ -958,7 +958,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  121              	.LBB136:
  122              	.LBI136:
  583:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** {
-ARM GAS  /tmp/ccfKn3mS.s 			page 17
+ARM GAS  /tmp/ccnrbqWt.s 			page 17
 
 
  123              		.loc 2 583 22 view .LVU32
@@ -1018,7 +1018,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  167              		.loc 1 111 15 is_stmt 0 view .LVU44
  168 0068 0020     		movs	r0, #0
  169              	.LVL9:
-ARM GAS  /tmp/ccfKn3mS.s 			page 18
+ARM GAS  /tmp/ccnrbqWt.s 			page 18
 
 
  170              	.LBB145:
@@ -1078,7 +1078,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  214 008c DA62     		str	r2, [r3, #44]
  215              	.LVL13:
  585:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** }
-ARM GAS  /tmp/ccfKn3mS.s 			page 19
+ARM GAS  /tmp/ccnrbqWt.s 			page 19
 
 
  216              		.loc 2 585 3 view .LVU57
@@ -1138,7 +1138,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  260              	.LBI158:
  625:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h **** {
  261              		.loc 2 625 22 view .LVU70
-ARM GAS  /tmp/ccfKn3mS.s 			page 20
+ARM GAS  /tmp/ccnrbqWt.s 			page 20
 
 
  262              	.LBB159:
@@ -1198,7 +1198,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  306              		.loc 2 628 1 is_stmt 0 view .LVU83
  307 00ce 7047     		bx	lr
  308              	.LVL20:
-ARM GAS  /tmp/ccfKn3mS.s 			page 21
+ARM GAS  /tmp/ccnrbqWt.s 			page 21
 
 
  309              	.L17:
@@ -1258,7 +1258,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  354 00fc 00140048 		.word	1207964672
  355 0100 00180048 		.word	1207965696
  356 0104 00100240 		.word	1073876992
-ARM GAS  /tmp/ccfKn3mS.s 			page 22
+ARM GAS  /tmp/ccnrbqWt.s 			page 22
 
 
  357              	.LBE171:
@@ -1318,7 +1318,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  388              		.cfi_def_cfa_offset 36
  389              		.cfi_offset 4, -36
  390              		.cfi_offset 5, -32
-ARM GAS  /tmp/ccfKn3mS.s 			page 23
+ARM GAS  /tmp/ccnrbqWt.s 			page 23
 
 
  391              		.cfi_offset 6, -28
@@ -1378,7 +1378,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
   44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
-ARM GAS  /tmp/ccfKn3mS.s 			page 24
+ARM GAS  /tmp/ccnrbqWt.s 			page 24
 
 
   45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
@@ -1438,7 +1438,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
  100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
  101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
-ARM GAS  /tmp/ccfKn3mS.s 			page 25
+ARM GAS  /tmp/ccnrbqWt.s 			page 25
 
 
  102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
@@ -1498,7 +1498,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  156:Drivers/CMSIS/Include/cmsis_gcc.h ****  
  157:Drivers/CMSIS/Include/cmsis_gcc.h ****   for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable
  158:Drivers/CMSIS/Include/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
-ARM GAS  /tmp/ccfKn3mS.s 			page 26
+ARM GAS  /tmp/ccnrbqWt.s 			page 26
 
 
  159:Drivers/CMSIS/Include/cmsis_gcc.h ****       pTable->dest[i] = 0u;
@@ -1558,7 +1558,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  213:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  214:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Control Register
  215:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the Control Register.
-ARM GAS  /tmp/ccfKn3mS.s 			page 27
+ARM GAS  /tmp/ccnrbqWt.s 			page 27
 
 
  216:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Control Register value
@@ -1618,7 +1618,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  270:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               IPSR Register value
  271:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  272:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_IPSR(void)
-ARM GAS  /tmp/ccfKn3mS.s 			page 28
+ARM GAS  /tmp/ccnrbqWt.s 			page 28
 
 
  273:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -1678,7 +1678,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  327:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               PSP Register value
  328:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  329:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_PSP_NS(void)
-ARM GAS  /tmp/ccfKn3mS.s 			page 29
+ARM GAS  /tmp/ccnrbqWt.s 			page 29
 
 
  330:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -1738,7 +1738,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  384:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  385:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
  386:Drivers/CMSIS/Include/cmsis_gcc.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 30
+ARM GAS  /tmp/ccnrbqWt.s 			page 30
 
 
  387:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, msp_ns" : "=r" (result) );
@@ -1798,7 +1798,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  441:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  442:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  443:Drivers/CMSIS/Include/cmsis_gcc.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 31
+ARM GAS  /tmp/ccnrbqWt.s 			page 31
 
 
  444:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
@@ -1858,7 +1858,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  498:Drivers/CMSIS/Include/cmsis_gcc.h **** #if ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
  499:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
  500:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1))    )
-ARM GAS  /tmp/ccfKn3mS.s 			page 32
+ARM GAS  /tmp/ccnrbqWt.s 			page 32
 
 
  501:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
@@ -1918,7 +1918,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  555:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Assigns the given value to the Base Priority register.
  556:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    basePri  Base Priority value to set
  557:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
-ARM GAS  /tmp/ccfKn3mS.s 			page 33
+ARM GAS  /tmp/ccnrbqWt.s 			page 33
 
 
  558:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_BASEPRI(uint32_t basePri)
@@ -1978,7 +1978,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  612:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  613:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, faultmask_ns" : "=r" (result) );
  614:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
-ARM GAS  /tmp/ccfKn3mS.s 			page 34
+ARM GAS  /tmp/ccnrbqWt.s 			page 34
 
 
  615:Drivers/CMSIS/Include/cmsis_gcc.h **** }
@@ -2038,7 +2038,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  669:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  670:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  671:Drivers/CMSIS/Include/cmsis_gcc.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 35
+ARM GAS  /tmp/ccnrbqWt.s 			page 35
 
 
  672:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3))
@@ -2098,7 +2098,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  726:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  727:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (!(defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)))
  728:Drivers/CMSIS/Include/cmsis_gcc.h ****   // without main extensions, the non-secure PSPLIM is RAZ/WI
-ARM GAS  /tmp/ccfKn3mS.s 			page 36
+ARM GAS  /tmp/ccnrbqWt.s 			page 36
 
 
  729:Drivers/CMSIS/Include/cmsis_gcc.h ****   (void)ProcStackPtrLimit;
@@ -2158,7 +2158,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  783:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  784:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Set Main Stack Pointer Limit
  785:Drivers/CMSIS/Include/cmsis_gcc.h ****   Devices without ARMv8-M Main Extensions (i.e. Cortex-M23) lack the non-secure
-ARM GAS  /tmp/ccfKn3mS.s 			page 37
+ARM GAS  /tmp/ccnrbqWt.s 			page 37
 
 
  786:Drivers/CMSIS/Include/cmsis_gcc.h ****   Stack Pointer Limit register hence the write is silently ignored in non-secure
@@ -2218,7 +2218,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  840:Drivers/CMSIS/Include/cmsis_gcc.h ****   /* see https://gcc.gnu.org/ml/gcc-patches/2017-04/msg00443.html */
  841:Drivers/CMSIS/Include/cmsis_gcc.h ****   return __builtin_arm_get_fpscr();
  842:Drivers/CMSIS/Include/cmsis_gcc.h **** #else
-ARM GAS  /tmp/ccfKn3mS.s 			page 38
+ARM GAS  /tmp/ccnrbqWt.s 			page 38
 
 
  843:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
@@ -2278,7 +2278,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  897:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  898:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  899:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
-ARM GAS  /tmp/ccfKn3mS.s 			page 39
+ARM GAS  /tmp/ccnrbqWt.s 			page 39
 
 
  900:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   No Operation
@@ -2338,7 +2338,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  954:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  955:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DMB(void)
  956:Drivers/CMSIS/Include/cmsis_gcc.h **** {
-ARM GAS  /tmp/ccfKn3mS.s 			page 40
+ARM GAS  /tmp/ccnrbqWt.s 			page 40
 
 
  957:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("dmb 0xF":::"memory");
@@ -2398,7 +2398,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
 1011:Drivers/CMSIS/Include/cmsis_gcc.h **** }
 1012:Drivers/CMSIS/Include/cmsis_gcc.h **** 
 1013:Drivers/CMSIS/Include/cmsis_gcc.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 41
+ARM GAS  /tmp/ccnrbqWt.s 			page 41
 
 
 1014:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
@@ -2458,7 +2458,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
 1059:Drivers/CMSIS/Include/cmsis_gcc.h ****   result = value;                      /* r will be reversed bits of v; first get LSB of v */
 1060:Drivers/CMSIS/Include/cmsis_gcc.h ****   for (value >>= 1U; value != 0U; value >>= 1U)
 1061:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
-ARM GAS  /tmp/ccfKn3mS.s 			page 42
+ARM GAS  /tmp/ccnrbqWt.s 			page 42
 
 
 1062:Drivers/CMSIS/Include/cmsis_gcc.h ****     result <<= 1U;
@@ -2518,7 +2518,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  432 000e 35FA02F3 		lsrs	r3, r5, r2
  433 0012 00F08980 		beq	.L64
  186:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****   {
-ARM GAS  /tmp/ccfKn3mS.s 			page 43
+ARM GAS  /tmp/ccnrbqWt.s 			page 43
 
 
  187:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****     /* Get current io position */
@@ -2578,7 +2578,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
   46:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * LL_GPIO_GetAFPin_8_15
   47:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
   48:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 44
+ARM GAS  /tmp/ccnrbqWt.s 			page 44
 
 
   49:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /* Private types -------------------------------------------------------------*/
@@ -2638,7 +2638,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  103:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /**
  104:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @}
  105:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
-ARM GAS  /tmp/ccfKn3mS.s 			page 45
+ARM GAS  /tmp/ccnrbqWt.s 			page 45
 
 
  106:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** #endif /* USE_FULL_LL_DRIVER */
@@ -2698,7 +2698,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  160:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
  161:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** 
  162:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /** @defgroup GPIO_LL_EC_SPEED Output Speed
-ARM GAS  /tmp/ccfKn3mS.s 			page 46
+ARM GAS  /tmp/ccnrbqWt.s 			page 46
 
 
  163:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @{
@@ -2758,7 +2758,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  217:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   */
  218:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** 
  219:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /** @defgroup GPIO_LL_EM_WRITE_READ Common Write and read registers Macros
-ARM GAS  /tmp/ccfKn3mS.s 			page 47
+ARM GAS  /tmp/ccnrbqWt.s 			page 47
 
 
  220:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @{
@@ -2818,7 +2818,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  274:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_11
  275:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_12
  276:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_13
-ARM GAS  /tmp/ccfKn3mS.s 			page 48
+ARM GAS  /tmp/ccnrbqWt.s 			page 48
 
 
  277:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_14
@@ -2878,7 +2878,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  331:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @param  GPIOx GPIO Port
  332:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @param  PinMask This parameter can be a combination of the following values:
  333:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_0
-ARM GAS  /tmp/ccfKn3mS.s 			page 49
+ARM GAS  /tmp/ccnrbqWt.s 			page 49
 
 
  334:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_1
@@ -2938,7 +2938,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  451              	.LVL28:
  452              	.LBB179:
  453              	.LBI179:
-ARM GAS  /tmp/ccfKn3mS.s 			page 50
+ARM GAS  /tmp/ccnrbqWt.s 			page 50
 
 
  358:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** }
@@ -2998,7 +2998,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  412:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_9
  413:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_10
  414:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_11
-ARM GAS  /tmp/ccfKn3mS.s 			page 51
+ARM GAS  /tmp/ccnrbqWt.s 			page 51
 
 
  415:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_12
@@ -3058,7 +3058,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  469:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h **** /**
  470:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @brief  Configure gpio pull-up or pull-down for a dedicated pin on a dedicated port.
  471:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @note   Warning: only one pin can be passed as parameter.
-ARM GAS  /tmp/ccfKn3mS.s 			page 52
+ARM GAS  /tmp/ccnrbqWt.s 			page 52
 
 
  472:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @rmtoll PUPDR        PUPDy         LL_GPIO_SetPinPull
@@ -3118,7 +3118,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  475              	.LBE181:
  476              	.LBB183:
  477              	.LBI183:
-ARM GAS  /tmp/ccfKn3mS.s 			page 53
+ARM GAS  /tmp/ccnrbqWt.s 			page 53
 
 
 1078:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -3178,7 +3178,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  521              		.loc 3 1093 3 is_stmt 1 view .LVU142
  522              		.loc 3 1093 10 is_stmt 0 view .LVU143
  523 004a B7FA87F7 		clz	r7, r7
-ARM GAS  /tmp/ccfKn3mS.s 			page 54
+ARM GAS  /tmp/ccnrbqWt.s 			page 54
 
 
  524              	.LVL34:
@@ -3238,7 +3238,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  557 005e 0768     		ldr	r7, [r0]
  558              	.LVL37:
  559              	.LBB196:
-ARM GAS  /tmp/ccfKn3mS.s 			page 55
+ARM GAS  /tmp/ccnrbqWt.s 			page 55
 
 
  560              	.LBI196:
@@ -3298,7 +3298,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  603              		.syntax unified
  604              	@ 1055 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
  605 007a 93FAA3F3 		rbit r3, r3
-ARM GAS  /tmp/ccfKn3mS.s 			page 56
+ARM GAS  /tmp/ccnrbqWt.s 			page 56
 
 
  606              	@ 0 "" 2
@@ -3358,7 +3358,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  188:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** 
  650              		.loc 1 188 5 view .LVU184
  188:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c **** 
-ARM GAS  /tmp/ccfKn3mS.s 			page 57
+ARM GAS  /tmp/ccnrbqWt.s 			page 57
 
 
  651              		.loc 1 188 57 is_stmt 0 view .LVU185
@@ -3418,7 +3418,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  690              		.loc 3 1068 3 view .LVU200
 1068:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  691              		.loc 3 1068 3 is_stmt 0 view .LVU201
-ARM GAS  /tmp/ccfKn3mS.s 			page 58
+ARM GAS  /tmp/ccnrbqWt.s 			page 58
 
 
  692              		.thumb
@@ -3478,7 +3478,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
 1089:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
  737              		.loc 3 1089 3 view .LVU215
 1089:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
-ARM GAS  /tmp/ccfKn3mS.s 			page 59
+ARM GAS  /tmp/ccnrbqWt.s 			page 59
 
 
  738              		.loc 3 1089 6 is_stmt 0 view .LVU216
@@ -3538,7 +3538,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  781              		.loc 1 216 12 is_stmt 0 view .LVU231
  782 00f0 FF2B     		cmp	r3, #255
  218:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****         }
-ARM GAS  /tmp/ccfKn3mS.s 			page 60
+ARM GAS  /tmp/ccnrbqWt.s 			page 60
 
 
  783              		.loc 1 218 11 view .LVU232
@@ -3598,7 +3598,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  544:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_2
  545:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_3
  546:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_4
-ARM GAS  /tmp/ccfKn3mS.s 			page 61
+ARM GAS  /tmp/ccnrbqWt.s 			page 61
 
 
  547:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_5
@@ -3658,7 +3658,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
 1078:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  815              		.loc 3 1078 30 is_stmt 1 view .LVU242
  816              	.LBB226:
-ARM GAS  /tmp/ccfKn3mS.s 			page 62
+ARM GAS  /tmp/ccnrbqWt.s 			page 62
 
 
 1089:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
@@ -3718,7 +3718,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  861              		.loc 3 1093 10 view .LVU259
  862 011a BF00     		lsls	r7, r7, #2
  863              	.L32:
-ARM GAS  /tmp/ccfKn3mS.s 			page 63
+ARM GAS  /tmp/ccnrbqWt.s 			page 63
 
 
  864              		.loc 3 1093 10 view .LVU260
@@ -3778,7 +3778,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  913              	.LBE190:
  914              	.LBE192:
  915              	.LBE235:
-ARM GAS  /tmp/ccfKn3mS.s 			page 64
+ARM GAS  /tmp/ccnrbqWt.s 			page 64
 
 
  222:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_gpio.c ****         }
@@ -3838,7 +3838,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  624:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_13
  625:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_14
  626:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   *         @arg @ref LL_GPIO_PIN_15
-ARM GAS  /tmp/ccfKn3mS.s 			page 65
+ARM GAS  /tmp/ccnrbqWt.s 			page 65
 
 
  627:Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h ****   * @param  Alternate This parameter can be one of the following values:
@@ -3898,7 +3898,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  945              	.LBB241:
 1089:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
  946              		.loc 3 1089 3 view .LVU280
-ARM GAS  /tmp/ccfKn3mS.s 			page 66
+ARM GAS  /tmp/ccnrbqWt.s 			page 66
 
 
 1089:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
@@ -3958,7 +3958,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  992 0160 BF00     		lsls	r7, r7, #2
  993              	.L34:
  994              		.loc 3 1093 10 view .LVU297
-ARM GAS  /tmp/ccfKn3mS.s 			page 67
+ARM GAS  /tmp/ccnrbqWt.s 			page 67
 
 
  995              	.LBE245:
@@ -4018,7 +4018,7 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  1047              	.LBE232:
  1048              	.LBE233:
  1049              	.LBE251:
-ARM GAS  /tmp/ccfKn3mS.s 			page 68
+ARM GAS  /tmp/ccnrbqWt.s 			page 68
 
 
  1050              		.cfi_endproc
@@ -4078,26 +4078,25 @@ ARM GAS  /tmp/ccfKn3mS.s 			page 1
  1089              		.file 5 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
  1090              		.file 6 "Drivers/CMSIS/Include/core_cm4.h"
  1091              		.file 7 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/system_stm32g4xx.h"
-ARM GAS  /tmp/ccfKn3mS.s 			page 69
+ARM GAS  /tmp/ccnrbqWt.s 			page 69
 
 
  1092              		.file 8 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
  1093              		.file 9 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g4xx.h"
  1094              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
  1095              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
- 1096              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
- 1097              		.file 13 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
-ARM GAS  /tmp/ccfKn3mS.s 			page 70
+ 1096              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ARM GAS  /tmp/ccnrbqWt.s 			page 70
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 stm32g4xx_ll_gpio.c
-     /tmp/ccfKn3mS.s:18     .text.LL_GPIO_DeInit:0000000000000000 $t
-     /tmp/ccfKn3mS.s:27     .text.LL_GPIO_DeInit:0000000000000000 LL_GPIO_DeInit
-     /tmp/ccfKn3mS.s:350    .text.LL_GPIO_DeInit:00000000000000ec $d
-     /tmp/ccfKn3mS.s:363    .text.LL_GPIO_Init:0000000000000000 $t
-     /tmp/ccfKn3mS.s:371    .text.LL_GPIO_Init:0000000000000000 LL_GPIO_Init
-     /tmp/ccfKn3mS.s:1054   .text.LL_GPIO_StructInit:0000000000000000 $t
-     /tmp/ccfKn3mS.s:1062   .text.LL_GPIO_StructInit:0000000000000000 LL_GPIO_StructInit
+     /tmp/ccnrbqWt.s:18     .text.LL_GPIO_DeInit:0000000000000000 $t
+     /tmp/ccnrbqWt.s:27     .text.LL_GPIO_DeInit:0000000000000000 LL_GPIO_DeInit
+     /tmp/ccnrbqWt.s:350    .text.LL_GPIO_DeInit:00000000000000ec $d
+     /tmp/ccnrbqWt.s:363    .text.LL_GPIO_Init:0000000000000000 $t
+     /tmp/ccnrbqWt.s:371    .text.LL_GPIO_Init:0000000000000000 LL_GPIO_Init
+     /tmp/ccnrbqWt.s:1054   .text.LL_GPIO_StructInit:0000000000000000 $t
+     /tmp/ccnrbqWt.s:1062   .text.LL_GPIO_StructInit:0000000000000000 LL_GPIO_StructInit
 
 NO UNDEFINED SYMBOLS

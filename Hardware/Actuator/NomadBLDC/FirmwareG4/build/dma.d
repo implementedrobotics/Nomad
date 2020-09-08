@@ -1,5 +1,4 @@
-build/stm32g4xx_hal_fmac.o: \
- Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fmac.c \
+build/dma.o: Core/Src/dma.c Core/Inc/dma.h Core/Inc/main.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  Core/Inc/stm32g4xx_hal_conf.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
@@ -20,21 +19,35 @@ build/stm32g4xx_hal_fmac.o: \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_adc.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_adc.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_adc_ex.h \
- Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_cordic.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_exti.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_fdcan.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash_ex.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash_ramfunc.h \
- Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_fmac.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr_ex.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi_ex.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
- Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
- Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_cordic.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dmamux.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_fmac.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_rcc.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_crs.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_system.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_exti.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_cortex.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_utils.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_pwr.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h \
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h
+
+Core/Inc/dma.h:
+
+Core/Inc/main.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 
@@ -80,8 +93,6 @@ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_adc.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_adc_ex.h:
 
-Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_cordic.h:
-
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_exti.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_fdcan.h:
@@ -91,8 +102,6 @@ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h:
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash_ex.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash_ramfunc.h:
-
-Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_fmac.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h:
 
@@ -106,6 +115,30 @@ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 
-Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_cordic.h:
 
-Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dmamux.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_fmac.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_rcc.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_crs.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_system.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_exti.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_cortex.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_utils.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_pwr.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h:
+
+Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h:

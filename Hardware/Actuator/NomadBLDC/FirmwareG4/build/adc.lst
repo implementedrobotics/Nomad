@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
+ARM GAS  /tmp/ccwVBHZr.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -27,7 +27,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
   24              		.thumb_func
   25              		.fpu fpv4-sp-d16
   27              	MX_ADC1_Init:
-  28              	.LFB925:
+  28              	.LFB1311:
   29              		.file 1 "Core/Src/adc.c"
    1:Core/Src/adc.c **** /**
    2:Core/Src/adc.c ****   ******************************************************************************
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
   27:Core/Src/adc.c **** ADC_HandleTypeDef hadc1;
   28:Core/Src/adc.c **** ADC_HandleTypeDef hadc2;
   29:Core/Src/adc.c **** ADC_HandleTypeDef hadc3;
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 2
+ARM GAS  /tmp/ccwVBHZr.s 			page 2
 
 
   30:Core/Src/adc.c **** ADC_HandleTypeDef hadc4;
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
   64              		.loc 1 46 3 view .LVU14
   47:Core/Src/adc.c ****   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   65              		.loc 1 47 3 view .LVU15
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 3
+ARM GAS  /tmp/ccwVBHZr.s 			page 3
 
 
   48:Core/Src/adc.c ****   hadc1.Init.LowPowerAutoWait = DISABLE;
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  100              		.loc 1 51 3 is_stmt 1 view .LVU34
   52:Core/Src/adc.c ****   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
  101              		.loc 1 52 3 view .LVU35
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 4
+ARM GAS  /tmp/ccwVBHZr.s 			page 4
 
 
   53:Core/Src/adc.c ****   hadc1.Init.DMAContinuousRequests = DISABLE;
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  136 0062 0023     		movs	r3, #0
   73:Core/Src/adc.c ****   sConfig.SingleDiff = ADC_SINGLE_ENDED;
  137              		.loc 1 73 22 view .LVU55
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 5
+ARM GAS  /tmp/ccwVBHZr.s 			page 5
 
 
  138 0064 7F24     		movs	r4, #127
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  177              		.loc 1 81 1 is_stmt 0 view .LVU70
  178 008a 0DB0     		add	sp, sp, #52
  179              	.LCFI4:
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 6
+ARM GAS  /tmp/ccwVBHZr.s 			page 6
 
 
  180              		.cfi_remember_state
@@ -319,7 +319,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  194 0094 00000000 		.word	hadc1
  195 0098 00106032 		.word	845156352
  196              		.cfi_endproc
- 197              	.LFE925:
+ 197              	.LFE1311:
  199              		.section	.text.MX_ADC2_Init,"ax",%progbits
  200              		.align	1
  201              		.p2align 2,,3
@@ -329,7 +329,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  205              		.thumb_func
  206              		.fpu fpv4-sp-d16
  208              	MX_ADC2_Init:
- 209              	.LFB926:
+ 209              	.LFB1312:
   82:Core/Src/adc.c **** /* ADC2 init function */
   83:Core/Src/adc.c **** void MX_ADC2_Init(void)
   84:Core/Src/adc.c **** {
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  230              	.LVL7:
   86:Core/Src/adc.c **** 
   87:Core/Src/adc.c ****   /** Common config
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 7
+ARM GAS  /tmp/ccwVBHZr.s 			page 7
 
 
   88:Core/Src/adc.c ****   */
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  263              		.loc 1 95 27 view .LVU96
  264 002e 8161     		str	r1, [r0, #24]
   98:Core/Src/adc.c ****   hadc2.Init.DiscontinuousConvMode = DISABLE;
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 8
+ARM GAS  /tmp/ccwVBHZr.s 			page 8
 
 
  265              		.loc 1 98 30 view .LVU97
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  116:Core/Src/adc.c ****   sConfig.Offset = 0;
  301              		.loc 1 116 18 view .LVU117
  302 0054 0593     		str	r3, [sp, #20]
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 9
+ARM GAS  /tmp/ccwVBHZr.s 			page 9
 
 
  303              		.loc 1 117 7 view .LVU118
@@ -537,8 +537,8 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  345 007c 00010050 		.word	1342177536
  346 0080 2000F014 		.word	351272992
  347              		.cfi_endproc
- 348              	.LFE926:
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 10
+ 348              	.LFE1312:
+ARM GAS  /tmp/ccwVBHZr.s 			page 10
 
 
  350              		.section	.text.MX_ADC3_Init,"ax",%progbits
@@ -550,7 +550,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  356              		.thumb_func
  357              		.fpu fpv4-sp-d16
  359              	MX_ADC3_Init:
- 360              	.LFB927:
+ 360              	.LFB1313:
  123:Core/Src/adc.c **** /* ADC3 init function */
  124:Core/Src/adc.c **** void MX_ADC3_Init(void)
  125:Core/Src/adc.c **** {
@@ -598,7 +598,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  133:Core/Src/adc.c ****   hadc3.Init.Resolution = ADC_RESOLUTION_12B;
  392              		.loc 1 133 3 view .LVU141
  134:Core/Src/adc.c ****   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 11
+ARM GAS  /tmp/ccwVBHZr.s 			page 11
 
 
  393              		.loc 1 134 3 view .LVU142
@@ -658,7 +658,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  146:Core/Src/adc.c ****   hadc3.Init.OversamplingMode = DISABLE;
  427              		.loc 1 146 31 view .LVU162
  428 003e 80F84040 		strb	r4, [r0, #64]
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 12
+ARM GAS  /tmp/ccwVBHZr.s 			page 12
 
 
  137:Core/Src/adc.c ****   hadc3.Init.LowPowerAutoWait = DISABLE;
@@ -718,7 +718,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  461              		.loc 1 160 3 is_stmt 1 view .LVU181
  462              		.loc 1 160 19 is_stmt 0 view .LVU182
  463 005a 104B     		ldr	r3, .L52+8
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 13
+ARM GAS  /tmp/ccwVBHZr.s 			page 13
 
 
  464 005c 0493     		str	r3, [sp, #16]
@@ -778,7 +778,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  149:Core/Src/adc.c ****   }
  502              		.loc 1 149 5 is_stmt 1 view .LVU199
  503 007e FFF7FEFF 		bl	Error_Handler
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 14
+ARM GAS  /tmp/ccwVBHZr.s 			page 14
 
 
  504              	.LVL16:
@@ -810,7 +810,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  528 0098 00040050 		.word	1342178304
  529 009c 00106032 		.word	845156352
  530              		.cfi_endproc
- 531              	.LFE927:
+ 531              	.LFE1313:
  533              		.section	.text.MX_ADC4_Init,"ax",%progbits
  534              		.align	1
  535              		.p2align 2,,3
@@ -820,7 +820,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  539              		.thumb_func
  540              		.fpu fpv4-sp-d16
  542              	MX_ADC4_Init:
- 543              	.LFB928:
+ 543              	.LFB1314:
  172:Core/Src/adc.c **** /* ADC4 init function */
  173:Core/Src/adc.c **** void MX_ADC4_Init(void)
  174:Core/Src/adc.c **** {
@@ -838,7 +838,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  553              		.cfi_offset 4, -12
  554              		.cfi_offset 5, -8
  555              		.cfi_offset 14, -4
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 15
+ARM GAS  /tmp/ccwVBHZr.s 			page 15
 
 
  556 0002 89B0     		sub	sp, sp, #36
@@ -898,7 +898,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  182:Core/Src/adc.c ****   hadc4.Init.GainCompensation = 0;
  591              		.loc 1 182 24 is_stmt 0 view .LVU224
  592 0022 C0E90233 		strd	r3, r3, [r0, #8]
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 16
+ARM GAS  /tmp/ccwVBHZr.s 			page 16
 
 
  184:Core/Src/adc.c ****   hadc4.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -958,7 +958,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  628 004c 0023     		movs	r3, #0
  204:Core/Src/adc.c ****   sConfig.SingleDiff = ADC_SINGLE_ENDED;
  629              		.loc 1 204 22 view .LVU245
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 17
+ARM GAS  /tmp/ccwVBHZr.s 			page 17
 
 
  630 004e 7F24     		movs	r4, #127
@@ -1018,7 +1018,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  669              		.loc 1 212 1 is_stmt 0 view .LVU260
  670 0074 09B0     		add	sp, sp, #36
  671              	.LCFI21:
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 18
+ARM GAS  /tmp/ccwVBHZr.s 			page 18
 
 
  672              		.cfi_def_cfa_offset 12
@@ -1031,7 +1031,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  679 007c 00050050 		.word	1342178560
  680 0080 1000C010 		.word	281018384
  681              		.cfi_endproc
- 682              	.LFE928:
+ 682              	.LFE1314:
  684              		.section	.text.MX_ADC5_Init,"ax",%progbits
  685              		.align	1
  686              		.p2align 2,,3
@@ -1041,7 +1041,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  690              		.thumb_func
  691              		.fpu fpv4-sp-d16
  693              	MX_ADC5_Init:
- 694              	.LFB929:
+ 694              	.LFB1315:
  213:Core/Src/adc.c **** /* ADC5 init function */
  214:Core/Src/adc.c **** void MX_ADC5_Init(void)
  215:Core/Src/adc.c **** {
@@ -1078,7 +1078,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  222:Core/Src/adc.c ****   hadc5.Init.Resolution = ADC_RESOLUTION_12B;
  718              		.loc 1 222 3 view .LVU267
  223:Core/Src/adc.c ****   hadc5.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 19
+ARM GAS  /tmp/ccwVBHZr.s 			page 19
 
 
  719              		.loc 1 223 3 view .LVU268
@@ -1138,7 +1138,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  231:Core/Src/adc.c ****   hadc5.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
  754              		.loc 1 231 3 is_stmt 1 view .LVU288
  233:Core/Src/adc.c ****   hadc5.Init.DMAContinuousRequests = DISABLE;
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 20
+ARM GAS  /tmp/ccwVBHZr.s 			page 20
 
 
  755              		.loc 1 233 3 view .LVU289
@@ -1198,7 +1198,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  245:Core/Src/adc.c ****   sConfig.OffsetNumber = ADC_OFFSET_NONE;
  792              		.loc 1 245 3 is_stmt 1 view .LVU309
  246:Core/Src/adc.c ****   sConfig.Offset = 0;
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 21
+ARM GAS  /tmp/ccwVBHZr.s 			page 21
 
 
  793              		.loc 1 246 24 is_stmt 0 view .LVU310
@@ -1249,7 +1249,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  830 007c 00060050 		.word	1342178816
  831 0080 02003004 		.word	70254594
  832              		.cfi_endproc
- 833              	.LFE929:
+ 833              	.LFE1315:
  835              		.section	.text.HAL_ADC_MspInit,"ax",%progbits
  836              		.align	1
  837              		.p2align 2,,3
@@ -1258,12 +1258,12 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  840              		.thumb
  841              		.thumb_func
  842              		.fpu fpv4-sp-d16
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 22
+ARM GAS  /tmp/ccwVBHZr.s 			page 22
 
 
  844              	HAL_ADC_MspInit:
  845              	.LVL29:
- 846              	.LFB930:
+ 846              	.LFB1316:
  254:Core/Src/adc.c **** 
  255:Core/Src/adc.c **** static uint32_t HAL_RCC_ADC12_CLK_ENABLED=0;
  256:Core/Src/adc.c **** static uint32_t HAL_RCC_ADC345_CLK_ENABLED=0;
@@ -1318,7 +1318,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  272:Core/Src/adc.c **** 
  273:Core/Src/adc.c ****     __HAL_RCC_GPIOB_CLK_ENABLE();
  274:Core/Src/adc.c ****     /**ADC1 GPIO Configuration
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 23
+ARM GAS  /tmp/ccwVBHZr.s 			page 23
 
 
  275:Core/Src/adc.c ****     PB1     ------> ADC1_IN12
@@ -1378,7 +1378,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  319:Core/Src/adc.c ****     }
  320:Core/Src/adc.c **** 
  321:Core/Src/adc.c ****     __HAL_RCC_GPIOB_CLK_ENABLE();
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 24
+ARM GAS  /tmp/ccwVBHZr.s 			page 24
 
 
  322:Core/Src/adc.c ****     /**ADC3 GPIO Configuration
@@ -1438,7 +1438,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  364:Core/Src/adc.c ****     /* ADC5 clock enable */
  365:Core/Src/adc.c ****     HAL_RCC_ADC345_CLK_ENABLED++;
  366:Core/Src/adc.c ****     if(HAL_RCC_ADC345_CLK_ENABLED==1){
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 25
+ARM GAS  /tmp/ccwVBHZr.s 			page 25
 
 
  367:Core/Src/adc.c ****       __HAL_RCC_ADC345_CLK_ENABLE();
@@ -1498,7 +1498,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  925              		.loc 1 297 5 discriminator 1 view .LVU346
  297:Core/Src/adc.c ****     /**ADC2 GPIO Configuration
  926              		.loc 1 297 5 discriminator 1 view .LVU347
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 26
+ARM GAS  /tmp/ccwVBHZr.s 			page 26
 
 
  927 0042 634B     		ldr	r3, .L102+20
@@ -1558,7 +1558,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  966 006a 11B0     		add	sp, sp, #68
  967              	.LCFI31:
  968              		.cfi_remember_state
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 27
+ARM GAS  /tmp/ccwVBHZr.s 			page 27
 
 
  969              		.cfi_def_cfa_offset 12
@@ -1618,7 +1618,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1009              	.LBE6:
  278:Core/Src/adc.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
  1010              		.loc 1 278 26 is_stmt 0 discriminator 1 view .LVU378
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 28
+ARM GAS  /tmp/ccwVBHZr.s 			page 28
 
 
  1011 008e 0322     		movs	r2, #3
@@ -1678,7 +1678,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1051              		.loc 1 270 7 view .LVU393
  1052 00b0 DB6C     		ldr	r3, [r3, #76]
  1053 00b2 03F40053 		and	r3, r3, #8192
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 29
+ARM GAS  /tmp/ccwVBHZr.s 			page 29
 
 
  1054 00b6 0193     		str	r3, [sp, #4]
@@ -1738,7 +1738,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1092              		.loc 1 377 26 discriminator 1 view .LVU409
  1093 00e0 0023     		movs	r3, #0
  378:Core/Src/adc.c **** 
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 30
+ARM GAS  /tmp/ccwVBHZr.s 			page 30
 
 
  1094              		.loc 1 378 5 discriminator 1 view .LVU410
@@ -1798,7 +1798,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1134              		.loc 1 316 31 is_stmt 0 view .LVU425
  1135 010c 334A     		ldr	r2, .L102+32
  1136 010e 1368     		ldr	r3, [r2]
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 31
+ARM GAS  /tmp/ccwVBHZr.s 			page 31
 
 
  1137 0110 0133     		adds	r3, r3, #1
@@ -1858,7 +1858,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  321:Core/Src/adc.c ****     /**ADC3 GPIO Configuration
  1176              		.loc 1 321 5 is_stmt 1 discriminator 1 view .LVU441
  1177 0138 DB6C     		ldr	r3, [r3, #76]
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 32
+ARM GAS  /tmp/ccwVBHZr.s 			page 32
 
 
  1178 013a 03F00203 		and	r3, r3, #2
@@ -1918,7 +1918,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1218              		.loc 1 342 7 view .LVU456
  1219 015c 012B     		cmp	r3, #1
  341:Core/Src/adc.c ****     if(HAL_RCC_ADC345_CLK_ENABLED==1){
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 33
+ARM GAS  /tmp/ccwVBHZr.s 			page 33
 
 
  1220              		.loc 1 341 31 view .LVU457
@@ -1978,7 +1978,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  346:Core/Src/adc.c ****     /**ADC4 GPIO Configuration
  1260              		.loc 1 346 5 discriminator 1 view .LVU472
  1261              	.LBE18:
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 34
+ARM GAS  /tmp/ccwVBHZr.s 			page 34
 
 
  351:Core/Src/adc.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -2038,7 +2038,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1302 01ac DA64     		str	r2, [r3, #76]
  367:Core/Src/adc.c ****     }
  1303              		.loc 1 367 7 view .LVU488
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 35
+ARM GAS  /tmp/ccwVBHZr.s 			page 35
 
 
  1304 01ae DB6C     		ldr	r3, [r3, #76]
@@ -2062,7 +2062,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1321 01dc 00000000 		.word	.LANCHOR1
  1322              	.LBE20:
  1323              		.cfi_endproc
- 1324              	.LFE930:
+ 1324              	.LFE1316:
  1326              		.section	.text.HAL_ADC_MspDeInit,"ax",%progbits
  1327              		.align	1
  1328              		.p2align 2,,3
@@ -2073,7 +2073,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1333              		.fpu fpv4-sp-d16
  1335              	HAL_ADC_MspDeInit:
  1336              	.LVL47:
- 1337              	.LFB931:
+ 1337              	.LFB1317:
  385:Core/Src/adc.c **** 
  386:Core/Src/adc.c **** void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
  387:Core/Src/adc.c **** {
@@ -2098,7 +2098,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  395:Core/Src/adc.c ****     HAL_RCC_ADC12_CLK_ENABLED--;
  396:Core/Src/adc.c ****     if(HAL_RCC_ADC12_CLK_ENABLED==0){
  397:Core/Src/adc.c ****       __HAL_RCC_ADC12_CLK_DISABLE();
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 36
+ARM GAS  /tmp/ccwVBHZr.s 			page 36
 
 
  398:Core/Src/adc.c ****     }
@@ -2158,7 +2158,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  442:Core/Src/adc.c ****     PB1     ------> ADC3_IN1
  443:Core/Src/adc.c ****     */
  444:Core/Src/adc.c ****     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_1);
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 37
+ARM GAS  /tmp/ccwVBHZr.s 			page 37
 
 
  445:Core/Src/adc.c **** 
@@ -2218,7 +2218,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  489:Core/Src/adc.c ****   /* USER CODE END ADC5_MspDeInit 1 */
  490:Core/Src/adc.c ****   }
  491:Core/Src/adc.c **** }
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 38
+ARM GAS  /tmp/ccwVBHZr.s 			page 38
 
 
  1369              		.loc 1 491 1 view .LVU502
@@ -2278,7 +2278,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1410              		.loc 1 403 5 view .LVU515
  1411 0052 1F48     		ldr	r0, .L120+28
  1412              	.LVL50:
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 39
+ARM GAS  /tmp/ccwVBHZr.s 			page 39
 
 
  403:Core/Src/adc.c **** 
@@ -2338,7 +2338,7 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1454 008c D364     		str	r3, [r2, #76]
  1455              	.L110:
  444:Core/Src/adc.c **** 
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 40
+ARM GAS  /tmp/ccwVBHZr.s 			page 40
 
 
  1456              		.loc 1 444 5 view .LVU529
@@ -2392,13 +2392,13 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1496 00d0 00040048 		.word	1207960576
  1497 00d4 00000000 		.word	.LANCHOR1
  1498              		.cfi_endproc
- 1499              	.LFE931:
+ 1499              	.LFE1317:
  1501              		.comm	hadc5,108,4
  1502              		.comm	hadc4,108,4
  1503              		.comm	hadc3,108,4
  1504              		.comm	hadc2,108,4
  1505              		.comm	hadc1,108,4
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 41
+ARM GAS  /tmp/ccwVBHZr.s 			page 41
 
 
  1506              		.section	.bss.HAL_RCC_ADC12_CLK_ENABLED,"aw",%nobits
@@ -2424,47 +2424,47 @@ ARM GAS  /tmp/ccMJ1ZIq.s 			page 1
  1530              		.file 10 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_adc.h"
  1531              		.file 11 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_adc_ex.h"
  1532              		.file 12 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
- 1533              		.file 13 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h"
- 1534              		.file 14 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
- 1535              		.file 15 "Core/Inc/adc.h"
- 1536              		.file 16 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
+ 1533              		.file 13 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
+ 1534              		.file 14 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_dma.h"
+ 1535              		.file 15 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h"
+ 1536              		.file 16 "Core/Inc/adc.h"
  1537              		.file 17 "Core/Inc/main.h"
  1538              		.file 18 "<built-in>"
-ARM GAS  /tmp/ccMJ1ZIq.s 			page 42
+ARM GAS  /tmp/ccwVBHZr.s 			page 42
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 adc.c
-     /tmp/ccMJ1ZIq.s:18     .text.MX_ADC1_Init:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:27     .text.MX_ADC1_Init:0000000000000000 MX_ADC1_Init
-     /tmp/ccMJ1ZIq.s:194    .text.MX_ADC1_Init:0000000000000094 $d
+     /tmp/ccwVBHZr.s:18     .text.MX_ADC1_Init:0000000000000000 $t
+     /tmp/ccwVBHZr.s:27     .text.MX_ADC1_Init:0000000000000000 MX_ADC1_Init
+     /tmp/ccwVBHZr.s:194    .text.MX_ADC1_Init:0000000000000094 $d
                             *COM*:000000000000006c hadc1
-     /tmp/ccMJ1ZIq.s:200    .text.MX_ADC2_Init:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:208    .text.MX_ADC2_Init:0000000000000000 MX_ADC2_Init
-     /tmp/ccMJ1ZIq.s:344    .text.MX_ADC2_Init:0000000000000078 $d
+     /tmp/ccwVBHZr.s:200    .text.MX_ADC2_Init:0000000000000000 $t
+     /tmp/ccwVBHZr.s:208    .text.MX_ADC2_Init:0000000000000000 MX_ADC2_Init
+     /tmp/ccwVBHZr.s:344    .text.MX_ADC2_Init:0000000000000078 $d
                             *COM*:000000000000006c hadc2
-     /tmp/ccMJ1ZIq.s:351    .text.MX_ADC3_Init:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:359    .text.MX_ADC3_Init:0000000000000000 MX_ADC3_Init
-     /tmp/ccMJ1ZIq.s:527    .text.MX_ADC3_Init:0000000000000094 $d
+     /tmp/ccwVBHZr.s:351    .text.MX_ADC3_Init:0000000000000000 $t
+     /tmp/ccwVBHZr.s:359    .text.MX_ADC3_Init:0000000000000000 MX_ADC3_Init
+     /tmp/ccwVBHZr.s:527    .text.MX_ADC3_Init:0000000000000094 $d
                             *COM*:000000000000006c hadc3
-     /tmp/ccMJ1ZIq.s:534    .text.MX_ADC4_Init:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:542    .text.MX_ADC4_Init:0000000000000000 MX_ADC4_Init
-     /tmp/ccMJ1ZIq.s:678    .text.MX_ADC4_Init:0000000000000078 $d
+     /tmp/ccwVBHZr.s:534    .text.MX_ADC4_Init:0000000000000000 $t
+     /tmp/ccwVBHZr.s:542    .text.MX_ADC4_Init:0000000000000000 MX_ADC4_Init
+     /tmp/ccwVBHZr.s:678    .text.MX_ADC4_Init:0000000000000078 $d
                             *COM*:000000000000006c hadc4
-     /tmp/ccMJ1ZIq.s:685    .text.MX_ADC5_Init:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:693    .text.MX_ADC5_Init:0000000000000000 MX_ADC5_Init
-     /tmp/ccMJ1ZIq.s:829    .text.MX_ADC5_Init:0000000000000078 $d
+     /tmp/ccwVBHZr.s:685    .text.MX_ADC5_Init:0000000000000000 $t
+     /tmp/ccwVBHZr.s:693    .text.MX_ADC5_Init:0000000000000000 MX_ADC5_Init
+     /tmp/ccwVBHZr.s:829    .text.MX_ADC5_Init:0000000000000078 $d
                             *COM*:000000000000006c hadc5
-     /tmp/ccMJ1ZIq.s:836    .text.HAL_ADC_MspInit:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:844    .text.HAL_ADC_MspInit:0000000000000000 HAL_ADC_MspInit
-     /tmp/ccMJ1ZIq.s:1313   .text.HAL_ADC_MspInit:00000000000001bc $d
-     /tmp/ccMJ1ZIq.s:1327   .text.HAL_ADC_MspDeInit:0000000000000000 $t
-     /tmp/ccMJ1ZIq.s:1335   .text.HAL_ADC_MspDeInit:0000000000000000 HAL_ADC_MspDeInit
-     /tmp/ccMJ1ZIq.s:1489   .text.HAL_ADC_MspDeInit:00000000000000b4 $d
-     /tmp/ccMJ1ZIq.s:1507   .bss.HAL_RCC_ADC12_CLK_ENABLED:0000000000000000 $d
-     /tmp/ccMJ1ZIq.s:1511   .bss.HAL_RCC_ADC12_CLK_ENABLED:0000000000000000 HAL_RCC_ADC12_CLK_ENABLED
-     /tmp/ccMJ1ZIq.s:1514   .bss.HAL_RCC_ADC345_CLK_ENABLED:0000000000000000 $d
-     /tmp/ccMJ1ZIq.s:1518   .bss.HAL_RCC_ADC345_CLK_ENABLED:0000000000000000 HAL_RCC_ADC345_CLK_ENABLED
+     /tmp/ccwVBHZr.s:836    .text.HAL_ADC_MspInit:0000000000000000 $t
+     /tmp/ccwVBHZr.s:844    .text.HAL_ADC_MspInit:0000000000000000 HAL_ADC_MspInit
+     /tmp/ccwVBHZr.s:1313   .text.HAL_ADC_MspInit:00000000000001bc $d
+     /tmp/ccwVBHZr.s:1327   .text.HAL_ADC_MspDeInit:0000000000000000 $t
+     /tmp/ccwVBHZr.s:1335   .text.HAL_ADC_MspDeInit:0000000000000000 HAL_ADC_MspDeInit
+     /tmp/ccwVBHZr.s:1489   .text.HAL_ADC_MspDeInit:00000000000000b4 $d
+     /tmp/ccwVBHZr.s:1507   .bss.HAL_RCC_ADC12_CLK_ENABLED:0000000000000000 $d
+     /tmp/ccwVBHZr.s:1511   .bss.HAL_RCC_ADC12_CLK_ENABLED:0000000000000000 HAL_RCC_ADC12_CLK_ENABLED
+     /tmp/ccwVBHZr.s:1514   .bss.HAL_RCC_ADC345_CLK_ENABLED:0000000000000000 $d
+     /tmp/ccwVBHZr.s:1518   .bss.HAL_RCC_ADC345_CLK_ENABLED:0000000000000000 HAL_RCC_ADC345_CLK_ENABLED
 
 UNDEFINED SYMBOLS
 memset
