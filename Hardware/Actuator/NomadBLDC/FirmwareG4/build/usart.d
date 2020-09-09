@@ -43,7 +43,8 @@ build/usart.o: Core/Src/usart.c Core/Inc/usart.h Core/Inc/main.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_utils.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_pwr.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h \
- Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h
+ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h Core/Inc/shared.h \
+ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 
 Core/Inc/usart.h:
 
@@ -142,3 +143,7 @@ Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_pwr.h:
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h:
 
 Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h:
+
+Core/Inc/shared.h:
+
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:

@@ -1,4 +1,4 @@
-build/main.o: Core/Src/main.cpp Core/Inc/main.h \
+build/main.o: Core/Src/main.c Core/Inc/main.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  Core/Inc/stm32g4xx_hal_conf.h \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \

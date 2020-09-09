@@ -30,35 +30,69 @@
 // C++ System Files
 
 // Project Includes
-#include "main.h"
-#include "cmsis_os.h"
-#include "shared.h"
 
-// HDLC Handler    
+// HDLC Handler
 //HDLCHandler hdlc;
 
 // Comms Event Loops
 
 // C interface
+#include "main.h"
+#include "cmsis_os.h"
+#include "shared.h"
+#include "thread_interface.h"
+
 extern "C"
 {
-    void comms_thread_entry()
+
+    //void uart_rx_dma_thread(void* arg);
+    void init_comms_thread()
     {
+        // Receive UART Message Queue
+        uart_rx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+
+        // Transmit UART Message Queue
+        uart_tx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+
         // Reset Message Queues.  Not sure if this is actually necessary
         osMessageQueueReset(uart_tx_dma_queue_id);
         osMessageQueueReset(uart_rx_dma_queue_id);
 
-        // 
+        osThreadAttr_t rx_task_attr;
+        rx_task_attr.name = "uart_receive_task";
+        rx_task_attr.priority = (osPriority_t)osPriorityNormal;
+        rx_task_attr.stack_size = 128 * 4;
+
+        // Start Comms Task
+        //osThreadNew(uart_rx_dma_thread, NULL, &rx_task_attr);
+
+        //osThreadExit();
+
+        //hdlc.ProcessByte(evt.value.v);
+    }
+
+    void uart_rx_dma_thread()
+    {
+        void *d;
+
+        LL_GPIO_SetOutputPin(GPIOB, GPIO_PIN_10);
+        /* Notify user to start sending data */
+        //usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE IRQ + RTOS processing\r\n");
+        //usart_send_string("Start sending data to STM32\r\n");
+
         for (;;)
         {
-            //LL_GPIO_SetOutputPin(GPIOB, GPIO_PIN_10);
+            /* Block thread and wait for event to process USART data */
+            //osMessageQueueGet(uart_rx_dma_queue_id, &d, NULL, osWaitForever);
+            LL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
             //LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
-            //osDelay(500);
-           // LL_GPIO_ResetOutputPin(GPIOB, GPIO_PIN_10);
+            osDelay(500);
 
-            //osDelay(100);
+            /* Simply call processing function */
+            //usart_rx_check();
+
+            (void)d;
         }
-        //hdlc.ProcessByte(evt.value.v);
     }
 }

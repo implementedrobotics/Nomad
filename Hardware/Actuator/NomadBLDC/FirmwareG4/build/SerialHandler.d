@@ -56,7 +56,9 @@ build/SerialHandler.o: NomadBLDC/SerialHandler.cpp \
  Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- Core/Inc/shared.h
+ Core/Inc/shared.h \
+ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
+ NomadBLDC/include/thread_interface.h
 
 NomadBLDC/include/SerialHandler.h:
 
@@ -179,3 +181,7 @@ Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
 Core/Inc/shared.h:
+
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
+
+NomadBLDC/include/thread_interface.h:

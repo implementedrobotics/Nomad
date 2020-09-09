@@ -60,7 +60,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 2
+  .stack_size = 128 * 4
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,12 +95,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-
-  // Receive UART Message Queue
-  uart_rx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
-
-  // Transmit UART Message Queue
-  uart_tx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
   
   /* USER CODE END RTOS_QUEUES */
 
@@ -125,15 +119,8 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
 
-  const osThreadAttr_t comms_task_attr =
-  {
-    .name = "comms_task",
-    .priority = (osPriority_t)osPriorityNormal1,
-    .stack_size = 128 * 4
-  };
-
   // Start Comms Task
-  comms_task_id = osThreadNew(comms_thread_entry, NULL, &comms_task_attr);
+  osThreadNew(uart_rx_dma_thread, NULL, NULL);
 
   // Start Motor Control Task
 

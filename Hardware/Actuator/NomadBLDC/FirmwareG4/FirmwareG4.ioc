@@ -342,6 +342,7 @@ ProjectManager.DeletePrevious=false
 PB10.Locked=true
 Dma.USART2_TX.1.PeriphDataAlignment=DMA_PDATAALIGN_BYTE
 Dma.USART2_TX.1.RequestNumber=1
+NVIC.USART2_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true
 Dma.USART2_TX.1.SignalID=NONE
 RCC.FamilyName=M
 Dma.USART2_RX.0.Mode=DMA_CIRCULAR

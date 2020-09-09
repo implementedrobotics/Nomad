@@ -28,6 +28,7 @@
 #define RX_DMA_BUFFER_SIZE 64
 #define TX_DMA_BUFFER_SIZE 64
 
+#include "cmsis_os2.h"
 osThreadId_t comms_task_id;   // Communications Task ID
 osThreadId_t control_task_id; // Motor Control Task ID
 

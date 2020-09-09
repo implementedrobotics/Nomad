@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccWvrvhf.s 			page 1
+ARM GAS  /tmp/ccaMrCC6.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
   27:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****     -----------------------
   28:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****     [..] RAM functions are defined using a specific toolchain keyword "__ramfunc".
   29:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c **** 
-ARM GAS  /tmp/ccWvrvhf.s 			page 2
+ARM GAS  /tmp/ccaMrCC6.s 			page 2
 
 
   30:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****     *** GNU Compiler ***
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
   84:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c **** @endverbatim
   85:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   * @{
   86:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   */
-ARM GAS  /tmp/ccWvrvhf.s 			page 3
+ARM GAS  /tmp/ccaMrCC6.s 			page 3
 
 
   87:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c **** 
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  102:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c **** /**
  103:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   * @brief  Disable the Power down in Run Mode
  104:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   * @note   This function should be called and executed from SRAM memory.
-ARM GAS  /tmp/ccWvrvhf.s 			page 4
+ARM GAS  /tmp/ccaMrCC6.s 			page 4
 
 
  105:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   * @retval None
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  119:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   * @note   To configure the user option bytes, the option lock bit OPTLOCK must
  120:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   *         be cleared with the call of the HAL_FLASH_OB_Unlock() function.
  121:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   * @note   To modify the DBANK option byte, no PCROP region should be defined.
-ARM GAS  /tmp/ccWvrvhf.s 			page 5
+ARM GAS  /tmp/ccaMrCC6.s 			page 5
 
 
  122:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   *         To deactivate PCROP, user should perform RDP changing.
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  141:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****   if (reg > FLASH->PCROP1ER)
  144              		.loc 1 141 3 is_stmt 1 discriminator 2 view .LVU29
  145              		.loc 1 141 18 is_stmt 0 discriminator 2 view .LVU30
-ARM GAS  /tmp/ccWvrvhf.s 			page 6
+ARM GAS  /tmp/ccaMrCC6.s 			page 6
 
 
  146 005c 9C6A     		ldr	r4, [r3, #40]
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  186              		.loc 1 155 9 discriminator 1 view .LVU46
  156:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****       }
  157:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c **** 
-ARM GAS  /tmp/ccWvrvhf.s 			page 7
+ARM GAS  /tmp/ccaMrCC6.s 			page 7
 
 
  158:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c ****       if (READ_BIT(FLASH->ACR, FLASH_ACR_DCEN) != 0U)
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  225 00c4 23F07F13 		bic	r3, r3, #8323199
  226 00c8 43F07F03 		orr	r3, r3, #127
  227 00cc D362     		str	r3, [r2, #44]
-ARM GAS  /tmp/ccWvrvhf.s 			page 8
+ARM GAS  /tmp/ccaMrCC6.s 			page 8
 
 
  228              	.L13:
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  264 00fa D36C     		ldr	r3, [r2, #76]
  265 00fc 23F07F13 		bic	r3, r3, #8323199
  266 0100 43F07F03 		orr	r3, r3, #127
-ARM GAS  /tmp/ccWvrvhf.s 			page 9
+ARM GAS  /tmp/ccaMrCC6.s 			page 9
 
 
  267 0104 D364     		str	r3, [r2, #76]
@@ -538,7 +538,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  299 012e 2843     		orrs	r0, r0, r5
  300              	.LVL12:
  200:Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c **** 
-ARM GAS  /tmp/ccWvrvhf.s 			page 10
+ARM GAS  /tmp/ccaMrCC6.s 			page 10
 
 
  301              		.loc 1 200 7 view .LVU88
@@ -598,7 +598,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  336              		.loc 1 219 7 is_stmt 1 view .LVU104
  337 0158 084B     		ldr	r3, .L35+4
  338              	.LVL15:
-ARM GAS  /tmp/ccWvrvhf.s 			page 11
+ARM GAS  /tmp/ccaMrCC6.s 			page 11
 
 
  339              		.loc 1 219 7 is_stmt 0 view .LVU105
@@ -658,7 +658,7 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  382              		.file 2 "/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h"
  383              		.file 3 "Drivers/CMSIS/Include/core_cm4.h"
  384              		.file 4 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/system_stm32g4xx.h"
-ARM GAS  /tmp/ccWvrvhf.s 			page 12
+ARM GAS  /tmp/ccaMrCC6.s 			page 12
 
 
  385              		.file 5 "Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h"
@@ -666,20 +666,20 @@ ARM GAS  /tmp/ccWvrvhf.s 			page 1
  387              		.file 7 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h"
  388              		.file 8 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash.h"
  389              		.file 9 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h"
-ARM GAS  /tmp/ccWvrvhf.s 			page 13
+ARM GAS  /tmp/ccaMrCC6.s 			page 13
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 stm32g4xx_hal_flash_ramfunc.c
-     /tmp/ccWvrvhf.s:18     .RamFunc:0000000000000000 $t
-     /tmp/ccWvrvhf.s:27     .RamFunc:0000000000000000 HAL_FLASHEx_EnableRunPowerDown
-     /tmp/ccWvrvhf.s:55     .RamFunc:0000000000000018 $d
-     /tmp/ccWvrvhf.s:61     .RamFunc:0000000000000024 $t
-     /tmp/ccWvrvhf.s:69     .RamFunc:0000000000000024 HAL_FLASHEx_DisableRunPowerDown
-     /tmp/ccWvrvhf.s:96     .RamFunc:000000000000003c $d
-     /tmp/ccWvrvhf.s:102    .RamFunc:0000000000000048 $t
-     /tmp/ccWvrvhf.s:110    .RamFunc:0000000000000048 HAL_FLASHEx_OB_DBankConfig
-     /tmp/ccWvrvhf.s:373    .RamFunc:0000000000000178 $d
+     /tmp/ccaMrCC6.s:18     .RamFunc:0000000000000000 $t
+     /tmp/ccaMrCC6.s:27     .RamFunc:0000000000000000 HAL_FLASHEx_EnableRunPowerDown
+     /tmp/ccaMrCC6.s:55     .RamFunc:0000000000000018 $d
+     /tmp/ccaMrCC6.s:61     .RamFunc:0000000000000024 $t
+     /tmp/ccaMrCC6.s:69     .RamFunc:0000000000000024 HAL_FLASHEx_DisableRunPowerDown
+     /tmp/ccaMrCC6.s:96     .RamFunc:000000000000003c $d
+     /tmp/ccaMrCC6.s:102    .RamFunc:0000000000000048 $t
+     /tmp/ccaMrCC6.s:110    .RamFunc:0000000000000048 HAL_FLASHEx_OB_DBankConfig
+     /tmp/ccaMrCC6.s:373    .RamFunc:0000000000000178 $d
 
 UNDEFINED SYMBOLS
 pFlash

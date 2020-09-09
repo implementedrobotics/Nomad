@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccWjmaeI.s 			page 1
+ARM GAS  /tmp/cc4NUSaX.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   27:Core/Src/spi.c **** SPI_HandleTypeDef hspi1;
   28:Core/Src/spi.c **** SPI_HandleTypeDef hspi2;
   29:Core/Src/spi.c **** 
-ARM GAS  /tmp/ccWjmaeI.s 			page 2
+ARM GAS  /tmp/cc4NUSaX.s 			page 2
 
 
   30:Core/Src/spi.c **** /* SPI1 init function */
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   63              		.loc 1 41 32 view .LVU13
   64 001c C0E90641 		strd	r4, r1, [r0, #24]
   39:Core/Src/spi.c ****   hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-ARM GAS  /tmp/ccWjmaeI.s 			page 3
+ARM GAS  /tmp/cc4NUSaX.s 			page 3
 
 
   65              		.loc 1 39 23 view .LVU14
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   50:Core/Src/spi.c ****   }
   97              		.loc 1 50 5 is_stmt 1 view .LVU34
   98              		.loc 1 53 1 is_stmt 0 view .LVU35
-ARM GAS  /tmp/ccWjmaeI.s 			page 4
+ARM GAS  /tmp/cc4NUSaX.s 			page 4
 
 
   99 003c BDE83840 		pop	{r3, r4, r5, lr}
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   60:Core/Src/spi.c ****   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   61:Core/Src/spi.c ****   hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
  147              		.loc 1 61 23 is_stmt 0 view .LVU43
-ARM GAS  /tmp/ccWjmaeI.s 			page 5
+ARM GAS  /tmp/cc4NUSaX.s 			page 5
 
 
  148 0008 4FF44073 		mov	r3, #768
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   65:Core/Src/spi.c ****   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
  179              		.loc 1 65 3 view .LVU61
   66:Core/Src/spi.c ****   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-ARM GAS  /tmp/ccWjmaeI.s 			page 6
+ARM GAS  /tmp/cc4NUSaX.s 			page 6
 
 
  180              		.loc 1 66 3 view .LVU62
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  224              	HAL_SPI_MspInit:
  225              	.LVL4:
  226              	.LFB1313:
-ARM GAS  /tmp/ccWjmaeI.s 			page 7
+ARM GAS  /tmp/cc4NUSaX.s 			page 7
 
 
   78:Core/Src/spi.c **** 
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   96:Core/Src/spi.c ****     PA7     ------> SPI1_MOSI
   97:Core/Src/spi.c ****     */
   98:Core/Src/spi.c ****     GPIO_InitStruct.Pin = GPIO_PIN_4;
-ARM GAS  /tmp/ccWjmaeI.s 			page 8
+ARM GAS  /tmp/cc4NUSaX.s 			page 8
 
 
   99:Core/Src/spi.c ****     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -478,7 +478,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  148:Core/Src/spi.c ****   /* USER CODE END SPI2_MspInit 1 */
  149:Core/Src/spi.c ****   }
  150:Core/Src/spi.c **** }
-ARM GAS  /tmp/ccWjmaeI.s 			page 9
+ARM GAS  /tmp/cc4NUSaX.s 			page 9
 
 
  264              		.loc 1 150 1 view .LVU87
@@ -538,7 +538,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
   91:Core/Src/spi.c ****     /**SPI1 GPIO Configuration
  306              		.loc 1 91 5 is_stmt 1 view .LVU100
  307              	.LBE4:
-ARM GAS  /tmp/ccWjmaeI.s 			page 10
+ARM GAS  /tmp/cc4NUSaX.s 			page 10
 
 
   99:Core/Src/spi.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -598,7 +598,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  106:Core/Src/spi.c ****     GPIO_InitStruct.Pull = GPIO_NOPULL;
  344              		.loc 1 106 26 view .LVU119
  345 006e 0695     		str	r5, [sp, #24]
-ARM GAS  /tmp/ccWjmaeI.s 			page 11
+ARM GAS  /tmp/cc4NUSaX.s 			page 11
 
 
  107:Core/Src/spi.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -658,7 +658,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  386              		.loc 1 122 5 view .LVU134
  387 0090 029A     		ldr	r2, [sp, #8]
  388              	.LBE7:
-ARM GAS  /tmp/ccWjmaeI.s 			page 12
+ARM GAS  /tmp/cc4NUSaX.s 			page 12
 
 
  122:Core/Src/spi.c **** 
@@ -718,7 +718,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  136:Core/Src/spi.c ****     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
  427              		.loc 1 136 31 view .LVU151
  428 00bc 0525     		movs	r5, #5
-ARM GAS  /tmp/ccWjmaeI.s 			page 13
+ARM GAS  /tmp/cc4NUSaX.s 			page 13
 
 
  137:Core/Src/spi.c **** 
@@ -778,7 +778,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  141:Core/Src/spi.c ****     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
  464              		.loc 1 141 5 view .LVU171
  142:Core/Src/spi.c ****     GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-ARM GAS  /tmp/ccWjmaeI.s 			page 14
+ARM GAS  /tmp/cc4NUSaX.s 			page 14
 
 
  465              		.loc 1 142 5 view .LVU172
@@ -838,7 +838,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  513              		.loc 1 155 5 view .LVU181
  514 0006 9342     		cmp	r3, r2
  515 0008 03D0     		beq	.L26
-ARM GAS  /tmp/ccWjmaeI.s 			page 15
+ARM GAS  /tmp/cc4NUSaX.s 			page 15
 
 
  156:Core/Src/spi.c ****   {
@@ -898,7 +898,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  526              		.loc 1 169 5 is_stmt 0 view .LVU186
  527 0016 F021     		movs	r1, #240
  161:Core/Src/spi.c **** 
-ARM GAS  /tmp/ccWjmaeI.s 			page 16
+ARM GAS  /tmp/cc4NUSaX.s 			page 16
 
 
  528              		.loc 1 161 5 view .LVU187
@@ -958,7 +958,7 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  574 0052 00BF     		.align	2
  575              	.L28:
  576 0054 00300140 		.word	1073819648
-ARM GAS  /tmp/ccWjmaeI.s 			page 17
+ARM GAS  /tmp/cc4NUSaX.s 			page 17
 
 
  577 0058 00380040 		.word	1073756160
@@ -983,25 +983,25 @@ ARM GAS  /tmp/ccWjmaeI.s 			page 1
  597              		.file 13 "Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_usart.h"
  598              		.file 14 "Core/Inc/spi.h"
  599              		.file 15 "Core/Inc/main.h"
-ARM GAS  /tmp/ccWjmaeI.s 			page 18
+ARM GAS  /tmp/cc4NUSaX.s 			page 18
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 spi.c
-     /tmp/ccWjmaeI.s:18     .text.MX_SPI1_Init:0000000000000000 $t
-     /tmp/ccWjmaeI.s:27     .text.MX_SPI1_Init:0000000000000000 MX_SPI1_Init
-     /tmp/ccWjmaeI.s:112    .text.MX_SPI1_Init:0000000000000044 $d
+     /tmp/cc4NUSaX.s:18     .text.MX_SPI1_Init:0000000000000000 $t
+     /tmp/cc4NUSaX.s:27     .text.MX_SPI1_Init:0000000000000000 MX_SPI1_Init
+     /tmp/cc4NUSaX.s:112    .text.MX_SPI1_Init:0000000000000044 $d
                             *COM*:0000000000000064 hspi1
-     /tmp/ccWjmaeI.s:118    .text.MX_SPI2_Init:0000000000000000 $t
-     /tmp/ccWjmaeI.s:126    .text.MX_SPI2_Init:0000000000000000 MX_SPI2_Init
-     /tmp/ccWjmaeI.s:210    .text.MX_SPI2_Init:0000000000000044 $d
+     /tmp/cc4NUSaX.s:118    .text.MX_SPI2_Init:0000000000000000 $t
+     /tmp/cc4NUSaX.s:126    .text.MX_SPI2_Init:0000000000000000 MX_SPI2_Init
+     /tmp/cc4NUSaX.s:210    .text.MX_SPI2_Init:0000000000000044 $d
                             *COM*:0000000000000064 hspi2
-     /tmp/ccWjmaeI.s:216    .text.HAL_SPI_MspInit:0000000000000000 $t
-     /tmp/ccWjmaeI.s:224    .text.HAL_SPI_MspInit:0000000000000000 HAL_SPI_MspInit
-     /tmp/ccWjmaeI.s:479    .text.HAL_SPI_MspInit:00000000000000ec $d
-     /tmp/ccWjmaeI.s:487    .text.HAL_SPI_MspDeInit:0000000000000000 $t
-     /tmp/ccWjmaeI.s:495    .text.HAL_SPI_MspDeInit:0000000000000000 HAL_SPI_MspDeInit
-     /tmp/ccWjmaeI.s:576    .text.HAL_SPI_MspDeInit:0000000000000054 $d
+     /tmp/cc4NUSaX.s:216    .text.HAL_SPI_MspInit:0000000000000000 $t
+     /tmp/cc4NUSaX.s:224    .text.HAL_SPI_MspInit:0000000000000000 HAL_SPI_MspInit
+     /tmp/cc4NUSaX.s:479    .text.HAL_SPI_MspInit:00000000000000ec $d
+     /tmp/cc4NUSaX.s:487    .text.HAL_SPI_MspDeInit:0000000000000000 $t
+     /tmp/cc4NUSaX.s:495    .text.HAL_SPI_MspDeInit:0000000000000000 HAL_SPI_MspDeInit
+     /tmp/cc4NUSaX.s:576    .text.HAL_SPI_MspDeInit:0000000000000054 $d
 
 UNDEFINED SYMBOLS
 HAL_SPI_Init
