@@ -1,7 +1,7 @@
 /*
- * SerialHandler.cpp
+ * shared.h
  *
- *  Created on: March 19, 2020
+ *  Created on: September 9, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,43 +22,19 @@
  * 
  */
 
-// Primary Include
-#include "SerialHandler.h"
+#ifndef SHARED_H_
+#define SHARED_H_
 
-// C System Files
+#define RX_DMA_BUFFER_SIZE 64
+#define TX_DMA_BUFFER_SIZE 64
 
-// C++ System Files
+osThreadId_t comms_task_id;   // Communications Task ID
+osThreadId_t control_task_id; // Motor Control Task ID
 
-// Project Includes
-#include "main.h"
-#include "cmsis_os.h"
-#include "shared.h"
+osMessageQueueId_t uart_rx_dma_queue_id; // Message Queue to receive UART data
+osMessageQueueId_t uart_tx_dma_queue_id; // Message Queue to transmit UART data
 
-// HDLC Handler    
-//HDLCHandler hdlc;
+uint8_t uart_rx_dma_buffer[RX_DMA_BUFFER_SIZE];
+uint8_t uart_tx_dma_buffer[TX_DMA_BUFFER_SIZE];
 
-// Comms Event Loops
-
-// C interface
-extern "C"
-{
-    void comms_thread_entry()
-    {
-        // Reset Message Queues.  Not sure if this is actually necessary
-        osMessageQueueReset(uart_tx_dma_queue_id);
-        osMessageQueueReset(uart_rx_dma_queue_id);
-
-        // 
-        for (;;)
-        {
-            //LL_GPIO_SetOutputPin(GPIOB, GPIO_PIN_10);
-            //LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
-
-            //osDelay(500);
-           // LL_GPIO_ResetOutputPin(GPIOB, GPIO_PIN_10);
-
-            //osDelay(100);
-        }
-        //hdlc.ProcessByte(evt.value.v);
-    }
-}
+#endif // SHARED_H_

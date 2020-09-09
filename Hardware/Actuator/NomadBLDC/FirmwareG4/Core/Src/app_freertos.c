@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "thread_interface.h"
+#include "shared.h"
 
 /* USER CODE END Includes */
 
@@ -47,9 +48,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-osThreadId_t commsTaskHandle;
-osThreadId_t controlTaskHandle;
+osThreadId_t comms_task_id;   // Communications Task ID
+osThreadId_t control_task_id; // Motor Control Task ID
 
+osMessageQueueId_t uart_rx_dma_queue_id; // Message Queue to receive UART data
+osMessageQueueId_t uart_tx_dma_queue_id; // Message Queue to transmit UART data
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -57,7 +60,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 128 * 2
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,7 +95,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
+
+  // Receive UART Message Queue
+  uart_rx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+
+  // Transmit UART Message Queue
+  uart_tx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+  
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -116,22 +125,19 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
 
-  //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-
-  const osThreadAttr_t commsTask_attributes =
+  const osThreadAttr_t comms_task_attr =
   {
-    .name = "commsTask",
+    .name = "comms_task",
     .priority = (osPriority_t)osPriorityNormal1,
     .stack_size = 128 * 4
   };
 
-  commsTaskHandle = osThreadNew(comms_thread_entry, NULL, &commsTask_attributes);
-  // //HAL_GPIO_WritePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin, GPIO_PIN_RESET);
-  // vTaskDelete(defaultTaskHandle);
-   while(1)
-   {
-     osDelay(1);
-   }
+  // Start Comms Task
+  comms_task_id = osThreadNew(comms_thread_entry, NULL, &comms_task_attr);
+
+  // Start Motor Control Task
+
+  osThreadExit(); // Terminate default thread.  We have launched all the relevant ones
   /* USER CODE END StartDefaultTask */
 }
 

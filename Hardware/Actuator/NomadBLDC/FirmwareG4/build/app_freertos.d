@@ -55,7 +55,7 @@ build/app_freertos.o: Core/Src/app_freertos.c \
  Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h \
  Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- NomadBLDC/include/thread_interface.h
+ NomadBLDC/include/thread_interface.h Core/Inc/shared.h
 
 Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -176,3 +176,5 @@ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
 NomadBLDC/include/thread_interface.h:
+
+Core/Inc/shared.h:

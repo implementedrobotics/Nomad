@@ -32,7 +32,7 @@
         {
             "label": "Load Firmware",
             "type": "shell",
-            "command": "st-flash write ./build/nomad_bldc_fw_g4.bin 0x08000000",
+            "command": "st-flash --reset write ./build/nomad_bldc_fw_g4.bin 0x08000000",
             "options": {
                 "cwd": "${workspaceRoot}"
             },
