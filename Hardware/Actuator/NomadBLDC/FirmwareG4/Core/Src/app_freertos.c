@@ -95,7 +95,11 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  
+  // Receive UART Message Queue
+  uart_rx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+
+  // Transmit UART Message Queue
+  uart_tx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -120,7 +124,21 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN StartDefaultTask */
 
   // Start Comms Task
-  osThreadNew(uart_rx_dma_thread, NULL, NULL);
+
+  const osThreadAttr_t rx_task_attr = {
+  .name = "uart_receive_task",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
+
+  osThreadNew(uart_rx_dma_thread, NULL, &rx_task_attr);
+
+  const osThreadAttr_t tx_task_attr = {
+      .name = "uart_transmit_task",
+      .priority = (osPriority_t)osPriorityNormal,
+      .stack_size = 128 * 4};
+
+  //osThreadNew(uart_tx_dma_thread, NULL, &tx_task_attr);
 
   // Start Motor Control Task
 

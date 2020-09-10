@@ -29,9 +29,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void init_comms_thread();
 void init_motor_control_thread();
 void uart_rx_dma_thread();
+void uart_tx_dma_thread();
 #ifdef __cplusplus
 }
 #endif

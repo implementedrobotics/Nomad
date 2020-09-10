@@ -25,6 +25,10 @@
 #ifndef SHARED_H_
 #define SHARED_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RX_DMA_BUFFER_SIZE 64
 #define TX_DMA_BUFFER_SIZE 64
 
@@ -37,5 +41,9 @@ osMessageQueueId_t uart_tx_dma_queue_id; // Message Queue to transmit UART data
 
 uint8_t uart_rx_dma_buffer[RX_DMA_BUFFER_SIZE];
 uint8_t uart_tx_dma_buffer[TX_DMA_BUFFER_SIZE];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SHARED_H_
