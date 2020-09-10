@@ -96,16 +96,6 @@ void MX_USART2_UART_Init(void)
   NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
   NVIC_EnableIRQ(USART2_IRQn);
 
-  /* USER CODE BEGIN USART1_Init 1 */
-  LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_1, (uint32_t)&USART2->RDR);
-  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_1, (uint32_t)uart_rx_dma_buffer);
-  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, RX_DMA_BUFFER_SIZE);
-
-  /* Enable DMA transfer complete/error interrupts  */
-  LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_1);
-  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_1);
-  /* USER CODE END USART1_Init 1 */
-
   USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
   USART_InitStruct.BaudRate = 115200;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;

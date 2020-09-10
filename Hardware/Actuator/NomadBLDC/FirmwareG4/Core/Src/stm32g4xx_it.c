@@ -168,7 +168,7 @@ void DMA1_Channel1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
   // This is the receive interrupt
-
+  LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
   void *d = (void *)1;
 
   // DMA Half Complete Callback
@@ -216,6 +216,7 @@ void USART2_IRQHandler(void)
   // TODO: Actual Data Struct with Info to Send?
   void* d = (void *)1;
 
+  LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
   // Check for IDLE Interrupt
   if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2))
   {

@@ -42,27 +42,66 @@
 #include "shared.h"
 #include "thread_interface.h"
 
+
+SerialHandler::SerialHandler()
+{
+}
+
+void SerialHandler::SetUSART(USART_TypeDef *USART)
+{
+    USART_ = USART;
+}
+
+void SerialHandler::SendString(const std::string &str)
+{
+    SendData((uint8_t *)str.c_str(), str.length());
+}
+void SerialHandler::SendData(const uint8_t* data, size_t length)
+{
+    for(; length > 0; --length, ++data) {
+        LL_USART_TransmitData8(USART_, *data);
+        while(!LL_USART_IsActiveFlag_TXE(USART_)) {}
+    }
+    while(!LL_USART_IsActiveFlag_TC(USART_)) {}
+}
+
+// Singleton Insance
+SerialHandler &SerialHandler::Instance()
+{
+    static SerialHandler instance;
+    return instance;
+}
+
 void uart_rx_dma_thread()
 {
     // HDLC Handler    
     //HDLCHandler hdlc;
     void *d;
 
-    LL_GPIO_SetOutputPin(GPIOB, GPIO_PIN_10);
+    LL_GPIO_SetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
     /* Notify user to start sending data */
     //usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE IRQ + RTOS processing\r\n");
     //usart_send_string("Start sending data to STM32\r\n");
     // Reset Message Queues.  Not sure if this is actually necessary
     osMessageQueueReset(uart_rx_dma_queue_id);
 
+    SerialHandler::Instance().SetUSART(USART2);
+    SerialHandler::Instance().SendString("Hello\r\n");
+    SerialHandler serial = SerialHandler::Instance();
+
     for (;;)
     {
+       // osMessageQueueGet(uart_rx_dma_queue_id, &d, NULL, osWaitForever);
+
         /* Block thread and wait for event to process USART data */
         //osMessageQueueGet(uart_rx_dma_queue_id, &d, NULL, osWaitForever);
-        LL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+        LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
         //LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
         osDelay(500);
+
+        serial.SendString("Hello\r\n");
+        
 
         /* Simply call processing function */
         //usart_rx_check();
@@ -71,25 +110,25 @@ void uart_rx_dma_thread()
     }
 }
 
-void uart_tx_dma_thread()
-{
-    void *d;
+// void uart_tx_dma_thread()
+// {
+//     void *d;
 
-    LL_GPIO_SetOutputPin(GPIOB, GPIO_PIN_10);
-    /* Notify user to start sending data */
-    osMessageQueueReset(uart_tx_dma_queue_id);
-    for (;;)
-    {
-        /* Block thread and wait for event to process USART data */
-        //osMessageQueueGet(uart_rx_dma_queue_id, &d, NULL, osWaitForever);
-        LL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
-        //LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+//     LL_GPIO_SetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+//     /* Notify user to start sending data */
+//     osMessageQueueReset(uart_tx_dma_queue_id);
+//     for (;;)
+//     {
+//         /* Block thread and wait for event to process USART data */
+//         //osMessageQueueGet(uart_rx_dma_queue_id, &d, NULL, osWaitForever);
+//         LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+//         //LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
-        osDelay(500);
+//         osDelay(500);
 
-        /* Simply call processing function */
-        //usart_rx_check();
+//         /* Simply call processing function */
+//         //usart_rx_check();
 
-        (void)d;
-    }
-}
+//         (void)d;
+//     }
+// }

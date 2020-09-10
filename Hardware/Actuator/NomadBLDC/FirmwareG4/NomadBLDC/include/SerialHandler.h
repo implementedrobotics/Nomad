@@ -26,6 +26,7 @@
 #define CORE_SERIAL_HANDLER_H_
 
 // C System Files
+#include "usart.h"
 
 // C++ System Files
 #include <string>
@@ -39,9 +40,17 @@ class SerialHandler
 {
 
 public:
+    
     SerialHandler();
+    void SetUSART(USART_TypeDef *USART);
+    static SerialHandler& Instance();
+
+    void SendString(const std::string &str);
+    void SendData(const uint8_t* data, size_t length);
 
 private:
+
+    USART_TypeDef *USART_;
 
 };
 
