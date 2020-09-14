@@ -22,7 +22,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -55,96 +54,11 @@ osMessageQueueId_t uart_rx_dma_queue_id; // Message Queue to receive UART data
 osMessageQueueId_t uart_tx_dma_queue_id; // Message Queue to transmit UART data
 
 /* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
-};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
-
-void StartDefaultTask(void *argument);
-
-void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-/**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  // Receive UART Message Queue
-  uart_rx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
-
-  // Transmit UART Message Queue
-  uart_tx_dma_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-}
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  /* USER CODE BEGIN StartDefaultTask */
-
-  // Start Comms Task
-
-  const osThreadAttr_t rx_task_attr = {
-  .name = "uart_receive_task",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
-};
-
-  osThreadNew(uart_rx_dma_thread, NULL, &rx_task_attr);
-
-  const osThreadAttr_t tx_task_attr = {
-      .name = "uart_transmit_task",
-      .priority = (osPriority_t)osPriorityNormal,
-      .stack_size = 128 * 4};
-
-  //osThreadNew(uart_tx_dma_thread, NULL, &tx_task_attr);
-
-  // Start Motor Control Task
-
-  osThreadExit(); // Terminate default thread.  We have launched all the relevant ones
-  /* USER CODE END StartDefaultTask */
-}
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */

@@ -25,33 +25,33 @@
 #ifndef CORE_SERIAL_HANDLER_H_
 #define CORE_SERIAL_HANDLER_H_
 
-// C System Files
-#include "usart.h"
+// // C System Files
+// #include "usart.h"
 
-// C++ System Files
-#include <string>
-#include <vector>
+// // C++ System Files
+// #include <string>
+// #include <vector>
 
-// Project Includes
+// // Project Includes
 
-// Entry point to facilitate transition to C++ for RTOS Task
+// // Entry point to facilitate transition to C++ for RTOS Task
 
-class SerialHandler
-{
+// class SerialHandler
+// {
 
-public:
+// public:
     
-    SerialHandler();
-    void SetUSART(USART_TypeDef *USART);
-    static SerialHandler& Instance();
+//     SerialHandler();
+//     void SetUSART(USART_TypeDef *USART);
+//     static SerialHandler& Instance();
 
-    void SendString(const std::string &str);
-    void SendData(const uint8_t* data, size_t length);
+//     void SendString(const std::string &str);
+//     void SendData(const uint8_t* data, size_t length);
 
-private:
+// private:
 
-    USART_TypeDef *USART_;
+//     USART_TypeDef *USART_;
 
-};
+// };
 
 #endif // CORE_SERIAL_HANDLER_H_
