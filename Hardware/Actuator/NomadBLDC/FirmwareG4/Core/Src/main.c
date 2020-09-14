@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "shared.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,6 +110,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
@@ -120,6 +121,7 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM2_Init();
   MX_TIM8_Init();
+  MX_USART2_UART_Init();
   MX_CORDIC_Init();
   /* USER CODE BEGIN 2 */
 
@@ -151,7 +153,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
+  
   /* Start scheduler */
   osKernelStart();
 
@@ -1076,6 +1078,20 @@ void MX_USART2_UART_Init(void)
 
   /* USER CODE BEGIN USART2_Init 1 */
 
+  /* Configure the DMA functional parameters for reception */
+  LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_1,
+                         LL_USART_DMA_GetRegAddr(USART2, LL_USART_DMA_REG_DATA_RECEIVE),
+                         (uint32_t)uart_rx_dma_buffer,
+                         LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_1));
+  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, RX_DMA_BUFFER_SIZE);
+
+  /* Enable DMA transfer complete/error interrupts  */
+  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_1);
+  LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_1);
+
+  /* Enable USART idle line interrupts */
+  LL_USART_EnableIT_IDLE(USART2);
+
   /* USER CODE END USART2_Init 1 */
   USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
   USART_InitStruct.BaudRate = 115200;
@@ -1102,6 +1118,12 @@ void MX_USART2_UART_Init(void)
   {
   }
   /* USER CODE BEGIN USART2_Init 2 */
+  
+  /* Enable DMA RX Interrupt */
+  LL_USART_EnableDMAReq_RX(USART2);
+
+  /* Enable DMA Channel Rx */
+  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_1);
 
   /* USER CODE END USART2_Init 2 */
 

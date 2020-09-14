@@ -175,14 +175,14 @@ void DMA1_Channel1_IRQHandler(void)
   if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_HT1(DMA1))
   {
     LL_DMA_ClearFlag_HT1(DMA1); // Clear Flag
-    osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue Non Block
+  //  osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue Non Block
   }
 
   // DMA Full Complete Callback
   if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_TC1(DMA1))
   {
     LL_DMA_ClearFlag_TC1(DMA1); // Clear Flag
-    osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue Non Block
+  //  osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue Non Block
   }
 
   /* USER CODE END DMA1_Channel1_IRQn 0 */
@@ -202,12 +202,12 @@ void USART2_IRQHandler(void)
   // TODO: Actual Data Struct with Info to Send?
   void* d = (void *)1;
 
-  LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
   // Check for IDLE Interrupt
   if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2))
   {
+      LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
     LL_USART_ClearFlag_IDLE(USART2); // Clear Flag
-    osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue and Leave w/o timeout
+ //   osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue and Leave w/o timeout
   }
 
   /* USER CODE END USART2_IRQn 0 */
