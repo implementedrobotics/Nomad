@@ -81,6 +81,7 @@ Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c
 
 CPP_SOURCES = \
 NomadBLDC/SerialHandler.cpp \
+Core/Src/uart.cpp \
 #NomadBLDC/HDLCHandler.cpp \
 #NomadBLDDC/CommandHandler.cpp \
 #NomadBLDC/CRC16.cpp \
@@ -152,7 +153,7 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 -IDrivers/CMSIS/Device/ST/STM32G4xx/Include \
 -IDrivers/CMSIS/Include \
--INomadBLDC/include
+-INomadBLDC/include 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
