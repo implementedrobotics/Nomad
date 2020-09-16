@@ -24,6 +24,7 @@
 
 // Primary Include
 #include <Peripherals/uart.h>
+#include <Utilities/crc16.h>
 
 // C System Files
 #include <stdint.h>
@@ -35,53 +36,25 @@
 // #include "stm32g4xx_ll_usart.h"
 // #include "stm32g4xx_ll_dma.h"
 
-// HDLC Handler
-//HDLCHandler hdlc;
+#define FRAME_BOUNDARY 0x7E
+#define CONTROL_ESCAPE 0X7D
+#define ESCAPE_INVERT 0X20
 
-// Comms Event Loops
-
-// C interface
-// #include "main.h"
-// #include "cmsis_os.h"
-// #include "shared.h"
-// #include "thread_interface.h"
-
-// void SerialHandler::SendString(const std::string &str)
-// {
-//     SendData((uint8_t *)str.c_str(), str.length());
-// }
-
-// // Singleton Insance
-// SerialHandler &SerialHandler::Instance()
-// {
-//     static SerialHandler instance;
-//     return instance;
-// }
-
-// void uart_rx_dma_thread()
-// {
-//     // HDLC Handler
-//     //HDLCHandler hdlc;
-//     void *d;
-
-//     LL_GPIO_SetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
-//     /* Notify user to start sending data */
-//     //usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE IRQ + RTOS processing\r\n");
-//     //usart_send_string("Start sending data to STM32\r\n");
-//     // Reset Message Queues.  Not sure if this is actually necessary
-//     osMessageQueueReset(uart_rx_dma_queue_id);
-
-//     SerialHandler::Instance().SetUSART(USART2);
-//     SerialHandler::Instance().SendString("Hello\r\n");
-//     SerialHandler serial = SerialHandler::Instance();
-
-// }
+#define PACKET_SIZE_LIMIT 256
 
 uart_rx_cb rx_callback = NULL; // Callback for RX buffer receive bytes
 USART_TypeDef *USART_ = NULL;  // USART Peripheral
 
-osMessageQueueId_t uart_rx_queue_id = 0;
-osMessageQueueId_t uart_tx_queue_id = 0;
+osMessageQueueId_t uart_rx_queue_id = 0; // RX Queue ID
+osMessageQueueId_t uart_tx_queue_id = 0; // TX Queue ID
+
+uint16_t frame_offset;
+uint16_t frame_chksum;
+uint8_t hdlc_rx_buffer[512]; // Frame buffer.  Support 255
+uint8_t hdlc_tx_buffer[512]; // Frame buffer out
+uint8_t in_escape;           // Are we currently in escape?
+
+uart_mode_t mode_;
 
 void init_uart_threads(void *arg)
 {
@@ -89,6 +62,13 @@ void init_uart_threads(void *arg)
 
     // Create Message Queue
     uart_rx_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+
+    // Setup mode.  HDLC Default
+    mode_ = HDLC;
+
+    // HDLC Initial
+    frame_offset = 0;
+    in_escape = 0;
 
     // Start RX Thread
     const osThreadAttr_t task_rx_attributes = {
@@ -111,10 +91,30 @@ void init_uart_rx_thread(void *arg)
 {
     void *d; // TODO: Semaphore?
 
-    // Set default callback
-    register_rx_callback(echo_rx);
-
     uart_send_str("Nomad Firmware v2.0 STM32G4 Beta\r\n");
+
+    // Set default callback
+    switch (mode_)
+    {
+    case HDLC:
+        register_rx_callback(hdlc_rx);
+        uart_send_str("UART MODE: HDLC\r\n");
+        break;
+
+    case ASCII:
+        register_rx_callback(echo_rx);
+        uart_send_str("UART MODE: ASCII\r\n");
+        break;
+
+    case BINARY:
+        register_rx_callback(echo_rx);
+        uart_send_str("UART MODE: BINARY\r\n");
+        break;
+
+    default:
+        register_rx_callback(echo_rx);
+        uart_send_str("UART MODE: UNDEFINED!\r\n");
+    }
 
     for (;;)
     {
@@ -137,7 +137,7 @@ void init_uart_rx_thread(void *arg)
 //         osDelay(500);
 //         //uart_send_str("Hello\r\n");
 //     }
-    
+
 // }
 
 void uart_rx_buffer_process()
@@ -148,9 +148,9 @@ void uart_rx_buffer_process()
     // Compute where we are in the DMA buffer
     pos = RX_DMA_BUFFER_SIZE - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_1);
     if (pos != old_pos) // We have new data in buffer
-    { 
-        if (pos > old_pos) // Standard buffer read no wrapping.  
-        { 
+    {
+        if (pos > old_pos) // Standard buffer read no wrapping.
+        {
             // We are in "linear" mode
             // Process data directly by subtracting "pointers"
             rx_callback(&uart_rx_buffer[old_pos], pos - old_pos);
@@ -181,19 +181,62 @@ uint32_t uart_send_data(const uint8_t *data, size_t length)
     for (; length > 0; --length, ++data)
     {
         LL_USART_TransmitData8(USART_, *data);
-        while (!LL_USART_IsActiveFlag_TXE(USART_)){}
+        while (!LL_USART_IsActiveFlag_TXE(USART_))
+        {
+        }
         sent_bytes++;
     }
-    while (!LL_USART_IsActiveFlag_TC(USART_)){}
+    while (!LL_USART_IsActiveFlag_TC(USART_))
+    {
+    }
     return sent_bytes;
 }
 
 uint32_t uart_send_str(const char *data)
 {
-    return uart_send_data((uint8_t*)data, strlen(data));
+    return uart_send_data((uint8_t *)data, strlen(data));
 }
 
-// Register RX Callback
+uint32_t uart_send_data_hdlc(const uint8_t *packet, size_t length)
+{
+    if (length >= PACKET_SIZE_LIMIT)
+    {
+        return 0;
+    }
+
+    // Compute CRC16 for Packet
+    frame_chksum = crc16_compute(packet, length);
+
+    uint32_t buffer_offset = 0;
+    hdlc_tx_buffer[buffer_offset++] = FRAME_BOUNDARY;
+
+    // Process and Escape Packet
+    for (uint32_t i = 0; i < length; i++)
+    {
+        uint8_t data = packet[i];
+        if ((data == FRAME_BOUNDARY) || (data == CONTROL_ESCAPE))
+        {
+            hdlc_tx_buffer[buffer_offset++] = CONTROL_ESCAPE;
+            hdlc_tx_buffer[buffer_offset++] = data ^ ESCAPE_INVERT;
+        }
+        else // Not Escaped
+        {
+            hdlc_tx_buffer[buffer_offset++] = data;
+        }
+    }
+
+    // Copy in CRC18
+    memcpy(hdlc_tx_buffer + buffer_offset, (uint8_t *)(&frame_chksum), sizeof(uint16_t));
+
+    // Add Frame Boundary
+    buffer_offset += 2;
+    hdlc_tx_buffer[buffer_offset++] = FRAME_BOUNDARY;
+
+    // Send it
+    return uart_send_data(hdlc_tx_buffer, buffer_offset);
+}
+
+// Register Receive Callback
 void register_rx_callback(uart_rx_cb callback)
 {
     rx_callback = callback;
@@ -205,3 +248,58 @@ void echo_rx(const uint8_t *data, size_t length)
     uart_send_data(data, length);
 }
 
+// Default HDLC Handler.  Frame pack for HDLC and send
+void hdlc_rx(const uint8_t *data, size_t length)
+{
+    for (; length > 0; --length, ++data)
+    {
+        uint8_t byte = *data;
+        if (byte == FRAME_BOUNDARY && !in_escape)
+        {
+            // Check for End Frame + Validity
+            if (frame_offset >= 2) // Need atleast 3 bytes for a valid frame, (BEGIN, CMD, LENGTH)
+            {
+                // Command = receive_buffer_[0]
+                // Payload Length = receive_buffer_[1]
+                // Fast early out on packet length
+                if ((frame_offset - 4) == hdlc_rx_buffer[1])
+                {
+                    // Length matches now verify checksum
+                    uint16_t sent_chksum = (hdlc_rx_buffer[frame_offset - 1] << 8) | (hdlc_rx_buffer[frame_offset - 2] & 0xff);
+                    frame_chksum = crc16_compute(hdlc_rx_buffer, frame_offset - 2);
+                    if (frame_chksum == sent_chksum)
+                    {
+                        // Execute Command Callback
+                        //CommandHandler::ProcessPacket(receive_buffer_, frame_offset - 2);
+                    }
+                }
+                // TODO: If invalid do we add support for an ack?
+            }
+            // Reset and look for next Frame
+            frame_offset = 0;
+            frame_chksum = 0;
+            return;
+        }
+
+        // Handle Escape Sequences
+        if (in_escape)
+        {
+            byte ^= ESCAPE_INVERT;
+            in_escape = 0;
+        }
+        else if (byte == CONTROL_ESCAPE)
+        {
+            in_escape = 1;
+            return; // Return here to read real byte on next run
+        }
+
+        // Copy to buffer
+        hdlc_rx_buffer[frame_offset++] = byte;
+
+        if (frame_offset >= PACKET_SIZE_LIMIT) // Overflow Packet Limit,
+        {
+            frame_offset = 0; // Reset
+            frame_chksum = 0;
+        }
+    }
+}

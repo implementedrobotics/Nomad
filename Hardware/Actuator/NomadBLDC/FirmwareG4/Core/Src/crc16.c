@@ -23,7 +23,7 @@
  */
 
 // Primary Include
-#include "CRC16.h"
+#include <Utilities/crc16.h>
 
 // C System Files
 
@@ -31,7 +31,7 @@
 
 // Project Includes
 
-const uint16_t CRC16::CRC16_CCITT_TAB[] = {
+const uint16_t CRC16_CCITT_TAB[] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
     0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF,
     0x1231, 0x0210, 0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6,
@@ -66,13 +66,12 @@ const uint16_t CRC16::CRC16_CCITT_TAB[] = {
     0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0
 };
 
-uint16_t CRC16::Compute(const uint8_t *data, uint32_t length, uint16_t crc /* = 0x0000 */)
+uint16_t crc16_compute(const uint8_t *data, uint32_t length)
 {
+    uint16_t crc = 0x0000;
     for (uint32_t i = 0; i < length; i++)
     {
         crc = (((crc << 8) & 0xFF00) ^ CRC16_CCITT_TAB[((crc >> 8) & 0xFF) ^ *data++]);
     }
     return crc & 0xFFFF;
 }
-
-    //cksum = crc16_tab[(((cksum >> 8) ^ *buf++) & 0xFF)] ^ (cksum << 8);

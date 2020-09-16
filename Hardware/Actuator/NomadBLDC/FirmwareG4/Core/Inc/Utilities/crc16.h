@@ -26,19 +26,23 @@
 #define CRC16_H_
  
 // C System Files
+#include <stdint.h>
+#include <stdlib.h>
 
 // C++ System Files
 
 // Project Includes
-#include "mbed.h"
 
-class CRC16
+#ifdef __cplusplus
+extern "C"
 {
-private:
-    static const uint16_t CRC16_CCITT_TAB[];
+#endif
 
-public:
-    static uint16_t Compute(const uint8_t *data, uint32_t length, uint16_t crc = 0x0000);
-};
+extern const uint16_t CRC16_CCITT_TAB[];
+uint16_t crc16_compute(const uint8_t *data, uint32_t length);
+
+#ifdef __cplusplus
+}
+#endif
 #endif // CRC16_H_
 

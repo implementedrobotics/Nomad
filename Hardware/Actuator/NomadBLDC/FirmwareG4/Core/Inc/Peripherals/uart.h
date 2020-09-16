@@ -33,10 +33,19 @@ extern "C"
 #define RX_DMA_BUFFER_SIZE 64
 #define TX_DMA_BUFFER_SIZE 64
 
-#define RX_STACK_SIZE 512
-#define TX_STACK_SIZE 512
+#define RX_STACK_SIZE 1024
+#define TX_STACK_SIZE 1024
 
 #include <cmsis_os2.h>
+#include <stdlib.h>
+
+// Driver Enums
+typedef enum 
+{
+    ASCII = 0,
+    BINARY,
+    HDLC
+} uart_mode_t;
 
 // Define some callbacks
 typedef void (*uart_rx_cb)(const uint8_t *data, size_t length);
@@ -55,12 +64,13 @@ void init_uart_tx_thread(); // Thread for UART Transmit
 
 void uart_rx_buffer_process(); // Helper functions.
 
+uint32_t uart_send_data_hdlc(const uint8_t *data, size_t length); // Encode UART Packet for HDLC
 uint32_t uart_send_data(const uint8_t *data, size_t length); // Send bytes over UART
 uint32_t uart_send_str(const char *data); // Send string over UART
 
 void register_rx_callback(uart_rx_cb rx_callback); // Receive callback for received bytes
 void echo_rx(const uint8_t *data, size_t length);  // Default callback loopback echo
-
+void hdlc_rx(const uint8_t *data, size_t length);  // Default callback for HDLC mode
 
 #ifdef __cplusplus
 }

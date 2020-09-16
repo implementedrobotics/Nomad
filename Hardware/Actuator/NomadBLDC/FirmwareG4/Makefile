@@ -78,7 +78,8 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Core/Src/main.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_spi.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c \
-Core/Src/uart.c
+Core/Src/uart.c \
+Core/Src/crc16.c
 
 CPP_SOURCES = \
 NomadBLDC/SerialHandler.cpp \
