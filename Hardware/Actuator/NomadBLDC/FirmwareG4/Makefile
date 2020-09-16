@@ -77,11 +77,11 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Core/Src/main.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_spi.c \
-Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c
+Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c \
+Core/Src/uart.c
 
 CPP_SOURCES = \
 NomadBLDC/SerialHandler.cpp \
-Core/Src/uart.cpp \
 #NomadBLDC/HDLCHandler.cpp \
 #NomadBLDDC/CommandHandler.cpp \
 #NomadBLDC/CRC16.cpp \

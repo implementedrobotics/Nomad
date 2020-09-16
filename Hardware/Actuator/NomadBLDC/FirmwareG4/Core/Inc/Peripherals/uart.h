@@ -33,20 +33,34 @@ extern "C"
 #define RX_DMA_BUFFER_SIZE 64
 #define TX_DMA_BUFFER_SIZE 64
 
+#define RX_STACK_SIZE 512
+#define TX_STACK_SIZE 512
+
 #include <cmsis_os2.h>
 
-extern osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
-extern osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
+// Define some callbacks
+typedef void (*uart_rx_cb)(const uint8_t *data, size_t length);
+
+osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
+osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
 
 extern osMessageQueueId_t uart_rx_queue_id; // Message Queue to receive UART data
 extern osMessageQueueId_t uart_tx_queue_id; // Message Queue to transmit UART data
 
-extern uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
+uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
 
+void init_uart_threads(void *arg);
 void init_uart_rx_thread(); // Thread for UART Receive
 void init_uart_tx_thread(); // Thread for UART Transmit
 
 void uart_rx_buffer_process(); // Helper functions.
+
+uint32_t uart_send_data(const uint8_t *data, size_t length); // Send bytes over UART
+uint32_t uart_send_str(const char *data); // Send string over UART
+
+void register_rx_callback(uart_rx_cb rx_callback); // Receive callback for received bytes
+void echo_rx(const uint8_t *data, size_t length);  // Default callback loopback echo
+
 
 #ifdef __cplusplus
 }

@@ -23,9 +23,9 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "FreeRTOS.h"
-#include "cmsis_os.h"
-#include "shared.h"
+#include <FreeRTOS.h>
+#include <cmsis_os2.h>
+#include <Peripherals/uart.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -168,22 +168,22 @@ void DMA1_Channel1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
   // This is the receive interrupt
-  LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
   void *d = (void *)1;
 
   // DMA Half Complete Callback
   if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_HT1(DMA1))
   {
-    LL_DMA_ClearFlag_HT1(DMA1); // Clear Flag
-  //  osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue Non Block
+    LL_DMA_ClearFlag_HT1(DMA1);                        // Clear Flag
+    osMessageQueuePut(uart_rx_queue_id, &d, 0, 0); // Send Data to Queue Non Block
   }
 
   // DMA Full Complete Callback
   if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_TC1(DMA1))
   {
-    LL_DMA_ClearFlag_TC1(DMA1); // Clear Flag
-  //  osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue Non Block
+    LL_DMA_ClearFlag_TC1(DMA1);                        // Clear Flag
+    osMessageQueuePut(uart_rx_queue_id, &d, 0, 0); // Send Data to Queue Non Block
   }
+  (void)d;
 
   /* USER CODE END DMA1_Channel1_IRQn 0 */
 
@@ -199,17 +199,16 @@ void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
 
-  // TODO: Actual Data Struct with Info to Send?
-  void* d = (void *)1;
+  // TODO: Semaphore here?
+  void *d = (void *)1;
 
   // Check for IDLE Interrupt
   if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2))
   {
-      LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
-    LL_USART_ClearFlag_IDLE(USART2); // Clear Flag
- //   osMessageQueuePut(uart_rx_dma_queue_id, &d, 0, 0); // Send Data to Queue and Leave w/o timeout
+    LL_USART_ClearFlag_IDLE(USART2);                   // Clear Flag
+    osMessageQueuePut(uart_rx_queue_id, &d, 0, 0); // Send Data to Queue and Leave w/o timeout
   }
-
+  (void)d;
   /* USER CODE END USART2_IRQn 0 */
   /* USER CODE BEGIN USART2_IRQn 1 */
 

@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "shared.h"
+#include <Peripherals/uart.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -151,7 +152,10 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start USART Thread
+
+  //osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start Motor Control Thread
+
   /* USER CODE END RTOS_THREADS */
   
   /* Start scheduler */
@@ -1073,7 +1077,7 @@ void MX_USART2_UART_Init(void)
   LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_BYTE);
 
   /* USART2 interrupt Init */
-  NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
   NVIC_EnableIRQ(USART2_IRQn);
 
   /* USER CODE BEGIN USART2_Init 1 */
@@ -1081,7 +1085,7 @@ void MX_USART2_UART_Init(void)
   /* Configure the DMA functional parameters for reception */
   LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_1,
                          LL_USART_DMA_GetRegAddr(USART2, LL_USART_DMA_REG_DATA_RECEIVE),
-                         (uint32_t)uart_rx_dma_buffer,
+                         (uint32_t)uart_rx_buffer,
                          LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_1));
   LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, RX_DMA_BUFFER_SIZE);
 
@@ -1142,7 +1146,7 @@ void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  NVIC_SetPriority(DMA1_Channel1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_SetPriority(DMA1_Channel1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
   NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
@@ -1239,11 +1243,8 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+  // CubeMX Forces a default task.  Which is trash.  Anyway we just exit
+  osThreadExit();
   /* USER CODE END 5 */
 }
 
