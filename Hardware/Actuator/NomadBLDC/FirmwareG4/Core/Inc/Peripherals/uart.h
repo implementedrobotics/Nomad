@@ -50,13 +50,13 @@ typedef enum
 // Define some callbacks
 typedef void (*uart_rx_cb)(const uint8_t *data, size_t length);
 
-osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
-osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
+// osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
+// osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
 
 extern osMessageQueueId_t uart_rx_queue_id; // Message Queue to receive UART data
 extern osMessageQueueId_t uart_tx_queue_id; // Message Queue to transmit UART data
 
-uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
+extern uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
 
 void init_uart_threads(void *arg);
 void init_uart_rx_thread(); // Thread for UART Receive

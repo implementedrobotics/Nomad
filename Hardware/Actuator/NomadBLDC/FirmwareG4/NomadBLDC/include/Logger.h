@@ -1,7 +1,7 @@
 /*
- * SerialHandler.h
+ * Logger.h
  *
- *  Created on: March 18, 2020
+ *  Created on: March 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,36 +22,27 @@
  * 
  */
 
-#ifndef CORE_SERIAL_HANDLER_H_
-#define CORE_SERIAL_HANDLER_H_
+#ifndef LOGGER_H_
+#define LOGGER_H_
 
-// // C System Files
-// #include "usart.h"
+// C System Files
 
-// // C++ System Files
-// #include <string>
-// #include <vector>
+// C++ System Files
+#include <string>
 
-// // Project Includes
+// Project Includes
+#include "CommandHandler.h"
 
-// // Entry point to facilitate transition to C++ for RTOS Task
+class Logger
+{
+private:
+    bool enable_logging_;
 
-// class SerialHandler
-// {
+public:
+    Logger();
+    static Logger& Instance();
+    void Enable(bool enable);
+    void Print(const char *format, ...);
+};
 
-// public:
-    
-//     SerialHandler();
-//     void SetUSART(USART_TypeDef *USART);
-//     static SerialHandler& Instance();
-
-//     void SendString(const std::string &str);
-//     void SendData(const uint8_t* data, size_t length);
-
-// private:
-
-//     USART_TypeDef *USART_;
-
-// };
-
-#endif // CORE_SERIAL_HANDLER_H_
+#endif // LOGGER_H_

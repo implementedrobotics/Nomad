@@ -1,7 +1,8 @@
+
 /*
- * HDLCHandler.h
+ * Logger.cpp
  *
- *  Created on: March 20, 2020
+ *  Created on: March 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,31 +23,57 @@
  * 
  */
 
-#ifndef CORE_HDLC_HANDLER_H_
-#define CORE_HDLC_HANDLER_H_
+// Primary Include
+#include "Logger.h"
 
 // C System Files
 
 // C++ System Files
+#include <cstdarg>
 #include <string>
 #include <vector>
 
 // Project Includes
+#include "CommandHandler.h"
 
-class HDLCHandler
+Logger::Logger() : enable_logging_(false) 
 {
-private:
-    uint16_t frame_offset_;
-    uint16_t frame_chksum_;
-    uint8_t receive_buffer_[512]; // Frame buffer.  Support 255
-    uint8_t transmit_buffer_ [512]; // Frame buffer out
-    bool in_escape_; // Are we currently in escape?
 
-public:
-    HDLCHandler();
-    void ProcessByte(uint8_t byte);
-    bool SendPacket(uint8_t *packet, uint32_t length);
+}
 
-};
+// Singleton Insance
+Logger &Logger::Instance()
+{
+    static Logger instance;
+    return instance;
+}
 
-#endif // CORE_HDLC_HANDLER_H_
+// Enable/Disable Logging
+void Logger::Enable(bool enable)
+{
+    enable_logging_ = enable;
+}
+
+// Formatted Logging print function
+void Logger::Print(const char *format ...) 
+{
+    if(!enable_logging_) // Logging not currently enabled
+        return;
+
+    // Variable argument array list
+    va_list vaArgs;
+    va_start(vaArgs, format);
+
+    va_list vaCopy;
+    va_copy(vaCopy, vaArgs);
+    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
+    va_end(vaCopy);
+
+    // Return formatted string
+    std::vector<char> zc(iLen + 1);
+    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
+    va_end(vaArgs);
+
+    // Log command
+    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
+} 

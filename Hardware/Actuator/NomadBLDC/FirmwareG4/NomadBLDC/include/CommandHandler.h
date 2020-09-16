@@ -32,15 +32,11 @@
 #include <vector>
 
 // Project Includes
-#include "HDLCHandler.h"
-#include "MotorController.h"
+#include <Peripherals/uart.h>
+//#include "MotorController.h"
 
-
-class CommandHandler
+namespace CommandHandler
 {
-
-public:
-
     typedef enum
     {
         // Info/Status Commands
@@ -73,7 +69,7 @@ public:
         COMM_WRITE_CONTROLLER_CONFIG = 21,
         COMM_WRITE_POSITION_CONFIG = 22,
         COMM_WRITE_FLASH = 23,
-        
+
         // Device Control
         COMM_DEVICE_RESTART = 24,
         COMM_DEVICE_ABORT = 25,
@@ -88,14 +84,9 @@ public:
 
     } command_t;
 
-    CommandHandler();
-    static void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
-    static void LogCommand(const std::string log_string);
-    static void SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement);
+    void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
+    void LogCommand(const std::string log_string);
+    //static void SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement);
 
-private:
-
-
-};
-
+} // namespace CommandHandler
 #endif // COMMAND_HANDLER_H_

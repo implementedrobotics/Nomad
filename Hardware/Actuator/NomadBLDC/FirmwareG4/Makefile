@@ -82,10 +82,8 @@ Core/Src/uart.c \
 Core/Src/crc16.c
 
 CPP_SOURCES = \
-NomadBLDC/SerialHandler.cpp \
-#NomadBLDC/HDLCHandler.cpp \
-#NomadBLDDC/CommandHandler.cpp \
-#NomadBLDC/CRC16.cpp \
+NomadBLDC/CommandHandler.cpp \
+NomadBLDC/Logger.cpp \
 
 # ASM sources
 ASM_SOURCES =  \

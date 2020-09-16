@@ -48,6 +48,8 @@ USART_TypeDef *USART_ = NULL;  // USART Peripheral
 osMessageQueueId_t uart_rx_queue_id = 0; // RX Queue ID
 osMessageQueueId_t uart_tx_queue_id = 0; // TX Queue ID
 
+uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
+
 uint16_t frame_offset;
 uint16_t frame_chksum;
 uint8_t hdlc_rx_buffer[512]; // Frame buffer.  Support 255
@@ -64,7 +66,7 @@ void init_uart_threads(void *arg)
     uart_rx_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
 
     // Setup mode.  HDLC Default
-    mode_ = HDLC;
+    mode_ = ASCII;
 
     // HDLC Initial
     frame_offset = 0;
@@ -181,6 +183,7 @@ uint32_t uart_send_data(const uint8_t *data, size_t length)
     for (; length > 0; --length, ++data)
     {
         LL_USART_TransmitData8(USART_, *data);
+        LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
         while (!LL_USART_IsActiveFlag_TXE(USART_))
         {
         }
