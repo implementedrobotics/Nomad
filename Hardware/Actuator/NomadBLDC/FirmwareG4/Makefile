@@ -36,7 +36,6 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Src/app_freertos.c \
 Core/Src/stm32g4xx_it.c \
 Core/Src/stm32g4xx_hal_msp.c \
 Core/Src/stm32g4xx_hal_timebase_tim.c \
@@ -75,13 +74,13 @@ Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
-Core/Src/main.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_spi.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c \
 Core/Src/uart.c \
 Core/Src/crc16.c
 
 CPP_SOURCES = \
+Core/Src/main.cpp \
 NomadBLDC/CommandHandler.cpp \
 NomadBLDC/Logger.cpp \
 

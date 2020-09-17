@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <cstring>
 #include "shared.h"
 #include <Peripherals/uart.h>
 /* USER CODE END Includes */
@@ -47,11 +48,11 @@ FDCAN_HandleTypeDef hfdcan3;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
-};
+// const osThreadAttr_t defaultTask_attributes = {
+//   .name = "defaultTask",
+//   .priority = (osPriority_t) osPriorityNormal,
+//   .stack_size = 128 * 4
+// };
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -75,6 +76,7 @@ static void MX_CORDIC_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+void main_entry_rtos(void *argument);
 
 /* USER CODE END PFP */
 
@@ -149,10 +151,14 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  osThreadAttr_t task_attributes;
+  memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+  task_attributes.name = "defaultTask";
+  task_attributes.priority = (osPriority_t) osPriorityNormal;
+  task_attributes.stack_size = 2048;
+  defaultTaskHandle = osThreadNew(main_entry_rtos, NULL, NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start USART Thread
 
   //osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start Motor Control Thread
 
@@ -1230,7 +1236,28 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void main_entry_rtos(void *argument)
+{
 
+  // Init UART Communications
+
+  // Init CAN Handler Task
+
+  // Init LED Service Task
+
+  // Init Misc Polling Task
+
+  // Init Motor Control Task
+
+  // Init a temp debug Task
+  osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start USART Thread
+  
+
+  for(;;)
+  {
+
+  }
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
