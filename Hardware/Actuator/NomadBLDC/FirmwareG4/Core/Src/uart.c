@@ -66,7 +66,7 @@ void init_uart_threads(void *arg)
     uart_rx_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
 
     // Setup mode.  HDLC Default
-    mode_ = ASCII;
+    mode_ = HDLC;
 
     // HDLC Initial
     frame_offset = 0;
