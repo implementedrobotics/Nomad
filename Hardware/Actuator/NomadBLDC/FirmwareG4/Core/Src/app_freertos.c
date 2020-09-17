@@ -47,6 +47,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+osThreadId_t comms_task_id;   // Communications Task ID
+osThreadId_t control_task_id; // Motor Control Task ID
+
+osMessageQueueId_t uart_rx_dma_queue_id; // Message Queue to receive UART data
+osMessageQueueId_t uart_tx_dma_queue_id; // Message Queue to transmit UART data
 
 /* USER CODE END Variables */
 

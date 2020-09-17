@@ -50,7 +50,6 @@ typedef enum
 // Define some callbacks
 typedef void (*uart_rx_cb)(const uint8_t *data, size_t length);
 
-// TODO: Move to shared
 // osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
 // osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
 

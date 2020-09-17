@@ -56,7 +56,7 @@ uint8_t hdlc_rx_buffer[512]; // Frame buffer.  Support 255
 uint8_t hdlc_tx_buffer[512]; // Frame buffer out
 uint8_t in_escape;           // Are we currently in escape?
 
-uart_mode_t mode_;           // UART Mode.  HDLC, ASCII, BINARY, etc.
+uart_mode_t mode_;
 
 void init_uart_threads(void *arg)
 {
