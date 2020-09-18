@@ -33,7 +33,7 @@ extern "C"
 #define RX_DMA_BUFFER_SIZE 64
 #define TX_DMA_BUFFER_SIZE 64
 
-#define RX_STACK_SIZE 1024
+#define RX_STACK_SIZE 2048
 #define TX_STACK_SIZE 1024
 
 #include <cmsis_os2.h>
@@ -59,9 +59,9 @@ extern osMessageQueueId_t uart_tx_queue_id; // Message Queue to transmit UART da
 extern uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
 
 void init_uart_threads(void *arg);
-void init_uart_rx_thread(); // Thread for UART Receive
+void init_uart_rx_thread(void *arg); // Thread for UART Receive
 void init_uart_tx_thread(); // Thread for UART Transmit
-
+void init_status_led_thread(void *arg);
 void uart_rx_buffer_process(); // Helper functions.
 
 uint32_t uart_send_data_hdlc(const uint8_t *data, size_t length); // Encode UART Packet for HDLC

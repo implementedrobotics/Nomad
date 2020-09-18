@@ -77,12 +77,9 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_spi.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c \
 Core/Src/uart.c \
-Core/Src/crc16.c
+Core/Src/crc16.c \
+Core/Src/main.c
 
-CPP_SOURCES = \
-Core/Src/main.cpp \
-NomadBLDC/CommandHandler.cpp \
-NomadBLDC/Logger.cpp \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -138,8 +135,7 @@ C_DEFS =  \
 
 
 # AS includes
-AS_INCLUDES =  \
--ICore/Inc
+AS_INCLUDES = 
 
 # C includes
 C_INCLUDES =  \
@@ -151,15 +147,18 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 -IDrivers/CMSIS/Device/ST/STM32G4xx/Include \
 -IDrivers/CMSIS/Include \
--INomadBLDC/include 
+-INomadBLDC/include
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -Wno-psabi
+
+#CXXFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
+#CXXFLAGS += -g -gdwarf-2
 endif
 
 
@@ -167,9 +166,9 @@ endif
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 
-CXXFLAGS?=
-CXXFLAGS += -feliminate-unused-debug-types -fno-threadsafe-statics
-CXXFLAGS += -std=c++14 -MD -MP -MF .dep/$(@F).d
+# CXXFLAGS?=
+# CXXFLAGS += -feliminate-unused-debug-types
+#CXXFLAGS += -MMD -MP -MF .dep/$(@F).d
 
 
 #######################################
@@ -179,7 +178,7 @@ CXXFLAGS += -std=c++14 -MD -MP -MF .dep/$(@F).d
 LDSCRIPT = STM32G474CEUx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys -lstdc++
+LIBS = -lc -lm -lnosys
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
@@ -191,16 +190,19 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # build the application
 #######################################
 # list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SOURCES:.cpp=.o)))
-vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
+# list of application files
+CPP_SOURCES := $(wildcard NomadBLDC/*.cpp)
+OBJECTS += $(addprefix $(BUILD_DIR)/, $(notdir $(CPP_SOURCES:.cpp=.o)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+
 $(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
-	$(CXX) -c $(CXXFLAGS) $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
+	$(CXX) -std=gnu++14 -c $(CFLAGS) -fexceptions -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
@@ -209,7 +211,7 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CXX) -std=gnu++14 $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)

@@ -23,8 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <cstring>
-#include "shared.h"
+#include <nomad_app.h>
 #include <Peripherals/uart.h>
 /* USER CODE END Includes */
 
@@ -48,13 +47,17 @@ FDCAN_HandleTypeDef hfdcan3;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-// const osThreadAttr_t defaultTask_attributes = {
-//   .name = "defaultTask",
-//   .priority = (osPriority_t) osPriorityNormal,
-//   .stack_size = 128 * 4
-// };
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 8
+};
 /* USER CODE BEGIN PV */
-
+#if defined(STM32G474xx)
+// Place FreeRTOS heap in core coupled memory for better performance
+__attribute__((section(".ccmram")))
+#endif
+uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,7 +79,6 @@ static void MX_CORDIC_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-void main_entry_rtos(void *argument);
 
 /* USER CODE END PFP */
 
@@ -147,20 +149,14 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+  
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  osThreadAttr_t task_attributes;
-  memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-  task_attributes.name = "defaultTask";
-  task_attributes.priority = (osPriority_t) osPriorityNormal;
-  task_attributes.stack_size = 2048;
-  defaultTaskHandle = osThreadNew(main_entry_rtos, NULL, NULL);
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-
-  //osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start Motor Control Thread
 
   /* USER CODE END RTOS_THREADS */
   
@@ -1083,7 +1079,7 @@ void MX_USART2_UART_Init(void)
   LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_BYTE);
 
   /* USART2 interrupt Init */
-  NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
+  NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 1));
   NVIC_EnableIRQ(USART2_IRQn);
 
   /* USER CODE BEGIN USART2_Init 1 */
@@ -1236,28 +1232,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void main_entry_rtos(void *argument)
-{
 
-  // Init UART Communications
-
-  // Init CAN Handler Task
-
-  // Init LED Service Task
-
-  // Init Misc Polling Task
-
-  // Init Motor Control Task
-
-  // Init a temp debug Task
-  osThreadNew(init_uart_threads, (void *)USART2, NULL); // Start USART Thread
-  
-
-  for(;;)
-  {
-
-  }
-}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1270,8 +1245,12 @@ void main_entry_rtos(void *argument)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  // CubeMX Forces a default task.  Which is trash.  Anyway we just exit
-  osThreadExit();
+  /* Infinite loop */
+  app_main();
+  for(;;)
+  {
+    osDelay(1);
+  }
   /* USER CODE END 5 */
 }
 
