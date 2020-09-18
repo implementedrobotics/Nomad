@@ -167,23 +167,20 @@ void DebugMon_Handler(void)
 void DMA1_Channel1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
-  // This is the receive interrupt
-  void *d = (void *)1;
 
   // DMA Half Complete Callback
   if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_HT1(DMA1))
   {
     LL_DMA_ClearFlag_HT1(DMA1);                        // Clear Flag
-    osMessageQueuePut(uart_rx_queue_id, &d, 0, 0); // Send Data to Queue Non Block
+    osThreadFlagsSet(uart_rx_thread_id, UART_RX_DATA);
   }
 
   // DMA Full Complete Callback
   if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_TC1(DMA1))
   {
     LL_DMA_ClearFlag_TC1(DMA1);                        // Clear Flag
-    osMessageQueuePut(uart_rx_queue_id, &d, 0, 0); // Send Data to Queue Non Block
+    osThreadFlagsSet(uart_rx_thread_id, UART_RX_DATA);
   }
-  (void)d;
 
   /* USER CODE END DMA1_Channel1_IRQn 0 */
 
@@ -199,16 +196,12 @@ void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
 
-  // TODO: Semaphore here?
-  void *d = (void *)1;
-
   // Check for IDLE Interrupt
   if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2))
   {
     LL_USART_ClearFlag_IDLE(USART2);                   // Clear Flag
-    osMessageQueuePut(uart_rx_queue_id, &d, 0, 0); // Send Data to Queue and Leave w/o timeout
+    osThreadFlagsSet(uart_rx_thread_id, UART_RX_DATA);
   }
-  (void)d;
   /* USER CODE END USART2_IRQn 0 */
   /* USER CODE BEGIN USART2_IRQn 1 */
 

@@ -48,6 +48,7 @@ USART_TypeDef *USART_ = NULL;  // USART Peripheral
 osMessageQueueId_t uart_rx_queue_id = 0; // RX Queue ID
 osMessageQueueId_t uart_tx_queue_id = 0; // TX Queue ID
 
+osThreadId_t uart_rx_thread_id = 0;
 uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
 
 // HDLC Helpers
@@ -64,7 +65,7 @@ void init_uart_threads(void *arg)
     USART_ = (USART_TypeDef *)arg;
 
      // Create Message Queue
-    uart_rx_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
+   // uart_rx_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
 
     // Setup mode.  HDLC Default
     mode_ = ASCII;
@@ -79,7 +80,7 @@ void init_uart_threads(void *arg)
         .priority = (osPriority_t)osPriorityNormal,
         .stack_size = RX_STACK_SIZE};
 
-    osThreadNew(init_uart_rx_thread, NULL, &task_rx_attributes);
+    uart_rx_thread_id = osThreadNew(init_uart_rx_thread, NULL, &task_rx_attributes);
 
     // // Start TX Thread
     // const osThreadAttr_t task_tx_attributes = {
@@ -93,8 +94,6 @@ void init_uart_threads(void *arg)
 
 void init_uart_rx_thread(void *arg)
 {
-    void *d; // TODO: Signal?
-    
     uart_send_str("\r\n\r\nNomad Firmware v2.0 STM32G4 Beta\r\n");
 
     // Set default callback
@@ -122,13 +121,11 @@ void init_uart_rx_thread(void *arg)
 
     for (;;)
     {
-        // Wait for QUEUE send from interrupt. // TODO: Semaphore?
-        osMessageQueueGet(uart_rx_queue_id, &d, NULL, osWaitForever);
+        // Wait for Receive Signal Event On Interrupt
+        osThreadFlagsWait(UART_RX_DATA, osFlagsWaitAll, osWaitForever);
 
         // Read our receive buffer
         uart_rx_buffer_process();
-
-        (void)d; // Clean "unused" variable compiler warning
     }
 }
 

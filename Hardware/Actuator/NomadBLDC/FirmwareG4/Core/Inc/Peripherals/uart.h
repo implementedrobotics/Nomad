@@ -47,10 +47,16 @@ typedef enum
     HDLC
 } uart_mode_t;
 
+// Signals
+enum Signals
+{
+    UART_RX_DATA = (1 << 0)
+};
+
 // Define some callbacks
 typedef void (*uart_rx_cb)(const uint8_t *data, size_t length);
 
-// osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
+extern osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
 // osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
 
 extern osMessageQueueId_t uart_rx_queue_id; // Message Queue to receive UART data
