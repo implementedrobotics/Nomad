@@ -128,9 +128,6 @@
            in the used linker script.
   
  */
-__STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
-{
-  extern void _start(void) __NO_RETURN;
   
   typedef struct {
     uint32_t const* src;
@@ -142,6 +139,10 @@ __STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
     uint32_t* dest;
     uint32_t  wlen;
   } __zero_table_t;
+  
+__STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
+{
+  extern void _start(void) __NO_RETURN;
   
   extern const __copy_table_t __copy_table_start__;
   extern const __copy_table_t __copy_table_end__;
