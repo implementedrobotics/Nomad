@@ -31,9 +31,12 @@
 
 // Project Includes
 #include "main.h"
+#include <cmsis_os2.h>
 
 class LEDService
 {
+public:
+
     typedef enum
     {
         SLOW = 0,
@@ -41,6 +44,8 @@ class LEDService
         FAST = 2,
         PATTERN_1 = 3,
         PATTERN_2 = 4,
+        ON = 5,
+        OFF = 6,
         NUM_PATTERNS
     } blink_pattern_t;
 
@@ -49,8 +54,6 @@ class LEDService
         uint32_t on_time;  // LED On Time (ms)
         uint32_t off_time; // LED Off Time (ms)
     };
-
-public:
 
     LEDService();
     void Init(GPIO_TypeDef *GPIOx, uint32_t PinMask);
@@ -76,6 +79,8 @@ private:
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern osMessageQueueId_t led_queue;
 
 void init_status_led_thread(void *arg);
 

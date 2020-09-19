@@ -33,6 +33,8 @@
 // Project Includes
 #include "cmsis_os2.h"
 
+osMessageQueueId_t led_queue = 0;
+
 LEDService::LEDService() : port_(nullptr), pin_mask_(0), initialized_(false)
 {
     blink_patterns_[SLOW].on_time = 1000;
@@ -49,28 +51,39 @@ LEDService::LEDService() : port_(nullptr), pin_mask_(0), initialized_(false)
 
     blink_patterns_[PATTERN_2].on_time = 100;
     blink_patterns_[PATTERN_2].off_time = 500;
+
+    blink_patterns_[ON].on_time = 500;
+    blink_patterns_[ON].off_time = 0;
+
+    blink_patterns_[OFF].on_time = 0;
+    blink_patterns_[OFF].off_time = 500;
 }
 
 void LEDService::On()
 {
     if (initialized_)
-        LL_GPIO_SetOutputPin(port_, pin_mask_); // Start in off condition
+        osMessageQueuePut(led_queue, &blink_patterns_[ON], 0, 0); // Send Data to Queue and Leave w/o timeout
 }
 
 void LEDService::Off()
 {
     if (initialized_)
-        LL_GPIO_ResetOutputPin(port_, pin_mask_); // Start in off condition
+        osMessageQueuePut(led_queue, &blink_patterns_[OFF], 0, 0); // Send Data to Queue and Leave w/o timeout
 }
 
 void LEDService::Blink(blink_pattern_t blink_pattern)
 {
-    // TODO: Send Blink Signal to Service
+    if (initialized_)
+        osMessageQueuePut(led_queue, &blink_pattern, 0, 0); // Send Data to Queue and Leave w/o timeout
 }
 
 void LEDService::Blink(uint32_t on_period, uint32_t off_period)
 {
-    // TODO: Send Blink Signal to Service
+    if (initialized_)
+    {
+        LEDService::blink_timing_t pattern;
+        osMessageQueuePut(led_queue, &pattern, 0, 0); // Send Data to Queue and Leave w/o timeout
+    }
 }
 
 void LEDService::Init(GPIO_TypeDef *GPIOx, uint32_t PinMask)
@@ -90,15 +103,18 @@ LEDService &LEDService::Instance()
 
 extern "C" void init_status_led_thread(void *arg)
 {
+    led_queue = osMessageQueueNew(1, sizeof(LEDService::blink_timing_t), NULL);
     LEDService led_ = LEDService::Instance();
     led_.Init(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+    LEDService::blink_timing_t pattern;
 
     for (;;)
     {
+        osMessageQueueGet(led_queue, &pattern, 0, 0); // New Pattern?
         led_.On();
-        osDelay(500);
+        osDelay(pattern.on_time);
         led_.Off();
-        osDelay(500);
+        osDelay(pattern.off_time);
     }
 
     osThreadExit();
