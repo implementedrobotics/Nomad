@@ -80,9 +80,7 @@ private:
 extern "C" {
 #endif
 
-extern osMessageQueueId_t led_queue;
-
-void init_status_led_thread(void *arg);
+void status_led_thread(void *arg);
 
 #ifdef __cplusplus
 }

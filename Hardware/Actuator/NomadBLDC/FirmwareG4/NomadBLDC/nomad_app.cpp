@@ -61,24 +61,38 @@ void StartLEDService()
     memset(&task_attributes, 0, sizeof(osThreadAttr_t));
     task_attributes.name = "LED_TASK";
     task_attributes.priority = (osPriority_t) osPriorityNormal;
-    task_attributes.stack_size = 256;
+    task_attributes.stack_size = 2048;
 
-    osThreadNew(init_status_led_thread, NULL, &task_attributes);
+    osThreadNew(status_led_thread, NULL, &task_attributes);
+}
+
+void DebugTask()
+{
+    for(;;)
+    {
+        LEDService::Instance().Blink(100,900);
+        osDelay(100);
+    }
 }
 
 
 extern "C" int app_main()
 {
 
+    Logger::Instance().Enable(true);
     // Start Communications Threads (UART/CAN)
     StartCommunicationThreads();
 
     // Delay
-    osDelay(100);
+    osDelay(1000);
     
     // Init LED Service Task
     StartLEDService();
 
+    // Delay
+    osDelay(2500);
+    
+    DebugTask();
     // Init Misc Polling Task
 
     // Init Motor Control Task

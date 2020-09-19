@@ -31,6 +31,7 @@
 // C++ System Files
 
 // Project Includes
+#include <Logger.h>
 #include "cmsis_os2.h"
 
 osMessageQueueId_t led_queue = 0;
@@ -61,7 +62,7 @@ LEDService::LEDService() : port_(nullptr), pin_mask_(0), initialized_(false)
 
 void LEDService::On()
 {
-    if (initialized_)
+    if (initialized_) 
         osMessageQueuePut(led_queue, &blink_patterns_[ON], 0, 0); // Send Data to Queue and Leave w/o timeout
 }
 
@@ -82,6 +83,8 @@ void LEDService::Blink(uint32_t on_period, uint32_t off_period)
     if (initialized_)
     {
         LEDService::blink_timing_t pattern;
+        pattern.on_time = on_period;
+        pattern.off_time = off_period;
         osMessageQueuePut(led_queue, &pattern, 0, 0); // Send Data to Queue and Leave w/o timeout
     }
 }
@@ -101,19 +104,23 @@ LEDService &LEDService::Instance()
     return instance;
 }
 
-extern "C" void init_status_led_thread(void *arg)
+extern "C" void status_led_thread(void *arg)
 {
-    led_queue = osMessageQueueNew(1, sizeof(LEDService::blink_timing_t), NULL);
-    LEDService led_ = LEDService::Instance();
-    led_.Init(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+    led_queue = osMessageQueueNew(10, sizeof(LEDService::blink_timing_t), NULL);
+    //LEDService &led_ = LEDService::Instance();
+    LEDService::Instance().Init(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+
+    // Start in off mode
     LEDService::blink_timing_t pattern;
+    pattern.off_time = 500;
+    pattern.on_time = 0;
 
     for (;;)
     {
-        osMessageQueueGet(led_queue, &pattern, 0, 0); // New Pattern?
-        led_.On();
+        osMessageQueueGet(led_queue, &pattern, 0, 0);
+        LL_GPIO_SetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
         osDelay(pattern.on_time);
-        led_.Off();
+        LL_GPIO_ResetOutputPin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
         osDelay(pattern.off_time);
     }
 
