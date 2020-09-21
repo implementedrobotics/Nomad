@@ -63,7 +63,7 @@ uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void MX_DMA_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
@@ -74,7 +74,7 @@ static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM8_Init(void);
-void MX_USART2_UART_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_CORDIC_Init(void);
 void StartDefaultTask(void *argument);
 
@@ -1247,6 +1247,8 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
   app_main();
+
+  // Should not get here
   for(;;)
   {
     osDelay(1);

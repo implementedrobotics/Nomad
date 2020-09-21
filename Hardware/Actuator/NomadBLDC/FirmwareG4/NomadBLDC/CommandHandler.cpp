@@ -160,7 +160,8 @@ void CommandHandler::LogCommand(const std::string log_string)
     memcpy(log.log_buffer, (uint8_t *)log_string.c_str(), log_string.size());
     
     // HDLC Frame and Send Packet
-    uart_send_data_hdlc((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
+   // uart_send_data_hdlc((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
+    uart_send_str(log_string.c_str());
 }
 
 // void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement)

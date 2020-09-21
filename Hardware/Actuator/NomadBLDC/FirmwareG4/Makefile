@@ -200,6 +200,7 @@ vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 # list of application files
 CPP_SOURCES := $(wildcard NomadBLDC/*.cpp)
+CPP_SOURCES += $(wildcard Core/Src/*.cpp)
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(notdir $(CPP_SOURCES:.cpp=.o)))
 vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 

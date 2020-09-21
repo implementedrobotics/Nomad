@@ -38,6 +38,8 @@
 // Project Includes
 #include "main.h"
 #include <Peripherals/uart.h>
+#include <Peripherals/spi.h>
+#include <Peripherals/gpio.h>
 #include <LEDService.h>
 #include <Logger.h>
 
@@ -68,13 +70,34 @@ void StartLEDService()
 
 void DebugTask()
 {
-    for(;;)
-    {
-        LEDService::Instance().Blink(100,900);
-        osDelay(100);
-    }
-}
+//     for(;;)
+//     {
+//         LEDService::Instance().Blink(100,900);
+//         osDelay(100);
+//     }
 
+// Spi TEST
+
+// SPI1 = Encoder
+GPIO_t mosi = {ENC_MOSI_GPIO_Port, ENC_MOSI_Pin};
+GPIO_t miso = {ENC_MISO_GPIO_Port, ENC_MISO_Pin};
+GPIO_t nss = {ENC_CS_GPIO_Port, ENC_CS_Pin};
+
+SPIDevice encoder_dev(SPI1, mosi, miso, nss);
+encoder_dev.Enable();
+uint16_t position = 0;
+
+for (;;)
+{
+    encoder_dev.Select();
+    position = encoder_dev.Receive16();
+    position &= 0x3FFF; // Data in last 14 bits.
+    encoder_dev.Deselect();
+
+    Logger::Instance().Print("Pos: %d\r\n", position);
+    osDelay(100);
+}
+}
 
 extern "C" int app_main()
 {
