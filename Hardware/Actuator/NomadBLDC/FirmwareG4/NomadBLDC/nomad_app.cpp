@@ -115,7 +115,7 @@ void FlashTest()
     save.signature=100;
     save.version=10;
     
-    bool status_open = FlashDevice::Instance().Open(ADDR_FLASH_PAGE_70, sizeof(save), FlashDevice::WRITE);
+    bool status_open = FlashDevice::Instance().Open(ADDR_FLASH_PAGE_200, sizeof(save), FlashDevice::WRITE);
     bool status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashDevice::Instance().Close();
 
