@@ -115,7 +115,7 @@ void FlashTest()
     save.signature=100;
     save.version=10;
     
-    bool status_open = FlashDevice::Instance().Open(ADDR_FLASH_PAGE_200, sizeof(save), FlashDevice::WRITE);
+    bool status_open = FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(save), FlashDevice::WRITE);
     bool status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashDevice::Instance().Close();
 
@@ -126,13 +126,33 @@ void FlashTest()
     load.signature = 0;
     load.version = 0;
     load.b = 0;
-    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_70, sizeof(load), FlashDevice::READ);
+    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(load), FlashDevice::READ);
     FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
     FlashDevice::Instance().Close();
 
     Logger::Instance().Print("Load: %d\r\n", load.signature);
 }
 
+void DRV_Test()
+{
+    // Spi TEST
+
+// SPI1 = Encoder
+GPIO_t mosi = {DRV_MOSI_GPIO_Port, DRV_MOSI_Pin};
+GPIO_t miso = {DRV_MISO_GPIO_Port, DRV_MISO_Pin};
+GPIO_t nss = {DRV_CS_GPIO_Port, DRV_CS_Pin};
+
+SPIDevice drv_dev(SPI2, mosi, miso, nss);
+drv_dev.Enable();
+for (;;)
+{
+    drv_dev.Select();
+    drv_dev.Deselect();
+
+    //Logger::Instance().Print("Pos: %d\r\n", position);
+    osDelay(100);
+}
+}
 extern "C" int app_main()
 {
 
