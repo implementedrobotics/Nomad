@@ -42,11 +42,11 @@ bool DRV8323::Init()
         return false;
     
     // Reset All Registers
-    WriteRegister(RegisterAddress_e::DriverControl, 0x0);
-    WriteRegister(RegisterAddress_e::GateDriveHS, 0x0);
-    WriteRegister(RegisterAddress_e::GateDriveLS, 0x0);
-    WriteRegister(RegisterAddress_e::OCPControl, 0x0);
-    WriteRegister(RegisterAddress_e::CSAControl, 0x0);
+    // WriteRegister(RegisterAddress_e::DriverControl, 0x0);
+    // //WriteRegister(RegisterAddress_e::GateDriveHS, 0x0);
+    // WriteRegister(RegisterAddress_e::GateDriveLS, 0x0);
+    // WriteRegister(RegisterAddress_e::OCPControl, 0x0);
+    // WriteRegister(RegisterAddress_e::CSAControl, 0x0);
 
     /* Driver Control Register Nit */
     //EnableOTWReport();
@@ -54,6 +54,7 @@ bool DRV8323::Init()
     ClearLatchedFaults(); // Clear Any Latched Faults
 
     /* Gate Drive HS Register */
+    //UnlockRegisters();
     SetIDriveP_HS(GateDriveSource_e::IDRIVEP_260_mA);
     SetIDriveN_HS(GateDriveSink_e::IDRIVEN_520_mA);
 
@@ -64,10 +65,10 @@ bool DRV8323::Init()
     SetIDriveN_LS(GateDriveSink_e::IDRIVEN_520_mA);
 
     /* OCP Conteol Register */
-    //EnableTRETRY_4ms(); // Default
+    EnableTRETRY_4ms(); // Default
     SetDeadTime(DeadTime_e::DEADTIME_100ns);
     SetOCPMode(OverCurrentMode_e::OC_MODE_LATCHSHUTDOWN); // Latch Overcurrent Faults
-    //SetOCPDeglitch(OverCurrentDeglitch_e::OC_DEGLITCH_4us); // Default
+    SetOCPDeglitch(OverCurrentDeglitch_e::OC_DEGLITCH_4us); // Default
     SetVDSLevel(OverCurrentVdsLevel_e::VDSLEVEL_0p20_V);
 
     /* CSA Control Register */

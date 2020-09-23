@@ -536,7 +536,7 @@ public:
 
     uint16_t test()
     {
-        return ReadRegister(GateDriveLS);
+        return ReadRegister(DriverControl);
     }
 protected:
 
