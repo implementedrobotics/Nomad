@@ -168,10 +168,10 @@ public:
     /* Gate Drive HS Register Masks */
 
     // Defines the location of the IDRIVEN_HS MASK in the Gate Drive HS register
-    static constexpr uint16_t GATE_DRIVE_HS_IDRIVEN_HS_MASK = (16 << 0);
+    static constexpr uint16_t GATE_DRIVE_HS_IDRIVEN_HS_MASK = (15 << 0);
 
     // Defines the location of the IDRIVEP_HS MASK in the Gate Drive HS register
-    static constexpr uint16_t GATE_DRIVE_HS_IDRIVEP_HS_MASK = (16 << 4);
+    static constexpr uint16_t GATE_DRIVE_HS_IDRIVEP_HS_MASK = (15 << 4);
 
     // Defines the location of the LOCK  MASK in the Gate Drive HS register
     static constexpr uint16_t GATE_DRIVE_HS_LOCK_MASK = (7 << 8);
@@ -181,10 +181,10 @@ public:
     /* Gate Drive LS Register Masks */
 
     // Defines the location of the IDRIVEN_LS MASK in the Gate Drive LS register
-    static constexpr uint16_t GATE_DRIVE_LS_IDRIVEN_LS_MASK = (16 << 0);
+    static constexpr uint16_t GATE_DRIVE_LS_IDRIVEN_LS_MASK = (15 << 0);
 
     // Defines the location of the IDRIVEP_LS MASK in the Gate Drive LS register
-    static constexpr uint16_t GATE_DRIVE_LS_IDRIVEP_LS_MASK = (16 << 4);
+    static constexpr uint16_t GATE_DRIVE_LS_IDRIVEP_LS_MASK = (15 << 4);
 
     // Defines the location of the TDRIVE MASK in the Gate Drive LS register
     static constexpr uint16_t GATE_DRIVE_LS_TDRIVE_MASK = (3 << 8);
@@ -199,7 +199,7 @@ public:
     /* OCP Register Masks */
 
     //  Defines the location of the VDS_LVL MASK in the OCP Control register
-    static constexpr uint16_t OCP_CTRL_VDS_LVL_MASK = (16 << 0);
+    static constexpr uint16_t OCP_CTRL_VDS_LVL_MASK = (15 << 0);
 
     // Defines the location of the OCP_DEG MASK in the OCP Control register
     static constexpr uint16_t OCP_CTRL_OCP_DEG_MASK = (3 << 4);
@@ -317,22 +317,22 @@ public:
 
     typedef enum
     {
-        IDRIVEP_10_mA = (0 << 0),   //!< I = 10 mA
-        IDRIVEP_30_mA = (1 << 0),   //!< I = 30 mA
-        IDRIVEP_60_mA = (2 << 0),   //!< I = 60 mA
-        IDRIVEP_80_mA = (3 << 0),   //!< I = 80 mA
-        IDRIVEP_120_mA = (4 << 0),  //!< I = 120 mA
-        IDRIVEP_140_mA = (5 << 0),  //!< I = 140 mA
-        IDRIVEP_170_mA = (6 << 0),  //!< I = 170 mA
-        IDRIVEP_190_mA = (7 << 0),  //!< I = 190 mA
-        IDRIVEP_260_mA = (8 << 0),  //!< I = 260 mA
-        IDRIVEP_330_mA = (9 << 0),  //!< I = 330 mA
-        IDRIVEP_370_mA = (10 << 0), //!< I = 370 mA
-        IDRIVEP_440_mA = (11 << 0), //!< I = 440 mA
-        IDRIVEP_570_mA = (12 << 0), //!< I = 570 mA
-        IDRIVEP_680_mA = (13 << 0), //!< I = 680 mA
-        IDRIVEP_820_mA = (14 << 0), //!< I = 820 mA
-        IDRIVEP_1000_mA = (15 << 0) //!< I = 1000 mA
+        IDRIVEP_10_mA = (0 << 4),   //!< I = 10 mA
+        IDRIVEP_30_mA = (1 << 4),   //!< I = 30 mA
+        IDRIVEP_60_mA = (2 << 4),   //!< I = 60 mA
+        IDRIVEP_80_mA = (3 << 4),   //!< I = 80 mA
+        IDRIVEP_120_mA = (4 << 4),  //!< I = 120 mA
+        IDRIVEP_140_mA = (5 << 4),  //!< I = 140 mA
+        IDRIVEP_170_mA = (6 << 4),  //!< I = 170 mA
+        IDRIVEP_190_mA = (7 << 4),  //!< I = 190 mA
+        IDRIVEP_260_mA = (8 << 4),  //!< I = 260 mA
+        IDRIVEP_330_mA = (9 << 4),  //!< I = 330 mA
+        IDRIVEP_370_mA = (10 << 4), //!< I = 370 mA
+        IDRIVEP_440_mA = (11 << 4), //!< I = 440 mA
+        IDRIVEP_570_mA = (12 << 4), //!< I = 570 mA
+        IDRIVEP_680_mA = (13 << 4), //!< I = 680 mA
+        IDRIVEP_820_mA = (14 << 4), //!< I = 820 mA
+        IDRIVEP_1000_mA = (15 << 4) //!< I = 1000 mA
     } GateDriveSource_e;
 
     typedef enum
@@ -536,7 +536,7 @@ public:
 
     uint16_t test()
     {
-        return ReadRegister(CSAControl);
+        return ReadRegister(GateDriveLS);
     }
 protected:
 
