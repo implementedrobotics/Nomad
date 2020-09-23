@@ -30,8 +30,8 @@
 #define CURRENT_MEASUREMENT_TIMEOUT 2 // 2 ms
 #define CALIBRATION_MEASUREMENT_TIMEOUT 15000 // 15 seconds
 #define VBUS_DIVIDER 16.0f            // (150K+10K/10K)
-#define SENSE_RESISTANCE (1e-3)       // 1 milliohm sense resistor
-#define SENSE_CONDUCTANCE (1000)      // SENSE_RESISTANCE^-1
+#define SENSE_RESISTANCE (5e-4)       // 1 milliohm sense resistor
+#define SENSE_CONDUCTANCE (2000)      // SENSE_RESISTANCE^-1
 #define CURRENT_SENSE_GAIN 40         // Gain from current amplifier.  TODO: A Parameter
 
 // Hardware Pins

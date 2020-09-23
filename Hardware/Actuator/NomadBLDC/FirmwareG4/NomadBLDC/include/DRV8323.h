@@ -40,9 +40,9 @@ public:
     // //!
     // static constexpr uint16_t ADDR_MASK               (0x7800)
 
-    // //Defines the data mask
-    // //!
-    // static constexpr uint16_t DATA_MASK               (0x07FF)
+    //Defines the data mask
+    //!
+    static constexpr uint16_t DATA_MASK = (0x7FF); // (b000001111111111) / First 5 bits are don't care bits
 
     // //Defines the R/W mask
     // //!
@@ -52,6 +52,9 @@ public:
     // //!
     // static constexpr uint16_t FAULT_TYPE_MASK         (0x07FF)
 
+    static constexpr uint16_t REG_READ_MASK = (1 << 15);
+
+    static constexpr uint16_t REG_WRITE_MASK = (0 << 15);
 
     /* Faults Status Register 1 Masks */
 
@@ -171,7 +174,7 @@ public:
     static constexpr uint16_t GATE_DRIVE_HS_IDRIVEP_HS_MASK = (16 << 4);
 
     // Defines the location of the LOCK  MASK in the Gate Drive HS register
-    static constexpr uint16_t GATE_DRIVE_HS_LOCK_MASK = (8 << 8);
+    static constexpr uint16_t GATE_DRIVE_HS_LOCK_MASK = (7 << 8);
 
 
 
@@ -284,8 +287,6 @@ public:
 
     } FaultType_e;
 
-    //! \brief Enumeration for the PWM modes
-    //!
     typedef enum
     {
         PWM_MODE_6X = 0 << 5,         //!< 6x PWM Mode
@@ -421,17 +422,129 @@ public:
         REG_UNLOCK = 3 << 8, //!< Unlock all registers
     } RegisterLockMode_e;
 
+    typedef enum
+    {
+        FAULT_STATUS_1_MASK = (FaultStatus1 << 11),   //!< Fault Status Register 1
+        FAULT_STATUS_2_MASK = (FaultStatus2 << 11),   //!< Fault Status Register 2
+        DRIVER_CONTROL_MASK = (DriverControl << 11),  //!< Driver Control Register
+        GATE_DRIVE_HS_MASK  = (GateDriveHS << 11),    //!< Gate Drive HS Control Register
+        GATE_DRIVE_LS_MASK  = (GateDriveLS << 11),    //!< Gate Drive LS Control Register
+        OCP_MASK            = (OCPControl << 11),     //!< OCP Control Register
+        CSA_MASK            = (CSAControl << 11),     //!< CSA Register
+    } RegisterNameMask_e;
+
     // Construtor
     DRV8323(SPIDevice *spi, GPIO_t enable_pin, GPIO_t nFault_pin);
 
-    uint16_t Init(); // Init DRV and Setup for Use
+    bool Init(); // Init DRV and Setup for Use
     void EnableDriver(); // Enable Driver Power
     void DisableDriver(); // Disable Driver Power
     void FaultReset();    // Reset DRV Faults
 
+    /* Helper Functions */
+
+    // Under Voltage Lockout
+    void EnableUVLO();
+    void DisableUVLO();
+
+    // Gate Drive Fault
+    void EnableGDF();
+    void DisableGDF(); 
+
+    // Over temperature warning Fault Report
+    void EnableOTWReport();
+    void DisableOTWReport(); 
+
+    // Set PWM Mode
+    void SetPWMMode(PwmMode_e pwm_mode);
+
+    // HI-Z Coast
+    void EnableCoast();
+    void DisableCoast();
+
+    // Reset any latched faults
+    void ClearLatchedFaults();
+
+    // Register locking to prevent accidental writes on SPI
+    void LockRegisters();
+    void UnlockRegisters();
+
+    // Gate Drive Values
+    void SetIDriveP_HS(GateDriveSource_e I_source);
+    void SetIDriveN_HS(GateDriveSink_e I_sink);
+
+    // Cycle by cycle operation
+    void EnableCBC();
+    void DisableCBC();
+
+    // Gate Drive Time Values
+    void SetTDrive(GateDriveTime_e time);
+
+    // Gate Drive Values
+    void SetIDriveP_LS(GateDriveSource_e I_source);
+    void SetIDriveN_LS(GateDriveSink_e I_sink);
+
+    // Overcurrent Retry time
+    void EnableTRETRY_4ms();
+    void EnableTRETRY_50us();
+
+    // Set Dead Time
+    void SetDeadTime(DeadTime_e dead_time);
+
+    // Set Overcurrent Protection Mode
+    void SetOCPMode(OverCurrentMode_e OCP_mode);
+
+    // Set Overcurrent Deglitch Mode
+    void SetOCPDeglitch(OverCurrentDeglitch_e OCP_deg);
+
+    // Set Overcurrent VDS Level
+    void SetVDSLevel(OverCurrentVdsLevel_e VDS_lvl);
+
+    // Set Current Sense FET
+    void SetCSAPosInput_SPx();
+    void SetCSAPosInput_SHx();
+
+    // Set Current Sense Amplifier Reference Voltage.  (Enable for Bidirectional, Disable for Unidirectional)
+    void EnableVREFDiv();
+    void DisableVREFDiv();
+
+    // Set Low side FET measurement.  Enable = SHx to SNx, Disable SHx to SPx (default)
+    void EnableLSRef();
+    void DisableLSRef();
+
+    // Current Sense Amplifier Gain
+    void SetCSAGain(CSA_Gain_e gain);
+
+    // Overcurrent Sense Fault
+    void EnableOCSenseFault();
+    void DisableOCSenseFault();
+
+    // Current Sense Amplifier Calibration Phase A
+    void EnableCSA_CAL_A();
+    void DisableCSA_CAL_A();
+
+    // Current Sense Amplifier Calibration Phase B
+    void EnableCSA_CAL_B();
+    void DisableCSA_CAL_B();
+
+    // Current Sense Amplifier Calibration Phase C
+    void EnableCSA_CAL_C();
+    void DisableCSA_CAL_C();
+
+    // Overcurrent Protection Sense Level
+    void SetOCPSenseLevel(SenseOCLevel_e lvl);
+
+    uint16_t test()
+    {
+        return ReadRegister(CSAControl);
+    }
 protected:
 
     uint16_t ReadRegister(uint16_t address);
+    void WriteRegister(uint16_t address, uint16_t value);
+    void UpdateRegister(uint16_t address, uint16_t mask, uint16_t value);
+    bool DriverEnabled();   // Is Driver Currently Enabled?
+
     SPIDevice *spi_;  // SPI Device
     GPIO_t enable_;   // Enable PIN
     GPIO_t nFault_;   // Fault PIN

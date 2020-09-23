@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "typeinfo": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "memory_resource": "cpp"
     }
 }

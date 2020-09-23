@@ -150,14 +150,19 @@ SPIDevice drv_spi(SPI2, mosi, miso, nss);
 drv_spi.Enable(); // Enable SPI 
 
 DRV8323 drv_dev(&drv_spi, enable, n_fault);
+
+// Enable DRV
+drv_dev.EnableDriver();
+
+drv_dev.Init();
 for (;;)
 {
-    // drv_dev.Select();
-    // drv_dev.Deselect();
-    uint16_t fsr = drv_dev.Init();
-    Logger::Instance().Print("Status: %X\r\n", fsr);
+
+    uint16_t test = drv_dev.test();   
+    Logger::Instance().Print("Status: %X\r\n", test);
     osDelay(100);
 }
+drv_dev.DisableDriver();
 }
 extern "C" int app_main()
 {
