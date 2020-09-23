@@ -42,6 +42,7 @@
 #include <Peripherals/gpio.h>
 #include <Peripherals/flash.h>
 
+#include <DRV8323.h>
 #include <LEDService.h>
 #include <Logger.h>
 
@@ -142,14 +143,19 @@ GPIO_t mosi = {DRV_MOSI_GPIO_Port, DRV_MOSI_Pin};
 GPIO_t miso = {DRV_MISO_GPIO_Port, DRV_MISO_Pin};
 GPIO_t nss = {DRV_CS_GPIO_Port, DRV_CS_Pin};
 
-SPIDevice drv_dev(SPI2, mosi, miso, nss);
-drv_dev.Enable();
+GPIO_t enable = {DRV_ENABLE_GPIO_Port, DRV_ENABLE_Pin};
+GPIO_t n_fault = {DRV_nFAULT_GPIO_Port, DRV_nFAULT_Pin};
+
+SPIDevice drv_spi(SPI2, mosi, miso, nss);
+drv_spi.Enable(); // Enable SPI 
+
+DRV8323 drv_dev(&drv_spi, enable, n_fault);
 for (;;)
 {
-    drv_dev.Select();
-    drv_dev.Deselect();
-
-    //Logger::Instance().Print("Pos: %d\r\n", position);
+    // drv_dev.Select();
+    // drv_dev.Deselect();
+    uint16_t fsr = drv_dev.Init();
+    Logger::Instance().Print("Status: %X\r\n", fsr);
     osDelay(100);
 }
 }
@@ -168,8 +174,9 @@ extern "C" int app_main()
 
     // Delay
     osDelay(500);
-    
-    FlashTest();
+
+   DRV_Test(); 
+    // FlashTest();
     // Init Misc Polling Task
 
     // Init Motor Control Task

@@ -30,6 +30,7 @@
 // C++ System Files
 
 // Project Includes
+#include <Peripherals/spi.h>
 #include "main.h"
 
 class DRV8323
@@ -50,6 +51,9 @@ public:
     // //Defines the R/W mask
     // //!
     // static constexpr uint16_t FAULT_TYPE_MASK         (0x07FF)
+
+
+    /* Faults Status Register 1 Masks */
 
     // Defines the location of the VDS_LC (VDS Over Current fault on the C low-side MOSFET) MASK in the Status 1 register
     static constexpr uint16_t STATUS1_VDS_LC_MASK = (1 << 0);
@@ -83,6 +87,10 @@ public:
 
     //Defines the location of the FAULT MASK in the Status 1 register
     static constexpr uint16_t STATUS1_FAULT_MASK = (1 << 10);
+
+
+
+    /* Faults Status Register 2 Masks */
 
     //Defines the location of the VGS_LC (VGS Gate Drive Fault on the C low-side MOSFET) MASK in the Status 2 register
     static constexpr uint16_t STATUS2_VGS_LC_MASK = (1 << 0);
@@ -413,9 +421,22 @@ public:
         REG_UNLOCK = 3 << 8, //!< Unlock all registers
     } RegisterLockMode_e;
 
-    DRV8323();
+    // Construtor
+    DRV8323(SPIDevice *spi, GPIO_t enable_pin, GPIO_t nFault_pin);
 
-private:
+    uint16_t Init(); // Init DRV and Setup for Use
+    void EnableDriver(); // Enable Driver Power
+    void DisableDriver(); // Disable Driver Power
+    void FaultReset();    // Reset DRV Faults
+
+protected:
+
+    uint16_t ReadRegister(uint16_t address);
+    SPIDevice *spi_;  // SPI Device
+    GPIO_t enable_;   // Enable PIN
+    GPIO_t nFault_;   // Fault PIN
+
+
 };
 
 #endif // DRV8323_H_
