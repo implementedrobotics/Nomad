@@ -46,13 +46,18 @@
 #include <LEDService.h>
 #include <Logger.h>
 
-
-struct __attribute__((__aligned__(8))) test_save
+osThreadId_t sig_thread;
+extern "C" void signal_set(void *arg)
 {
-    uint32_t signature;
-    uint32_t version;
-    uint8_t b;
-};
+    Logger::Instance().Print("Start: \r\n");
+    for (;;)
+    {
+        uint32_t flag = osThreadFlagsWait(0x3, osFlagsWaitAll, 3000);
+        Logger::Instance().Print("Flag: %d\r\n", flag);
+    }
+
+    osThreadExit();
+}
 
 void StartCommunicationThreads()
 {
@@ -81,11 +86,16 @@ void StartLEDService()
 
 void DebugTask()
 {
-//     for(;;)
-//     {
-//         LEDService::Instance().Blink(100,900);
-//         osDelay(100);
-//     }
+    // for(;;)
+    // {
+    //     //LEDService::Instance().Blink(100,900);
+    //     LEDService::Instance().On();
+    //     osDelay(500);
+    //     LEDService::Instance().Off();
+    //     osDelay(500);
+    //     LEDService::Instance().Blink(3000, 2000);
+    //     osDelay(6000);
+    // }
 
 // Spi TEST
 
@@ -108,30 +118,40 @@ void DebugTask()
 //     Logger::Instance().Print("Pos: %d\r\n", position);
 //     osDelay(100);
 // }
+
+    // // Signal Test
+    // osThreadAttr_t task_attributes;
+    // memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+    // task_attributes.name = "SIGNAL_TEST";
+    // task_attributes.priority = (osPriority_t) osPriorityNormal;
+    // task_attributes.stack_size = 2048;
+
+    // sig_thread = osThreadNew(signal_set, NULL, &task_attributes);
+
 }
 
 void FlashTest()
 {
-    test_save save;
-    save.signature=100;
-    save.version=10;
+    // test_save save;
+    // save.signature=100;
+    // save.version=10;
     
-    bool status_open = FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(save), FlashDevice::WRITE);
-    bool status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
-    FlashDevice::Instance().Close();
+    // bool status_open = FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(save), FlashDevice::WRITE);
+    // bool status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
+    // FlashDevice::Instance().Close();
 
-    Logger::Instance().Print("Status: %d\r\n", status);
+    // Logger::Instance().Print("Status: %d\r\n", status);
 
 
-    test_save load;
-    load.signature = 0;
-    load.version = 0;
-    load.b = 0;
-    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(load), FlashDevice::READ);
-    FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
-    FlashDevice::Instance().Close();
+    // test_save load;
+    // load.signature = 0;
+    // load.version = 0;
+    // load.b = 0;
+    // FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(load), FlashDevice::READ);
+    // FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
+    // FlashDevice::Instance().Close();
 
-    Logger::Instance().Print("Load: %d\r\n", load.signature);
+    // Logger::Instance().Print("Load: %d\r\n", load.signature);
 }
 
 void DRV_Test()
@@ -170,6 +190,9 @@ drv_dev.Init();
 // drv_dev.DisableDriver();
 // osDelay(10000);
 }
+
+
+
 extern "C" int app_main()
 {
 
@@ -193,10 +216,12 @@ extern "C" int app_main()
     // Init Motor Control Task
 
     // Init a temp debug Task
-    
+    DebugTask();    
     // Infinite Loop.
     for (;;)
     {
+        osThreadFlagsSet(sig_thread, 0x3);
+        osDelay(6000);
     }
 
     // Should not get here

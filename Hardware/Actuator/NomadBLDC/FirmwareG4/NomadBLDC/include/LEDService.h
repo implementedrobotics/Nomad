@@ -59,6 +59,7 @@ public:
     void Init(GPIO_TypeDef *GPIOx, uint32_t PinMask);
     void On();
     void Off();
+    void Toggle();
     void Blink(blink_pattern_t blink_pattern);
     void Blink(uint32_t on_period, uint32_t off_period); // Period in ms
     static LEDService &Instance();
@@ -72,6 +73,7 @@ private:
     uint32_t off_period_; // ms
 
     bool initialized_; // Service Initialized
+    bool thread_active_;
 
     blink_timing_t blink_patterns_[NUM_PATTERNS]; 
 };

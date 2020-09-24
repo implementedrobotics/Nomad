@@ -34,8 +34,9 @@
 #include "cmsis_os2.h"
 
 osMessageQueueId_t led_queue = 0;
+osThreadId_t led_thread = 0;
 
-LEDService::LEDService() : port_(nullptr), pin_mask_(0), initialized_(false)
+LEDService::LEDService() : port_(nullptr), pin_mask_(0), initialized_(false), thread_active_(false)
 {
     blink_patterns_[SLOW].on_time = 1000;
     blink_patterns_[SLOW].off_time = 1000;
@@ -61,26 +62,68 @@ LEDService::LEDService() : port_(nullptr), pin_mask_(0), initialized_(false)
 
 void LEDService::On()
 {
-    if (initialized_) 
-        osMessageQueuePut(led_queue, &blink_patterns_[ON], 0, 0); // Send Data to Queue and Leave w/o timeout
+    if (initialized_) {
+        if(thread_active_) 
+        {
+            osThreadSuspend(led_thread);
+            thread_active_ = false;
+        }
+        LL_GPIO_SetOutputPin(port_, pin_mask_);
+    }
 }
 
 void LEDService::Off()
 {
     if (initialized_)
-        osMessageQueuePut(led_queue, &blink_patterns_[OFF], 0, 0); // Send Data to Queue and Leave w/o timeout
+    {
+        if(thread_active_) 
+        {
+            osThreadSuspend(led_thread);
+            thread_active_ = false;
+        }
+
+        LL_GPIO_ResetOutputPin(port_, pin_mask_);
+    }
+}
+
+void LEDService::Toggle()
+{
+    if (initialized_)
+    {
+        if(thread_active_) 
+        {
+            osThreadSuspend(led_thread);
+            thread_active_ = false;
+        }
+
+        LL_GPIO_TogglePin(port_, pin_mask_);
+    }
 }
 
 void LEDService::Blink(blink_pattern_t blink_pattern)
 {
     if (initialized_)
+    {
+        if (!thread_active_)
+        {
+            osThreadResume(led_thread);
+            thread_active_ = true;
+        }
+
         osMessageQueuePut(led_queue, &blink_pattern, 0, 0); // Send Data to Queue and Leave w/o timeout
+    }
 }
 
 void LEDService::Blink(uint32_t on_period, uint32_t off_period)
 {
     if (initialized_)
     {
+        if (!thread_active_)
+        {
+            osThreadResume(led_thread);
+            thread_active_ = true;
+        }
+
         LEDService::blink_timing_t pattern;
         pattern.on_time = on_period;
         pattern.off_time = off_period;
@@ -95,6 +138,8 @@ void LEDService::Init(GPIO_TypeDef *GPIOx, uint32_t PinMask)
 
     LL_GPIO_ResetOutputPin(port_, pin_mask_); // Start in off condition
     initialized_ = true;
+    thread_active_ = false;
+    osThreadSuspend(led_thread);
 }
 
 LEDService &LEDService::Instance()
@@ -105,7 +150,10 @@ LEDService &LEDService::Instance()
 
 extern "C" void status_led_thread(void *arg)
 {
+    // TODO: Suspend Thread when not in a flash mode
     led_queue = osMessageQueueNew(10, sizeof(LEDService::blink_timing_t), NULL);
+    led_thread = osThreadGetId();
+
     //LEDService &led_ = LEDService::Instance();
     LEDService::Instance().Init(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
 
@@ -113,6 +161,7 @@ extern "C" void status_led_thread(void *arg)
     LEDService::blink_timing_t pattern;
     pattern.off_time = 500;
     pattern.on_time = 0;
+    //osThreadSuspend(NULL);
 
     for (;;)
     {

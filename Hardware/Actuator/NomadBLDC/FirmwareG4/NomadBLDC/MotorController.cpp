@@ -57,7 +57,7 @@ extern "C"
 // Flash Save Struct.  TODO: Move to own file
 #define FLASH_SAVE_SIGNATURE 0x78D5FC00
 
-struct Save_format_t
+struct __attribute__((__aligned__(8))) Save_format_t
 {
     uint32_t signature;
     uint32_t version;
