@@ -422,7 +422,6 @@ MotorController *MotorController::singleton_ = nullptr;
 
 MotorController::MotorController(Motor *motor) : motor_(motor)
 {
-    //current_meas_freq_ = CURRENT_LOOP_FREQ;
     control_thread_id_ = 0;
     control_thread_ready_ = false;
     control_initialized_ = false;
@@ -531,6 +530,8 @@ void MotorController::Init()
 
     // Setup Gate Driver
     spi_handle_ = new SPIDevice(SPI2, mosi, miso, nss);
+    spi_handle_->Enable();
+
     gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
     gate_driver_->EnableDriver();
     osDelay(10);
@@ -542,7 +543,7 @@ void MotorController::Init()
     load_configuration();
 
     // Compute PWM Parameters
-    pwm_counter_period_ticks_ = SYS_CLOCK_FREQ / (2 * config_.pwm_freq);
+    pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
 
     // Update Controller Sample Time
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
