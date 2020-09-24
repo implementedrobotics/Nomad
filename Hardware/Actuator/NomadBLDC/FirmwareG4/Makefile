@@ -63,6 +63,9 @@ Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_usart.c \
 Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_rcc.c \
+Drivers/CMSIS/DSP/Source/FastMathFunctions/arm_cos_f32.c \
+Drivers/CMSIS/DSP/Source/FastMathFunctions/arm_sin_f32.c \
+Drivers/CMSIS/DSP/Source/CommonTables/arm_common_tables.c \
 Core/Src/system_stm32g4xx.c \
 Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
 Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \

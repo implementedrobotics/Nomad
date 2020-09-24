@@ -112,6 +112,11 @@ bool DRV8323::InFault()
     return !LL_GPIO_IsOutputPinSet(nFault_.port, nFault_.pin); // Pulled low in fault condition
 }
 
+void DRV8323::PrintFaults()
+{
+    
+}
+
 void DRV8323::Calibrate()
 {
     uint16_t cal_mask = CSA_CTRL_CSA_CAL_A_MASK | CSA_CTRL_CSA_CAL_B_MASK | CSA_CTRL_CSA_CAL_C_MASK;

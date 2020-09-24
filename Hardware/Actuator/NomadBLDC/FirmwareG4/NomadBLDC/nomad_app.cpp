@@ -45,6 +45,7 @@
 #include <DRV8323.h>
 #include <LEDService.h>
 #include <Logger.h>
+#include <motor_controller_interface.h>
 
 osThreadId_t sig_thread;
 extern "C" void signal_set(void *arg)
@@ -82,6 +83,18 @@ void StartLEDService()
     task_attributes.stack_size = 2048;
 
     osThreadNew(status_led_thread, NULL, &task_attributes);
+}
+
+void StartMotorControlThread()
+{
+    // Start Motor Control Thread
+    osThreadAttr_t task_attributes;
+    memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+    task_attributes.name = "MOTOR_CONTROL_TASK";
+    task_attributes.priority = (osPriority_t) osPriorityRealtime;
+    task_attributes.stack_size = 2048;
+
+    osThreadNew(motor_controller_thread_entry, NULL, &task_attributes);
 }
 
 void DebugTask()
@@ -195,19 +208,23 @@ drv_dev.Init();
 
 extern "C" int app_main()
 {
-
+    // Start Logger Service
     Logger::Instance().Enable(true);
+
     // Start Communications Threads (UART/CAN)
     StartCommunicationThreads();
 
     // Delay
-    osDelay(500);
+    osDelay(100);
     
     // Init LED Service Task
     StartLEDService();
 
     // Delay
     osDelay(500);
+
+    // Start Motor Control Task
+    StartMotorControlThread();
 
     //DRV_Test(); 
     // FlashTest();

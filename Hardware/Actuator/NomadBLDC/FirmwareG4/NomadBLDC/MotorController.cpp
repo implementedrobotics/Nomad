@@ -71,9 +71,10 @@ struct __attribute__((__aligned__(8))) Save_format_t
     //uint8_t can_reserved[128]; // Reserved;
 };
 
-void motor_controller_thread_entry()
+void motor_controller_thread_entry(void *arg)
 {
     //printf("Motor RT Controller Task Up.\n\r");
+    Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(0.000025f, 100, 21);
@@ -91,30 +92,30 @@ void motor_controller_thread_entry()
     
 }
 
-void debug_thread_entry()
-{
-    // TODO: Print Speed/Rate
-    // TODO: Move Encoder Debug Print Here
-    while (1)
-    {
-        if (motor_controller->GetDebugMode() == true)
-        {
-            if (motor_controller->GetControlMode() == FOC_TORQUE_MODE)
-            {
-                MotorController::State_t state = motor_controller->state_;
-                Motor::Config_t config = motor->config_;
-                //printf("\r\nI_d: %.3f/%.3f A\tI_q: %.3f/%.3f A\t| Torque: %.2f/%.2f N*m\r\n", 
-                //state.I_d_filtered, state.I_d_ref, 
-                //state.I_q_filtered, state.I_q_ref, 
-                //(state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
+// void debug_thread_entry()
+// {
+//     // TODO: Print Speed/Rate
+//     // TODO: Move Encoder Debug Print Here
+//     while (1)
+//     {
+//         if (motor_controller->GetDebugMode() == true)
+//         {
+//             if (motor_controller->GetControlMode() == FOC_TORQUE_MODE)
+//             {
+//                 MotorController::State_t state = motor_controller->state_;
+//                 Motor::Config_t config = motor->config_;
+//                 //printf("\r\nI_d: %.3f/%.3f A\tI_q: %.3f/%.3f A\t| Torque: %.2f/%.2f N*m\r\n", 
+//                 //state.I_d_filtered, state.I_d_ref, 
+//                 //state.I_q_filtered, state.I_q_ref, 
+//                 //(state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
 
-                //printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
-                // TODO: Power, temperatures etc.
-            }
-        }
-        osDelay(500);
-    }
-}
+//                 //printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
+//                 // TODO: Power, temperatures etc.
+//             }
+//         }
+//         osDelay(500);
+//     }
+// }
 // Controller Mode Interface
 void set_control_mode(int mode)
 {

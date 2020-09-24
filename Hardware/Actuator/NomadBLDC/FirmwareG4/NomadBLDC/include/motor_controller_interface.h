@@ -30,9 +30,9 @@ extern "C" {
 #endif
 
 // Entry point to facilitate transition to C++ for RTOS Task
-void motor_controller_thread_entry();
+void motor_controller_thread_entry(void *arg);
 
-void debug_thread_entry();
+// void debug_thread_entry();
 
 // Callbacks
 void current_measurement_cb();
