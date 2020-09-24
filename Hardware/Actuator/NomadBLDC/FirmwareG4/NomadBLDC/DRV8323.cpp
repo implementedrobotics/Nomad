@@ -30,6 +30,7 @@
 // C++ System Files
 
 // Project Includes
+#include <Utilities/utils.h>
 
 DRV8323::DRV8323(SPIDevice *spi, GPIO_t enable_pin, GPIO_t nFault_pin) : spi_(spi), enable_(enable_pin), nFault_(nFault_pin)
 {
@@ -39,15 +40,17 @@ DRV8323::DRV8323(SPIDevice *spi, GPIO_t enable_pin, GPIO_t nFault_pin) : spi_(sp
 bool DRV8323::Init()
 {
     if(!DriverEnabled())
+
         return false;
     
     // Reset All Registers
-    // WriteRegister(RegisterAddress_e::DriverControl, 0x0);
-    // //WriteRegister(RegisterAddress_e::GateDriveHS, 0x0);
-    // WriteRegister(RegisterAddress_e::GateDriveLS, 0x0);
-    // WriteRegister(RegisterAddress_e::OCPControl, 0x0);
-    // WriteRegister(RegisterAddress_e::CSAControl, 0x0);
+    WriteRegister(RegisterAddress_e::DriverControl, 0x0);
+    WriteRegister(RegisterAddress_e::GateDriveHS, RegisterLockMode_e::REG_UNLOCK); // Keep Unlocked
+    WriteRegister(RegisterAddress_e::GateDriveLS, 0x0);
+    WriteRegister(RegisterAddress_e::OCPControl, 0x0);
+    WriteRegister(RegisterAddress_e::CSAControl, 0x0);
 
+    
     /* Driver Control Register Nit */
     //EnableOTWReport();
     SetPWMMode(PwmMode_e::PWM_MODE_3X); // 3X PWM Mode
@@ -55,9 +58,12 @@ bool DRV8323::Init()
 
     /* Gate Drive HS Register */
     //UnlockRegisters();
+    SetIDriveP_HS(GateDriveSource_e::IDRIVEP_10_mA);
+    SetIDriveN_HS(GateDriveSink_e::IDRIVEN_20_mA);
+
     SetIDriveP_HS(GateDriveSource_e::IDRIVEP_260_mA);
     SetIDriveN_HS(GateDriveSink_e::IDRIVEN_520_mA);
-
+    
     /* Gate Drive LS Register */
     EnableCBC();
     SetTDrive(GateDriveTime_e::TDRIVE_TIME_1000ns);
@@ -92,37 +98,32 @@ void DRV8323::DisableDriver()
     LL_GPIO_ResetOutputPin(enable_.port, enable_.pin);
 }
 
-void DRV8323::WriteRegister(uint16_t address, uint16_t value)
+void DRV8323::FaultReset()
 {
-    uint16_t tx_data = REG_WRITE_MASK | (address << 11) | (value & DATA_MASK);
-    spi_->Select();
-    spi_->TransmitReceive16(tx_data);
-    spi_->Deselect();
+    // Pulse Reset
+    LL_GPIO_ResetOutputPin(enable_.port, enable_.pin);
+    delay_us(20);
+    LL_GPIO_SetOutputPin(enable_.port, enable_.pin);
 }
 
-uint16_t DRV8323::ReadRegister(uint16_t address)
+bool DRV8323::InFault()
 {
-    uint16_t tx_data = REG_READ_MASK | (address << 11);
-    uint16_t rx_data = 0;
-
-    spi_->Select();
-    rx_data = spi_->TransmitReceive16(tx_data);
-    spi_->Deselect();
-
-    return rx_data & DATA_MASK;
+    // TODO: Check for Fault Mode.  Could be hardware GPIO, or SPI.  For now we have nFault wired
+    return !LL_GPIO_IsOutputPinSet(nFault_.port, nFault_.pin); // Pulled low in fault condition
 }
 
-void DRV8323::UpdateRegister(uint16_t address, uint16_t value_mask, uint16_t value)
+void DRV8323::Calibrate()
 {
-    uint16_t data = ReadRegister(address);
+    uint16_t cal_mask = CSA_CTRL_CSA_CAL_A_MASK | CSA_CTRL_CSA_CAL_B_MASK | CSA_CTRL_CSA_CAL_C_MASK;
+    // Start Calibration Mode
+    UpdateRegister(RegisterAddress_e::CSAControl, cal_mask, cal_mask);
 
-    // Clear bits we are updating
-    data &= (~value_mask);
+    // Datasheet says 100us to complete.  We add some margin here
+    delay_us(300); 
 
-    // Set the bits
-    data |= value;
+    // End Calibration Mode
+    UpdateRegister(RegisterAddress_e::CSAControl, cal_mask, 0);
 
-    WriteRegister(address, data);
 }
 
 bool DRV8323::DriverEnabled()
@@ -291,6 +292,7 @@ void DRV8323::EnableOCSenseFault()
 {
     UpdateRegister(RegisterAddress_e::CSAControl, CSA_CTRL_DIS_SEN_MASK, 0x0);
 }
+
 void DRV8323::DisableOCSenseFault()
 {
     UpdateRegister(RegisterAddress_e::CSAControl, CSA_CTRL_DIS_SEN_MASK, CSA_CTRL_DIS_SEN_MASK);
@@ -300,6 +302,7 @@ void DRV8323::EnableCSA_CAL_A()
 {
     UpdateRegister(RegisterAddress_e::CSAControl, CSA_CTRL_CSA_CAL_A_MASK, CSA_CTRL_CSA_CAL_A_MASK);
 }
+
 void DRV8323::DisableCSA_CAL_A()
 {
     UpdateRegister(RegisterAddress_e::CSAControl, CSA_CTRL_CSA_CAL_A_MASK, 0x0);
@@ -328,4 +331,49 @@ void DRV8323::DisableCSA_CAL_C()
 void DRV8323::SetOCPSenseLevel(SenseOCLevel_e lvl)
 {
     UpdateRegister(RegisterAddress_e::CSAControl, CSA_CTRL_SEN_LVL_MASK, lvl);
+}
+
+uint16_t DRV8323::GetFaultStatus1()
+{
+    return ReadRegister(RegisterAddress_e::FaultStatus1);
+}
+
+uint16_t DRV8323::GetFaultStatus2()
+{
+    return ReadRegister(RegisterAddress_e::FaultStatus2);
+}
+
+
+void DRV8323::WriteRegister(uint16_t address, uint16_t value)
+{
+    uint16_t tx_data = REG_WRITE_MASK | (address << 11) | (value & DATA_MASK);
+
+    spi_->Select();
+    spi_->TransmitReceive16(tx_data);
+    spi_->Deselect();
+}
+
+uint16_t DRV8323::ReadRegister(uint16_t address)
+{
+    uint16_t tx_data = REG_READ_MASK | (address << 11);
+    uint16_t rx_data = 0;
+
+    spi_->Select();
+    rx_data = spi_->TransmitReceive16(tx_data);
+    spi_->Deselect();
+
+    return rx_data & DATA_MASK;
+}
+
+void DRV8323::UpdateRegister(uint16_t address, uint16_t value_mask, uint16_t value)
+{
+    uint16_t data = ReadRegister(address);
+
+    // Clear bits we are updating
+    data &= (~value_mask);
+
+    // Set the bits
+    data |= value;
+
+    WriteRegister(address, data);
 }

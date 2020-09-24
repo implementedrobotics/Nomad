@@ -1,8 +1,7 @@
-
 /*
- * Logger.cpp
+ * utils.h
  *
- *  Created on: March 27, 2020
+ *  Created on: September 24, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -23,57 +22,20 @@
  * 
  */
 
-// Primary Include
-#include "Logger.h"
+#ifndef UTILITIES_UTILS_H_
+#define UTILITIES_UTILS_H_
 
-// C System Files
+#include <stdint.h>
 
-// C++ System Files
-#include <cstdarg>
-#include <string>
-#include <vector>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Project Includes
-#include "CommandHandler.h"
+uint32_t micros(void);
+void delay_us(uint32_t us);
 
-Logger::Logger() : enable_logging_(false) 
-{
-
+#ifdef __cplusplus
 }
+#endif
 
-// Singleton Insance
-Logger &Logger::Instance()
-{
-    static Logger instance;
-    return instance;
-}
-
-// Enable/Disable Logging
-void Logger::Enable(bool enable)
-{
-    enable_logging_ = enable;
-}
-
-// Formatted Logging print function
-void Logger::Print(const char *format ...) 
-{
-    if(!enable_logging_) // Logging not currently enabled
-        return;
-
-    // Variable argument array list
-    va_list vaArgs;
-    va_start(vaArgs, format);
-
-    va_list vaCopy;
-    va_copy(vaCopy, vaArgs);
-   const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
-    va_end(vaCopy);
-
-    // Return formatted string
-    std::vector<char> zc(iLen + 1);
-    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-    va_end(vaArgs);
-
-    // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-} 
+#endif  //UTILITIES_UTILS_H_

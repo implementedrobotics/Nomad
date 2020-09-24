@@ -154,15 +154,21 @@ DRV8323 drv_dev(&drv_spi, enable, n_fault);
 // Enable DRV
 drv_dev.EnableDriver();
 
-drv_dev.Init();
-for (;;)
-{
+ // Give it time to power up
+osDelay(10);
 
-    uint16_t test = drv_dev.test();   
-    Logger::Instance().Print("Status: %X\r\n", test);
-    osDelay(100);
-}
-drv_dev.DisableDriver();
+// Init Driver Settings
+drv_dev.Init();
+
+// //for (;;)
+// //{
+
+//     uint16_t test = drv_dev.test();   
+ //    Logger::Instance().Print("Status: %X\r\n", 10);
+//     osDelay(100);
+// //}
+// drv_dev.DisableDriver();
+// osDelay(10000);
 }
 extern "C" int app_main()
 {
@@ -180,7 +186,7 @@ extern "C" int app_main()
     // Delay
     osDelay(500);
 
-   DRV_Test(); 
+    //DRV_Test(); 
     // FlashTest();
     // Init Misc Polling Task
 

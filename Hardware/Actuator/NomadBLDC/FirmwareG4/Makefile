@@ -79,6 +79,7 @@ Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_tim.c \
 Core/Src/uart.c \
 Core/Src/crc16.c \
 Core/Src/main.c \
+Core/Src/utils.c \
 Core/Src/app_freertos.c
 
 

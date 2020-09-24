@@ -439,6 +439,7 @@ public:
     bool Init(); // Init DRV and Setup for Use
     void EnableDriver(); // Enable Driver Power
     void DisableDriver(); // Disable Driver Power
+    void Calibrate();   // Calibrate Driver
     void FaultReset();    // Reset DRV Faults
 
     /* Helper Functions */
@@ -534,13 +535,22 @@ public:
     // Overcurrent Protection Sense Level
     void SetOCPSenseLevel(SenseOCLevel_e lvl);
 
-    uint16_t test()
-    {
-        return ReadRegister(DriverControl);
-    }
+    // Check Faults
+    bool InFault();
+    
+    // Print Faults
+    void PrintFaults();
+
+    // Read Fault Status Registers
+    uint16_t GetFaultStatus1();
+    uint16_t GetFaultStatus2();
+
+    // Read Generic Register
+    uint16_t ReadRegister(uint16_t address);
+
 protected:
 
-    uint16_t ReadRegister(uint16_t address);
+    // Register Updater Functions
     void WriteRegister(uint16_t address, uint16_t value);
     void UpdateRegister(uint16_t address, uint16_t mask, uint16_t value);
     bool DriverEnabled();   // Is Driver Currently Enabled?

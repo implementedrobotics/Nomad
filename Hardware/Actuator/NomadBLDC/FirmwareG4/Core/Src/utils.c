@@ -1,8 +1,7 @@
-
 /*
- * Logger.cpp
+ * CRC16.cpp
  *
- *  Created on: March 27, 2020
+ *  Created on: March 20, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -24,56 +23,34 @@
  */
 
 // Primary Include
-#include "Logger.h"
+#include <Utilities/utils.h>
 
 // C System Files
 
 // C++ System Files
-#include <cstdarg>
-#include <string>
-#include <vector>
+
+// STM32 Includes
+#include <stm32g4xx_hal.h>
 
 // Project Includes
-#include "CommandHandler.h"
+#include "nomad_hw.h"
 
-Logger::Logger() : enable_logging_(false) 
-{
+// Returns number of microseconds since system startup
+uint32_t micros(void) {
+    register uint32_t ms, cycle_cnt;
+    do {
+        ms = HAL_GetTick();
+        cycle_cnt = TICK_TIMER->CNT;
+     } while (ms != HAL_GetTick());
 
+    return (ms * 1000) + cycle_cnt;
 }
 
-// Singleton Insance
-Logger &Logger::Instance()
+// Busy wait delay for given amount of microseconds (us)
+void delay_us(uint32_t us)
 {
-    static Logger instance;
-    return instance;
+    uint32_t start = micros();
+    while (micros() - start < (uint32_t) us) {
+        __ASM("nop");
+    }
 }
-
-// Enable/Disable Logging
-void Logger::Enable(bool enable)
-{
-    enable_logging_ = enable;
-}
-
-// Formatted Logging print function
-void Logger::Print(const char *format ...) 
-{
-    if(!enable_logging_) // Logging not currently enabled
-        return;
-
-    // Variable argument array list
-    va_list vaArgs;
-    va_start(vaArgs, format);
-
-    va_list vaCopy;
-    va_copy(vaCopy, vaArgs);
-   const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
-    va_end(vaCopy);
-
-    // Return formatted string
-    std::vector<char> zc(iLen + 1);
-    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-    va_end(vaArgs);
-
-    // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-} 
