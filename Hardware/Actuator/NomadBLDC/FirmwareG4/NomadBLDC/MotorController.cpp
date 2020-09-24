@@ -28,17 +28,15 @@
 // C System Files
 
 // C++ System Files
+#include <algorithm>
 
 // Project Includes
-#include "mbed.h"
-#include "rtos.h"
-#include "FastPWM.h"
 #include "Motor.h"
-#include "UserMenu.h"
-#include "FlashInterface.h"
+//#include "UserMenu.h"
+#include <Peripherals/flash.h>
 #include "LEDService.h"
 #include "Logger.h"
-#include "../../math_ops.h"
+#include "math_ops.h"
 
 #define FLASH_VERSION 2
 
@@ -180,7 +178,7 @@ void current_measurement_cb()
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
-        osSignalSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+        osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
     }
 }
 
@@ -194,8 +192,7 @@ bool zero_current_sensors(uint32_t num_samples)
     motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
     for (uint32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
     {
-        osEvent test;
-        if ((test = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT)).status != osEventSignal)
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) == osErrorTimeout)
         {
             // TODO: Error here for timing
             //printf("ERROR: Zero Current FAILED!\r\n");
@@ -246,9 +243,12 @@ bool save_configuration()
     save.motor_config = motor->config_;
     save.position_sensor_config = motor->PositionSensor()->config_;
     save.controller_config = motor_controller->config_;
-    FlashInterface::Instance().Open(6, FlashInterface::WRITE);
-    status = FlashInterface::Instance().Write(0, (uint8_t *)&save, sizeof(save));
-    FlashInterface::Instance().Close();
+
+    // Write Flash
+    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(save), FlashDevice::WRITE);
+    status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
+    FlashDevice::Instance().Close();
+
     return status;
     //printf("\r\nSaved.  Press ESC to return to menu.\r\n");
 }
@@ -257,9 +257,9 @@ void load_configuration()
     //printf("\r\nLoading Configuration...\r\n");
     Save_format_t load;
 
-    FlashInterface::Instance().Open(6, FlashInterface::READ);
-    FlashInterface::Instance().Read(0, (uint8_t *)&load, sizeof(load));
-    FlashInterface::Instance().Close();
+    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(load), FlashDevice::READ);
+    FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
+    FlashDevice::Instance().Close();
 
     if (load.signature != FLASH_SAVE_SIGNATURE || load.version != FLASH_VERSION)
     {
@@ -326,96 +326,96 @@ void zero_encoder_offset()
 
 void show_motor_config()
 {
-    printf("\r\nMotor Configuration:\r\n");
+    // printf("\r\nMotor Configuration:\r\n");
 
-    printf("\r\n Calibration Status: ");
-    if (motor->config_.calibrated)
-        printf("CALIBRATED\r\n");
-    else
-        printf("UNCALIBRATED\r\n");
+    // printf("\r\n Calibration Status: ");
+    // if (motor->config_.calibrated)
+    //     printf("CALIBRATED\r\n");
+    // else
+    //     printf("UNCALIBRATED\r\n");
 
-    printf("\r\n Phase Order: ");
-    if (motor->config_.phase_order == 1)
-        printf("CORRECT\r\n");
-    else
-        printf("REVERSED\r\n");
+    // printf("\r\n Phase Order: ");
+    // if (motor->config_.phase_order == 1)
+    //     printf("CORRECT\r\n");
+    // else
+    //     printf("REVERSED\r\n");
 
-    printf("\r\nMotor Constants:\r\n");
+    // printf("\r\nMotor Constants:\r\n");
 
-    printf("\r\n Pole Pairs: %u    K_v: %.2f RPM/V    K_t: %.4f (N*m)/A    K_t_out: %.4f (N*m)/A     Flux Linkage: %.4f Webers\r\n",
-           motor->config_.num_pole_pairs,
-           motor->config_.K_v,
-           motor->config_.K_t,
-           motor->config_.K_t_out,
-           motor->config_.flux_linkage);
+    // printf("\r\n Pole Pairs: %u    K_v: %.2f RPM/V    K_t: %.4f (N*m)/A    K_t_out: %.4f (N*m)/A     Flux Linkage: %.4f Webers\r\n",
+    //        motor->config_.num_pole_pairs,
+    //        motor->config_.K_v,
+    //        motor->config_.K_t,
+    //        motor->config_.K_t_out,
+    //        motor->config_.flux_linkage);
 
-    printf("\r\n Phase Resistance: %.5f ohms    Phase Inductance D: %.5f H    Phase Inductance Q: %.5f H\r\n",
-           motor->config_.phase_resistance,
-           motor->config_.phase_inductance_d,
-           motor->config_.phase_inductance_q);
+    // printf("\r\n Phase Resistance: %.5f ohms    Phase Inductance D: %.5f H    Phase Inductance Q: %.5f H\r\n",
+    //        motor->config_.phase_resistance,
+    //        motor->config_.phase_inductance_d,
+    //        motor->config_.phase_inductance_q);
 
-    printf("\r\nCalibration Parameters: \r\n");
-    printf("\r\n Calibration Current: %.4f\tCalibration Voltage: %.4f\r\n",
-           motor->config_.calib_current,
-           motor->config_.calib_voltage);
+    // printf("\r\nCalibration Parameters: \r\n");
+    // printf("\r\n Calibration Current: %.4f\tCalibration Voltage: %.4f\r\n",
+    //        motor->config_.calib_current,
+    //        motor->config_.calib_voltage);
 
-    printf("\r\nPress ESC to return to menu.\r\n\r\n");
+    // printf("\r\nPress ESC to return to menu.\r\n\r\n");
 }
 void show_controller_config()
 {
-    printf("\r\nMotor Controller Configuration:\r\n");
+    // printf("\r\nMotor Controller Configuration:\r\n");
 
-    printf("\r\nBus Voltage: %.4f V\r\n", motor_controller->state_.Voltage_bus);
+    // printf("\r\nBus Voltage: %.4f V\r\n", motor_controller->state_.Voltage_bus);
 
-    printf("\r\nController Timings:\r\n");
-    //printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.6f s",
-    //       motor_controller->config_.pwm_freq / 1000.0f,
-    //       motor_controller->control_loop_freq_ / 1000.0f,
-    //       motor_controller->control_loop_period_);
-    printf("\r\n\r\nController Gains:\r\n");
+    // printf("\r\nController Timings:\r\n");
+    // //printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.6f s",
+    // //       motor_controller->config_.pwm_freq / 1000.0f,
+    // //       motor_controller->control_loop_freq_ / 1000.0f,
+    // //       motor_controller->control_loop_period_);
+    // printf("\r\n\r\nController Gains:\r\n");
 
-    printf("\r\n Loop Bandwidth: %.4f hz    Loop Gain(kd/kq): %.4f/%.4f    Integrator Gain(k_i_d/k_i_q): %.4f/%.4f\r\n",
-           motor_controller->config_.current_bandwidth,
-           motor_controller->config_.k_d,
-           motor_controller->config_.k_q,
-           motor_controller->config_.k_i_d,
-           motor_controller->config_.k_i_q);
+    // printf("\r\n Loop Bandwidth: %.4f hz    Loop Gain(kd/kq): %.4f/%.4f    Integrator Gain(k_i_d/k_i_q): %.4f/%.4f\r\n",
+    //        motor_controller->config_.current_bandwidth,
+    //        motor_controller->config_.k_d,
+    //        motor_controller->config_.k_q,
+    //        motor_controller->config_.k_i_d,
+    //        motor_controller->config_.k_i_q);
 
-    printf("\r\nController Limits: \r\n");
-    printf("\r\n Current Limit: %.4f A    Velocity Limit: %.4f rad/s   Overmodulation: %.4f\r\n",
-           motor_controller->config_.current_limit,
-           motor_controller->config_.velocity_limit,
-           motor_controller->config_.overmodulation);
-    printf("\r\nPress ESC to return to menu.\r\n\r\n");
+    // printf("\r\nController Limits: \r\n");
+    // printf("\r\n Current Limit: %.4f A    Velocity Limit: %.4f rad/s   Overmodulation: %.4f\r\n",
+    //        motor_controller->config_.current_limit,
+    //        motor_controller->config_.velocity_limit,
+    //        motor_controller->config_.overmodulation);
+    // printf("\r\nPress ESC to return to menu.\r\n\r\n");
 }
 void show_encoder_config()
 {
-    printf("\r\nAM5147 Position Sensor Configuration:\r\n");
-    printf("\r\n Encoder CPR: %d", motor->PositionSensor()->config_.cpr);
-    printf("\r\n\r\nSensor Offsets:\r\n");
+    // printf("\r\nAM5147 Position Sensor Configuration:\r\n");
+    // printf("\r\n Encoder CPR: %d", motor->PositionSensor()->config_.cpr);
+    // printf("\r\n\r\nSensor Offsets:\r\n");
 
-    printf("\r\n Electrical Offset: %.4f rad    Mechanical Offset: %.4f rad\r\n",
-           motor->PositionSensor()->config_.offset_elec,
-           motor->PositionSensor()->config_.offset_mech);
+    // printf("\r\n Electrical Offset: %.4f rad    Mechanical Offset: %.4f rad\r\n",
+    //        motor->PositionSensor()->config_.offset_elec,
+    //        motor->PositionSensor()->config_.offset_mech);
 
-    printf("\n\r Encoder non-linearity compensation table\n\r");
-    printf(" Lookup Index : Lookup Value\n\r\n\r");
-    for (int32_t i = 0; i < 128; i++) // Build Lookup Table
-    {
-        printf("%ld\t\t%ld\n\r", i, motor->PositionSensor()->config_.offset_lut[i]);
-    }
-    printf("\r\nPress ESC to return to menu.\r\n\r\n");
+    // printf("\n\r Encoder non-linearity compensation table\n\r");
+    // printf(" Lookup Index : Lookup Value\n\r\n\r");
+    // for (int32_t i = 0; i < 128; i++) // Build Lookup Table
+    // {
+    //     printf("%ld\t\t%ld\n\r", i, motor->PositionSensor()->config_.offset_lut[i]);
+    // }
+    // printf("\r\nPress ESC to return to menu.\r\n\r\n");
 }
 // Control Loop Timer Interrupt Synced with PWM
-extern "C" void TIM1_UP_TIM10_IRQHandler(void)
-{
-    if (TIM1->SR & TIM_SR_UIF) // TIM1 is up, and update interrupts are enabled on TIM1
-    {
-        ADC1->CR2 |= 0x40000000;  // Begin ADC Conversion
-        current_measurement_cb(); // Callback
-    }
-    TIM1->SR = 0x0; // reset the status register
-}
+// extern "C" void TIM1_UP_TIM10_IRQHandler(void)
+// {
+//     if (TIM1->SR & TIM_SR_UIF) // TIM1 is up, and update interrupts are enabled on TIM1
+//     {
+//         ADC1->CR2 |= 0x40000000;  // Begin ADC Conversion
+//         current_measurement_cb(); // Callback
+//     }
+//     TIM1->SR = 0x0; // reset the status register
+// }
 // Statics
 MotorController *MotorController::singleton_ = nullptr;
 
@@ -517,27 +517,25 @@ void MotorController::Init()
     //Logger::Instance().Print("MAX: %f\n", current_max_);
     // TODO: Make sure this is in a valid range?
 
+    // Setup DRV Pins
+    GPIO_t mosi = {DRV_MOSI_GPIO_Port, DRV_MOSI_Pin};
+    GPIO_t miso = {DRV_MISO_GPIO_Port, DRV_MISO_Pin};
+    GPIO_t nss = {DRV_CS_GPIO_Port, DRV_CS_Pin};
+
+    GPIO_t enable = {DRV_ENABLE_GPIO_Port, DRV_ENABLE_Pin};
+    GPIO_t n_fault = {DRV_nFAULT_GPIO_Port, DRV_nFAULT_Pin};
+
+    spi_handle_ = new SPIDevice(SPI2, mosi, miso, nss);
+    gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
+
     // Setup Gate Driver
-    spi_handle_ = new SPI(PA_7, PA_6, PA_5);
-    cs_ = new DigitalOut(PA_4);
-    gate_enable_ = new DigitalOut(ENABLE_PIN);
-    gate_driver_ = new DRV832x(spi_handle_, cs_);
-
-    gate_enable_->write(1);
-    wait_us(100);
+    spi_handle_ = new SPIDevice(SPI2, mosi, miso, nss);
+    gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
+    gate_driver_->EnableDriver();
+    osDelay(10);
     gate_driver_->Calibrate();
-    wait_us(100);
-    gate_driver_->write_DCR(0x0, 0x0, 0x0, PWM_MODE_3X, 0x0, 0x0, 0x0, 0x0, 0x1);
-    wait_us(100);
-    gate_driver_->write_CSACR(0x0, 0x1, 0x0, CSA_GAIN_40, 0x0, 0x0, 0x0, 0x0, SEN_LVL_1_0);
-    wait_us(100);
-    gate_driver_->write_OCPCR(TRETRY_4MS, DEADTIME_100NS, OCP_LATCH, OCP_DEG_4US, VDS_LVL_0_2);
-    wait_us(100);
-    gate_driver_->write_HSR(0x3, IDRIVEP_HS_260MA, IDRIVEN_HS_520MA);
-    wait_us(100);
-    gate_driver_->write_LSR(0x1, TDRIVE_1000NS, IDRIVEP_LS_260MA, IDRIVEN_LS_520MA); // Possibly could be 500ns TDRIVE?
-    wait_us(100);
-
+    gate_driver_->Init();
+    osDelay(10);
 
     // Load Configuration
     load_configuration();
@@ -591,7 +589,7 @@ void MotorController::StartControlFSM()
 {
     // Start IDLE and PWM/Gate Driver Off
     static control_mode_type_t current_control_mode = IDLE_MODE;
-    gate_driver_->Disable();
+    gate_driver_->DisableDriver();
     EnablePWM(false);
     for (;;)
     {
@@ -609,7 +607,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().Off();
-                gate_driver_->Disable();
+                gate_driver_->DisableDriver();
                 EnablePWM(false);
 
                 Reset(); // Reset Controller to Zero
@@ -628,7 +626,7 @@ void MotorController::StartControlFSM()
 
                 Reset(); // Reset Controller to Zero
 
-                gate_driver_->Disable();
+                gate_driver_->DisableDriver();
                 EnablePWM(false);
             }
 
@@ -639,7 +637,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->Enable();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
 
                 //printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
@@ -659,7 +657,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->Enable();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
 
                 motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
@@ -676,7 +674,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->Enable();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
                 NVIC_DisableIRQ(USART2_IRQn);
                 motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
@@ -694,7 +692,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->Enable();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
                 motor->OrderPhases(this);
                 // TODO: Check Errors
@@ -709,7 +707,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->Enable();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
                 motor->CalibrateEncoderOffset(this);
                 // TODO: Check Errors
@@ -740,10 +738,10 @@ void MotorController::StartControlFSM()
                 Reset();
 
                 LEDService::Instance().On();
-                gate_driver_->Enable();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
             }
-            if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout)
             {
                 // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
                 //printf("ERROR: Motor Controller Timeout!\r\n");
@@ -781,7 +779,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().Off();
-                gate_driver_->Disable();
+                gate_driver_->DisableDriver();
                 EnablePWM(false);
             }
             //printf("Unhandled Control Mode: %d!\r\n", control_mode_);
@@ -827,7 +825,7 @@ void MotorController::CurrentControl()
     state_.I_d_ref_filtered = (1.0f - config_.alpha) * state_.I_d_ref_filtered + config_.alpha * state_.I_d_ref;
     state_.I_q_ref_filtered = (1.0f - config_.alpha) * state_.I_q_ref_filtered + config_.alpha * state_.I_q_ref;
 
-    float curr_limit = min(motor_controller->state_.I_max, config_.current_limit);
+    float curr_limit = std::min(motor_controller->state_.I_max, config_.current_limit);
     limit_norm(&state_.I_d_ref, &state_.I_q_ref, curr_limit);
 
     // PI Controller
@@ -869,79 +867,79 @@ void MotorController::CurrentControl()
 void MotorController::StartPWM()
 {
 
-    // TODO: I think this does not belong here
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable the clock to GPIOC
-    RCC->APB1ENR |= 0x00000001;          // Enable TIM2 clock (TODO: What is on TIM2?)
-    RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;  // Enable TIM1 clock
+    // // TODO: I think this does not belong here
+    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable the clock to GPIOC
+    // RCC->APB1ENR |= 0x00000001;          // Enable TIM2 clock (TODO: What is on TIM2?)
+    // RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;  // Enable TIM1 clock
 
-    // Setup PWM Pins
-    PWM_A_ = new FastPWM(PIN_A);
-    PWM_B_ = new FastPWM(PIN_B);
-    PWM_C_ = new FastPWM(PIN_C);
+    // // Setup PWM Pins
+    // PWM_A_ = new FastPWM(PIN_A);
+    // PWM_B_ = new FastPWM(PIN_B);
+    // PWM_C_ = new FastPWM(PIN_C);
 
-    // Enable Interrupt Service Routines:
-    NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn); //Enable TIM1/10 IRQ
+    // // Enable Interrupt Service Routines:
+    // NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn); //Enable TIM1/10 IRQ
 
-    // Set Priority
-    NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // Commutation is highest priority interrupt
+    // // Set Priority
+    // NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // Commutation is highest priority interrupt
 
-    TIM1->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
-    TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
-    //TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
-    TIM1->CR1 |= TIM_CR1_ARPE; // Auto Reload Timer
-    TIM1->RCR |= (config_.foc_ccl_divider * 2) - 1;        // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
-    TIM1->EGR |= TIM_EGR_UG;   // Generate an update event to reload the Prescaler/Repetition Counter immediately
+    // TIM1->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
+    // TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
+    // //TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
+    // TIM1->CR1 |= TIM_CR1_ARPE; // Auto Reload Timer
+    // TIM1->RCR |= (config_.foc_ccl_divider * 2) - 1;        // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
+    // TIM1->EGR |= TIM_EGR_UG;   // Generate an update event to reload the Prescaler/Repetition Counter immediately
 
-    // PWM Setup
-    TIM1->PSC = 0x0;                      // Set Prescaler to none.  Timer will count in sync with APB Block
-    TIM1->ARR = pwm_counter_period_ticks_; // Set Auto Reload Timer Value.  TODO: User Configurable.  For now 40khz.
-    TIM1->CCER |= ~(TIM_CCER_CC1NP);      // Interupt when low side is on.
-    TIM1->CR1 |= TIM_CR1_CEN;             // Enable TIM1
+    // // PWM Setup
+    // TIM1->PSC = 0x0;                      // Set Prescaler to none.  Timer will count in sync with APB Block
+    // TIM1->ARR = pwm_counter_period_ticks_; // Set Auto Reload Timer Value.  TODO: User Configurable.  For now 40khz.
+    // TIM1->CCER |= ~(TIM_CCER_CC1NP);      // Interupt when low side is on.
+    // TIM1->CR1 |= TIM_CR1_CEN;             // Enable TIM1
 
-    // Start Disabled
-    EnablePWM(false);
+    // // Start Disabled
+    // EnablePWM(false);
 
-    // This makes sure PWM is stopped if we have debug point/crash
-    __HAL_DBGMCU_FREEZE_TIM1();
+    // // This makes sure PWM is stopped if we have debug point/crash
+    // __HAL_DBGMCU_FREEZE_TIM1();
 }
 void MotorController::StartADCs()
 {
-    // ADC Setup
-    RCC->APB2ENR |= RCC_APB2ENR_ADC3EN; // clock for ADC3
-    RCC->APB2ENR |= RCC_APB2ENR_ADC2EN; // clock for ADC2
-    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN; // clock for ADC1
+    // // ADC Setup
+    // RCC->APB2ENR |= RCC_APB2ENR_ADC3EN; // clock for ADC3
+    // RCC->APB2ENR |= RCC_APB2ENR_ADC2EN; // clock for ADC2
+    // RCC->APB2ENR |= RCC_APB2ENR_ADC1EN; // clock for ADC1
 
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable clock for GPIOC
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; // Enable clock for GPIOA
+    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable clock for GPIOC
+    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; // Enable clock for GPIOA
 
-    ADC->CCR = 0x00000016;      // Regular simultaneous mode only
-    ADC1->CR2 |= ADC_CR2_ADON;  //0x00000001;                    // ADC1 ON
-    ADC1->SQR3 = 0x000000A;     // use PC_0 as input- ADC1_IN0
-    ADC2->CR2 |= ADC_CR2_ADON;  //0x00000001;                    // ADC2 ON
-    ADC2->SQR3 = 0x0000000B;    // use PC_1 as input - ADC2_IN11
-    ADC3->CR2 |= ADC_CR2_ADON;  // ADC3 ON
-    ADC3->SQR3 = 0x00000000;    // use PA_0, - ADC3_IN0
-    GPIOC->MODER |= 0x0000000f; // Alternate function, PC_0, PC_1 are analog inputs
-    GPIOA->MODER |= 0x3;        // PA_0 as analog input
+    // ADC->CCR = 0x00000016;      // Regular simultaneous mode only
+    // ADC1->CR2 |= ADC_CR2_ADON;  //0x00000001;                    // ADC1 ON
+    // ADC1->SQR3 = 0x000000A;     // use PC_0 as input- ADC1_IN0
+    // ADC2->CR2 |= ADC_CR2_ADON;  //0x00000001;                    // ADC2 ON
+    // ADC2->SQR3 = 0x0000000B;    // use PC_1 as input - ADC2_IN11
+    // ADC3->CR2 |= ADC_CR2_ADON;  // ADC3 ON
+    // ADC3->SQR3 = 0x00000000;    // use PA_0, - ADC3_IN0
+    // GPIOC->MODER |= 0x0000000f; // Alternate function, PC_0, PC_1 are analog inputs
+    // GPIOA->MODER |= 0x3;        // PA_0 as analog input
 
-    ADC1->SMPR1 |= 0x1; // 15 cycles on CH_10, 0b 001
-    ADC2->SMPR1 |= 0x8; // 15 cycles on CH_11, 0b 0001 000
-    ADC3->SMPR2 |= 0x1; // 15 cycles on CH_0, 0b 001;
+    // ADC1->SMPR1 |= 0x1; // 15 cycles on CH_10, 0b 001
+    // ADC2->SMPR1 |= 0x8; // 15 cycles on CH_11, 0b 0001 000
+    // ADC3->SMPR2 |= 0x1; // 15 cycles on CH_0, 0b 001;
 }
 
 void MotorController::EnablePWM(bool enable)
 {
-    if (enable)
-    {
-        TIM1->CR1 ^= TIM_CR1_UDIS;
-        //TIM1->BDTR |= (TIM_BDTR_MOE);
-    }
-    else // Disable PWM Timer Unconditionally
-    {
-        TIM1->CR1 |= TIM_CR1_UDIS;
-        //TIM1->BDTR &= ~(TIM_BDTR_MOE);
-    }
-    osDelay(100);
+    // if (enable)
+    // {
+    //     TIM1->CR1 ^= TIM_CR1_UDIS;
+    //     //TIM1->BDTR |= (TIM_BDTR_MOE);
+    // }
+    // else // Disable PWM Timer Unconditionally
+    // {
+    //     TIM1->CR1 |= TIM_CR1_UDIS;
+    //     //TIM1->BDTR &= ~(TIM_BDTR_MOE);
+    // }
+    // osDelay(100);
 
     // TODO: Here for when project ported from MBED to CUBEMX
     //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);

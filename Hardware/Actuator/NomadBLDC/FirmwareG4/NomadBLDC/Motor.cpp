@@ -30,10 +30,10 @@
 // C++ System Files
 
 // Project Includes
-#include "mbed.h"
 #include "MotorController.h"
 #include "Logger.h"
-#include "../../math_ops.h"
+#include "math_ops.h"
+#include <Utilities/utils.h>
 
 Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time),
                                                                   dirty_(false)
@@ -84,7 +84,7 @@ void Motor::Update()
 
 void Motor::PrintPosition()
 {
-    printf(" Mechanical Angle:  %f/%f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, rotor_sensor_->config_.offset_mech, state_.theta_elec, rotor_sensor_->GetRawPosition());
+    //printf(" Mechanical Angle:  %f/%f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, rotor_sensor_->config_.offset_mech, state_.theta_elec, rotor_sensor_->GetRawPosition());
 }
 void Motor::ZeroOutputPosition()
 {
@@ -103,7 +103,7 @@ bool Motor::Calibrate(MotorController *controller)
 
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
-    wait(1);
+    osDelay(1);
 
     // AND Here
     // Measure Inductance
@@ -117,7 +117,7 @@ bool Motor::Calibrate(MotorController *controller)
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
     //printf("\r\nCooling Down 3s...\r\n");
-    wait(3);
+    osDelay(3);
     
     // Offset Calibration
     CalibrateEncoderOffset(controller);
@@ -148,8 +148,8 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
     {
         for (int i = 0; i < 2; ++i)
         {
-            osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
-            if (evt.status != osEventSignal)
+            uint32_t ret = osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT);
+            if (ret != 0)
             {
                 // motor->error = ERROR_PHASE_INDUCTANCE_MEASUREMENT_TIMEOUT;
                 //printf("ERROR: Phase Inductance Measurement Timeout\n\r");
@@ -213,8 +213,9 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
 
     for (int i = 0; i < num_test_cycles; ++i)
     {
-        osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
-        if (evt.status != osEventSignal)
+        //osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
+        uint32_t ret = osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT);
+        if (ret != 0)
         {
             // motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
             // Update Serial Interface
@@ -288,7 +289,7 @@ bool Motor::OrderPhases(MotorController *controller)
     theta_start = state_.theta_mech_true;
     for (float ref_angle = 0; ref_angle < scan_range; ref_angle += scan_step_size)
     {
-        if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout)
         {
             // TODO: Error
             Logger::Instance().Print("[MOTOR]: \n\rPhase Direction Scan Timeout!\n\r");
@@ -399,7 +400,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
-            if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout) {
                 // Send Complete Feedback
                 CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
                 return false;
@@ -435,7 +436,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
-            if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal) {
+            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout) {
                 // Send Complete Feedback
                 CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
                  return false;
@@ -526,7 +527,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
         lookup_table[index] = (int8_t)((error_filtered[i * config_.num_pole_pairs] - mean) * (float)(rotor_sensor_->GetCPR()) / (2.0f * PI));
         //Logger::Instance().Print("%ld   %ld   %ld\n\r", i, index, lookup_table[index]);
         //printf("%ld, %ld \n\r", i, lookup_table[index]);
-        wait(.02);
+        delay_us(20);
     }
 
     // TODO: Not quite working. Need to fix.  For now don't compensate eccentricity
@@ -557,7 +558,7 @@ bool Motor::LockRotor(MotorController *controller, float lock_duration, float lo
     // Lock rotor to zero phase, A/D-Axis
     for (int i = 0; i < lock_duration * (float)sample_time_; ++i)
     {
-        if (osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT).status != osEventSignal)
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout)
         {
             return false;
         }

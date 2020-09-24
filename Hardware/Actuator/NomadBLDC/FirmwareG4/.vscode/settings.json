@@ -2,6 +2,9 @@
     "files.associations": {
         "typeinfo": "cpp",
         "string": "cpp",
-        "memory_resource": "cpp"
+        "memory_resource": "cpp",
+        "condition_variable": "cpp",
+        "new": "cpp",
+        "cmath": "cpp"
     }
 }

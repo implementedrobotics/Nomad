@@ -33,7 +33,7 @@
 
 // Project Includes
 #include <Peripherals/uart.h>
-//#include "MotorController.h"
+#include "MotorController.h"
 
 namespace CommandHandler
 {
@@ -86,7 +86,7 @@ namespace CommandHandler
 
     void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
     void LogCommand(const std::string log_string);
-    //static void SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement);
+    void SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement);
 
 } // namespace CommandHandler
 #endif // COMMAND_HANDLER_H_

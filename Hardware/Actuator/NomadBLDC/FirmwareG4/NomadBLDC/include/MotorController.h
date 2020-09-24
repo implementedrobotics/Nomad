@@ -48,7 +48,7 @@
 //#define PWM_INTERRUPT_DIVIDER 1
 
 // TODO: User Configurable Parameter
-#define SYS_CLOCK_FREQ 180000000
+#define SYS_CLOCK_FREQ 160000000
 //#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
 //#define PWM_TICKS (float)SYS_CLOCK_FREQ / (2 * PWM_COUNTER_PERIOD_TICKS)
 
@@ -61,12 +61,12 @@
 // C++ System Files
 
 // Project Includes
-#include "mbed.h"
-#include "rtos.h"
-#include "FastPWM.h"
+#include "cmsis_os2.h"
 #include "Motor.h"
 #include "RMSCurrentLimiter.h"
-#include "../DRV8323/DRV.h"
+#include "DRV8323.h"
+#include <Peripherals/spi.h>
+#include <Peripherals/gpio.h>
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
 static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTANCE * 1.0f / CURRENT_SENSE_GAIN;
@@ -225,7 +225,7 @@ public:
 
     void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c);
 
-    inline osThreadId GetThreadID() { return control_thread_id_; }
+    inline osThreadId_t GetThreadID() { return control_thread_id_; }
     inline bool IsInitialized() { return control_initialized_; }
     inline bool ControlThreadReady() { return control_thread_ready_; }
 
@@ -268,17 +268,10 @@ private:
     bool control_initialized_;                  // Controller thread initialized
     volatile bool control_enabled_;             // Controller thread enabled
 
-    osThreadId control_thread_id_;              // Controller Thread ID
+    osThreadId_t control_thread_id_;              // Controller Thread ID
 
-    DRV832x *gate_driver_;    // Gate Driver Device for DRV8323
-    SPI *spi_handle_;         // SPI Handle for Communication to Gate Driver
-    DigitalOut *cs_;          // Chip Select Pin
-    DigitalOut *gate_enable_; // Enable Pin for Gate Driver
-
-    // Make Static?
-    FastPWM *PWM_A_; // PWM Output Pin
-    FastPWM *PWM_B_; // PWM Output Pin
-    FastPWM *PWM_C_; // PWM Output Pin
+    DRV8323 *gate_driver_;    // Gate Driver Device for DRV8323
+    SPIDevice *spi_handle_;         // SPI Handle for Communication to Gate Driver
 
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config

@@ -30,8 +30,6 @@
 // C++ System Files
 
 // Project Includes
-#include "mbed.h"
-#include "rtos.h"
 #include "PositionSensor.h"
 
 class MotorController;
