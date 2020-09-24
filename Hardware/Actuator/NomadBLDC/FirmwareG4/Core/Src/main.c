@@ -258,6 +258,10 @@ static void MX_ADC1_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(I_C_GPIO_Port, &GPIO_InitStruct);
 
+  /* ADC1 interrupt Init */
+  NVIC_SetPriority(ADC1_2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(ADC1_2_IRQn);
+
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
@@ -336,6 +340,10 @@ static void MX_ADC2_Init(void)
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(I_A_GPIO_Port, &GPIO_InitStruct);
+
+  /* ADC2 interrupt Init */
+  NVIC_SetPriority(ADC1_2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(ADC1_2_IRQn);
 
   /* USER CODE BEGIN ADC2_Init 1 */
 
@@ -930,10 +938,14 @@ static void MX_TIM8_Init(void)
   /* Peripheral clock enable */
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM8);
 
+  /* TIM8 interrupt Init */
+  NVIC_SetPriority(TIM8_UP_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM8_UP_IRQn);
+
   /* USER CODE BEGIN TIM8_Init 1 */
 
   /* USER CODE END TIM8_Init 1 */
-  TIM_InitStruct.Prescaler = 16800;
+  TIM_InitStruct.Prescaler = 16000;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_CENTER_DOWN;
   TIM_InitStruct.Autoreload = 65535;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
@@ -1024,7 +1036,7 @@ static void MX_TIM8_Init(void)
   * @param None
   * @retval None
   */
-void MX_USART2_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
@@ -1138,7 +1150,7 @@ void MX_USART2_UART_Init(void)
 /**
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void)
+static void MX_DMA_Init(void)
 {
 
   /* Init with LL driver */
@@ -1235,13 +1247,13 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_main_entry_rtos */
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_main_entry_rtos */
+/* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
