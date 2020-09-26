@@ -141,6 +141,19 @@ void DebugTask()
 
     // sig_thread = osThreadNew(signal_set, NULL, &task_attributes);
 
+    // Setup Timers
+    LL_TIM_EnableIT_UPDATE(TIM8);
+
+    LL_TIM_CC_EnableChannel(TIM8,
+                             LL_TIM_CHANNEL_CH1 |
+                             LL_TIM_CHANNEL_CH2 |
+                             LL_TIM_CHANNEL_CH3);
+
+    LL_TIM_EnableCounter(TIM8);
+
+    LL_TIM_GenerateEvent_UPDATE(TIM8);
+
+
 }
 
 void FlashTest()
@@ -205,6 +218,25 @@ drv_dev.Init();
 }
 
 
+/**
+  * @brief This function handles TIM8 update interrupt.
+  */
+extern "C" void TIM8_UP_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM8_UP_IRQn 0 */
+  if (LL_TIM_IsActiveFlag_UPDATE(TIM8))
+  {
+    LL_TIM_ClearFlag_UPDATE(TIM8);
+
+    // Do Callback
+    LEDService::Instance().Toggle();
+  }
+
+  /* USER CODE END TIM8_UP_IRQn 0 */
+  /* USER CODE BEGIN TIM8_UP_IRQn 1 */
+
+  /* USER CODE END TIM8_UP_IRQn 1 */
+}
 
 extern "C" int app_main()
 {
@@ -224,7 +256,7 @@ extern "C" int app_main()
     osDelay(500);
 
     // Start Motor Control Task
-    StartMotorControlThread();
+    //StartMotorControlThread();
 
     //DRV_Test(); 
     // FlashTest();
@@ -234,11 +266,12 @@ extern "C" int app_main()
 
     // Init a temp debug Task
     DebugTask();    
+    
     // Infinite Loop.
     for (;;)
     {
-        osThreadFlagsSet(sig_thread, 0x3);
-        osDelay(6000);
+        Logger::Instance().Print("Count: %d | %x\r\n", LL_TIM_GetCounter(TIM8), TIM8->CR1);
+        osDelay(100);
     }
 
     // Should not get here
