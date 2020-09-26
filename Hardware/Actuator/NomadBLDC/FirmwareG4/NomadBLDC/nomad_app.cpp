@@ -153,6 +153,8 @@ void DebugTask()
 
     LL_TIM_GenerateEvent_UPDATE(TIM8);
 
+    // Now Enable Outputs
+    LL_TIM_EnableAllOutputs(TIM8);
 
 }
 
