@@ -934,45 +934,41 @@ static void MX_TIM8_Init(void)
   /* Peripheral clock enable */
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM8);
 
-  /* TIM8 interrupt Init */
-  NVIC_SetPriority(TIM8_UP_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
-  NVIC_EnableIRQ(TIM8_UP_IRQn);
-
   /* USER CODE BEGIN TIM8_Init 1 */
 
   /* USER CODE END TIM8_Init 1 */
   TIM_InitStruct.Prescaler = 16000;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_CENTER_UP;
-  TIM_InitStruct.Autoreload = 60000;
+  TIM_InitStruct.Autoreload = 200;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 2;
+  TIM_InitStruct.RepetitionCounter = 1;
   LL_TIM_Init(TIM8, &TIM_InitStruct);
   LL_TIM_EnableARRPreload(TIM8);
   LL_TIM_SetClockSource(TIM8, LL_TIM_CLOCKSOURCE_INTERNAL);
-  TIM_InitStruct.Autoreload = 60000;
+  TIM_InitStruct.Autoreload = 200;
   LL_TIM_OC_EnablePreload(TIM8, LL_TIM_CHANNEL_CH1);
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.CompareValue = 0;
+  TIM_OC_InitStruct.CompareValue = 100;
   TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
   TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
   TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
   TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
   LL_TIM_OC_Init(TIM8, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM8, LL_TIM_CHANNEL_CH1);
-  TIM_InitStruct.Autoreload = 60000;
+  TIM_InitStruct.Autoreload = 200;
   LL_TIM_OC_EnablePreload(TIM8, LL_TIM_CHANNEL_CH2);
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.CompareValue = 0;
+  TIM_OC_InitStruct.CompareValue = 100;
   LL_TIM_OC_Init(TIM8, LL_TIM_CHANNEL_CH2, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM8, LL_TIM_CHANNEL_CH2);
-  TIM_InitStruct.Autoreload = 60000;
+  TIM_InitStruct.Autoreload = 200;
   LL_TIM_OC_EnablePreload(TIM8, LL_TIM_CHANNEL_CH3);
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.CompareValue = 0;
+  TIM_OC_InitStruct.CompareValue = 100;
   LL_TIM_OC_Init(TIM8, LL_TIM_CHANNEL_CH3, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM8, LL_TIM_CHANNEL_CH3);
   LL_TIM_SetTriggerOutput(TIM8, LL_TIM_TRGO_UPDATE);
@@ -1003,7 +999,7 @@ static void MX_TIM8_Init(void)
   */
   GPIO_InitStruct.Pin = PWM_A_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
@@ -1011,7 +1007,7 @@ static void MX_TIM8_Init(void)
 
   GPIO_InitStruct.Pin = PWM_B_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_10;
@@ -1019,7 +1015,7 @@ static void MX_TIM8_Init(void)
 
   GPIO_InitStruct.Pin = PWM_C_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_10;
