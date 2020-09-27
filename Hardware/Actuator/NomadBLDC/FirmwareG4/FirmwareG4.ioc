@@ -1,20 +1,21 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-1\#ChannelRegularConversion=ADC_CHANNEL_12
-ADC1.IPParameters=Rank-1\#ChannelRegularConversion,master,Channel-1\#ChannelRegularConversion,SamplingTime-1\#ChannelRegularConversion,OffsetNumber-1\#ChannelRegularConversion,NbrOfConversionFlag
+ADC1.ExternalTrigConv=ADC_EXTERNALTRIG_T8_TRGO
+ADC1.IPParameters=Rank-1\#ChannelRegularConversion,master,Channel-1\#ChannelRegularConversion,SamplingTime-1\#ChannelRegularConversion,OffsetNumber-1\#ChannelRegularConversion,NbrOfConversionFlag,ExternalTrigConv
 ADC1.NbrOfConversionFlag=1
 ADC1.OffsetNumber-1\#ChannelRegularConversion=ADC_OFFSET_NONE
 ADC1.Rank-1\#ChannelRegularConversion=1
 ADC1.SamplingTime-1\#ChannelRegularConversion=ADC_SAMPLETIME_2CYCLES_5
 ADC1.master=1
 ADC2.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_5
-ADC2.ExternalTrigConv=ADC_SOFTWARE_START
+ADC2.ExternalTrigConv=ADC_EXTERNALTRIG_T8_TRGO
 ADC2.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,NbrOfConversionFlag,ExternalTrigConv
 ADC2.NbrOfConversionFlag=1
 ADC2.OffsetNumber-0\#ChannelRegularConversion=ADC_OFFSET_NONE
 ADC2.Rank-0\#ChannelRegularConversion=1
 ADC2.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_2CYCLES_5
 ADC3.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_12
-ADC3.ExternalTrigConv=ADC_SOFTWARE_START
+ADC3.ExternalTrigConv=ADC_EXTERNALTRIG_T8_TRGO
 ADC3.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,OffsetNumber-0\#ChannelRegularConversion,NbrOfConversionFlag,ExternalTrigConv,master
 ADC3.NbrOfConversionFlag=1
 ADC3.OffsetNumber-0\#ChannelRegularConversion=ADC_OFFSET_NONE
