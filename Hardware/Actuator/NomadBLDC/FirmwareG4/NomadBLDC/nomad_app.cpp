@@ -385,14 +385,39 @@ extern "C" int app_main()
         //  while (LL_ADC_IsActiveFlag_EOC(ADC2) == 0){}
 //   {
 //   }
-    HAL_ADC_Start(&hadc3);
-    HAL_ADC_PollForConversion(&hadc3, HAL_MAX_DELAY);
-    uint16_t raw = HAL_ADC_GetValue(&hadc3);
+    //HAL_ADC_Start(&hadc3);
+    LL_ADC_Enable(ADC3);
+    osDelay(100);
+   // HAL_ADC_PollForConversion(&hadc3, HAL_MAX_DELAY);
+   // uint16_t raw = HAL_ADC_GetValue(&hadc3);
+
+     if ((LL_ADC_IsEnabled(ADC3) == 1)               &&
+      (LL_ADC_IsDisableOngoing(ADC3) == 0)        &&
+      (LL_ADC_REG_IsConversionOngoing(ADC3) == 0)   )
+  {
+    LL_ADC_REG_StartConversion(ADC3);
+  }
+  else
+  {
+    /* Error: ADC conversion start could not be performed */
+    //LED_Blinking(LED_BLINK_ERROR);
+
+    Logger::Instance().Print("Whomp!\r\n");
+  }
+
+  
+  while (LL_ADC_IsActiveFlag_EOC(ADC3) == 0)
+  {
+  }
+  
+
+  LL_ADC_ClearFlag_EOC(ADC3);
 
     // HAL_ADC_PollForConversion(&hadc5, HAL_MAX_DELAY);
     // uint16_t raw2 = HAL_ADC_GetValue(&hadc5);
 
     //HAL_ADC_Stop(&hadc5);
+    uint16_t raw = LL_ADC_REG_ReadConversionData12(ADC3);
     Logger::Instance().Print("Value: %d | %d\r\n", raw);
     osDelay(1000);
     }
