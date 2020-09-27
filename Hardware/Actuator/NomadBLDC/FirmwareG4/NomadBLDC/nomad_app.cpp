@@ -63,6 +63,15 @@ extern "C" void signal_set(void *arg)
     osThreadExit();
 }
 
+extern "C"
+{
+    ADC_HandleTypeDef hadc1;
+    ADC_HandleTypeDef hadc2;
+    ADC_HandleTypeDef hadc3;
+    ADC_HandleTypeDef hadc4;
+    ADC_HandleTypeDef hadc5;
+    
+}
 void StartCommunicationThreads()
 {
     // Start UART
@@ -165,16 +174,16 @@ void DebugTask()
     LL_TIM_OC_SetCompareCH2(TIM8, 900); // Set Duty Cycle Channel 2
     LL_TIM_OC_SetCompareCH3(TIM8, 1500); // Set Duty Cycle Channel 3
 
-    LL_ADC_EnableIT_EOC(ADC3);
+  //  LL_ADC_EnableIT_EOC(ADC3);
 
-    LL_ADC_Enable(ADC1);
-    LL_ADC_Enable(ADC2);
-    LL_ADC_Enable(ADC3);
+   // LL_ADC_Enable(ADC2);
+  //  LL_ADC_Enable(ADC2);
+  //  LL_ADC_Enable(ADC3);
 
 
-    LL_ADC_REG_StartConversion(ADC1);
-    LL_ADC_REG_StartConversion(ADC2);
-    LL_ADC_REG_StartConversion(ADC3);
+  //  LL_ADC_REG_StartConversion(ADC2);
+    //LL_ADC_REG_StartConversion(ADC2);
+   // LL_ADC_REG_StartConversion(ADC3);
 
 
 
@@ -241,74 +250,74 @@ drv_dev.Init();
 // osDelay(10000);
 }
 
-/**
-  * @brief This function handles ADC3 global interrupt.
-  */
-extern "C" void ADC3_IRQHandler(void)
-{
-  /* USER CODE BEGIN ADC3_IRQn 0 */
+// /**
+//   * @brief This function handles ADC3 global interrupt.
+//   */
+// extern "C" void ADC3_IRQHandler(void)
+// {
+//   /* USER CODE BEGIN ADC3_IRQn 0 */
 
-      if (LL_ADC_IsActiveFlag_EOC(ADC1))
-  {
-    //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
+//       if (LL_ADC_IsActiveFlag_EOC(ADC1))
+//   {
+//     //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
 
-    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
-    /* Clear flag ADC group regular end of unitary conversion */
-    LL_ADC_ClearFlag_EOC(ADC1);
+//     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
+//     /* Clear flag ADC group regular end of unitary conversion */
+//     LL_ADC_ClearFlag_EOC(ADC1);
 
-    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    for (int i = 0; i < 100; ++i)
-    {
-      __NOP();
-    }
-    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     for (int i = 0; i < 100; ++i)
+//     {
+//       __NOP();
+//     }
+//     LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-    value_adc1 = LL_ADC_REG_ReadConversionData12(ADC1);
-  }
+//     value_adc1 = LL_ADC_REG_ReadConversionData12(ADC1);
+//   }
 
-      if (LL_ADC_IsActiveFlag_EOC(ADC2))
-  {
-    //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
+//       if (LL_ADC_IsActiveFlag_EOC(ADC2))
+//   {
+//     //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
 
-    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
-    /* Clear flag ADC group regular end of unitary conversion */
-    LL_ADC_ClearFlag_EOC(ADC2);
+//     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
+//     /* Clear flag ADC group regular end of unitary conversion */
+//     LL_ADC_ClearFlag_EOC(ADC2);
 
-    // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    // for (int i = 0; i < 100; ++i)
-    // {
-    //   __NOP();
-    // }
-    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     // for (int i = 0; i < 100; ++i)
+//     // {
+//     //   __NOP();
+//     // }
+//     // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-    value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
-  }
-
-
-  if (LL_ADC_IsActiveFlag_EOC(ADC3))
-  {
-    //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
-
-    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
-    /* Clear flag ADC group regular end of unitary conversion */
-    LL_ADC_ClearFlag_EOC(ADC3);
-
-    // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    // for (int i = 0; i < 100; ++i)
-    // {
-    //   __NOP();
-    // }
-    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
-    value_adc3 = LL_ADC_REG_ReadConversionData12(ADC3);
-  }
+//     value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
+//   }
 
 
-  /* USER CODE END ADC3_IRQn 0 */
-  /* USER CODE BEGIN ADC3_IRQn 1 */
+//   if (LL_ADC_IsActiveFlag_EOC(ADC3))
+//   {
+//     //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
 
-  /* USER CODE END ADC3_IRQn 1 */
-}
+//     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
+//     /* Clear flag ADC group regular end of unitary conversion */
+//     LL_ADC_ClearFlag_EOC(ADC3);
+
+//     // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     // for (int i = 0; i < 100; ++i)
+//     // {
+//     //   __NOP();
+//     // }
+//     // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+//     value_adc3 = LL_ADC_REG_ReadConversionData12(ADC3);
+//   }
+
+
+//   /* USER CODE END ADC3_IRQn 0 */
+//   /* USER CODE BEGIN ADC3_IRQn 1 */
+
+//   /* USER CODE END ADC3_IRQn 1 */
+// }
 
 /**
   * @brief This function handles TIM8 update interrupt.
@@ -364,12 +373,28 @@ extern "C" int app_main()
     // Init a temp debug Task
     DebugTask();    
     
+    
     // Infinite Loop.
     for (;;)
     {
         //Logger::Instance().Print("Count: %d | %x\r\n", LL_TIM_GetCounter(TIM8), TIM8->CR1);
-        Logger::Instance().Print("Value: %d | %d | %d\r\n", value_adc1, value_adc2, value_adc3);
-        osDelay(100);
+        // value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
+        // Logger::Instance().Print("Value: %d | %d | %d\r\n", value_adc1, value_adc2, value_adc3);
+        // osDelay(100);
+        // LL_ADC_REG_StartConversion(ADC2);
+        //  while (LL_ADC_IsActiveFlag_EOC(ADC2) == 0){}
+//   {
+//   }
+    HAL_ADC_Start(&hadc3);
+    HAL_ADC_PollForConversion(&hadc3, HAL_MAX_DELAY);
+    uint16_t raw = HAL_ADC_GetValue(&hadc3);
+
+    // HAL_ADC_PollForConversion(&hadc5, HAL_MAX_DELAY);
+    // uint16_t raw2 = HAL_ADC_GetValue(&hadc5);
+
+    //HAL_ADC_Stop(&hadc5);
+    Logger::Instance().Print("Value: %d | %d\r\n", raw);
+    osDelay(1000);
     }
 
     // Should not get here
