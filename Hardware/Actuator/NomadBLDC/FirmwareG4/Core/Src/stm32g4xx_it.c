@@ -209,19 +209,6 @@ void USART2_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles ADC3 global interrupt.
-  */
-void ADC3_IRQHandler(void)
-{
-  /* USER CODE BEGIN ADC3_IRQn 0 */
-
-  /* USER CODE END ADC3_IRQn 0 */
-  /* USER CODE BEGIN ADC3_IRQn 1 */
-
-  /* USER CODE END ADC3_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interrupts.
   */
 void TIM6_DAC_IRQHandler(void)

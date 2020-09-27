@@ -58,9 +58,6 @@ bool DRV8323::Init()
 
     /* Gate Drive HS Register */
     //UnlockRegisters();
-    SetIDriveP_HS(GateDriveSource_e::IDRIVEP_10_mA);
-    SetIDriveN_HS(GateDriveSink_e::IDRIVEN_20_mA);
-
     SetIDriveP_HS(GateDriveSource_e::IDRIVEP_260_mA);
     SetIDriveN_HS(GateDriveSink_e::IDRIVEN_520_mA);
     

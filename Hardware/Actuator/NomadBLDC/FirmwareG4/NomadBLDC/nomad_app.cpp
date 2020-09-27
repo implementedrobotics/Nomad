@@ -47,6 +47,9 @@
 #include <Logger.h>
 #include <motor_controller_interface.h>
 
+__IO uint16_t value_adc1 = 10;
+__IO uint16_t value_adc2 = 10;
+__IO uint16_t value_adc3 = 10;
 osThreadId_t sig_thread;
 extern "C" void signal_set(void *arg)
 {
@@ -142,19 +145,38 @@ void DebugTask()
     // sig_thread = osThreadNew(signal_set, NULL, &task_attributes);
 
     // Setup Timers
-    LL_TIM_EnableIT_UPDATE(TIM8);
+   // LL_TIM_EnableIT_UPDATE(TIM8); // IT Updates 
 
-    LL_TIM_CC_EnableChannel(TIM8,
-                             LL_TIM_CHANNEL_CH1 |
-                             LL_TIM_CHANNEL_CH2 |
-                             LL_TIM_CHANNEL_CH3);
+    LL_TIM_CC_EnableChannel(TIM8, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH3); // Enable Channels
 
-    LL_TIM_EnableCounter(TIM8);
+    LL_TIM_EnableCounter(TIM8); // Enable Counting
 
-    LL_TIM_GenerateEvent_UPDATE(TIM8);
+    LL_TIM_EnableAllOutputs(TIM8); // Advanced Timers turn on Outputs
 
-    // Now Enable Outputs
-    LL_TIM_EnableAllOutputs(TIM8);
+    // Set Frequency
+    float freq = 40000;
+    uint16_t period_ticks = 0;
+
+    period_ticks = SystemCoreClock / (2 * freq);
+    LL_TIM_SetPrescaler(TIM8, 0);  // No Prescaler
+    LL_TIM_SetAutoReload(TIM8, period_ticks); // Set Period
+    LL_TIM_SetRepetitionCounter(TIM8, 1); // Loop Counter Decimator
+    LL_TIM_OC_SetCompareCH1(TIM8, 400); // Set Duty Cycle Channel 1
+    LL_TIM_OC_SetCompareCH2(TIM8, 900); // Set Duty Cycle Channel 2
+    LL_TIM_OC_SetCompareCH3(TIM8, 1500); // Set Duty Cycle Channel 3
+
+    LL_ADC_EnableIT_EOC(ADC3);
+
+    LL_ADC_Enable(ADC1);
+    LL_ADC_Enable(ADC2);
+    LL_ADC_Enable(ADC3);
+
+
+    LL_ADC_REG_StartConversion(ADC1);
+    LL_ADC_REG_StartConversion(ADC2);
+    LL_ADC_REG_StartConversion(ADC3);
+
+
 
 }
 
@@ -219,25 +241,98 @@ drv_dev.Init();
 // osDelay(10000);
 }
 
+/**
+  * @brief This function handles ADC3 global interrupt.
+  */
+extern "C" void ADC3_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC3_IRQn 0 */
+
+      if (LL_ADC_IsActiveFlag_EOC(ADC1))
+  {
+    //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
+
+    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
+    /* Clear flag ADC group regular end of unitary conversion */
+    LL_ADC_ClearFlag_EOC(ADC1);
+
+    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    for (int i = 0; i < 100; ++i)
+    {
+      __NOP();
+    }
+    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    value_adc1 = LL_ADC_REG_ReadConversionData12(ADC1);
+  }
+
+      if (LL_ADC_IsActiveFlag_EOC(ADC2))
+  {
+    //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
+
+    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
+    /* Clear flag ADC group regular end of unitary conversion */
+    LL_ADC_ClearFlag_EOC(ADC2);
+
+    // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    // for (int i = 0; i < 100; ++i)
+    // {
+    //   __NOP();
+    // }
+    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
+  }
+
+
+  if (LL_ADC_IsActiveFlag_EOC(ADC3))
+  {
+    //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
+
+    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
+    /* Clear flag ADC group regular end of unitary conversion */
+    LL_ADC_ClearFlag_EOC(ADC3);
+
+    // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    // for (int i = 0; i < 100; ++i)
+    // {
+    //   __NOP();
+    // }
+    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    value_adc3 = LL_ADC_REG_ReadConversionData12(ADC3);
+  }
+
+
+  /* USER CODE END ADC3_IRQn 0 */
+  /* USER CODE BEGIN ADC3_IRQn 1 */
+
+  /* USER CODE END ADC3_IRQn 1 */
+}
 
 /**
   * @brief This function handles TIM8 update interrupt.
   */
 extern "C" void TIM8_UP_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM8_UP_IRQn 0 */
-  if (LL_TIM_IsActiveFlag_UPDATE(TIM8))
-  {
-    LL_TIM_ClearFlag_UPDATE(TIM8);
+    /* USER CODE BEGIN TIM8_UP_IRQn 0 */
+    if (LL_TIM_IsActiveFlag_UPDATE(TIM8))
+    {
+        LL_TIM_ClearFlag_UPDATE(TIM8);
 
-    // Do Callback
-    LEDService::Instance().Toggle();
-  }
+        // Do Callback
+      //  LEDService::Instance().Toggle();
+    }
+    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+   // for (int i = 0; i < 10; ++i)
+   // {
+   //     __NOP();
+   // }
+   // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    /* USER CODE END TIM8_UP_IRQn 0 */
+    /* USER CODE BEGIN TIM8_UP_IRQn 1 */
 
-  /* USER CODE END TIM8_UP_IRQn 0 */
-  /* USER CODE BEGIN TIM8_UP_IRQn 1 */
-
-  /* USER CODE END TIM8_UP_IRQn 1 */
+    /* USER CODE END TIM8_UP_IRQn 1 */
 }
 
 extern "C" int app_main()
@@ -258,7 +353,7 @@ extern "C" int app_main()
     osDelay(500);
 
     // Start Motor Control Task
-    //StartMotorControlThread();
+    StartMotorControlThread();
 
     //DRV_Test(); 
     // FlashTest();
@@ -272,7 +367,8 @@ extern "C" int app_main()
     // Infinite Loop.
     for (;;)
     {
-        Logger::Instance().Print("Count: %d | %x\r\n", LL_TIM_GetCounter(TIM8), TIM8->CR1);
+        //Logger::Instance().Print("Count: %d | %x\r\n", LL_TIM_GetCounter(TIM8), TIM8->CR1);
+        Logger::Instance().Print("Value: %d | %d | %d\r\n", value_adc1, value_adc2, value_adc3);
         osDelay(100);
     }
 

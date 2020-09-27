@@ -83,6 +83,10 @@ void motor_controller_thread_entry(void *arg)
     motor_controller = new MotorController(motor);
     motor_controller->Init();
 
+    for(;;)
+    {
+        osDelay(100);
+    }
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
     //Logger::Instance().Print("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
     //Logger::Instance().Print("PWM FREQ :%f\n\r", PWM_FREQ);
@@ -535,10 +539,11 @@ void MotorController::Init()
     gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
     gate_driver_->EnableDriver();
     osDelay(10);
-    gate_driver_->Calibrate();
     gate_driver_->Init();
     osDelay(10);
-
+    gate_driver_->Calibrate();
+    osDelay(10);
+return;
     // Load Configuration
     load_configuration();
 
