@@ -63,15 +63,6 @@ extern "C" void signal_set(void *arg)
     osThreadExit();
 }
 
-extern "C"
-{
-    ADC_HandleTypeDef hadc1;
-    ADC_HandleTypeDef hadc2;
-    ADC_HandleTypeDef hadc3;
-    ADC_HandleTypeDef hadc4;
-    ADC_HandleTypeDef hadc5;
-    
-}
 void StartCommunicationThreads()
 {
     // Start UART
@@ -162,6 +153,7 @@ void DebugTask()
 
     LL_TIM_EnableAllOutputs(TIM8); // Advanced Timers turn on Outputs
 
+    // Enable Timers
     // Set Frequency
     float freq = 40000;
     uint16_t period_ticks = 0;
@@ -364,64 +356,35 @@ extern "C" int app_main()
     // Start Motor Control Task
     StartMotorControlThread();
 
-    //DRV_Test(); 
+    //DRV_Test();
     // FlashTest();
     // Init Misc Polling Task
 
     // Init Motor Control Task
 
     // Init a temp debug Task
-    DebugTask();    
-    
-    
+    DebugTask();
+
+    // Enable ADCs
+    EnableADC(ADC1);
+    EnableADC(ADC2);
+    EnableADC(ADC3);
+    EnableADC(ADC4);
+    EnableADC(ADC5);
+
     // Infinite Loop.
     for (;;)
     {
         //Logger::Instance().Print("Count: %d | %x\r\n", LL_TIM_GetCounter(TIM8), TIM8->CR1);
-        // value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
-        // Logger::Instance().Print("Value: %d | %d | %d\r\n", value_adc1, value_adc2, value_adc3);
-        // osDelay(100);
-        // LL_ADC_REG_StartConversion(ADC2);
-        //  while (LL_ADC_IsActiveFlag_EOC(ADC2) == 0){}
-//   {
-//   }
-    //HAL_ADC_Start(&hadc3);
-    LL_ADC_Enable(ADC3);
-    osDelay(100);
-   // HAL_ADC_PollForConversion(&hadc3, HAL_MAX_DELAY);
-   // uint16_t raw = HAL_ADC_GetValue(&hadc3);
 
-     if ((LL_ADC_IsEnabled(ADC3) == 1)               &&
-      (LL_ADC_IsDisableOngoing(ADC3) == 0)        &&
-      (LL_ADC_REG_IsConversionOngoing(ADC3) == 0)   )
-  {
-    LL_ADC_REG_StartConversion(ADC3);
-  }
-  else
-  {
-    /* Error: ADC conversion start could not be performed */
-    //LED_Blinking(LED_BLINK_ERROR);
-
-    Logger::Instance().Print("Whomp!\r\n");
-  }
-
-  
-  while (LL_ADC_IsActiveFlag_EOC(ADC3) == 0)
-  {
-  }
-  
-
-  LL_ADC_ClearFlag_EOC(ADC3);
-
-    // HAL_ADC_PollForConversion(&hadc5, HAL_MAX_DELAY);
-    // uint16_t raw2 = HAL_ADC_GetValue(&hadc5);
-
-    //HAL_ADC_Stop(&hadc5);
-    uint16_t raw = LL_ADC_REG_ReadConversionData12(ADC3);
-    Logger::Instance().Print("Value: %d | %d\r\n", raw);
-    osDelay(1000);
+        uint16_t raw1 = PollADC(ADC1);
+        uint16_t raw2 = PollADC(ADC2);
+        uint16_t raw3 = PollADC(ADC3);
+        uint16_t raw4 = PollADC(ADC4);
+        uint16_t raw5 = PollADC(ADC5);
+        Logger::Instance().Print("Value: %d | %d | %d | %d | %d\r\n", raw1, raw2, raw3, raw4, raw5);
+        osDelay(1000);
     }
-
     // Should not get here
     return 0;
 }
