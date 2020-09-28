@@ -896,7 +896,7 @@ void MotorController::StartPWM()
     LL_TIM_SetRepetitionCounter(TIM8, 1);//(config_.foc_ccl_divider * 2) - 1);     // Loop Counter Decimator
     
     // Set Zer0 Duty Cycle
-     SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
+    SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
 
     // Make Sure PWM is initially Disabled
     EnablePWM(false);
@@ -978,23 +978,23 @@ void MotorController::UpdateControllerGains()
 }
 void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
-    // TODO: We should just reverse the "encoder direcion to simplify this"
-    if (motor_->config_.phase_order)
-    {                                                                        // Check which phase order to use,
-        // TIM1->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A); // Write duty cycles
-        // TIM1->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
-        // TIM1->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
-        LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A));  // Set Duty Cycle Channel 1
-        LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B));  // Set Duty Cycle Channel 2
-        LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
+    // TODO: Perf compare these.  Direct Reg vs LL
+    if (motor_->config_.phase_order) // Check which phase order to use
+    { /
+        // TIM8->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A); // Write duty cycles
+        // TIM8->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
+        // TIM8->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
+        LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A)); // Set Duty Cycle Channel 1
+        LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B)); // Set Duty Cycle Channel 2
+        LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
     }
     else
     {
-        // TIM1->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A);
-        // TIM1->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
-        // TIM1->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
-        LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A));  // Set Duty Cycle Channel 1
-        LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B));  // Set Duty Cycle Channel 2
+        // TIM8->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A);
+        // TIM8->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
+        // TIM8->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
+        LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A)); // Set Duty Cycle Channel 1
+        LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B)); // Set Duty Cycle Channel 2
         LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
     }
 }
