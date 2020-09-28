@@ -46,6 +46,7 @@
 #include <LEDService.h>
 #include <Logger.h>
 #include <motor_controller_interface.h>
+#include <MotorController.h>
 
 __IO uint16_t value_adc1 = 0;
 __IO uint16_t value_adc2 = 0;
@@ -252,6 +253,7 @@ void DRV_Test()
   */
 extern "C" void ADC3_IRQHandler(void)
 {
+    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     /* USER CODE BEGIN ADC3_IRQn 0 */
     // TODO: Save this count as a metric to verify no aliasing
     //uint32_t count = DWT->CYCCNT;
@@ -270,7 +272,7 @@ extern "C" void ADC3_IRQHandler(void)
         // }
         // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-        value_adc1 = LL_ADC_REG_ReadConversionData12(ADC1);
+        //value_adc1 = LL_ADC_REG_ReadConversionData12(ADC1);
        // count_adc1 = count;
     }
 
@@ -289,7 +291,7 @@ extern "C" void ADC3_IRQHandler(void)
         // }
         // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-        value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
+        //value_adc2 = LL_ADC_REG_ReadConversionData12(ADC2);
         //count_adc2 = count;
     }
 
@@ -300,49 +302,53 @@ extern "C" void ADC3_IRQHandler(void)
         //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_GPIO_Port);
         /* Clear flag ADC group regular end of unitary conversion */
         LL_ADC_ClearFlag_EOC(ADC3);
-
-        // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-        // for (int i = 0; i < 100; ++i)
+        // Send it
+        //osThreadFlagsSet(CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+       
+        
+        // for (int i = 0; i < 10; ++i)
         // {
         //   __NOP();
         // }
-        // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+        
 
-        value_adc3 = LL_ADC_REG_ReadConversionData12(ADC3);
+         current_measurement_cb();
+         
+        //value_adc3 = LL_ADC_REG_ReadConversionData12(ADC3);
        // count_adc3 = count;
         //LEDService::Instance().Toggle();
     }
-
+    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     /* USER CODE END ADC3_IRQn 0 */
     /* USER CODE BEGIN ADC3_IRQn 1 */
 
     /* USER CODE END ADC3_IRQn 1 */
 }
 
-/**
-  * @brief This function handles TIM8 update interrupt.
-  */
-extern "C" void TIM8_UP_IRQHandler(void)
-{
-    /* USER CODE BEGIN TIM8_UP_IRQn 0 */
-    if (LL_TIM_IsActiveFlag_UPDATE(TIM8))
-    {
-        LL_TIM_ClearFlag_UPDATE(TIM8);
+// /**
+//   * @brief This function handles TIM8 update interrupt.
+//   */
+// extern "C" void TIM8_UP_IRQHandler(void)
+// {
+//     /* USER CODE BEGIN TIM8_UP_IRQn 0 */
+//     if (LL_TIM_IsActiveFlag_UPDATE(TIM8))
+//     {
+//         LL_TIM_ClearFlag_UPDATE(TIM8);
 
-        // Do Callback
-        LEDService::Instance().Toggle();
-    }
-    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    // for (int i = 0; i < 10; ++i)
-    // {
-    //     __NOP();
-    // }
-    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    /* USER CODE END TIM8_UP_IRQn 0 */
-    /* USER CODE BEGIN TIM8_UP_IRQn 1 */
+//         // Do Callback
+//        // LEDService::Instance().Toggle();
+//     }
+//     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     // for (int i = 0; i < 10; ++i)
+//     // {
+//     //     __NOP();
+//     // }
+//     // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+//     /* USER CODE END TIM8_UP_IRQn 0 */
+//     /* USER CODE BEGIN TIM8_UP_IRQn 1 */
 
-    /* USER CODE END TIM8_UP_IRQn 1 */
-}
+//     /* USER CODE END TIM8_UP_IRQn 1 */
+// }
 
 extern "C" int app_main() //
 {
@@ -362,8 +368,12 @@ extern "C" int app_main() //
     osDelay(500);
 
     // Start Motor Control Task
-    StartMotorControlThread();
+   // StartMotorControlThread();
 
+    osDelay(3000);
+
+   // measure_motor_phase_order();
+    //measure_motor_parameters();
     //DRV_Test();
     // FlashTest();
     // Init Misc Polling Task
@@ -371,27 +381,16 @@ extern "C" int app_main() //
     // Init Motor Control Task
 
     // Init a temp debug Task
-    DebugTask();
+   // DebugTask();
 
-    // // Enable ADCs
-    // EnableADC(ADC1);
-    // EnableADC(ADC2);
-    // EnableADC(ADC3);
-    // EnableADC(ADC4);
-    // EnableADC(ADC5);
-
+    EnableADC(ADC5);
     // Infinite Loop.
     for (;;)
     {
-        //Logger::Instance().Print("Count: %d | %x\r\n", LL_TIM_GetCounter(TIM8), TIM8->CR1);
+       // Logger::Instance().Print("Count: %d\r\n", LL_TIM_OC_GetCompareCH1(TIM8));
+       // Logger::Instance().Print("Value: %d | %d | %d.\r\n", value_adc1, value_adc2, value_adc3);
 
-        // uint16_t raw1 = PollADC(ADC1);
-        // uint16_t raw2 = PollADC(ADC2);
-        // uint16_t raw3 = PollADC(ADC3);
-        // uint16_t raw4 = PollADC(ADC4);
-        // uint16_t raw5 = PollADC(ADC5);
-        Logger::Instance().Print("Value: %d | %d | %d.\r\n", value_adc1, value_adc2, value_adc3);
-        //Logger::Instance().Print("Value: %d.\r\n", value_adc3);
+        Logger::Instance().Print("Value: %d.\r\n", PollADC(ADC5));
         osDelay(100);
     }
     // Should not get here

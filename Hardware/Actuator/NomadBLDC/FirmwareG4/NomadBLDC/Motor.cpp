@@ -50,7 +50,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.phase_inductance_q = 0.0f;
     config_.phase_order = 1;
     config_.calib_current = 15.0f;
-    config_.calib_voltage = 3.0f;
+    config_.calib_voltage = 5.0f;
     config_.gear_ratio = 1.0f; // No Gearbox by default
     config_.calibrated = 0;
 
@@ -207,20 +207,20 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
     measurement.f32 = 0.0f;
 
 
-    Logger::Instance().Print("[MOTOR] Measure Motor Resistance...\n");
+    Logger::Instance().Print("[MOTOR] Measure Motor Resistance...\r\n");
     controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
 
     for (int i = 0; i < num_test_cycles; ++i)
     {
         //osEvent evt = osSignalWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, CURRENT_MEASUREMENT_TIMEOUT);
-        uint32_t ret = osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT);
-        if (ret != 0)
+       // uint32_t ret = osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT);
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
         {
             // motor->error = ERROR_PHASE_RESISTANCE_MEASUREMENT_TIMEOUT;
             // Update Serial Interface
             CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
-            Logger::Instance().Print("ERROR: Phase Resistance Measurement Timeout\n");
+            Logger::Instance().Print("ERROR: Phase Resistance Measurement Timeout\r\n");
             return false;
         }
 
@@ -236,12 +236,12 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
         controller->SetModulationOutput(0.0f, test_voltage, 0.0f);
     }
 
-    float R = test_voltage / test_current;
+    float R = test_voltage / test_current; 
     measurement.f32 = R;
     if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f)
     {
         //motor->error = ERROR_PHASE_RESISTANCE_OUT_OF_RANGE;
-        Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\n\r", R);
+        Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\r\n", R);
 
         // Update Serial Interface
         CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
@@ -249,7 +249,7 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
         return false;
     }
     config_.phase_resistance = R;
-    Logger::Instance().Print("Phase Resistance: %f ohms\n", config_.phase_resistance);
+    Logger::Instance().Print("Phase Resistance: %f ohms\r\n", config_.phase_resistance);
 
     // Shutdown the phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
@@ -263,11 +263,11 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
 
 bool Motor::OrderPhases(MotorController *controller)
 {
-    Logger::Instance().Print("[MOTOR]: \n\rRunning phase direction scan...\n\r");
+    Logger::Instance().Print("[MOTOR]: Running phase direction scan...\r\n");
 
     float theta_start = 0;
     float theta_end = 0;
-    float test_voltage = config_.calib_current * config_.phase_resistance;
+    float test_voltage = config_.calib_current * .075;//config_.phase_resistance;
     float rotor_lock_duration = 2.0f;
     float scan_step_size = 1.0f / 5000.0f; // Amount to step in open loop
     float scan_range = 4.0f * M_PI;        // Scan range for phase order (electrical range)
@@ -278,9 +278,9 @@ bool Motor::OrderPhases(MotorController *controller)
     measurement_t measurement;
     measurement.i32 = config_.phase_order;
 
-    //printf("Locking Rotor to D-Axis...\n\r");
+    Logger::Instance().Print("Locking Rotor to D-Axis...\n\r");
     LockRotor(controller, rotor_lock_duration, test_voltage);
-    //printf("Rotor stabilized.\n\r");
+    Logger::Instance().Print("Rotor stabilized.\n\r");
 
     Update(); // Update State/Position Sensor
 
@@ -289,33 +289,37 @@ bool Motor::OrderPhases(MotorController *controller)
     theta_start = state_.theta_mech_true;
     for (float ref_angle = 0; ref_angle < scan_range; ref_angle += scan_step_size)
     {
-        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout)
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
         {
             // TODO: Error
-            Logger::Instance().Print("[MOTOR]: \n\rPhase Direction Scan Timeout!\n\r");
+            Logger::Instance().Print("[MOTOR]: Phase Direction Scan Timeout!\r\n");
             // Send Complete Feedback
             CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
             return false;
         }
         // Set PWM Output
+       //  Logger::Instance().Print("Test: %f!\r\n", test_voltage);
         controller->SetModulationOutput(ref_angle, test_voltage, 0.0f);
 
         Update(); // Update State/Position Sensor
+
+       // Logger::Instance().Print("[MOTOR]: Turn and Burn Direction Scan Timeout!\r\n");
+
     }
     theta_end = state_.theta_mech_true;
 
     //printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
     if (theta_end - theta_start > 0)
     {
-        Logger::Instance().Print("[MOTOR]: \n\rPhase Order CORRECT.\n\r");
+        Logger::Instance().Print("[MOTOR]: Phase Order CORRECT.\n\r");
         //printf("Phase Order is CORRECT!\n\r");
         //rotor_sensor_->SetDirection(1);
         config_.phase_order = 1;
     }
     else
     {
-        printf("Phase Order is INCORRECT!\n\r");
-        Logger::Instance().Print("[MOTOR]: \n\rPhase Order REVERSED.\n\r");
+        printf("Phase Order is INCORRECT!\r\n");
+        Logger::Instance().Print("[MOTOR]: rPhase Order REVERSED.\n\r");
         //rotor_sensor_->SetDirection(-1);
         config_.phase_order = 0;
     }
@@ -400,7 +404,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
-            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout) {
+            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL) {
                 // Send Complete Feedback
                 CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
                 return false;
@@ -436,7 +440,7 @@ bool Motor::CalibrateEncoderOffset(MotorController *controller)
     {
         for (int32_t j = 0; j < sub_samples; j++)
         {
-            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout) {
+            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL) {
                 // Send Complete Feedback
                 CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, elec_offset);
                  return false;
@@ -558,8 +562,9 @@ bool Motor::LockRotor(MotorController *controller, float lock_duration, float lo
     // Lock rotor to zero phase, A/D-Axis
     for (int i = 0; i < lock_duration * (float)sample_time_; ++i)
     {
-        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout)
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
         {
+            Logger::Instance().Print("NOT DOING TIHS\r\n");
             return false;
         }
         controller->SetModulationOutput(0.0f, lock_voltage, 0.0f);

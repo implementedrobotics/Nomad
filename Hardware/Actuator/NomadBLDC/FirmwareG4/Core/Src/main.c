@@ -415,7 +415,7 @@ static void MX_ADC3_Init(void)
   LL_GPIO_Init(I_B_GPIO_Port, &GPIO_InitStruct);
 
   /* ADC3 interrupt Init */
-  NVIC_SetPriority(ADC3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_SetPriority(ADC3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
   NVIC_EnableIRQ(ADC3_IRQn);
 
   /* USER CODE BEGIN ADC3_Init 1 */

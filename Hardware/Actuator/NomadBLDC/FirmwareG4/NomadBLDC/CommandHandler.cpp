@@ -313,22 +313,26 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     }
     case COMM_MEASURE_RESISTANCE:
     {
-        bool status = measure_motor_resistance();
+        // TODO: Return Here?
+        measure_motor_resistance();
         break;
     }
     case COMM_MEASURE_INDUCTANCE:
     {
-        bool status = measure_motor_inductance();
+        // TODO: Return Here?
+        measure_motor_inductance();
         break;
     }
     case COMM_MEASURE_PHASE_ORDER:
     {
-        bool status = measure_motor_phase_order();
+        // TODO: Return Here?
+        measure_motor_phase_order();
         break;
     }
     case COMM_MEASURE_ENCODER_OFFSET:
     {
-        bool status = measure_encoder_offset();
+        // TODO: Return Here?
+        measure_encoder_offset();
         break;
     }
     case COMM_ZERO_ENCODER_POSITION:

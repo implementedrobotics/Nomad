@@ -48,6 +48,7 @@ RMSCurrentLimiter *current_limiter = 0;
 // Globals
 static int32_t g_adc1_offset;
 static int32_t g_adc2_offset;
+static int32_t g_adc3_offset;
 
 extern "C"
 {
@@ -83,14 +84,14 @@ void motor_controller_thread_entry(void *arg)
     motor_controller = new MotorController(motor);
     motor_controller->Init();
 
-    for(;;)
-    {
-        osDelay(100);
-    }
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
     //Logger::Instance().Print("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
     //Logger::Instance().Print("PWM FREQ :%f\n\r", PWM_FREQ);
 
+// for(; ; )
+// {
+//     osDelay(100);
+// }
     // Begin Control Loop
     motor_controller->StartControlFSM();
     
@@ -155,35 +156,39 @@ void set_voltage_control_ref(float V_d, float V_q)
 }
 void current_measurement_cb()
 {
-    // Measure Currents/Bus Voltage
-    int32_t adc2_raw = ADC2->DR; // Current Sense Measurement 1
-    int32_t adc1_raw = ADC1->DR; // Current Sense Measurement 2
-    int32_t adc3_raw = ADC3->DR; // Voltage Bus Measurement.  TODO: Move this to a different/slower timer
+    // // Measure Currents/Bus Voltage
+    // int32_t adc2_raw = ADC2->DR; // Current Sense Measurement 1
+    // int32_t adc1_raw = ADC1->DR; // Current Sense Measurement 2
+    // int32_t adc3_raw = ADC3->DR; // Voltage Bus Measurement.  TODO: Move this to a different/slower timer
 
-    // TODO: Not sure this is necessasry?
-    if (motor->config_.phase_order) // Check Phase Ordering
-    {
-        motor->state_.I_b = current_scale * (float)(adc2_raw - g_adc2_offset);
-        motor->state_.I_c = current_scale * (float)(adc1_raw - g_adc1_offset);
-    }
-    else
-    {
-        motor->state_.I_b = current_scale * (float)(adc1_raw - g_adc1_offset);
-        motor->state_.I_c = current_scale * (float)(adc2_raw - g_adc2_offset);
-    }
-    // Kirchoffs Current Law to compute 3rd unmeasured current.
-    motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
+    // // TODO: Not sure this is necessasry?
+    // Depends on PWM duty cycles
+    // if (motor->config_.phase_order) // Check Phase Ordering
+    // {
+    //     motor->state_.I_b = current_scale * (float)(adc2_raw - g_adc2_offset);
+    //     motor->state_.I_c = current_scale * (float)(adc1_raw - g_adc1_offset);
+    // }
+    // else
+    // {
+    //     motor->state_.I_b = current_scale * (float)(adc1_raw - g_adc1_offset);
+    //     motor->state_.I_c = current_scale * (float)(adc2_raw - g_adc2_offset);
+    // }
+    // // Kirchoffs Current Law to compute 3rd unmeasured current.
+    // motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
 
-    // Always Update Motor State
-    motor->Update();
+    // // Always Update Motor State
+    // motor->Update();
 
-    // Filter bus measurement a bit
-    motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)adc3_raw) * voltage_scale;
+    // // Filter bus measurement a bit
+    // motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)adc3_raw) * voltage_scale;
 
+    motor_controller->state_.Voltage_bus = 24;
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
-        osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+      
+       osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+        LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     }
 }
 
@@ -192,23 +197,28 @@ bool zero_current_sensors(uint32_t num_samples)
     // Zero Offsets
     g_adc1_offset = 0;
     g_adc2_offset = 0;
+    g_adc3_offset = 0;
 
     // Set Idle/"Zero" PWM
     motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
     for (uint32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
     {
-        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) == osErrorTimeout)
+        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
         {
             // TODO: Error here for timing
             //printf("ERROR: Zero Current FAILED!\r\n");
+            Logger::Instance().Print("ERROR: Zero Current Sensor Failed!\r\n");
             return false;
         }
+        g_adc3_offset += ADC3->DR;
         g_adc2_offset += ADC2->DR;
         g_adc1_offset += ADC1->DR;
     }
     g_adc1_offset = g_adc1_offset / num_samples;
     g_adc2_offset = g_adc2_offset / num_samples;
-    //printf("ADC OFFSET: %d and %d\r\n", g_adc1_offset, g_adc2_offset);
+    g_adc3_offset = g_adc3_offset / num_samples;
+
+    Logger::Instance().Print("ADC OFFSET: %d and %d and %d\r\n", g_adc1_offset, g_adc2_offset, g_adc3_offset);
     return true;
 }
 
@@ -236,6 +246,7 @@ bool measure_motor_phase_order()
 bool measure_encoder_offset()
 {
     set_control_mode(MEASURE_ENCODER_OFFSET_MODE);
+    return true;
 }
 bool save_configuration()
 {
@@ -543,7 +554,7 @@ void MotorController::Init()
     osDelay(10);
     gate_driver_->Calibrate();
     osDelay(10);
-return;
+    
     // Load Configuration
     load_configuration();
 
@@ -554,6 +565,7 @@ return;
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
+    //Logger::Instance().Print("\r\nPWM FREQ :%d\r\n", pwm_counter_period_ticks_);
     // Start PWM
     StartPWM();
     osDelay(150); // Delay for a bit to let things stabilize
@@ -562,12 +574,11 @@ return;
     StartADCs();
     osDelay(150); // Delay for a bit to let things stabilize
 
-    //gate_driver_->enable_gd();
     EnablePWM(true);            // Start PWM
-    SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
     zero_current_sensors(1024); // Measure current sensor zero-offset
     EnablePWM(false);           // Stop PWM
 
+    Logger::Instance().Print("We out!\r\n");
     // Default Mode Idle:
     control_mode_ = IDLE_MODE;
 
@@ -582,7 +593,8 @@ return;
 
     // Set Singleton
     singleton_ = this;
-    //printf("MotorController::Init() - Motor Controller Initialized Successfully!\n\r");
+
+    Logger::Instance().Print("MotorController::Init() - Motor Controller Initialized Successfully!\r\n");
 }
 
 bool MotorController::CheckErrors()
@@ -664,7 +676,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                gate_driver_->EnableDriver();
+                //gate_driver_->EnableDriver();
                 EnablePWM(true);
 
                 motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
@@ -748,7 +760,7 @@ void MotorController::StartControlFSM()
                 gate_driver_->EnableDriver();
                 EnablePWM(true);
             }
-            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != osErrorTimeout)
+            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
             {
                 // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
                 //printf("ERROR: Motor Controller Timeout!\r\n");
@@ -789,7 +801,7 @@ void MotorController::StartControlFSM()
                 gate_driver_->DisableDriver();
                 EnablePWM(false);
             }
-            //printf("Unhandled Control Mode: %d!\r\n", control_mode_);
+            Logger::Instance().Print("Unhandled Control Mode: %d!\r\n", control_mode_);
             osDelay(1);
             break;
         }
@@ -873,41 +885,24 @@ void MotorController::CurrentControl()
 }
 void MotorController::StartPWM()
 {
+    LL_TIM_EnableAllOutputs(TIM8); 
+    LL_TIM_CC_EnableChannel(TIM8, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH3); // Enable Channels
 
-    // // TODO: I think this does not belong here
-    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable the clock to GPIOC
-    // RCC->APB1ENR |= 0x00000001;          // Enable TIM2 clock (TODO: What is on TIM2?)
-    // RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;  // Enable TIM1 clock
+    LL_TIM_EnableCounter(TIM8); // Enable Counting
 
-    // // Setup PWM Pins
-    // PWM_A_ = new FastPWM(PIN_A);
-    // PWM_B_ = new FastPWM(PIN_B);
-    // PWM_C_ = new FastPWM(PIN_C);
+    // Enable Timers
+    LL_TIM_SetPrescaler(TIM8, 0);             // No Prescaler
+    LL_TIM_SetAutoReload(TIM8, pwm_counter_period_ticks_); // Set Period
+    LL_TIM_SetRepetitionCounter(TIM8, 1);//(config_.foc_ccl_divider * 2) - 1);     // Loop Counter Decimator
+    
+    // Set Zer0 Duty Cycle
+     SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
 
-    // // Enable Interrupt Service Routines:
-    // NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn); //Enable TIM1/10 IRQ
+    // Make Sure PWM is initially Disabled
+    EnablePWM(false);
 
-    // // Set Priority
-    // NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 2); // Commutation is highest priority interrupt
-
-    // TIM1->DIER |= TIM_DIER_UIE; // Enable Update Interrupt
-    // TIM1->CR1 = 0x40;           // CMS = 10, Interrupt only when counting up
-    // //TIM1->CR1 |= TIM_CR1_UDIS;  // Start Update Disable (TODO: Refactor to our "Enable PWM")
-    // TIM1->CR1 |= TIM_CR1_ARPE; // Auto Reload Timer
-    // TIM1->RCR |= (config_.foc_ccl_divider * 2) - 1;        // Update event once per up count and down count.  This can be modified to have the control loop run at lower rates.
-    // TIM1->EGR |= TIM_EGR_UG;   // Generate an update event to reload the Prescaler/Repetition Counter immediately
-
-    // // PWM Setup
-    // TIM1->PSC = 0x0;                      // Set Prescaler to none.  Timer will count in sync with APB Block
-    // TIM1->ARR = pwm_counter_period_ticks_; // Set Auto Reload Timer Value.  TODO: User Configurable.  For now 40khz.
-    // TIM1->CCER |= ~(TIM_CCER_CC1NP);      // Interupt when low side is on.
-    // TIM1->CR1 |= TIM_CR1_CEN;             // Enable TIM1
-
-    // // Start Disabled
-    // EnablePWM(false);
-
-    // // This makes sure PWM is stopped if we have debug point/crash
-    // __HAL_DBGMCU_FREEZE_TIM1();
+    // This makes sure PWM is stopped if we have debug point/crash
+    __HAL_DBGMCU_FREEZE_TIM1();
 }
 void MotorController::StartADCs()
 {
@@ -932,21 +927,38 @@ void MotorController::StartADCs()
     // ADC1->SMPR1 |= 0x1; // 15 cycles on CH_10, 0b 001
     // ADC2->SMPR1 |= 0x8; // 15 cycles on CH_11, 0b 0001 000
     // ADC3->SMPR2 |= 0x1; // 15 cycles on CH_0, 0b 001;
+
+    EnableADC(ADC1);
+    EnableADC(ADC2);
+    EnableADC(ADC3);
+    //EnableADC(ADC4);
+    //EnableADC(ADC5);
+
+    // Turn on Interrupts for ADC3 as it is not shared.
+    // Should Generate less Interrupts
+    LL_ADC_EnableIT_EOC(ADC3);
+
+    LL_ADC_REG_StartConversion(ADC1);
+    LL_ADC_REG_StartConversion(ADC2);
+    LL_ADC_REG_StartConversion(ADC3);
+
 }
 
 void MotorController::EnablePWM(bool enable)
 {
-    // if (enable)
-    // {
-    //     TIM1->CR1 ^= TIM_CR1_UDIS;
-    //     //TIM1->BDTR |= (TIM_BDTR_MOE);
-    // }
-    // else // Disable PWM Timer Unconditionally
-    // {
-    //     TIM1->CR1 |= TIM_CR1_UDIS;
-    //     //TIM1->BDTR &= ~(TIM_BDTR_MOE);
-    // }
-    // osDelay(100);
+    if (enable)
+    {
+        LL_TIM_EnableAllOutputs(TIM8); // Advanced Timers turn on Outputs
+        //TIM1->CR1 ^= TIM_CR1_UDIS;
+        //TIM1->BDTR |= (TIM_BDTR_MOE);
+    }
+    else // Disable PWM Timer Unconditionally
+    {
+        //LL_TIM_DisableAllOutputs(TIM8); // Advanced Timers turn on Outputs
+        //TIM1->CR1 |= TIM_CR1_UDIS;
+        //TIM1->BDTR &= ~(TIM_BDTR_MOE);
+    }
+    osDelay(100);
 
     // TODO: Here for when project ported from MBED to CUBEMX
     //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
@@ -969,15 +981,21 @@ void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
     // TODO: We should just reverse the "encoder direcion to simplify this"
     if (motor_->config_.phase_order)
     {                                                                        // Check which phase order to use,
-        TIM1->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A); // Write duty cycles
-        TIM1->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
-        TIM1->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
+        // TIM1->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A); // Write duty cycles
+        // TIM1->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
+        // TIM1->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
+        LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A));  // Set Duty Cycle Channel 1
+        LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B));  // Set Duty Cycle Channel 2
+        LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
     }
     else
     {
-        TIM1->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A);
-        TIM1->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
-        TIM1->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
+        // TIM1->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A);
+        // TIM1->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
+        // TIM1->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
+        LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A));  // Set Duty Cycle Channel 1
+        LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B));  // Set Duty Cycle Channel 2
+        LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
     }
 }
 
@@ -1050,6 +1068,9 @@ void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
     //dqInverseTransform(0.0f, lock_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
     float v_alpha, v_beta;
     ParkInverseTransform(theta, v_d, v_q, &v_alpha, &v_beta);
+
+    //Logger::Instance().Print("VD: %f, VQ: %f!\r\n", v_d, v_q);
+   //  Logger::Instance().Print("Alpha: %f, Beta: %f!\r\n", v_alpha, v_beta);
     SetModulationOutput(v_alpha, v_beta);
 }
 

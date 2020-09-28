@@ -29,7 +29,7 @@
 #define ADC_RES 12                    // ADC Resolution (12-Bits)
 #define CURRENT_MEASUREMENT_TIMEOUT 2 // 2 ms
 #define CALIBRATION_MEASUREMENT_TIMEOUT 15000 // 15 seconds
-#define VBUS_DIVIDER 16.0f            // (150K+10K/10K)
+#define VBUS_DIVIDER 16           // (150K+10K/10K)
 #define SENSE_RESISTANCE (5e-4)       // 1 milliohm sense resistor
 #define SENSE_CONDUCTANCE (2000)      // SENSE_RESISTANCE^-1
 #define CURRENT_SENSE_GAIN 40         // Gain from current amplifier.  TODO: A Parameter
@@ -253,6 +253,7 @@ public:
     float controller_loop_freq_;
     float controller_update_period_;            // Controller Update Period (Seconds)
     
+    osThreadId_t control_thread_id_;              // Controller Thread ID
 private:
 
     void DoMotorControl(); // Motor Control Loop
@@ -268,7 +269,7 @@ private:
     bool control_initialized_;                  // Controller thread initialized
     volatile bool control_enabled_;             // Controller thread enabled
 
-    osThreadId_t control_thread_id_;              // Controller Thread ID
+    
 
     DRV8323 *gate_driver_;    // Gate Driver Device for DRV8323
     SPIDevice *spi_handle_;         // SPI Handle for Communication to Gate Driver
