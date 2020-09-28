@@ -676,7 +676,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
                 LEDService::Instance().On();
-                //gate_driver_->EnableDriver();
+                gate_driver_->EnableDriver();
                 EnablePWM(true);
 
                 motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
@@ -954,7 +954,7 @@ void MotorController::EnablePWM(bool enable)
     }
     else // Disable PWM Timer Unconditionally
     {
-        //LL_TIM_DisableAllOutputs(TIM8); // Advanced Timers turn on Outputs
+        LL_TIM_DisableAllOutputs(TIM8); // Advanced Timers turn on Outputs
         //TIM1->CR1 |= TIM_CR1_UDIS;
         //TIM1->BDTR &= ~(TIM_BDTR_MOE);
     }

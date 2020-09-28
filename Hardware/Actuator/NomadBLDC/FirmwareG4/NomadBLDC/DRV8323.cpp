@@ -87,12 +87,14 @@ void DRV8323::EnableDriver()
 {
     // Enable DRV
     LL_GPIO_SetOutputPin(enable_.port, enable_.pin);
+    //delay_us(100);
 }
 
 void DRV8323::DisableDriver()
 {
     // Enable DRV
-    //LL_GPIO_ResetOutputPin(enable_.port, enable_.pin);
+   // LL_GPIO_ResetOutputPin(enable_.port, enable_.pin);
+    //delay_us(100);
 }
 
 void DRV8323::FaultReset()

@@ -368,11 +368,11 @@ extern "C" int app_main() //
     osDelay(500);
 
     // Start Motor Control Task
-   // StartMotorControlThread();
+    StartMotorControlThread();
 
     osDelay(3000);
 
-   // measure_motor_phase_order();
+    measure_motor_phase_order();
     //measure_motor_parameters();
     //DRV_Test();
     // FlashTest();
@@ -383,14 +383,16 @@ extern "C" int app_main() //
     // Init a temp debug Task
    // DebugTask();
 
-    EnableADC(ADC5);
+    //EnableADC(ADC5);
     // Infinite Loop.
     for (;;)
     {
        // Logger::Instance().Print("Count: %d\r\n", LL_TIM_OC_GetCompareCH1(TIM8));
        // Logger::Instance().Print("Value: %d | %d | %d.\r\n", value_adc1, value_adc2, value_adc3);
-
-        Logger::Instance().Print("Value: %d.\r\n", PollADC(ADC5));
+      // uint16_t raw = PollADC(ADC5);
+      // uint16_t volt = 0;
+      // volt= __LL_ADC_CALC_DATA_TO_VOLTAGE(3300UL, raw, LL_ADC_RESOLUTION_12B);
+       // Logger::Instance().Print("Value: %d/%d.\r\n",raw, volt);
         osDelay(100);
     }
     // Should not get here
