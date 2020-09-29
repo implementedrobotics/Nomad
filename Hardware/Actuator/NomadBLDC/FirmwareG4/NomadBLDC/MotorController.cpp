@@ -88,10 +88,6 @@ void motor_controller_thread_entry(void *arg)
     //Logger::Instance().Print("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
     //Logger::Instance().Print("PWM FREQ :%f\n\r", PWM_FREQ);
 
-// for(; ; )
-// {
-//     osDelay(100);
-// }
     // Begin Control Loop
     motor_controller->StartControlFSM();
     
@@ -517,7 +513,7 @@ void MotorController::LinearizeDTC(float *dtc)
 
 void MotorController::Init()
 {
-    //printf("MotorController::Init() - Motor Controller Initializing...\n\r");
+    Logger::Instance().Print("MotorController::Init() - Motor Controller Initializing...\r\n");
 
     // Update Control Thread State
     control_thread_id_ = osThreadGetId();
@@ -548,7 +544,7 @@ void MotorController::Init()
     spi_handle_->Enable();
 
     gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
-    gate_driver_->EnableDriver();
+    gate_driver_->EnablePower();
     osDelay(10);
     gate_driver_->Init();
     osDelay(10);
@@ -578,7 +574,6 @@ void MotorController::Init()
     zero_current_sensors(1024); // Measure current sensor zero-offset
     EnablePWM(false);           // Stop PWM
 
-    Logger::Instance().Print("We out!\r\n");
     // Default Mode Idle:
     control_mode_ = IDLE_MODE;
 
@@ -608,7 +603,11 @@ void MotorController::StartControlFSM()
 {
     // Start IDLE and PWM/Gate Driver Off
     static control_mode_type_t current_control_mode = IDLE_MODE;
+
+    // Disable Gate Driver
     gate_driver_->DisableDriver();
+
+    // Disable PWM
     EnablePWM(false);
     for (;;)
     {
@@ -980,7 +979,7 @@ void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
     // TODO: Perf compare these.  Direct Reg vs LL
     if (motor_->config_.phase_order) // Check which phase order to use
-    { /
+    { 
         // TIM8->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A); // Write duty cycles
         // TIM8->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
         // TIM8->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);

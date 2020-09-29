@@ -153,39 +153,39 @@ void DebugTask()
     // Setup Timers
    // LL_TIM_EnableIT_UPDATE(TIM8); // IT Updates
 
-    LL_TIM_CC_EnableChannel(TIM8, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH3); // Enable Channels
+//     LL_TIM_CC_EnableChannel(TIM8, LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH3); // Enable Channels
 
-    LL_TIM_EnableCounter(TIM8); // Enable Counting
+//     LL_TIM_EnableCounter(TIM8); // Enable Counting
 
-    LL_TIM_EnableAllOutputs(TIM8); // Advanced Timers turn on Outputs
+//     LL_TIM_EnableAllOutputs(TIM8); // Advanced Timers turn on Outputs
 
-    // Enable Timers
-    // Set Frequency
-    float freq = 40000;
-    uint16_t period_ticks = 0;
+//     // Enable Timers
+//     // Set Frequency
+//     float freq = 40000;
+//     uint16_t period_ticks = 0;
 
-    period_ticks = SystemCoreClock / (2 * freq);
-    LL_TIM_SetPrescaler(TIM8, 0);             // No Prescaler
-    LL_TIM_SetAutoReload(TIM8, period_ticks); // Set Period
-    LL_TIM_SetRepetitionCounter(TIM8, 1);     // Loop Counter Decimator
-    LL_TIM_OC_SetCompareCH1(TIM8, 400);       // Set Duty Cycle Channel 1
-    LL_TIM_OC_SetCompareCH2(TIM8, 900);       // Set Duty Cycle Channel 2
-    LL_TIM_OC_SetCompareCH3(TIM8, 1500);      // Set Duty Cycle Channel 3
+//     period_ticks = SystemCoreClock / (2 * freq);
+//     LL_TIM_SetPrescaler(TIM8, 0);             // No Prescaler
+//     LL_TIM_SetAutoReload(TIM8, period_ticks); // Set Period
+//     LL_TIM_SetRepetitionCounter(TIM8, 1);     // Loop Counter Decimator
+//     LL_TIM_OC_SetCompareCH1(TIM8, 400);       // Set Duty Cycle Channel 1
+//     LL_TIM_OC_SetCompareCH2(TIM8, 900);       // Set Duty Cycle Channel 2
+//     LL_TIM_OC_SetCompareCH3(TIM8, 1500);      // Set Duty Cycle Channel 3
 
 
-    EnableADC(ADC1);
-    EnableADC(ADC2);
-    EnableADC(ADC3);
-    //EnableADC(ADC4);
-    //EnableADC(ADC5);
+//     EnableADC(ADC1);
+//     EnableADC(ADC2);
+//     EnableADC(ADC3);
+//     //EnableADC(ADC4);
+//     //EnableADC(ADC5);
 
-    // Turn on Interrupts for ADC3 as it is not shared.
-    // Should Generate less Interrupts
-    LL_ADC_EnableIT_EOC(ADC3);
+//     // Turn on Interrupts for ADC3 as it is not shared.
+//     // Should Generate less Interrupts
+//     LL_ADC_EnableIT_EOC(ADC3);
 
-    LL_ADC_REG_StartConversion(ADC1);
-    LL_ADC_REG_StartConversion(ADC2);
-    LL_ADC_REG_StartConversion(ADC3);
+//     LL_ADC_REG_StartConversion(ADC1);
+//     LL_ADC_REG_StartConversion(ADC2);
+//     LL_ADC_REG_StartConversion(ADC3);
 }
 
 void FlashTest()
@@ -253,7 +253,7 @@ void DRV_Test()
   */
 extern "C" void ADC3_IRQHandler(void)
 {
-    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     /* USER CODE BEGIN ADC3_IRQn 0 */
     // TODO: Save this count as a metric to verify no aliasing
     //uint32_t count = DWT->CYCCNT;
@@ -318,7 +318,7 @@ extern "C" void ADC3_IRQHandler(void)
        // count_adc3 = count;
         //LEDService::Instance().Toggle();
     }
-    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     /* USER CODE END ADC3_IRQn 0 */
     /* USER CODE BEGIN ADC3_IRQn 1 */
 
@@ -381,19 +381,29 @@ extern "C" int app_main() //
     // Init Motor Control Task
 
     // Init a temp debug Task
-   // DebugTask();
+    DebugTask();
 
-    //EnableADC(ADC5);
+    EnableADC(ADC4);
+
+    float B = 3455.0;
+    float R_0 = 10000.0; // 10K FET Thermistor.  Should be parameter?
+    float R_bal = 10000.0; // Divider Resistor
+
     // Infinite Loop.
     for (;;)
     {
-       // Logger::Instance().Print("Count: %d\r\n", LL_TIM_OC_GetCompareCH1(TIM8));
-       // Logger::Instance().Print("Value: %d | %d | %d.\r\n", value_adc1, value_adc2, value_adc3);
-      // uint16_t raw = PollADC(ADC5);
-      // uint16_t volt = 0;
-      // volt= __LL_ADC_CALC_DATA_TO_VOLTAGE(3300UL, raw, LL_ADC_RESOLUTION_12B);
-       // Logger::Instance().Print("Value: %d/%d.\r\n",raw, volt);
-        osDelay(100);
+        // Logger::Instance().Print("Count: %d\r\n", LL_TIM_OC_GetCompareCH1(TIM8));
+        // Logger::Instance().Print("Value: %d | %d | %d.\r\n", value_adc1, value_adc2, value_adc3);
+        uint16_t raw = PollADC(ADC4);
+        float V_out = 3.3f * raw / 4096.0f;
+        float R_th = 3.3f * R_bal / V_out - R_bal;
+
+        // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
+        float temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
+        // uint16_t volt = 0;
+        // volt= __LL_ADC_CALC_DATA_TO_VOLTAGE(3300UL, raw, LL_ADC_RESOLUTION_12B);
+       // Logger::Instance().Print("Value: %fc | :%d.\r\n", temp, raw);
+        osDelay(200);
     }
     // Should not get here
     return 0;

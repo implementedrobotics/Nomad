@@ -5,6 +5,7 @@
         "memory_resource": "cpp",
         "condition_variable": "cpp",
         "new": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "complex": "cpp"
     }
 }

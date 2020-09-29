@@ -83,18 +83,28 @@ bool DRV8323::Init()
     return true;
 }
 
-void DRV8323::EnableDriver()
+void DRV8323::EnablePower()
 {
     // Enable DRV
     LL_GPIO_SetOutputPin(enable_.port, enable_.pin);
-    //delay_us(100);
+    delay_us(100);
+}
+
+void DRV8323::EnableStandby()
+{
+    // Enable DRV
+    LL_GPIO_ResetOutputPin(enable_.port, enable_.pin);
+    delay_us(100);
+}
+
+void DRV8323::EnableDriver()
+{
+    DisableCoast();
 }
 
 void DRV8323::DisableDriver()
 {
-    // Enable DRV
-   // LL_GPIO_ResetOutputPin(enable_.port, enable_.pin);
-    //delay_us(100);
+    EnableCoast();
 }
 
 void DRV8323::FaultReset()

@@ -433,13 +433,15 @@ public:
         CSA_MASK            = (CSAControl << 11),     //!< CSA Register
     } RegisterNameMask_e;
 
-    // Construtor
+    // Constructor
     DRV8323(SPIDevice *spi, GPIO_t enable_pin, GPIO_t nFault_pin);
 
-    bool Init(); // Init DRV and Setup for Use
-    void EnableDriver(); // Enable Driver Power
-    void DisableDriver(); // Disable Driver Power
-    void Calibrate();   // Calibrate Driver
+    bool Init();          // Init DRV and Setup for Use
+    void EnablePower();   // Enable Driver Power
+    void EnableDriver();  // Enable Driver Output
+    void DisableDriver(); // Disable Driver Output
+    void EnableStandby(); // Put Gate Driver in Low Power standby
+    void Calibrate();     // Calibrate Driver
     void FaultReset();    // Reset DRV Faults
 
     /* Helper Functions */

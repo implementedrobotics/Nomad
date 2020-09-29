@@ -270,7 +270,7 @@ bool Motor::OrderPhases(MotorController *controller)
     float test_voltage = config_.calib_current * .075;//config_.phase_resistance;
     float rotor_lock_duration = 2.0f;
     float scan_step_size = 1.0f / 5000.0f; // Amount to step in open loop
-    float scan_range = 4.0f * M_PI;        // Scan range for phase order (electrical range)
+    float scan_range = 8.0f * M_PI;        // Scan range for phase order (electrical range)
 
     config_.phase_order = 1;               // Reset Phase Order to Default
 
@@ -308,7 +308,7 @@ bool Motor::OrderPhases(MotorController *controller)
     }
     theta_end = state_.theta_mech_true;
 
-    //printf("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
+    Logger::Instance().Print("Angle Start: %f, Angle End: %f\n\r", theta_start, theta_end);
     if (theta_end - theta_start > 0)
     {
         Logger::Instance().Print("[MOTOR]: Phase Order CORRECT.\n\r");
