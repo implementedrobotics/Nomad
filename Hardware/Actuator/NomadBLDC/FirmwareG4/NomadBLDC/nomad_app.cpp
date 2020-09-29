@@ -100,11 +100,24 @@ void StartMotorControlThread()
     osThreadAttr_t task_attributes;
     memset(&task_attributes, 0, sizeof(osThreadAttr_t));
     task_attributes.name = "MOTOR_CONTROL_TASK";
-    task_attributes.priority = (osPriority_t)osPriorityRealtime;
+    task_attributes.priority = (osPriority_t)osPriorityNormal;
     task_attributes.stack_size = 2048;
 
     osThreadNew(motor_controller_thread_entry, NULL, &task_attributes);
 }
+
+void StartPollingThread()
+{
+    // Start Motor Control Thread
+    osThreadAttr_t task_attributes;
+    memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+    task_attributes.name = "POLL_TASK";
+    task_attributes.priority = (osPriority_t)osPriorityNormal;
+    task_attributes.stack_size = 2048;
+
+    osThreadNew(ms_poll_task, NULL, &task_attributes);
+}
+
 
 void DebugTask()
 {
@@ -357,54 +370,40 @@ extern "C" int app_main() //
 
     // Start Communications Threads (UART/CAN)
     StartCommunicationThreads();
-
-    // Delay
     osDelay(100);
 
     // Init LED Service Task
     StartLEDService();
-
-    // Delay
     osDelay(500);
 
     // Start Motor Control Task
     StartMotorControlThread();
+    osDelay(500);
 
-    osDelay(3000);
+    // Start Misc Polling Task
+    StartPollingThread();
+    osDelay(500);
 
-    measure_motor_phase_order();
+    measure_motor_parameters();
+
+    //measure_motor_phase_order();
     //measure_motor_parameters();
     //DRV_Test();
     // FlashTest();
-    // Init Misc Polling Task
 
-    // Init Motor Control Task
+   // start_voltage_control();
 
     // Init a temp debug Task
     DebugTask();
 
-    EnableADC(ADC4);
-
-    float B = 3455.0;
-    float R_0 = 10000.0; // 10K FET Thermistor.  Should be parameter?
-    float R_bal = 10000.0; // Divider Resistor
-
     // Infinite Loop.
     for (;;)
     {
-        // Logger::Instance().Print("Count: %d\r\n", LL_TIM_OC_GetCompareCH1(TIM8));
-        // Logger::Instance().Print("Value: %d | %d | %d.\r\n", value_adc1, value_adc2, value_adc3);
-        uint16_t raw = PollADC(ADC4);
-        float V_out = 3.3f * raw / 4096.0f;
-        float R_th = 3.3f * R_bal / V_out - R_bal;
-
-        // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
-        float temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
-        // uint16_t volt = 0;
-        // volt= __LL_ADC_CALC_DATA_TO_VOLTAGE(3300UL, raw, LL_ADC_RESOLUTION_12B);
-       // Logger::Instance().Print("Value: %fc | :%d.\r\n", temp, raw);
-        osDelay(200);
+    //     // volt= __LL_ADC_CALC_DATA_TO_VOLTAGE(3300UL, raw, LL_ADC_RESOLUTION_12B);
+        // Logger::Instance().Print("Test.\r\n");
+         osDelay(200);
     }
+
     // Should not get here
     return 0;
 }

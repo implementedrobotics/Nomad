@@ -68,7 +68,7 @@ void init_uart_threads(void *arg)
    // uart_rx_queue_id = osMessageQueueNew(10, sizeof(void *), NULL);
 
     // Setup mode.  HDLC Default
-    mode_ = ASCII;
+    mode_ = HDLC;
 
     // HDLC Initial
     frame_offset = 0;
@@ -271,6 +271,8 @@ void hdlc_rx(const uint8_t *data, size_t length)
                     if (frame_chksum == sent_chksum)
                     {
                         // Execute Command Callback
+                        // TODO: Should be in an RX Callback
+                        // Use std::function?
                         //CommandHandler::ProcessPacket(receive_buffer_, frame_offset - 2);
                     }
                 }

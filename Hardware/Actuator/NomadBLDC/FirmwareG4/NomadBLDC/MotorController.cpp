@@ -72,13 +72,45 @@ struct __attribute__((__aligned__(8))) Save_format_t
     //uint8_t can_reserved[128]; // Reserved;
 };
 
+void ms_poll_task(void *arg)
+{
+
+    // Start Measurements ADC
+    EnableADC(ADC4);
+    EnableADC(ADC5);
+
+    float B = 3455.0;
+    float R_0 = 10000.0; // 10K FET Thermistor.  Should be parameter?
+    float R_bal = 10000.0; // 10K Divider Resistor
+
+    // TODO: Wait on timer signal
+    for (;;)
+    {
+        uint16_t fet_counts = PollADC(ADC4);
+        uint16_t batt_counts = PollADC(ADC5);
+
+        // Filter bus measurement a bit
+        motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)batt_counts) * voltage_scale;
+        
+        // Calc FET Temp
+        float V_out = 3.3f * fet_counts / 4096.0f;
+        float R_th = 3.3f * R_bal / V_out - R_bal;
+
+        // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
+        motor_controller->state_.fet_temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
+
+        Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
+        Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
+        osDelay(300);
+    }
+}
 void motor_controller_thread_entry(void *arg)
 {
     //printf("Motor RT Controller Task Up.\n\r");
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
     // Init Motor and Implicitly Position Sensor
-    motor = new Motor(0.000025f, 100, 21);
+    motor = new Motor(0.000025f, 285, 12);
 
     // Init Motor Controller
     motor_controller = new MotorController(motor);
@@ -152,39 +184,37 @@ void set_voltage_control_ref(float V_d, float V_q)
 }
 void current_measurement_cb()
 {
-    // // Measure Currents/Bus Voltage
-    // int32_t adc2_raw = ADC2->DR; // Current Sense Measurement 1
-    // int32_t adc1_raw = ADC1->DR; // Current Sense Measurement 2
-    // int32_t adc3_raw = ADC3->DR; // Voltage Bus Measurement.  TODO: Move this to a different/slower timer
+    // Measure Currents/Bus Voltage
+    uint16_t adc1_raw = LL_ADC_REG_ReadConversionData12(ADC1); // Current Sense Measurement
+    uint16_t adc2_raw = LL_ADC_REG_ReadConversionData12(ADC2); // Current Sense Measurement
+    uint16_t adc3_raw = LL_ADC_REG_ReadConversionData12(ADC3); // Current Sense Measurement
 
-    // // TODO: Not sure this is necessasry?
     // Depends on PWM duty cycles
-    // if (motor->config_.phase_order) // Check Phase Ordering
-    // {
-    //     motor->state_.I_b = current_scale * (float)(adc2_raw - g_adc2_offset);
-    //     motor->state_.I_c = current_scale * (float)(adc1_raw - g_adc1_offset);
-    // }
-    // else
-    // {
-    //     motor->state_.I_b = current_scale * (float)(adc1_raw - g_adc1_offset);
-    //     motor->state_.I_c = current_scale * (float)(adc2_raw - g_adc2_offset);
-    // }
-    // // Kirchoffs Current Law to compute 3rd unmeasured current.
-    // motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
+    if (motor->config_.phase_order) // Check Phase Ordering
+    {
+        motor->state_.I_a = current_scale * (float)(adc2_raw - g_adc2_offset);
+        motor->state_.I_b = current_scale * (float)(adc3_raw - g_adc3_offset);
+        motor->state_.I_c = current_scale * (float)(adc1_raw - g_adc1_offset);
+    }
+    else
+    {
+        motor->state_.I_a = current_scale * (float)(adc1_raw - g_adc1_offset);
+        motor->state_.I_b = current_scale * (float)(adc3_raw - g_adc3_offset);
+        motor->state_.I_c = current_scale * (float)(adc2_raw - g_adc2_offset);
+    }
+    // Kirchoffs Current Law to compute 3rd unmeasured current.
+    //motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
 
-    // // Always Update Motor State
-    // motor->Update();
+    // TODO: Use Longest Duty Cycle Measurements for which of the 3 phases to use
 
-    // // Filter bus measurement a bit
-    // motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)adc3_raw) * voltage_scale;
+    // Always Update Motor State
+    motor->Update();
 
-    motor_controller->state_.Voltage_bus = 24;
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
-      
-       osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-        LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+        osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
+        //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     }
 }
 
@@ -663,8 +693,8 @@ void MotorController::StartControlFSM()
                 UpdateControllerGains();
 
                 // TODO: Check Errors
-                //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-                control_mode_ = IDLE_MODE;
+                Logger::Instance().Print("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+                control_mode_ = FOC_VOLTAGE_MODE;
             }
             //printf("Calib Mode!\r\n");
             osDelay(1);
@@ -743,6 +773,7 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
 
+                 Logger::Instance().Print("In Voltage\n");
                 // Make sure we are calibrated:
                 if (!motor_->config_.calibrated)
                 {
@@ -811,6 +842,7 @@ void MotorController::DoMotorControl()
     NVIC_DisableIRQ(USART2_IRQn);
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
+       // motor_controller->state_.V_q_ref = 2.5;
         motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
         motor_controller->state_.V_q = motor_controller->state_.V_q_ref;
         SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
@@ -1067,9 +1099,6 @@ void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
     //dqInverseTransform(0.0f, lock_voltage, 0.0f, &U, &V, &W); // Test voltage to D-Axis
     float v_alpha, v_beta;
     ParkInverseTransform(theta, v_d, v_q, &v_alpha, &v_beta);
-
-    //Logger::Instance().Print("VD: %f, VQ: %f!\r\n", v_d, v_q);
-   //  Logger::Instance().Print("Alpha: %f, Beta: %f!\r\n", v_alpha, v_beta);
     SetModulationOutput(v_alpha, v_beta);
 }
 

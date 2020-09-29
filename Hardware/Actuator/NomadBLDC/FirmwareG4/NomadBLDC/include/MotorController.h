@@ -192,6 +192,9 @@ public:
         float I_rms;                 // Motor RMS Current Value
         float I_max;                 // Maximum Allowable Commanded Current in next Time Step
 
+        // Temps
+        float fet_temp;              // FET Temperature
+
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
     };
