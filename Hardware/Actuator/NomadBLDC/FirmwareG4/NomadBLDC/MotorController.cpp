@@ -99,9 +99,9 @@ void ms_poll_task(void *arg)
         // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
         motor_controller->state_.fet_temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
 
-        Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
-        Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
-        osDelay(300);
+       // Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
+       // Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
+        osDelay(1);
     }
 }
 void motor_controller_thread_entry(void *arg)
@@ -244,7 +244,7 @@ bool zero_current_sensors(uint32_t num_samples)
     g_adc2_offset = g_adc2_offset / num_samples;
     g_adc3_offset = g_adc3_offset / num_samples;
 
-    Logger::Instance().Print("ADC OFFSET: %d and %d and %d\r\n", g_adc1_offset, g_adc2_offset, g_adc3_offset);
+    Logger::Instance().Print("\r\nADC OFFSET: %d and %d and %d\r\n", g_adc1_offset, g_adc2_offset, g_adc3_offset);
     return true;
 }
 
@@ -276,7 +276,7 @@ bool measure_encoder_offset()
 }
 bool save_configuration()
 {
-    //printf("\r\nSaving Configuration...\r\n");
+    Logger::Instance().Print("\r\nSaving Configuration...\r\n");
 
     bool status = false;
     Save_format_t save;
@@ -287,9 +287,11 @@ bool save_configuration()
     save.controller_config = motor_controller->config_;
 
     // Write Flash
-    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(save), FlashDevice::WRITE);
+    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_60, sizeof(save), FlashDevice::WRITE);
     status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashDevice::Instance().Close();
+
+    Logger::Instance().Print("\r\Saved Configuration: %d\r\n",status);
 
     return status;
     //printf("\r\nSaved.  Press ESC to return to menu.\r\n");
@@ -299,14 +301,14 @@ void load_configuration()
     //printf("\r\nLoading Configuration...\r\n");
     Save_format_t load;
 
-    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_252, sizeof(load), FlashDevice::READ);
-    FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
+    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_60, sizeof(load), FlashDevice::READ);
+    bool status = FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
     FlashDevice::Instance().Close();
 
     if (load.signature != FLASH_SAVE_SIGNATURE || load.version != FLASH_VERSION)
     {
         //printf("\r\nERROR: No Configuration Found!.  Press ESC to return to menu.\r\n\r\n");
-        Logger::Instance().Print("ERROR: No Valid Configuration Found!  Please run setup before enabling drive.");
+        Logger::Instance().Print("ERROR: No Valid Configuration Found!  Please run setup before enabling drive: %d\r\n", status);
         return;
     }
 
@@ -584,6 +586,8 @@ void MotorController::Init()
     // Load Configuration
     load_configuration();
 
+    Logger::Instance().Print("\r\nResitance: %f\r\n", motor_->config_.phase_resistance);
+
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
 
@@ -692,6 +696,7 @@ void MotorController::StartControlFSM()
                 motor->Calibrate(motor_controller);
                 UpdateControllerGains();
 
+                save_configuration();
                 // TODO: Check Errors
                 Logger::Instance().Print("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = FOC_VOLTAGE_MODE;
@@ -842,7 +847,7 @@ void MotorController::DoMotorControl()
     NVIC_DisableIRQ(USART2_IRQn);
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-       // motor_controller->state_.V_q_ref = 2.5;
+        motor_controller->state_.V_q_ref = 1.0;
         motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
         motor_controller->state_.V_q = motor_controller->state_.V_q_ref;
         SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);

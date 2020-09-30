@@ -31,6 +31,7 @@
 
 // Project Includes
 #include "MotorController.h"
+#include "motor_controller_interface.h"
 #include "Logger.h"
 #include "math_ops.h"
 #include <Utilities/utils.h>
@@ -49,8 +50,8 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.phase_inductance_d = 0.0f;
     config_.phase_inductance_q = 0.0f;
     config_.phase_order = 1;
-    config_.calib_current = 15.0f;
-    config_.calib_voltage = 1.0f;
+    config_.calib_current = 10.0f;
+    config_.calib_voltage = 2.0f;
     config_.gear_ratio = 1.0f; // No Gearbox by default
     config_.calibrated = 0;
 

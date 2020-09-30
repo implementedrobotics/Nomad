@@ -62,8 +62,9 @@ extern "C" void signal_set(void *arg)
     Logger::Instance().Print("Start: \r\n");
     for (;;)
     {
-        uint32_t flag = osThreadFlagsWait(0x3, osFlagsWaitAll, 3000);
-        Logger::Instance().Print("Flag: %d\r\n", flag);
+        //uint32_t flag = osThreadFlagsWait(0x3, osFlagsWaitAll, 3000);
+        Logger::Instance().Print("Flag: %d\r\n", 10);
+        //osDelay(1);
     }
 
     osThreadExit();
@@ -100,7 +101,7 @@ void StartMotorControlThread()
     osThreadAttr_t task_attributes;
     memset(&task_attributes, 0, sizeof(osThreadAttr_t));
     task_attributes.name = "MOTOR_CONTROL_TASK";
-    task_attributes.priority = (osPriority_t)osPriorityNormal;
+    task_attributes.priority = (osPriority_t)osPriorityRealtime1;
     task_attributes.stack_size = 2048;
 
     osThreadNew(motor_controller_thread_entry, NULL, &task_attributes);
@@ -118,9 +119,17 @@ void StartPollingThread()
     osThreadNew(ms_poll_task, NULL, &task_attributes);
 }
 
-
 void DebugTask()
 {
+    // // Signal Test
+    // osThreadAttr_t task_attributes;
+    // memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+    // task_attributes.name = "SIGNAL_TEST";
+    // task_attributes.priority = (osPriority_t)osPriorityNormal;
+    // task_attributes.stack_size = 2048;
+
+    // sig_thread = osThreadNew(signal_set, NULL, &task_attributes);
+
     // for(;;)
     // {
     //     //LEDService::Instance().Blink(100,900);
@@ -384,24 +393,25 @@ extern "C" int app_main() //
     StartPollingThread();
     osDelay(500);
 
-    measure_motor_parameters();
+
+    osDelay(5000);
+    //measure_motor_inductance();
 
     //measure_motor_phase_order();
     //measure_motor_parameters();
     //DRV_Test();
     // FlashTest();
 
-   // start_voltage_control();
+    start_voltage_control();
 
     // Init a temp debug Task
-    DebugTask();
+    //DebugTask();
 
     // Infinite Loop.
     for (;;)
     {
-    //     // volt= __LL_ADC_CALC_DATA_TO_VOLTAGE(3300UL, raw, LL_ADC_RESOLUTION_12B);
-        // Logger::Instance().Print("Test.\r\n");
-         osDelay(200);
+        //Logger::Instance().Print("Test.\r\n");
+        osDelay(200);
     }
 
     // Should not get here
