@@ -99,9 +99,9 @@ void ms_poll_task(void *arg)
         // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
         motor_controller->state_.fet_temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
 
-       // Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
-       // Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
-        osDelay(1);
+       //Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
+       //Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
+       osDelay(1);
     }
 }
 void motor_controller_thread_entry(void *arg)
@@ -803,18 +803,23 @@ void MotorController::StartControlFSM()
                 continue;
             }
 
+            LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+           // DWT->CYCCNT = 0;
             // Measure
             // TODO: Transform to Id/Iq here?.  For now use last sample.  
             // TOOD: Do this in the current control loop
             // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-            static float I_sample = 0.0f;
-            arm_sqrt_f32(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q, &I_sample);
+            //static float I_sample = 0.0f;
+           //float j = arm_sqrt_f32(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q, &I_sample);
             // Update Current Limiter
-            current_limiter->AddCurrentSample(I_sample);
-            motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
-            motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
-
+            //current_limiter->AddCurrentSample(I_sample);
+           // motor_controller->state_.I_rms = j;//current_limiter->GetRMSCurrent();
+            //motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
+            
             DoMotorControl();
+            LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+           // uint32_t span = DWT->CYCCNT;
+            //Logger::Instance().Print("Count: %f\r\n", j);
             break;
         }
         // case (ENCODER_DEBUG):
@@ -845,6 +850,7 @@ void MotorController::StartControlFSM()
 void MotorController::DoMotorControl()
 {
     NVIC_DisableIRQ(USART2_IRQn);
+    
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
         motor_controller->state_.V_q_ref = 1.0;
@@ -854,9 +860,9 @@ void MotorController::DoMotorControl()
 
         // Update V_d/V_q
         // TODO: Should probably have this more universal somewhere
-        dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
-        motor_controller->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
-        motor_controller->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
+       // dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
+       // motor_controller->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
+        //motor_controller->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
     {
@@ -866,6 +872,7 @@ void MotorController::DoMotorControl()
     {
         TorqueControl();
     }
+   // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     NVIC_EnableIRQ(USART2_IRQn);
 }
 void MotorController::CurrentControl()

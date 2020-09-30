@@ -394,7 +394,7 @@ extern "C" int app_main() //
     osDelay(500);
 
 
-    osDelay(5000);
+    osDelay(2000);
     //measure_motor_inductance();
 
     //measure_motor_phase_order();
@@ -406,12 +406,12 @@ extern "C" int app_main() //
 
     // Init a temp debug Task
     //DebugTask();
-
+    int i = 0;
     // Infinite Loop.
     for (;;)
     {
-        //Logger::Instance().Print("Test.\r\n");
-        osDelay(200);
+       // Logger::Instance().Print("Test: %d.\r\n", i++);
+        osDelay(1000);
     }
 
     // Should not get here

@@ -6,7 +6,7 @@
         {
             "label": "Make Firmware",
             "type": "shell",
-            "command": "make -j8 all TARGET=nomad_bldc_fw_g4 OPT=\"-Og\" BINPATH=\"/usr/bin\"",
+            "command": "make -j8 all TARGET=nomad_bldc_fw_g4 OPT=\"-O2\" BINPATH=\"/usr/bin\"",
             "options": {
                 "cwd": "${workspaceRoot}"
             }, 
