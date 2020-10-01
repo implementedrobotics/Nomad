@@ -402,7 +402,7 @@ extern "C" int app_main() //
     //DRV_Test();
     // FlashTest();
 
-    start_voltage_control();
+    //start_voltage_control();
 
     // Init a temp debug Task
     //DebugTask();
