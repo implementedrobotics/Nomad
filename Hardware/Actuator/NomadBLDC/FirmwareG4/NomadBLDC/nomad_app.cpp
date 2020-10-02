@@ -37,6 +37,7 @@
 
 // Project Includes
 #include "main.h"
+#include <Peripherals/uart_new.h>
 #include <Peripherals/uart.h>
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
