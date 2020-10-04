@@ -31,6 +31,7 @@
 #include <string>
 
 // Project Includes
+#include <Peripherals/uart_new.h>
 #include "CommandHandler.h"
 
 class Logger
@@ -43,6 +44,9 @@ public:
     static Logger& Instance();
     void Enable(bool enable);
     void Print(const char *format, ...);
+    void SetUART(UARTDevice *uart) { uart_ = uart; } 
+protected:
+    UARTDevice *uart_;
 };
 
 #endif // LOGGER_H_

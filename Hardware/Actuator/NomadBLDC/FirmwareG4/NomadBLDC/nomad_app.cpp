@@ -58,6 +58,9 @@ __IO uint16_t count_adc2 = 0;
 __IO uint16_t count_adc3 = 0;
 
 osThreadId_t sig_thread;
+
+UARTDevice *uart;
+
 extern "C" void signal_set(void *arg)
 {
     Logger::Instance().Print("Start: \r\n");
@@ -74,12 +77,21 @@ extern "C" void signal_set(void *arg)
 void StartCommunicationThreads()
 {
     // Start UART
-    osThreadAttr_t task_attributes;
-    memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-    task_attributes.name = "UART_TASK";
-    task_attributes.priority = (osPriority_t)osPriorityNormal;
-    task_attributes.stack_size = 512;
-    osThreadNew(init_uart_threads, (void *)USART2, &task_attributes);
+    // osThreadAttr_t task_attributes;
+    // memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+    // task_attributes.name = "UART_TASK";
+    // task_attributes.priority = (osPriority_t)osPriorityNormal;
+    // task_attributes.stack_size = 512;
+    // osThreadNew(init_uart_threads, (void *)USART2, &task_attributes);
+
+    // Setup some pins
+    GPIO_t rx = {USART_RX_GPIO_Port, USART_RX_Pin};
+    GPIO_t tx = {USART_TX_GPIO_Port, USART_TX_Pin};
+
+    uart = new UARTDevice(USART2, rx, tx);
+    uart->Init();
+    uart->SetMode(UARTDevice::ASCII);
+    uart->SendString("Hello Test!\r\n");
 
     // Start CAN
 }
@@ -375,27 +387,28 @@ extern "C" void ADC3_IRQHandler(void)
 
 extern "C" int app_main() //
 {
-    // Start Logger Service
-    Logger::Instance().Enable(true);
-
     // Start Communications Threads (UART/CAN)
     StartCommunicationThreads();
     osDelay(100);
+
+     // Start Logger Service
+    Logger::Instance().Enable(true);
+    Logger::Instance().SetUART(uart);
 
     // Init LED Service Task
     StartLEDService();
     osDelay(500);
 
-    // Start Motor Control Task
-    StartMotorControlThread();
-    osDelay(500);
+    // // Start Motor Control Task
+    // StartMotorControlThread();
+    // osDelay(500);
 
-    // Start Misc Polling Task
-    StartPollingThread();
-    osDelay(500);
+    // // Start Misc Polling Task
+    // StartPollingThread();
+    // osDelay(500);
 
 
-    osDelay(2000);
+    // osDelay(2000);
     //measure_motor_inductance();
 
     //measure_motor_phase_order();
@@ -411,7 +424,7 @@ extern "C" int app_main() //
     // Infinite Loop.
     for (;;)
     {
-       // Logger::Instance().Print("Test: %d.\r\n", i++);
+        Logger::Instance().Print("Test: %d.\r\n", 10);
         osDelay(1000);
     }
 

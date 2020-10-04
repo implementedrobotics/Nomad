@@ -28,7 +28,6 @@
 
 // C++ Includes
 #include <functional>
-#include <iostream>
 
 // C System Files
 #include <stdint.h>
@@ -38,11 +37,63 @@
 // Project Includes
 #include <main.h> // STM32 Driver Includes
 
-// RTOS Threads
-void start_uart_rx_thread(void *arg);
-
+// RTOS Variables
 osThreadId_t rx_thread_id = 0;
 
+/* C Functions for RTOS */
+void start_uart_rx_thread(void *arg)
+{
+    UARTDevice *uart = static_cast<UARTDevice *>(arg);
+
+    // uart_send_str("\r\n\r\nNomad Firmware v2.0 STM32G4 Beta\r\n");
+
+    for (;;)
+    {
+        // Wait for Receive Signal Event On Interrupt
+        osThreadFlagsWait(UARTDevice::UART_RX_DATA, osFlagsWaitAll, osWaitForever);
+
+        // LL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);
+        // Read our receive buffer
+
+        uart->ReceiveHandler();
+
+    }
+}
+
+
+// TODO: These should be generic...
+/**
+  * @brief This function handles DMA1 channel1 global interrupt.
+  */
+extern "C" void DMA1_Channel1_IRQHandler(void)
+{
+  // DMA Half Complete Callback
+  if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_HT1(DMA1))
+  {
+    LL_DMA_ClearFlag_HT1(DMA1);                        // Clear Flag
+    osThreadFlagsSet(rx_thread_id, UARTDevice::UART_RX_DATA);
+  }
+
+  // DMA Full Complete Callback
+  if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_TC1(DMA1))
+  {
+    LL_DMA_ClearFlag_TC1(DMA1);                        // Clear Flag
+    osThreadFlagsSet(rx_thread_id, UARTDevice::UART_RX_DATA);
+  }
+}
+
+/**
+  * @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
+  */
+extern "C" void USART2_IRQHandler(void)
+{
+  // Check for IDLE Interrupt
+  if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2))
+  {
+    LL_USART_ClearFlag_IDLE(USART2);                   // Clear Flag
+    osThreadFlagsSet(rx_thread_id, UARTDevice::UART_RX_DATA);
+  }
+}
 
 UARTDevice::UARTDevice(USART_TypeDef *UART, GPIO_t rx_pin, GPIO_t tx_pin) : UART_(UART), rx_pin_(rx_pin), tx_pin_(tx_pin), old_rx_buffer_pos_(0)
 {
@@ -54,8 +105,8 @@ UARTDevice::UARTDevice(USART_TypeDef *UART, GPIO_t rx_pin, GPIO_t tx_pin) : UART
 
     // Update Mode
     SetMode(ASCII);
-}
 
+}
 
 void UARTDevice::SetBaud(uint32_t baud)
 {
@@ -66,73 +117,124 @@ void UARTDevice::SetMode(UART_DATA_MODE mode)
 {
 
     using namespace std::placeholders;
-    
     switch (mode)
     {
     case UART_DATA_MODE::HDLC:
         RegisterRXCallback(std::bind(&UARTDevice::ReceiveHDLC, this, _1, _2));
-        //register_rx_callback(hdlc_rx);
-        //uart_send_str("UART MODE: HDLC\r\n");
         break;
 
     case UART_DATA_MODE::ASCII:
         RegisterRXCallback(std::bind(&UARTDevice::ReceiveEcho, this, _1, _2));
-        //uart_send_str("UART MODE: ASCII\r\n");
         break;
 
     case UART_DATA_MODE::BINARY:
         RegisterRXCallback(std::bind(&UARTDevice::ReceiveEcho, this, _1, _2));
-        //uart_send_str("UART MODE: BINARY\r\n");
         break;
 
     default:
         RegisterRXCallback(std::bind(&UARTDevice::ReceiveEcho, this, _1, _2));
-        //uart_send_str("UART MODE: UNDEFINED!\r\n");
     }
 
+    // Set Mode
     mode_ = mode;
 }
+
 void UARTDevice::ReceiveEcho(const uint8_t *data, size_t length)
 {
-
+    // Echo Back
+    Send(data, length);
 }
 
 void UARTDevice::ReceiveHDLC(const uint8_t *data, size_t length)
 {
+    // for (; length > 0; --length, ++data)
+    // {
+    //     uint8_t byte = *data;
+    //     if (byte == FRAME_BOUNDARY && !in_escape)
+    //     {
+    //         // Check for End Frame + Validity
+    //         if (frame_offset >= 2) // Need atleast 3 bytes for a valid frame, (BEGIN, CMD, LENGTH)
+    //         {
+    //             // Command = receive_buffer_[0]
+    //             // Payload Length = receive_buffer_[1]
+    //             // Fast early out on packet length
+    //             if ((frame_offset - 4) == hdlc_rx_buffer[1])
+    //             {
+    //                 // Length matches now verify checksum
+    //                 uint16_t sent_chksum = (hdlc_rx_buffer[frame_offset - 1] << 8) | (hdlc_rx_buffer[frame_offset - 2] & 0xff);
+    //                 frame_chksum = crc16_compute(hdlc_rx_buffer, frame_offset - 2);
+    //                 if (frame_chksum == sent_chksum)
+    //                 {
+    //                     // Execute Command Callback
+    //                     // TODO: Should be in an RX Callback
+    //                     // Use std::function?
+    //                     //CommandHandler::ProcessPacket(receive_buffer_, frame_offset - 2);
+    //                 }
+    //             }
+    //             // TODO: If invalid do we add support for an ack?
+    //         }
+    //         // Reset and look for next Frame
+    //         frame_offset = 0;
+    //         frame_chksum = 0;
+    //         return;
+    //     }
 
+    //     // Handle Escape Sequences
+    //     if (in_escape)
+    //     {
+    //         byte ^= ESCAPE_INVERT;
+    //         in_escape = 0;
+    //     }
+    //     else if (byte == CONTROL_ESCAPE)
+    //     {
+    //         in_escape = 1;
+    //         return; // Return here to read real byte on next run
+    //     }
+
+    //     // Copy to buffer
+    //     hdlc_rx_buffer[frame_offset++] = byte;
+
+    //     if (frame_offset >= PACKET_SIZE_LIMIT) // Overflow Packet Limit,
+    //     {
+    //         frame_offset = 0; // Reset
+    //         frame_chksum = 0;
+    //     }
+    // }
 }
 
 void UARTDevice::RegisterRXCallback(const std::function<void(const uint8_t*, size_t)>& callback)
 {
     callback_rx_ = callback;
 }
+
 bool UARTDevice::Init()
 {
     // Init Device
     USART_Init();
+    osDelay(100);
 
     // Setup RTOS Threads
-    
-    // Start RX Thread
+
+    // RX Thread Attributes
     osThreadAttr_t task_attributes;
     memset(&task_attributes, 0, sizeof(osThreadAttr_t));
     task_attributes.name = "UART_RX_TASK";
     task_attributes.priority = (osPriority_t)osPriorityNormal;
     task_attributes.stack_size = kStackSizeRX;
 
-
-    rx_thread_id = osThreadNew(start_uart_rx_thread, NULL, &task_attributes);
+    // Start RX Thread
+    rx_thread_id = osThreadNew(start_uart_rx_thread, (void *)this, &task_attributes);
 
     return true;
 }
 
 void UARTDevice::ReceiveHandler()
 {
-    size_t pos;
 
     // TODO: This is for DMA only.  Could be polling or interrupt based later
     // TODO: Make us a "buffer object" to handle this
     // Compute where we are in the DMA buffer
+    size_t pos;
     pos = kBufferSizeRX - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_1);
     if (pos != old_rx_buffer_pos_) // We have new data in buffer
     {
@@ -164,6 +266,7 @@ void UARTDevice::ReceiveHandler()
 
 uint32_t UARTDevice::Send(const uint8_t *data, size_t length)
 {
+    // TODO: DMA Send Mode
     uint32_t sent_bytes = 0;
     for (; length > 0; --length, ++data)
     {
@@ -227,6 +330,17 @@ uint32_t UARTDevice::SendHDLC(const uint8_t *packet, size_t length)
 void UARTDevice::USART_Init()
 {
 
+    // Init DMA
+    /* Init with LL driver */
+    /* DMA controller clock enable */
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMAMUX1);
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
+
+    /* DMA interrupt init */
+    /* DMA1_Channel1_IRQn interrupt configuration */
+    NVIC_SetPriority(DMA1_Channel1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 5, 0));
+    NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
     LL_USART_InitTypeDef USART_InitStruct = {0};
 
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -274,7 +388,7 @@ void UARTDevice::USART_Init()
     LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_BYTE);
 
     /* USART2 interrupt Init */
-    NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 6, 0));
+    NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 5, 0));
     NVIC_EnableIRQ(USART2_IRQn);
 
     /* Configure the DMA functional parameters for reception */
@@ -321,19 +435,4 @@ void UARTDevice::USART_Init()
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_1);
 }
 
-/* C Functions for RTOS */
-void start_uart_rx_thread(void *arg)
-{
-    UARTDevice *uart = static_cast<UARTDevice *>(arg);
 
-    // uart_send_str("\r\n\r\nNomad Firmware v2.0 STM32G4 Beta\r\n");
-
-    for (;;)
-    {
-        // Wait for Receive Signal Event On Interrupt
-        osThreadFlagsWait(UARTDevice::UART_RX_DATA, osFlagsWaitAll, osWaitForever);
-
-        // Read our receive buffer
-        uart->ReceiveHandler();
-    }
-}

@@ -291,7 +291,7 @@ bool save_configuration()
     status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
     FlashDevice::Instance().Close();
 
-    Logger::Instance().Print("\r\Saved Configuration: %d\r\n",status);
+    Logger::Instance().Print("\r\nSaved Configuration: %d\r\n",status);
 
     return status;
     //printf("\r\nSaved.  Press ESC to return to menu.\r\n");

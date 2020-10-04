@@ -25,46 +25,12 @@
 #ifndef CORE_PERIPHERAL_UARTNEW_H_
 #define CORE_PERIPHERAL_UARTNEW_H_
 
-// #define RX_DMA_BUFFER_SIZE 64
-// #define TX_DMA_BUFFER_SIZE 64
-
-// #define RX_STACK_SIZE 2048
-// #define TX_STACK_SIZE 1024
-
 #include <cmsis_os2.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <Peripherals/gpio.h>
 #include <functional>
 #include <main.h> 
-
-
-
-// // Define some callbacks
-// typedef void (*uart_rx_cb)(const uint8_t *data, size_t length);
-
-// extern osThreadId_t uart_rx_thread_id;   // UART Receive Task ID
-// // osThreadId_t uart_tx_thread_id;   // UART Transmit Task ID
-
-// extern osMessageQueueId_t uart_rx_queue_id; // Message Queue to receive UART data
-// extern osMessageQueueId_t uart_tx_queue_id; // Message Queue to transmit UART data
-
-// extern uint8_t uart_rx_buffer[RX_DMA_BUFFER_SIZE]; // RX Receive Buffer
-
-// void init_uart_threads(void *arg);
-// void init_uart_rx_thread(void *arg); // Thread for UART Receive
-// void init_uart_tx_thread(); // Thread for UART Transmit
-// void init_status_led_thread(void *arg);
-// void uart_rx_buffer_process(); // Helper functions.
-
-// uint32_t uart_send_data_hdlc(const uint8_t *data, size_t length); // Encode UART Packet for HDLC
-// uint32_t uart_send_data(const uint8_t *data, size_t length); // Send bytes over UART
-// uint32_t uart_send_str(const char *data); // Send string over UART
-
-// void register_rx_callback(uart_rx_cb rx_callback); // Receive callback for received bytes
-// void echo_rx(const uint8_t *data, size_t length);  // Default callback loopback echo
-// void hdlc_rx(const uint8_t *data, size_t length);  // Default callback for HDLC mode
-
 
 class UARTDevice
 {
@@ -77,7 +43,6 @@ public:
 
     static const uint16_t kStackSizeRX = 2048;
     static const uint16_t kStackSizeTX = 1024;
-
 
     // Data Type
     // TODO: Should we have Handlers register callbacks or have it be part of the driver
@@ -112,6 +77,14 @@ public:
     // Receive Handler for RX Task Callback
     void ReceiveHandler();
 
+    // Encode UART Packet for HDLC
+    uint32_t SendHDLC(const uint8_t *data, size_t length);
+
+    // Send string over UART
+    uint32_t SendString(const char *string);
+
+    // Send Raw data over UART
+    uint32_t Send(const uint8_t *data, size_t length); // Send bytes over UART
 
 protected:
 
@@ -123,15 +96,6 @@ protected:
 
     // Handle received bytes when in HDLC mode
     void ReceiveHDLC(const uint8_t *data, size_t length);
-
-    // Encode UART Packet for HDLC
-    uint32_t SendHDLC(const uint8_t *data, size_t length);
-
-    // Send string over UART
-    uint32_t SendString(const char *string);
-
-    // Send Raw data over UART
-    uint32_t Send(const uint8_t *data, size_t length); // Send bytes over UART
 
 private:
 

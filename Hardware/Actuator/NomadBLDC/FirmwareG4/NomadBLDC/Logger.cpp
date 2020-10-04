@@ -36,7 +36,7 @@
 // Project Includes
 #include "CommandHandler.h"
 
-Logger::Logger() : enable_logging_(false) 
+Logger::Logger() : enable_logging_(false), uart_(nullptr)
 {
 
 }
@@ -57,7 +57,7 @@ void Logger::Enable(bool enable)
 // Formatted Logging print function
 void Logger::Print(const char *format ...) 
 {
-    if(!enable_logging_) // Logging not currently enabled
+    if (!enable_logging_ || uart_ == nullptr) // Logging not currently enabled
         return;
 
     // Variable argument array list
@@ -66,7 +66,7 @@ void Logger::Print(const char *format ...)
 
     va_list vaCopy;
     va_copy(vaCopy, vaArgs);
-   const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
+    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
     va_end(vaCopy);
 
     // Return formatted string
@@ -75,5 +75,6 @@ void Logger::Print(const char *format ...)
     va_end(vaArgs);
 
     // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
+    //CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
+    uart_->SendString(zc.data());
 } 
