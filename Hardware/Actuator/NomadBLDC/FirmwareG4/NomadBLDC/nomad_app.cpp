@@ -407,7 +407,7 @@ extern "C" int app_main() //
 
     // Init a temp debug Task
     //DebugTask();
-    int i = 0;
+    // int i = 0;
     // Infinite Loop.
     for (;;)
     {
