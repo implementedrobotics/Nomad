@@ -65,7 +65,7 @@ public:
     // Set Mode
     void SetMode(UART_DATA_MODE mode);
 
-    // Set Baud
+    // Set Baud (Must be called before Init)
     void SetBaud(uint32_t baud);
 
     // Init UART
