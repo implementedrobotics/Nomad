@@ -90,9 +90,10 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::ASCII);
+    uart->SetMode(UARTDevice::ASCII_MODE);
     uart->SendString("Hello Test!\r\n");
-
+    uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
+    
     // Start CAN
 }
 
@@ -420,11 +421,11 @@ extern "C" int app_main() //
 
     // Init a temp debug Task
     //DebugTask();
-    // int i = 0;
+    int i = 0;
     // Infinite Loop.
     for (;;)
     {
-        Logger::Instance().Print("Test: %d.\r\n", 10);
+        Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
         osDelay(1000);
     }
 

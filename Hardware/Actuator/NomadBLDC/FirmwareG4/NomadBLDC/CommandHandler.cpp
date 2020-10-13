@@ -37,7 +37,7 @@
 #include "Motor.h"
 #include "motor_controller_interface.h"
 #include "nomad_hw.h"
-// #include "Core/Logger.h"
+#include <Logger.h>
 
 #define PACKET_DATA_OFFSET 2
 
@@ -149,6 +149,10 @@ struct __attribute__((__packed__)) Log_command_t
     char log_buffer[256];      // String Buffer
 };
 
+CommandHandler::CommandHandler()
+{
+    
+}
 void CommandHandler::LogCommand(const std::string log_string)
 {
     // Create Log Packet
@@ -221,13 +225,14 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
 
 void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length)
 {
+    Logger::Instance().Print("Echo.\r\n");
     command_t command = static_cast<command_t>(packet_buffer[0]);
     switch (command)
     {
     case COMM_DEVICE_INFO:
     {
         // Get Unique Device ID Offset Register
-        unsigned long *uid = (unsigned long *)0x1FFF7A10;
+        unsigned long *uid = (unsigned long *)UID_BASE;
         Device_info_t info;
 
         info.comm_id = COMM_DEVICE_INFO;

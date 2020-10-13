@@ -25,12 +25,20 @@
 #ifndef CORE_PERIPHERAL_UARTNEW_H_
 #define CORE_PERIPHERAL_UARTNEW_H_
 
-#include <cmsis_os2.h>
+// C System Files
 #include <stdlib.h>
 #include <stdint.h>
-#include <Peripherals/gpio.h>
+
+// C++ System Files
 #include <functional>
+
+// STM32 System Files
+#include <cmsis_os2.h>
 #include <main.h> 
+
+// Project Includes
+#include <Peripherals/gpio.h>
+#include <Protocols/hdlc.h>
 
 class UARTDevice
 {
@@ -48,9 +56,9 @@ public:
     // TODO: Should we have Handlers register callbacks or have it be part of the driver
     typedef enum
     {
-        ASCII = 0,
-        BINARY,
-        HDLC
+        ASCII_MODE = 0,
+        BINARY_MODE,
+        HDLC_MODE
     } UART_DATA_MODE;
 
     // Signals
@@ -74,6 +82,9 @@ public:
     // Callback function for receive buffer processing
     void RegisterRXCallback(const std::function<void(const uint8_t*, size_t)>& callback);
 
+    // Callback function for receive buffer processing
+    void RegisterHDLCCommandCB(const std::function<void(const uint8_t*, size_t)>& callback);
+
     // Receive Handler for RX Task Callback
     void ReceiveHandler();
 
@@ -84,9 +95,12 @@ public:
     uint32_t SendString(const char *string);
 
     // Send Raw data over UART
-    uint32_t Send(const uint8_t *data, size_t length); // Send bytes over UART
+    uint32_t SendBytes(const uint8_t *data, size_t length); // Send bytes over UART
 
 protected:
+
+    // Send Low Level Function
+    uint32_t Send(const uint8_t *data, size_t length); 
 
     // STM32 USART Init Setup
     void USART_Init();
@@ -125,6 +139,8 @@ private:
     // RX Line Activity callback
     std::function<void(const uint8_t*, size_t)> callback_rx_ = [=](const uint8_t*, size_t){};
 
+    // HDLC Protocol Handler
+    HDLCFrame *hdlc_;
 };
 
 

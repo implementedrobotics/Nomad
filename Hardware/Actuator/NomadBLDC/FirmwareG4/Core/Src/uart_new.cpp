@@ -56,10 +56,8 @@ void start_uart_rx_thread(void *arg)
         // Read our receive buffer
 
         uart->ReceiveHandler();
-
     }
 }
-
 
 // TODO: These should be generic...
 /**
@@ -95,7 +93,7 @@ extern "C" void USART2_IRQHandler(void)
   }
 }
 
-UARTDevice::UARTDevice(USART_TypeDef *UART, GPIO_t rx_pin, GPIO_t tx_pin) : UART_(UART), rx_pin_(rx_pin), tx_pin_(tx_pin), old_rx_buffer_pos_(0)
+UARTDevice::UARTDevice(USART_TypeDef *UART, GPIO_t rx_pin, GPIO_t tx_pin) : UART_(UART), rx_pin_(rx_pin), tx_pin_(tx_pin), old_rx_buffer_pos_(0), hdlc_(0)
 {
     rx_dma_ = true;
     tx_dma_ = false;
@@ -104,7 +102,7 @@ UARTDevice::UARTDevice(USART_TypeDef *UART, GPIO_t rx_pin, GPIO_t tx_pin) : UART
     SetBaud(115200);
 
     // Update Mode
-    SetMode(ASCII);
+    SetMode(ASCII_MODE);
 
 }
 
@@ -115,19 +113,21 @@ void UARTDevice::SetBaud(uint32_t baud)
 
 void UARTDevice::SetMode(UART_DATA_MODE mode)
 {
-
     using namespace std::placeholders;
     switch (mode)
     {
-    case UART_DATA_MODE::HDLC:
-        RegisterRXCallback(std::bind(&UARTDevice::ReceiveHDLC, this, _1, _2));
+    case UART_DATA_MODE::HDLC_MODE:
+        if(hdlc_ == nullptr)
+            hdlc_ = new HDLCFrame();
+
+        RegisterRXCallback(std::bind(&HDLCFrame::Decode, hdlc_, _1, _2));
         break;
 
-    case UART_DATA_MODE::ASCII:
+    case UART_DATA_MODE::ASCII_MODE:
         RegisterRXCallback(std::bind(&UARTDevice::ReceiveEcho, this, _1, _2));
         break;
 
-    case UART_DATA_MODE::BINARY:
+    case UART_DATA_MODE::BINARY_MODE:
         RegisterRXCallback(std::bind(&UARTDevice::ReceiveEcho, this, _1, _2));
         break;
 
@@ -145,68 +145,18 @@ void UARTDevice::ReceiveEcho(const uint8_t *data, size_t length)
     Send(data, length);
 }
 
-void UARTDevice::ReceiveHDLC(const uint8_t *data, size_t length)
-{
-    // for (; length > 0; --length, ++data)
-    // {
-    //     uint8_t byte = *data;
-    //     if (byte == FRAME_BOUNDARY && !in_escape)
-    //     {
-    //         // Check for End Frame + Validity
-    //         if (frame_offset >= 2) // Need atleast 3 bytes for a valid frame, (BEGIN, CMD, LENGTH)
-    //         {
-    //             // Command = receive_buffer_[0]
-    //             // Payload Length = receive_buffer_[1]
-    //             // Fast early out on packet length
-    //             if ((frame_offset - 4) == hdlc_rx_buffer[1])
-    //             {
-    //                 // Length matches now verify checksum
-    //                 uint16_t sent_chksum = (hdlc_rx_buffer[frame_offset - 1] << 8) | (hdlc_rx_buffer[frame_offset - 2] & 0xff);
-    //                 frame_chksum = crc16_compute(hdlc_rx_buffer, frame_offset - 2);
-    //                 if (frame_chksum == sent_chksum)
-    //                 {
-    //                     // Execute Command Callback
-    //                     // TODO: Should be in an RX Callback
-    //                     // Use std::function?
-    //                     //CommandHandler::ProcessPacket(receive_buffer_, frame_offset - 2);
-    //                 }
-    //             }
-    //             // TODO: If invalid do we add support for an ack?
-    //         }
-    //         // Reset and look for next Frame
-    //         frame_offset = 0;
-    //         frame_chksum = 0;
-    //         return;
-    //     }
-
-    //     // Handle Escape Sequences
-    //     if (in_escape)
-    //     {
-    //         byte ^= ESCAPE_INVERT;
-    //         in_escape = 0;
-    //     }
-    //     else if (byte == CONTROL_ESCAPE)
-    //     {
-    //         in_escape = 1;
-    //         return; // Return here to read real byte on next run
-    //     }
-
-    //     // Copy to buffer
-    //     hdlc_rx_buffer[frame_offset++] = byte;
-
-    //     if (frame_offset >= PACKET_SIZE_LIMIT) // Overflow Packet Limit,
-    //     {
-    //         frame_offset = 0; // Reset
-    //         frame_chksum = 0;
-    //     }
-    // }
-}
-
 void UARTDevice::RegisterRXCallback(const std::function<void(const uint8_t*, size_t)>& callback)
 {
     callback_rx_ = callback;
 }
 
+void UARTDevice::RegisterHDLCCommandCB(const std::function<void(const uint8_t*, size_t)>& callback)
+{
+    if(hdlc_ != nullptr)
+        hdlc_->RegisterFrameHandler(callback);
+}
+
+            
 bool UARTDevice::Init()
 {
     // Init Device
@@ -281,55 +231,27 @@ uint32_t UARTDevice::Send(const uint8_t *data, size_t length)
     }
     return sent_bytes;
 }
+uint32_t UARTDevice::SendBytes(const uint8_t *data, size_t length)
+{
+    if(mode_ == HDLC_MODE) // Send HDLC Encoded
+    {
+        static uint8_t frame_data[hdlc_->kPacketSizeLimit];
+        uint16_t frame_length = hdlc_->Encode(data, length, frame_data);
+        return Send(frame_data, frame_length);
+    }
+    else // Send Normal
+    {
+        return Send(data, length);
+    }
+}
 
 uint32_t UARTDevice::SendString(const char *string)
 {
     return Send((uint8_t *)string, strlen(string));
 }
 
-uint32_t UARTDevice::SendHDLC(const uint8_t *packet, size_t length)
-{
-    return 0;
-    // if (length >= PACKET_SIZE_LIMIT)
-    // {
-    //     return 0;
-    // }
-
-    // // Compute CRC16 for Packet
-    // frame_chksum = crc16_compute(packet, length);
-
-    // uint32_t buffer_offset = 0;
-    // hdlc_tx_buffer[buffer_offset++] = FRAME_BOUNDARY;
-
-    // // Process and Escape Packet
-    // for (uint32_t i = 0; i < length; i++)
-    // {
-    //     uint8_t data = packet[i];
-    //     if ((data == FRAME_BOUNDARY) || (data == CONTROL_ESCAPE))
-    //     {
-    //         hdlc_tx_buffer[buffer_offset++] = CONTROL_ESCAPE;
-    //         hdlc_tx_buffer[buffer_offset++] = data ^ ESCAPE_INVERT;
-    //     }
-    //     else // Not Escaped
-    //     {
-    //         hdlc_tx_buffer[buffer_offset++] = data;
-    //     }
-    // }
-
-    // // Copy in CRC16
-    // memcpy(hdlc_tx_buffer + buffer_offset, (uint8_t *)(&frame_chksum), sizeof(uint16_t));
-
-    // // Add Frame Boundary
-    // buffer_offset += 2;
-    // hdlc_tx_buffer[buffer_offset++] = FRAME_BOUNDARY;
-
-    // // Send it
-    // return uart_send_data(hdlc_tx_buffer, buffer_offset);
-}
-
 void UARTDevice::USART_Init()
 {
-
     // Init DMA
     /* Init with LL driver */
     /* DMA controller clock enable */

@@ -44,7 +44,8 @@ public:
     static Logger& Instance();
     void Enable(bool enable);
     void Print(const char *format, ...);
-    void SetUART(UARTDevice *uart) { uart_ = uart; } 
+    void SetUART(UARTDevice *uart) { uart_ = uart; }
+    
 protected:
     UARTDevice *uart_;
 };
