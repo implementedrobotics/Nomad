@@ -131,7 +131,6 @@ bool Motor::Calibrate(MotorController *controller)
 
 bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high)
 {
-    printf("\r\nMeasure Motor Inductance...\r\n");
 
     float test_voltages[2] = {voltage_low, voltage_high};
     float I_alpha[2] = {0.0f};
@@ -157,15 +156,16 @@ bool Motor::MeasureMotorInductance(MotorController *controller, float voltage_lo
                 Logger::Instance().Print("ERROR: Phase Inductance Measurement Timeout\r\n");
                 return false;
             }
-            if (i == 1) // When you step you are reading the previous step.  TODO: Make this Better!
+            if (i == 0) // When you step you are reading the previous step.  TODO: Make this Better!
                 I_alpha[0] += state_.I_a;
             else
                 I_alpha[1] += state_.I_a;
 
             // Test voltage along phase A
-            controller->SetModulationOutput(0.0f, -test_voltages[i], 0.0f);
+            controller->SetModulationOutput(0.0f, test_voltages[i], 0.0f);
         }
     }
+    Logger::Instance().Print("Test Voltages: %f/%f\n\r", test_voltages[0], test_voltages[1]);
 
     // Shutdown phases
     controller->SetDuty(0.5f, 0.5f, 0.5f);
@@ -228,15 +228,18 @@ bool Motor::MeasureMotorResistance(MotorController *controller, float test_curre
         test_voltage += (kI * sample_time_) * (test_current - I_alpha);
 
         if (test_voltage > max_voltage)
-            test_voltage = max_voltage; // Clamp Current
+            test_voltage = max_voltage; // Clamp Voltage
         if (test_voltage < -max_voltage)
-            test_voltage = -max_voltage; // Clamp Current
+            test_voltage = -max_voltage; // Clamp Voltage
 
         // Test voltage along phase A
         controller->SetModulationOutput(0.0f, test_voltage, 0.0f);
     }
 
     float R = test_voltage / test_current; 
+
+    //Logger::Instance().Print("Test Voltages: %fV / %fA \r\n", test_voltage, test_current);
+
     measurement.f32 = R;
     if (fabs(test_voltage) == fabs(max_voltage) || R < 0.01f || R > 1.0f)
     {

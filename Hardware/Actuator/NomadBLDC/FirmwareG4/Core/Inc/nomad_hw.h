@@ -32,8 +32,8 @@ extern "C" {
 // HAL Timer for Tick Reference
 #define TICK_TIMER TIM6
 
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 1
+#define VERSION_MAJOR 2
+#define VERSION_MINOR 0
 
 #ifdef __cplusplus
 }

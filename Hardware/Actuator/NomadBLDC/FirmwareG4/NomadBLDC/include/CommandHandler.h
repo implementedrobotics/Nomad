@@ -89,6 +89,9 @@ class CommandHandler
     static void ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length);
     static void LogCommand(const std::string log_string);
     static void SendMeasurementComplete(command_feedback_t fb, uint8_t status, measurement_t measurement);
+    static void SetUART(UARTDevice *UART);
+
+    static UARTDevice *gUART;
 
 }; // namespace CommandHandler
 #endif // COMMAND_HANDLER_H_

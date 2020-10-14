@@ -37,7 +37,6 @@
 
 // Project Includes
 #include "main.h"
-#include <Peripherals/uart_new.h>
 #include <Peripherals/uart.h>
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
@@ -90,10 +89,12 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::ASCII_MODE);
-    uart->SendString("Hello Test!\r\n");
+    uart->SetMode(UARTDevice::HDLC_MODE);
+    //uart->SendString("Hello Test!\r\n");
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
+    // TODO: Need to make this a proper class
+    CommandHandler::SetUART(uart);
     // Start CAN
 }
 
@@ -400,18 +401,19 @@ extern "C" int app_main() //
     StartLEDService();
     osDelay(500);
 
-    // // Start Motor Control Task
-    // StartMotorControlThread();
-    // osDelay(500);
+    // Start Motor Control Task
+    StartMotorControlThread();
+    osDelay(500);
 
-    // // Start Misc Polling Task
-    // StartPollingThread();
-    // osDelay(500);
+    // Start Misc Polling Task
+    StartPollingThread();
+    osDelay(500);
 
 
-    // osDelay(2000);
+   // osDelay(2000);
     //measure_motor_inductance();
 
+    //measure_motor_resistance();
     //measure_motor_phase_order();
     //measure_motor_parameters();
     //DRV_Test();
@@ -425,7 +427,7 @@ extern "C" int app_main() //
     // Infinite Loop.
     for (;;)
     {
-        Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
+       // Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
         osDelay(1000);
     }
 

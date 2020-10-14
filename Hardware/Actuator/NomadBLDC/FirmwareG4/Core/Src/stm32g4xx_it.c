@@ -23,9 +23,7 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <FreeRTOS.h>
-#include <cmsis_os2.h>
-#include <Peripherals/uart.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

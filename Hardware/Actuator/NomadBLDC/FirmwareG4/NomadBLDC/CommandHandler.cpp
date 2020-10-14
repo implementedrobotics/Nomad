@@ -149,9 +149,15 @@ struct __attribute__((__packed__)) Log_command_t
     char log_buffer[256];      // String Buffer
 };
 
+UARTDevice* CommandHandler::gUART = 0;
 CommandHandler::CommandHandler()
 {
     
+}
+
+void CommandHandler::SetUART(UARTDevice *UART)
+{
+    gUART = UART;
 }
 void CommandHandler::LogCommand(const std::string log_string)
 {
@@ -164,7 +170,7 @@ void CommandHandler::LogCommand(const std::string log_string)
     memcpy(log.log_buffer, (uint8_t *)log_string.c_str(), log_string.size());
     
     // HDLC Frame and Send Packet
-   // uart_send_data_hdlc((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
+    gUART->SendBytes((uint8_t *)&log, log_string.size() + PACKET_DATA_OFFSET);
    // uart_send_str(log_string.c_str());
 }
 
@@ -180,7 +186,7 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
             result.status = status;
             result.measurement = measurement;
             // Send it
-            uart_send_data_hdlc((uint8_t *)&result, sizeof(Measurement_info_t));
+            gUART->SendBytes((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
         case command_feedback_t::MEASURE_INDUCTANCE_COMPLETE:
@@ -191,7 +197,7 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
             result.status = status;
             result.measurement = measurement;
             // Send it
-            uart_send_data_hdlc((uint8_t *)&result, sizeof(Measurement_info_t));
+            gUART->SendBytes((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
     case command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE:
@@ -203,7 +209,7 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
             result.measurement = measurement;
             
             // Send it
-            uart_send_data_hdlc((uint8_t *)&result, sizeof(Measurement_info_t));
+            gUART->SendBytes((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
     case command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE:
@@ -215,7 +221,7 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
             result.measurement = measurement;
             
             // Send it
-            uart_send_data_hdlc((uint8_t *)&result, sizeof(Measurement_info_t));
+            gUART->SendBytes((uint8_t *)&result, sizeof(Measurement_info_t));
             break;
         }
         default:
@@ -225,7 +231,6 @@ void CommandHandler::SendMeasurementComplete(command_feedback_t fb, uint8_t stat
 
 void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet_length)
 {
-    Logger::Instance().Print("Echo.\r\n");
     command_t command = static_cast<command_t>(packet_buffer[0]);
     switch (command)
     {
@@ -244,7 +249,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         info.uid3 = uid[2];
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&info, sizeof(Device_info_t));
+        gUART->SendBytes((uint8_t *)&info, sizeof(Device_info_t));
         break;
     }
     case COMM_DEVICE_STATS:
@@ -256,12 +261,12 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.fault = 0;
         stats.control_status = motor_controller->GetControlMode();
         stats.voltage_bus = motor_controller->state_.Voltage_bus;
-        stats.driver_temp = 60.2f;
-        stats.fet_temp = motor_controller->state_.I_rms;
+        stats.driver_temp = -1.0f;
+        stats.fet_temp = motor_controller->state_.fet_temp;
         stats.motor_temp = 80.0f;
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&stats, sizeof(Device_stats_t));
+        gUART->SendBytes((uint8_t *)&stats, sizeof(Device_stats_t));
         break;
     }
     case COMM_CALIB_MOTOR:
@@ -396,7 +401,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.config = motor->config_;
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&packet, sizeof(Motor_config_packet_t));
+        gUART->SendBytes((uint8_t *)&packet, sizeof(Motor_config_packet_t));
         break;
     }
     case COMM_READ_CONTROLLER_CONFIG:
@@ -407,7 +412,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.config = motor_controller->config_;
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&packet, sizeof(Controller_config_packet_t));
+        gUART->SendBytes((uint8_t *)&packet, sizeof(Controller_config_packet_t));
         break;
     }
     case COMM_READ_POSITION_CONFIG:
@@ -418,7 +423,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.config = motor->PositionSensor()->config_;
     
         // Send it
-        uart_send_data_hdlc((uint8_t *)&packet, sizeof(Position_config_packet_t));
+        gUART->SendBytes((uint8_t *)&packet, sizeof(Position_config_packet_t));
         break;
     }
 
@@ -431,7 +436,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.state = motor->state_;
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&packet, sizeof(Motor_state_packet_t));
+        gUART->SendBytes((uint8_t *)&packet, sizeof(Motor_state_packet_t));
         break;
     }
     case COMM_READ_CONTROLLER_STATE:
@@ -442,7 +447,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.state = motor_controller->state_;
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&packet, sizeof(Controller_state_packet_t));
+        gUART->SendBytes((uint8_t *)&packet, sizeof(Controller_state_packet_t));
         break;
     }
     case COMM_READ_POSITION_STATE:
@@ -461,7 +466,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.vel_mech = encoder->GetMechanicalVelocity();
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&packet, sizeof(Position_state_packet_t));
+        gUART->SendBytes((uint8_t *)&packet, sizeof(Position_state_packet_t));
         break;
     }
     // Write Configs
@@ -481,7 +486,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         buffer[2] = (uint32_t)status;
 
         // Send it
-        uart_send_data_hdlc((uint8_t *)&buffer, 3);
+        gUART->SendBytes((uint8_t *)&buffer, 3);
 
         //Logger::Instance().Print("Write to Flash: %d", status);
         break;

@@ -24,7 +24,7 @@
 
 // Primary Include
 #include <Protocols/hdlc.h>
-#include <Utilities/crc16.h>
+
 
 // C++ Includes
 #include <functional>
@@ -35,6 +35,8 @@
 #include <string.h>
 
 // Project Includes
+#include <Utilities/crc16.h>
+#include <Logger.h>
 #include <main.h> // STM32 Driver Includes
 
     
@@ -86,6 +88,7 @@ uint16_t HDLCFrame::Encode(const uint8_t *packet, uint16_t length, uint8_t* buff
 
 bool HDLCFrame::Decode(const uint8_t *data, uint16_t length)
 {
+    
     bool found_frame = false;
     for (; length > 0; --length, ++data)
     {
@@ -115,7 +118,8 @@ bool HDLCFrame::Decode(const uint8_t *data, uint16_t length)
             // Reset and look for next Frame
             frame_offset_ = 0;
             frame_chksum_ = 0;
-            return found_frame;
+            //return found_frame;
+            continue;
         }
 
         // Handle Escape Sequences
@@ -127,7 +131,8 @@ bool HDLCFrame::Decode(const uint8_t *data, uint16_t length)
         else if (byte == kControlEscape)
         {
             in_escape_ = 1;
-            return found_frame; // Return here to read real byte on next run
+            //return found_frame; // Return here to read real byte on next run
+            continue;
         }
 
         // Copy to buffer

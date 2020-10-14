@@ -38,7 +38,7 @@ int app_main();
 
 #ifdef __cplusplus
 
-#include <Peripherals/uart.h>
+//#include <Peripherals/uart.h>
 
 #endif
 

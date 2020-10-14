@@ -31,7 +31,7 @@
 #include <string>
 
 // Project Includes
-#include <Peripherals/uart_new.h>
+#include <Peripherals/uart.h>
 #include "CommandHandler.h"
 
 class Logger

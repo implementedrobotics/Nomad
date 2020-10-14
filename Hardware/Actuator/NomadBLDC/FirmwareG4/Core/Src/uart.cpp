@@ -23,7 +23,7 @@
  */
 
 // Primary Include
-#include <Peripherals/uart_new.h>
+#include <Peripherals/uart.h>
 #include <Utilities/crc16.h>
 
 // C++ Includes

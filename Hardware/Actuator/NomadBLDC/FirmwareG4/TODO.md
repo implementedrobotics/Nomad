@@ -12,10 +12,9 @@
 15. Add Bus current ***
 16. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
 20. RMS Current Calculator -> Low Priority Task
-21. Verify current measurements are accurate
-22. HDLC command callback to UART
 23. Performance profile Cordic vs arm_math
 24. Verify optimization flags -O3 breaks something
 25. Thermistor Lookup Table vs log calculate
 26. Remove all HAL timers
 27. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
+28. Optimize for 40khz

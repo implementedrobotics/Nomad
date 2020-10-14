@@ -24,7 +24,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <nomad_app.h>
-#include <Peripherals/uart.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

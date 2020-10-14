@@ -699,7 +699,7 @@ void MotorController::StartControlFSM()
                 save_configuration();
                 // TODO: Check Errors
                 Logger::Instance().Print("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-                control_mode_ = FOC_VOLTAGE_MODE;
+                control_mode_ = IDLE_MODE;
             }
             //printf("Calib Mode!\r\n");
             osDelay(1);
@@ -778,7 +778,6 @@ void MotorController::StartControlFSM()
             {
                 current_control_mode = control_mode_;
 
-                 Logger::Instance().Print("In Voltage\n");
                 // Make sure we are calibrated:
                 if (!motor_->config_.calibrated)
                 {
@@ -809,12 +808,12 @@ void MotorController::StartControlFSM()
             // TODO: Transform to Id/Iq here?.  For now use last sample.  
             // TOOD: Do this in the current control loop
             // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-            //static float I_sample = 0.0f;
-           //float j = arm_sqrt_f32(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q, &I_sample);
+            static float I_sample = 0.0f;
+            arm_sqrt_f32(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q, &I_sample);
             // Update Current Limiter
-            //current_limiter->AddCurrentSample(I_sample);
-           // motor_controller->state_.I_rms = j;//current_limiter->GetRMSCurrent();
-            //motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
+            current_limiter->AddCurrentSample(I_sample);
+            motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
+            motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
             
             DoMotorControl();
             LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
@@ -853,16 +852,15 @@ void MotorController::DoMotorControl()
     
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
-        motor_controller->state_.V_q_ref = 1.0;
         motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
         motor_controller->state_.V_q = motor_controller->state_.V_q_ref;
         SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
 
         // Update V_d/V_q
         // TODO: Should probably have this more universal somewhere
-       // dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
-       // motor_controller->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
-        //motor_controller->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
+        dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
+        motor_controller->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
+        motor_controller->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
     }
     else if (control_mode_ == FOC_CURRENT_MODE)
     {
@@ -936,7 +934,7 @@ void MotorController::StartPWM()
     // Enable Timers
     LL_TIM_SetPrescaler(TIM8, 0);             // No Prescaler
     LL_TIM_SetAutoReload(TIM8, pwm_counter_period_ticks_); // Set Period
-    LL_TIM_SetRepetitionCounter(TIM8, 1);//(config_.foc_ccl_divider * 2) - 1);     // Loop Counter Decimator
+    LL_TIM_SetRepetitionCounter(TIM8, (config_.foc_ccl_divider * 2) - 1);     // Loop Counter Decimator
     
     // Set Zer0 Duty Cycle
     SetDuty(0.5f, 0.5f, 0.5f);  // Zero Duty
@@ -949,33 +947,10 @@ void MotorController::StartPWM()
 }
 void MotorController::StartADCs()
 {
-    // // ADC Setup
-    // RCC->APB2ENR |= RCC_APB2ENR_ADC3EN; // clock for ADC3
-    // RCC->APB2ENR |= RCC_APB2ENR_ADC2EN; // clock for ADC2
-    // RCC->APB2ENR |= RCC_APB2ENR_ADC1EN; // clock for ADC1
-
-    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; // Enable clock for GPIOC
-    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; // Enable clock for GPIOA
-
-    // ADC->CCR = 0x00000016;      // Regular simultaneous mode only
-    // ADC1->CR2 |= ADC_CR2_ADON;  //0x00000001;                    // ADC1 ON
-    // ADC1->SQR3 = 0x000000A;     // use PC_0 as input- ADC1_IN0
-    // ADC2->CR2 |= ADC_CR2_ADON;  //0x00000001;                    // ADC2 ON
-    // ADC2->SQR3 = 0x0000000B;    // use PC_1 as input - ADC2_IN11
-    // ADC3->CR2 |= ADC_CR2_ADON;  // ADC3 ON
-    // ADC3->SQR3 = 0x00000000;    // use PA_0, - ADC3_IN0
-    // GPIOC->MODER |= 0x0000000f; // Alternate function, PC_0, PC_1 are analog inputs
-    // GPIOA->MODER |= 0x3;        // PA_0 as analog input
-
-    // ADC1->SMPR1 |= 0x1; // 15 cycles on CH_10, 0b 001
-    // ADC2->SMPR1 |= 0x8; // 15 cycles on CH_11, 0b 0001 000
-    // ADC3->SMPR2 |= 0x1; // 15 cycles on CH_0, 0b 001;
-
+    // ADC Setup
     EnableADC(ADC1);
     EnableADC(ADC2);
     EnableADC(ADC3);
-    //EnableADC(ADC4);
-    //EnableADC(ADC5);
 
     // Turn on Interrupts for ADC3 as it is not shared.
     // Should Generate less Interrupts
@@ -984,7 +959,6 @@ void MotorController::StartADCs()
     LL_ADC_REG_StartConversion(ADC1);
     LL_ADC_REG_StartConversion(ADC2);
     LL_ADC_REG_StartConversion(ADC3);
-
 }
 
 void MotorController::EnablePWM(bool enable)
@@ -1003,8 +977,7 @@ void MotorController::EnablePWM(bool enable)
     }
     osDelay(100);
 
-    // TODO: Here for when project ported from MBED to CUBEMX
-    //enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
+  //  enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
 }
 
 void MotorController::UpdateControllerGains()
