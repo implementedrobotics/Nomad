@@ -89,7 +89,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::HDLC_MODE);
+    uart->SetMode(UARTDevice::ASCII_MODE);
     //uart->SendString("Hello Test!\r\n");
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
@@ -361,31 +361,6 @@ extern "C" void ADC3_IRQHandler(void)
 
     /* USER CODE END ADC3_IRQn 1 */
 }
-
-// /**
-//   * @brief This function handles TIM8 update interrupt.
-//   */
-// extern "C" void TIM8_UP_IRQHandler(void)
-// {
-//     /* USER CODE BEGIN TIM8_UP_IRQn 0 */
-//     if (LL_TIM_IsActiveFlag_UPDATE(TIM8))
-//     {
-//         LL_TIM_ClearFlag_UPDATE(TIM8);
-
-//         // Do Callback
-//        // LEDService::Instance().Toggle();
-//     }
-//     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-//     // for (int i = 0; i < 10; ++i)
-//     // {
-//     //     __NOP();
-//     // }
-//     // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-//     /* USER CODE END TIM8_UP_IRQn 0 */
-//     /* USER CODE BEGIN TIM8_UP_IRQn 1 */
-
-//     /* USER CODE END TIM8_UP_IRQn 1 */
-// }
 
 extern "C" int app_main() //
 {

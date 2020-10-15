@@ -18,3 +18,6 @@
 26. Remove all HAL timers
 27. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
 28. Optimize for 40khz
+29. __disable_irq in current loop
+30. Thermistor object - Set Beta etc.  Generate Table on Initialize
+31. Low Pass Current Filter

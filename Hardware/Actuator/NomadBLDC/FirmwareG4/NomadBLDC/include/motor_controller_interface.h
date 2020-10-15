@@ -31,7 +31,7 @@ extern "C" {
 
 // Entry point to facilitate transition to C++ for RTOS Task
 void motor_controller_thread_entry(void *arg);
-void ms_poll_task(void *arg);
+void ms_poll_task(void *arg);//  __attribute__((section(".ccmram")));
 
 // void debug_thread_entry();
 

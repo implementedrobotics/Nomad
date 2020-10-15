@@ -34,6 +34,7 @@
 #include "Motor.h"
 //#include "UserMenu.h"
 #include <Peripherals/flash.h>
+#include <Utilities/utils.h>
 #include "LEDService.h"
 #include "Logger.h"
 #include "math_ops.h"
@@ -96,12 +97,30 @@ void ms_poll_task(void *arg)
         float V_out = 3.3f * fet_counts / 4096.0f;
         float R_th = 3.3f * R_bal / V_out - R_bal;
 
+        //DWT->CYCCNT = 0;
         // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
         motor_controller->state_.fet_temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
+        
+        // arm_sin_cos_f32(R_th, &s, &c);
+        // //arm_sqrt_f32(R_th, &s);
+        // //s = sinf(R_th);
+        // //Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
+        // //Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
+        // uint32_t span = DWT->CYCCNT;
+        // Logger::Instance().Print("Thermal Count: %d and %f/%f\r\n", span, s, c);
+       
+        // DWT->CYCCNT = 0;
+        // LL_CORDIC_WriteData(CORDIC, ANGLE_CORDIC);
 
-       //Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
-       //Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
-       osDelay(1);
+        // /* Read cosine */
+        // float cosOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
+
+        // /* Read sine */
+        // float sinOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
+        // span = DWT->CYCCNT;
+        // Logger::Instance().Print("CORDIC Count: %d and %f/%f\r\n", span, cosOutput, sinOutput);
+
+        osDelay(500);
     }
 }
 void motor_controller_thread_entry(void *arg)
