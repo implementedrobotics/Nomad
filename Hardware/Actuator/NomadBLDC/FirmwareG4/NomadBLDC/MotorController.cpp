@@ -122,6 +122,9 @@ void motor_controller_thread_entry(void *arg)
     //printf("Motor RT Controller Task Up.\n\r");
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
+    // Init CORDIC Routines
+    Cordic::Instance().Init();
+    
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(0.000025f, 285, 12);
 

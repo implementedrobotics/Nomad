@@ -42,6 +42,7 @@
 #include <Peripherals/gpio.h>
 #include <Peripherals/flash.h>
 #include <Peripherals/thermistor.h>
+#include <Peripherals/cordic.h>
 #include <nomad_hw.h>
 
 #include <DRV8323.h>
@@ -61,7 +62,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::HDLC_MODE);
+    uart->SetMode(UARTDevice::ASCII_MODE);
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
     // TODO: Need to make this a proper class
@@ -203,13 +204,13 @@ extern "C" int app_main() //
     StartLEDService();
     osDelay(1);
 
-    // Start Motor Control Task
-    StartMotorControlThread();
-    osDelay(100);
+    // // Start Motor Control Task
+    // StartMotorControlThread();
+    // osDelay(100);
 
-    // Start Misc Polling Task
-    StartPollingThread();
-    osDelay(5);
+    // // Start Misc Polling Task
+    // StartPollingThread();
+    // osDelay(5);
 
 
    // osDelay(2000);
@@ -224,7 +225,8 @@ extern "C" int app_main() //
     // Init a temp debug Task
 
     //DebugTask();
-
+    
+   int i = 0;
     // Infinite Loop.
     for (;;)
     {
@@ -234,7 +236,8 @@ extern "C" int app_main() //
     //     Logger::Instance().Print("Thermal Perf: %d\r\n", span);
 
     //    // Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
-    //    Logger::Instance().Print("Temp: %f\r\n", temp);
+       //Logger::Instance().Print("Temp: %d, %d\r\n", i++, Cordic::ConvertAngle(-4.71239));
+       
         osDelay(1000);
     }
 
