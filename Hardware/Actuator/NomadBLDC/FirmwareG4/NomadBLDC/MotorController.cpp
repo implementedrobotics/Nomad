@@ -120,7 +120,7 @@ void ms_poll_task(void *arg)
         // span = DWT->CYCCNT;
         // Logger::Instance().Print("CORDIC Count: %d and %f/%f\r\n", span, cosOutput, sinOutput);
 
-        osDelay(500);
+        osDelay(1);
     }
 }
 void motor_controller_thread_entry(void *arg)

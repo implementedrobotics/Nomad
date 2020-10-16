@@ -20,4 +20,4 @@
 28. Optimize for 40khz
 29. __disable_irq in current loop
 30. Thermistor object - Set Beta etc.  Generate Table on Initialize
-31. Low Pass Current Filter
+31. Low Pass Current Filter.  Put in ADC peripheral?

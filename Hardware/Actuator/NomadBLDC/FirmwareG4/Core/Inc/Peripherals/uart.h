@@ -22,8 +22,8 @@
  * 
  */
 
-#ifndef CORE_PERIPHERAL_UARTNEW_H_
-#define CORE_PERIPHERAL_UARTNEW_H_
+#ifndef CORE_PERIPHERAL_UART_H_
+#define CORE_PERIPHERAL_UART_H_
 
 // C System Files
 #include <stdlib.h>
