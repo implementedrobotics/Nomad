@@ -35,6 +35,12 @@ extern "C" {
 #define VERSION_MAJOR 2
 #define VERSION_MINOR 0
 
+
+// FET Thermistor Parameters
+#define FET_THERM_BETA 3455.0f // 
+#define FET_THERM_RESISTANCE 10000.0f // 10k
+#define FET_THERM_RESISTANCE_BAL 10000.0f // 10k
+#define FET_THERM_LUT_SIZE 64
 #ifdef __cplusplus
 }
 #endif

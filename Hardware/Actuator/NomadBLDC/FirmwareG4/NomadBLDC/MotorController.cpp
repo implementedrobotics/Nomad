@@ -32,7 +32,8 @@
 
 // Project Includes
 #include "Motor.h"
-//#include "UserMenu.h"
+#include "nomad_hw.h"
+#include <Peripherals/thermistor.h>
 #include <Peripherals/flash.h>
 #include <Utilities/utils.h>
 #include "LEDService.h"
@@ -76,36 +77,29 @@ struct __attribute__((__aligned__(8))) Save_format_t
 void ms_poll_task(void *arg)
 {
 
-    // Start Measurements ADC
-    EnableADC(ADC4);
+    Thermistor fet_temp(ADC4, FET_THERM_BETA, FET_THERM_RESISTANCE, FET_THERM_RESISTANCE_BAL,FET_THERM_LUT_SIZE);
+    fet_temp.GenerateTable();
+
+    // Start Measurements ADC for VBUS
     EnableADC(ADC5);
 
-    float B = 3455.0;
-    float R_0 = 10000.0; // 10K FET Thermistor.  Should be parameter?
-    float R_bal = 10000.0; // 10K Divider Resistor
-
-    // TODO: Wait on timer signal
     for (;;)
     {
-        uint16_t fet_counts = PollADC(ADC4);
+        // Read Battery Voltage
         uint16_t batt_counts = PollADC(ADC5);
 
         // Filter bus measurement a bit
         motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)batt_counts) * voltage_scale;
-        
-        // Calc FET Temp
-        float V_out = 3.3f * fet_counts / 4096.0f;
-        float R_th = 3.3f * R_bal / V_out - R_bal;
 
         //DWT->CYCCNT = 0;
-        // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
-        motor_controller->state_.fet_temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
-        
+        // Sample FET Thermistor for Temperature
+        motor_controller->state_.fet_temp = fet_temp.SampleTemperature();
+        //uint32_t span = DWT->CYCCNT;
+      //  Logger::Instance().Print("Thermal Count: %d and %.2f\r\n", span, motor_controller->state_.fet_temp);
+
         // arm_sin_cos_f32(R_th, &s, &c);
         // //arm_sqrt_f32(R_th, &s);
         // //s = sinf(R_th);
-        // //Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
-        // //Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
         // uint32_t span = DWT->CYCCNT;
         // Logger::Instance().Print("Thermal Count: %d and %f/%f\r\n", span, s, c);
        

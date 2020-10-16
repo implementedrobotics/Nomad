@@ -27,6 +27,7 @@
 
 // C++ Includes
 #include <cmath>
+#include <algorithm>
 
 // C System Files
 #include <stdint.h>
@@ -35,27 +36,35 @@
 // Project Includes
 #include <main.h> // STM32 Driver Includes
 
-
 Thermistor::Thermistor(ADC_TypeDef *ADC, float Beta, float R_0, float R_bal, size_t lut_size ) : ADC_(ADC), Beta_(Beta), R_0_(R_0), R_bal_(R_bal), lut_size_(lut_size), temp_lut_(nullptr)
 {
+    EnableADC(ADC);
 }
 
 float Thermistor::SampleTemperature()
 {
-    if(temp_lut_ == nullptr)
-        return 5000; // Some unrelistic error value?
-
     // Read ADC
     uint16_t counts = PollADC(ADC_);
 
-    // Compute LUT Index
-    uint16_t lut_idx = counts * lut_size_ / static_cast<uint16_t>(kADCMaxValue);
-    uint16_t lower_counts = lut_idx * kADCMaxValue / lut_size_;
-    uint16_t upper_counts = (lut_idx+1) * kADCMaxValue / lut_size_;
-    float t_0 = temp_lut_[lut_idx];
-    float t_1 = temp_lut_[lut_idx+1];
-    float t = static_cast<float>(counts - lower_counts) / static_cast<float>(upper_counts-lower_counts);
-    float temp_sample = t_0 + t*(t_1-t_0);
+    // Have LUT?  If not compute and return
+    if(temp_lut_ == nullptr)
+        return ComputeTempValue(counts);
+
+    // Compute LUT Index and Round Down
+    size_t idx_1 =  static_cast<size_t>(counts * lut_size_ / kADCMaxValue);
+    
+    // Clamp to Max
+    idx_1 = std::min(idx_1, lut_size_ - 2);
+
+    // Lookup Temps to LERP    
+    float temp_1 = temp_lut_[idx_1];
+    float temp_2 = temp_lut_[idx_1+1];
+
+    // Compute LERP t value
+    float t = (counts - idx_1 * lut_size_) / static_cast<float>(lut_size_); 
+
+    // Compute Temp LERP value for sample
+    float temp_sample = temp_1 + t * (temp_2 - temp_1);
 
     return temp_sample;
 }
@@ -71,8 +80,17 @@ float Thermistor::ComputeTempValue(uint16_t counts)
 }
 void Thermistor::GenerateTable()
 {
+    // Delete old LUT
+    if(temp_lut_ == nullptr)
+        delete[] temp_lut_;
+
+    // Create a new LUT
+    temp_lut_ = new float[lut_size_];
+
+    // Compute Step Size
     uint32_t step = kADCMaxValue / lut_size_;
-    for(int i = 0; i < lut_size_; i++)
+
+    for(size_t i = 0; i < lut_size_; i++)
     {
         // Compute LUT Value
         temp_lut_[i] = ComputeTempValue(i*step);

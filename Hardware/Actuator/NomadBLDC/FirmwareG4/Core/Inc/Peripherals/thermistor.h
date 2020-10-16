@@ -41,7 +41,7 @@ class Thermistor
 {
 
 public:
-    static constexpr float kADCMaxValue = 4096.0f;
+    static constexpr uint16_t kADCMaxValue = 4096;
 
     // Constructor
     Thermistor(ADC_TypeDef *ADC, float Beta, float R_0, float R_bal, size_t lut_size = 64);
