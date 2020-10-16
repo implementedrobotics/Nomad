@@ -45,8 +45,19 @@ float Thermistor::SampleTemperature()
     if(temp_lut_ == nullptr)
         return 5000; // Some unrelistic error value?
 
+    // Read ADC
     uint16_t counts = PollADC(ADC_);
-    return 0.0;
+
+    // Compute LUT Index
+    uint16_t lut_idx = counts * lut_size_ / static_cast<uint16_t>(kADCMaxValue);
+    uint16_t lower_counts = lut_idx * kADCMaxValue / lut_size_;
+    uint16_t upper_counts = (lut_idx+1) * kADCMaxValue / lut_size_;
+    float t_0 = temp_lut_[lut_idx];
+    float t_1 = temp_lut_[lut_idx+1];
+    float t = static_cast<float>(counts - lower_counts) / static_cast<float>(upper_counts-lower_counts);
+    float temp_sample = t_0 + t*(t_1-t_0);
+
+    return temp_sample;
 }
 
 float Thermistor::ComputeTempValue(uint16_t counts)
@@ -61,10 +72,9 @@ float Thermistor::ComputeTempValue(uint16_t counts)
 void Thermistor::GenerateTable()
 {
     uint32_t step = kADCMaxValue / lut_size_;
-    for(int i = 0; i < kADCMaxValue; i += step)
+    for(int i = 0; i < lut_size_; i++)
     {
-        // Print Step Here
-        temp_lut_[i] = ComputeTempValue(i);
-
+        // Compute LUT Value
+        temp_lut_[i] = ComputeTempValue(i*step);
     }
 }
