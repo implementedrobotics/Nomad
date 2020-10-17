@@ -35,6 +35,7 @@
 #include "nomad_hw.h"
 #include <Peripherals/thermistor.h>
 #include <Peripherals/flash.h>
+#include <Peripherals/cordic.h>
 #include <Utilities/utils.h>
 #include "LEDService.h"
 #include "Logger.h"
