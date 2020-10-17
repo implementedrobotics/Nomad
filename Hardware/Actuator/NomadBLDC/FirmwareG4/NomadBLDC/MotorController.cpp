@@ -48,6 +48,8 @@ MotorController *motor_controller = 0;
 
 RMSCurrentLimiter *current_limiter = 0;
 
+Cordic cordic;
+
 // Globals
 static int32_t g_adc1_offset;
 static int32_t g_adc2_offset;
@@ -124,8 +126,10 @@ void motor_controller_thread_entry(void *arg)
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
     // Init CORDIC Routines
-    Cordic::Instance().Init();
-    
+    //Cordic::Instance().Init();
+    cordic.Init();
+     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
+
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(0.000025f, 285, 12);
 
@@ -825,12 +829,12 @@ void MotorController::StartControlFSM()
             // TODO: Transform to Id/Iq here?.  For now use last sample.  
             // TOOD: Do this in the current control loop
             // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-            static float I_sample = 0.0f;
-            I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+            //static float I_sample = 0.0f;
+            //I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
             // Update Current Limiter
-            current_limiter->AddCurrentSample(I_sample);
-            motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
-            motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
+            //current_limiter->AddCurrentSample(I_sample);
+            motor_controller->state_.I_rms = 2;//current_limiter->GetRMSCurrent();
+            motor_controller->state_.I_max = 20;//current_limiter->GetMaxAllowableCurrent();
             
             DoMotorControl();
             LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
@@ -866,7 +870,7 @@ void MotorController::StartControlFSM()
 void MotorController::DoMotorControl()
 {
   //  NVIC_DisableIRQ(USART2_IRQn);
-    
+    __disable_irq();
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
         motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
@@ -888,6 +892,7 @@ void MotorController::DoMotorControl()
         TorqueControl();
     }
    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+   __enable_irq();
   //  NVIC_EnableIRQ(USART2_IRQn);
 }
 void MotorController::CurrentControl()
@@ -1039,9 +1044,9 @@ void MotorController::dqInverseTransform(float theta, float d, float q, float *a
     ///Phase current amplitude = length of dq vector///
     ///i.e. iq = 1, id = 0, peak phase current of 1///
 
-    *a = d * cosf(theta) - q * sinf(theta);
-    *b = d * cosf(theta - (2.0f * M_PI / 3.0f)) - q * sinf(theta - (2.0f * M_PI / 3.0f));
-    *c = d * cosf(theta + (2.0f * M_PI / 3.0f)) - q * sinf(theta + (2.0f * M_PI / 3.0f));
+    *a = d * arm_cos_f32(theta) - q * arm_sin_f32(theta);
+    *b = d * arm_cos_f32(theta - (2.0f * M_PI / 3.0f)) - q * arm_sin_f32(theta - (2.0f * M_PI / 3.0f));
+    *c = d * arm_cos_f32(theta + (2.0f * M_PI / 3.0f)) - q * arm_sin_f32(theta + (2.0f * M_PI / 3.0f));
 }
 void MotorController::dq0(float theta, float a, float b, float c, float *d, float *q)
 {
@@ -1049,24 +1054,35 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
     // Phase current amplitude = length of dq vector
     // i.e. iq = 1, id = 0, peak phase current of 1
 
-    float cf = cosf(theta);
-    float sf = sinf(theta);
+   // float cf = arm_cos_f32(theta);
+    //float sf = arm_sin_f32(theta);
+
+    float cf, sf;
+    cordic.CosSin(theta, cf, sf);
+
     *d = 0.6666667f * (cf * a + (0.86602540378f * sf - .5f * cf) * b + (-0.86602540378f * sf - .5f * cf) * c); ///Faster DQ0 Transform
     *q = 0.6666667f * (-sf * a - (-0.86602540378f * cf - .5f * sf) * b - (0.86602540378f * cf - .5f * sf) * c);
 }
 
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
 {
-    float cos_theta = cosf(theta);
-    float sin_theta = sinf(theta);
+    //float cos_theta = arm_cos_f32(theta);
+    //float sin_theta = arm_sin_f32(theta);
+
+    float cos_theta, sin_theta;
+    cordic.CosSin(theta, cos_theta, sin_theta);
 
     *alpha = d * cos_theta - q * sin_theta;
     *beta = q * cos_theta + d * sin_theta;
 }
 void MotorController::ParkTransform(float theta, float alpha, float beta, float *d, float *q)
 {
-    float cos_theta = cosf(theta);
-    float sin_theta = sinf(theta);
+   // float cos_theta = arm_cos_f32(theta);
+   // float sin_theta = arm_sin_f32(theta);
+
+    float cos_theta, sin_theta;
+    cordic.CosSin(theta, cos_theta, sin_theta);
+
 
     *d = alpha * cos_theta + beta * sin_theta;
     *q = beta * cos_theta - alpha * sin_theta;

@@ -72,7 +72,7 @@ public:
     void Init();
 
     // Update CORDIC Mode
-    void SetMode(CORDIC_MODE mode);
+    void SetMode(CORDIC_MODE mode) __attribute__((section(".ccmram")));
 
     // Update Cordic Precision
     void SetPrecision(uint32_t precision) { precision_ = precision; };
@@ -90,7 +90,7 @@ public:
     int32_t Sin(int32_t theta);
 
     // Compute Cos/Sin (float)
-    void CosSin(float theta, float &cos, float &sin);
+    void CosSin(float theta, float &cos, float &sin) __attribute__((section(".ccmram")));
 
     // Compute Cos/Sin (q1.31)
     void CosSin(int32_t theta, int32_t &cos, int32_t &sin);
@@ -122,10 +122,10 @@ public:
     // TODO: Move this into its own file?
     // Helpers
     // From float radians to q1.31 (Handles scaling/mapping to [-1 to 1])
-    static int32_t ConvertAngle(float rad);
+    static int32_t ConvertAngle(float rad) __attribute__((section(".ccmram")));;
 
     // From q1.31 to float
-    static float ConvertToFloat(int32_t val);
+    static float ConvertToFloat(int32_t val) __attribute__((section(".ccmram")));
 
 private:
     // CORDIC Precision
