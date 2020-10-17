@@ -72,7 +72,7 @@ void Motor::Update()
 {
     // Update Position Sensor
     rotor_sensor_->Update(sample_time_);
-
+    
     // Update State
     state_.theta_mech = rotor_sensor_->GetMechanicalPosition();
     state_.theta_mech_true = rotor_sensor_->GetMechanicalPositionTrue();

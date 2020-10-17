@@ -70,7 +70,7 @@ public:
     
 
     void Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
-    void Update(float Ts); // Update Position Sensor State w/ Sample Time (for velocity estimation)
+    void Update(float Ts) __attribute__((section(".ccmram"))); // Update Position Sensor State w/ Sample Time (for velocity estimation)
 
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory

@@ -62,7 +62,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::ASCII_MODE);
+    uart->SetMode(UARTDevice::HDLC_MODE);
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
     // TODO: Need to make this a proper class
@@ -191,7 +191,7 @@ extern "C" void ADC3_IRQHandler(void)
     {
         //LL_GPIO_TogglePin(DEBUG_PIN_GPIO_Port, DEBUG_PIN_Pin);
 
-       // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+        LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
         /* Clear flag ADC group regular end of unitary conversion */
         LL_ADC_ClearFlag_EOC(ADC3);
         // Send it

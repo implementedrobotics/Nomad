@@ -134,7 +134,7 @@ void PositionSensorAS5x47::Update(float Ts)
     position_raw_ = spi_dev_->Receive16();
     position_raw_ &= 0x3FFF; // Data in last 14 bits.
     spi_dev_->Deselect();
-
+    
     // Double Check High/Low Values
     if (position_raw_ == 0 || position_raw_ == 0x3FFF)
     {
@@ -160,6 +160,7 @@ void PositionSensorAS5x47::Update(float Ts)
     {
         num_rotations_ += 1;
     }
+    
 
     // Update previous values for next sample period
     prev_counts = current_counts;
@@ -176,6 +177,8 @@ void PositionSensorAS5x47::Update(float Ts)
 
     // Compute electrical position
     position_electrical_ = ((2.0f * PI / (float)config_.cpr) * (float)((pole_pairs_ * current_counts) % config_.cpr)) + config_.offset_elec;
+
+
 
     //  Wrap 0 to 2PI
     if (position_electrical_ < 0)
@@ -202,6 +205,7 @@ void PositionSensorAS5x47::Update(float Ts)
         velocity = (position_normalized_ - prev_position_norm) / Ts;
     }
 
+    
     // Estimate/Filter Velocity
     // TODO: Change this to a PLL?
     float vel_sum = velocity;
@@ -216,4 +220,6 @@ void PositionSensorAS5x47::Update(float Ts)
     velocity_mechanical_ = vel_sum / ((float)filter_size_);
     velocity_electrical_ = velocity_mechanical_ * pole_pairs_;
     velocity_electrical_filtered_ = 0.99f * velocity_electrical_filtered_ + 0.01f * velocity_electrical_;
+
+
 }

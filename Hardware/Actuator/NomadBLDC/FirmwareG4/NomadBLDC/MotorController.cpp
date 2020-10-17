@@ -94,28 +94,8 @@ void ms_poll_task(void *arg)
         // Filter bus measurement a bit
         motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)batt_counts) * voltage_scale;
 
-        //DWT->CYCCNT = 0;
         // Sample FET Thermistor for Temperature
         motor_controller->state_.fet_temp = fet_temp.SampleTemperature();
-        //uint32_t span = DWT->CYCCNT;
-      //  Logger::Instance().Print("Thermal Count: %d and %.2f\r\n", span, motor_controller->state_.fet_temp);
-
-        // arm_sin_cos_f32(R_th, &s, &c);
-        // //arm_sqrt_f32(R_th, &s);
-        // //s = sinf(R_th);
-        // uint32_t span = DWT->CYCCNT;
-        // Logger::Instance().Print("Thermal Count: %d and %f/%f\r\n", span, s, c);
-       
-        // DWT->CYCCNT = 0;
-        // LL_CORDIC_WriteData(CORDIC, ANGLE_CORDIC);
-
-        // /* Read cosine */
-        // float cosOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
-
-        // /* Read sine */
-        // float sinOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
-        // span = DWT->CYCCNT;
-        // Logger::Instance().Print("CORDIC Count: %d and %f/%f\r\n", span, cosOutput, sinOutput);
 
         osDelay(1);
     }
@@ -230,13 +210,16 @@ void current_measurement_cb()
 
     // Always Update Motor State
     motor->Update();
-
+    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
         osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
         //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     }
+ //   LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+
 }
 
 bool zero_current_sensors(uint32_t num_samples)
@@ -822,22 +805,23 @@ void MotorController::StartControlFSM()
                 control_mode_ = ERROR_MODE;
                 continue;
             }
+             LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-            LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+            //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
            // DWT->CYCCNT = 0;
             // Measure
             // TODO: Transform to Id/Iq here?.  For now use last sample.  
             // TOOD: Do this in the current control loop
             // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-            //static float I_sample = 0.0f;
-            //I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+            static float I_sample = 0.0f;
+            I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
             // Update Current Limiter
-            //current_limiter->AddCurrentSample(I_sample);
-            motor_controller->state_.I_rms = 2;//current_limiter->GetRMSCurrent();
-            motor_controller->state_.I_max = 20;//current_limiter->GetMaxAllowableCurrent();
+            current_limiter->AddCurrentSample(I_sample);
+            motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
+            motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
             
             DoMotorControl();
-            LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+           // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
            // uint32_t span = DWT->CYCCNT;
             //Logger::Instance().Print("Count: %f\r\n", j);
             break;
