@@ -225,19 +225,48 @@ extern "C" int app_main() //
     // Init a temp debug Task
 
     //DebugTask();
-    
-   int i = 0;
+
+
+//     Cordic cordic;
+//     cordic.Init();
+//     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
+//     //Cordic::Instance().Init(); 
+//     //Cordic::Instance().SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
+//     float theta = PI;
+//    int i = 0;
+
+//    float sin, cos;
+
+//    uint32_t start_ticks;
+// uint32_t stop_ticks;
+// uint32_t elapsed_ticks;
+
     // Infinite Loop.
     for (;;)
     {
-    //     DWT->CYCCNT = 0;
-    //     temp = fet_temp->SampleTemperature();
-    //     uint32_t span = DWT->CYCCNT;
-    //     Logger::Instance().Print("Thermal Perf: %d\r\n", span);
+//          start_ticks = SysTick->VAL;
+//     //     temp = fet_temp->SampleTemperature();
 
-    //    // Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
-       //Logger::Instance().Print("Temp: %d, %d\r\n", i++, Cordic::ConvertAngle(-4.71239));
-       
+
+//     //    // Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
+        
+//        // cordic.CosSin(theta, cos, sin);
+
+        
+//     sin = sinf(theta);
+//     cos = cosf(theta);
+
+//        // sin = arm_sin_f32(theta);
+//        // cos = arm_cos_f32(theta);
+//         //arm_sin_cos_f32(theta, &sin, &cos);
+
+
+//         stop_ticks = SysTick->VAL;
+// elapsed_ticks = start_ticks-stop_ticks;
+//    // uint32_t span = DWT->CYCCNT;
+//     Logger::Instance().Print("Thermal Perf: %d\r\n", elapsed_ticks);
+//        Logger::Instance().Print("%d - Cos: %f Sin: %f | Theta: %f\r\n", i++, cos, sin, theta);
+//        theta += .1f;
         osDelay(1000);
     }
 

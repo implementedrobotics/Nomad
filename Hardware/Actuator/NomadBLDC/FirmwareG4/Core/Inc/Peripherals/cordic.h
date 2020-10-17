@@ -43,11 +43,13 @@ class Cordic
 {
 
 public:
-    static constexpr float k2PI = 6.28318530718f;
-    static constexpr float kPI = 3.14159265359f;
+
+    // Some Const Expressions for Computations
+    static constexpr float kPI   = 3.14159265359f;
+    static constexpr float k2PI  = 6.28318530718f;
     static constexpr float kPI_2 = 1.57079632679f;
-    static constexpr float kQ31 = 2147483648.0f;
-    static constexpr float kQ15 = 32768.0f;
+    static constexpr float kQ31  = 2147483648.0f;
+    static constexpr float kQ15  = 32768.0f;
     
     // Cordic Mode
     typedef enum
@@ -88,10 +90,10 @@ public:
     int32_t Sin(int32_t theta);
 
     // Compute Cos/Sin (float)
-    void CosSin(float theta, float &sin, float &cos);
+    void CosSin(float theta, float &cos, float &sin);
 
     // Compute Cos/Sin (q1.31)
-    void CosSin(int32_t theta, int32_t &sin, int32_t &cos);
+    void CosSin(int32_t theta, int32_t &cos, int32_t &sin);
 
     // Compute Phase (float)
     float Phase(float x, float y);
@@ -123,9 +125,7 @@ public:
     static int32_t ConvertAngle(float rad);
 
     // From q1.31 to float
-    static float ConvertToFloat(int32_t val)
-    {
-    }
+    static float ConvertToFloat(int32_t val);
 
 private:
     // CORDIC Precision

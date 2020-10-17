@@ -25,21 +25,16 @@
 // Primary Include
 #include <Protocols/hdlc.h>
 
-
 // C++ Includes
 #include <functional>
 
 // C System Files
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 
 // Project Includes
 #include <Utilities/crc16.h>
-#include <Logger.h>
 #include <main.h> // STM32 Driver Includes
 
-    
 HDLCFrame::HDLCFrame() : frame_offset_(0), in_escape_(0)
 {
 }
@@ -48,6 +43,7 @@ void HDLCFrame::RegisterFrameHandler(const std::function<void(const uint8_t*, si
 {
     frame_handler_ = handler;
 }
+
 uint16_t HDLCFrame::Encode(const uint8_t *packet, uint16_t length, uint8_t* buffer_out)
 {
     if (length >= kPacketSizeLimit)

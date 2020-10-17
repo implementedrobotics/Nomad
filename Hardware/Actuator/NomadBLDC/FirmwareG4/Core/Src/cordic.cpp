@@ -30,8 +30,6 @@
 #include <algorithm>
 
 // C System Files
-#include <stdint.h>
-#include <stdlib.h>
 
 // Project Includes
 #include <main.h> // STM32 Driver Includes
@@ -48,14 +46,15 @@ Cordic &Cordic::Instance()
     return instance;
 }
 
-
 void Cordic::Init()
 {
+    // Init Cordic Clocks
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_CORDIC);
 }
 
 void Cordic::SetMode(CORDIC_MODE mode)
 {
+    // Requested Mode Already Set, Return
     if(mode_ == mode)
         return;
 
@@ -65,6 +64,7 @@ void Cordic::SetMode(CORDIC_MODE mode)
 
     switch (mode)
     {
+
     case CORDIC_MODE::COSINE:
         function = LL_CORDIC_FUNCTION_COSINE; // Cosine Function
         scale_ = LL_CORDIC_SCALE_0;           // No Scale
@@ -114,21 +114,109 @@ void Cordic::SetMode(CORDIC_MODE mode)
 int32_t Cordic::ConvertAngle(float rad)
 {
     //float wrapped = rad - k2PI * static_cast<int>((rad + kPI) / k2PI);
+    
     // Wrap and Scale for CORDIC -1 to 1 = -pi to pi
-    float wrapped = (rad - k2PI * std::floor((rad + kPI) / k2PI)) / kPI;
+    float wrapped = (rad - k2PI * static_cast<int>((rad + kPI) / k2PI)) / kPI;
+    
+    // Return q1.31 formatted
     return static_cast<int32_t>(wrapped * kQ31);
-
 }
+
+float Cordic::ConvertToFloat(int32_t val)
+{
+    return static_cast<float>(val) * 1.0f / kQ31;
+}
+
 float Cordic::Cos(float theta)
 {
-    // // Update Mode
-    // SetMode(CORDIC_MODE::COSINE);
+    // Update Mode
+    SetMode(CORDIC_MODE::COSINE);
 
-    // // Convert to q1.31
+    // Convert to q1.31
+    LL_CORDIC_WriteData(CORDIC, ConvertAngle(theta));
 
+    // Read Cosine
+    int32_t c_q31 = static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
 
-    //     LL_CORDIC_WriteData(CORDIC, ANGLE_CORDIC);
+    return ConvertToFloat(c_q31);
+}
 
-    //     // /* Read cosine */
-    //      float cosOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
+int32_t Cordic::Cos(int32_t theta_q31)
+{
+    // Update Mode
+    SetMode(CORDIC_MODE::COSINE);
+
+    // Write theta to CORDIC register
+    LL_CORDIC_WriteData(CORDIC, theta_q31);
+
+    // Read/Return Cosine
+    return static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+}
+
+float Cordic::Sin(float theta)
+{
+    // Update Mode
+    SetMode(CORDIC_MODE::SINE);
+
+    // Convert to q1.31
+    LL_CORDIC_WriteData(CORDIC, ConvertAngle(theta));
+
+    // Read Sine
+    int32_t s_q31 = static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+
+    return ConvertToFloat(s_q31);
+}
+
+int32_t Cordic::Sin(int32_t theta_q31)
+{
+    // Update Mode
+    SetMode(CORDIC_MODE::SINE);
+
+    // Write theta to CORDIC register
+    LL_CORDIC_WriteData(CORDIC, theta_q31);
+
+    // Read/Return Sine
+    return static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+}
+
+void Cordic::CosSin(float theta, float &cos, float &sin)
+{
+
+    //static uint32_t span;
+    //DWT->CYCCNT = 0;
+    // Update Mode
+    SetMode(CORDIC_MODE::COSINE_SIN);
+
+    // Convert to q1.31
+    LL_CORDIC_WriteData(CORDIC, ConvertAngle(theta));
+
+    // Read Cosine
+    int32_t c_q31 = static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+
+    // Read Sine
+    int32_t s_q31 = static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+
+    // Convert Out
+    cos = ConvertToFloat(c_q31);
+
+    sin = ConvertToFloat(s_q31);
+
+  //  uint32_t span = DWT->CYCCNT;
+  //  Logger::Instance().Print("Perf: %d\r\n", span);
+}
+
+void Cordic::CosSin(int32_t theta_q31, int32_t &c_q31, int32_t &s_q31)
+{
+    // Update Mode
+    SetMode(CORDIC_MODE::COSINE_SIN);
+
+    // Write theta to CORDIC register
+    LL_CORDIC_WriteData(CORDIC, theta_q31);
+
+    // Read Cosine
+    c_q31 = static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+
+    // Read Sine
+    s_q31 = static_cast<int32_t>(LL_CORDIC_ReadData(CORDIC));
+
 }
