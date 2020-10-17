@@ -62,7 +62,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::ASCII_MODE);
+    uart->SetMode(UARTDevice::HDLC_MODE);
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
     // TODO: Need to make this a proper class
@@ -204,13 +204,13 @@ extern "C" int app_main() //
     StartLEDService();
     osDelay(1);
 
-    // // Start Motor Control Task
-    // StartMotorControlThread();
-    // osDelay(100);
+    // Start Motor Control Task
+    StartMotorControlThread();
+    osDelay(100);
 
-    // // Start Misc Polling Task
-    // StartPollingThread();
-    // osDelay(5);
+    // Start Misc Polling Task
+    StartPollingThread();
+    osDelay(5);
 
 
    // osDelay(2000);

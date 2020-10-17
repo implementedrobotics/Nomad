@@ -113,7 +113,7 @@ float RMSCurrentLimiter::GetMaxAllowableCurrent()
 
 void RMSCurrentLimiter::ComputeRMSCurrent()
 {
-    arm_sqrt_f32(running_sum_ * ONE_OVER_T, &I_rms);
+    I_rms = sqrt(running_sum_ * ONE_OVER_T);
 }
 
 void RMSCurrentLimiter::ComputeMaxAllowableCurrent()
@@ -121,5 +121,5 @@ void RMSCurrentLimiter::ComputeMaxAllowableCurrent()
     float mean_square_val = (ONE_OVER_DT) * ((I_CONT_SQUARED)*T_ - running_sum_);
     mean_square_val = mean_square_val < 0 ? 0 : mean_square_val; // Clamp negative values to zero
     // TODO: If this is negative we actually are over.  Possible error out here?
-    arm_sqrt_f32(mean_square_val, &I_max);
+    I_max = sqrt(mean_square_val);
 }
