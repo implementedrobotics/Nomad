@@ -43,13 +43,6 @@ class Cordic
 {
 
 public:
-
-    // Some Const Expressions for Computations
-    static constexpr float kPI   = 3.14159265359f;
-    static constexpr float k2PI  = 6.28318530718f;
-    static constexpr float kPI_2 = 1.57079632679f;
-    static constexpr float kQ31  = 2147483648.0f;
-    static constexpr float kQ15  = 32768.0f;
     
     // Cordic Mode
     typedef enum

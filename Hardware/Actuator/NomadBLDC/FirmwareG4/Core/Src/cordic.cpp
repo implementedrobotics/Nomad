@@ -32,9 +32,11 @@
 // C System Files
 
 // Project Includes
+#include <Utilities/math.h>
 #include <main.h> // STM32 Driver Includes
 #include <Logger.h>
 
+using namespace Core::Math;
 Cordic::Cordic() : precision_(LL_CORDIC_PRECISION_1CYCLE), scale_(LL_CORDIC_SCALE_0), mode_(COSINE)
 {
 }
@@ -114,7 +116,6 @@ void Cordic::SetMode(CORDIC_MODE mode)
 int32_t Cordic::ConvertAngle(float rad)
 {
     //float wrapped = rad - k2PI * static_cast<int>((rad + kPI) / k2PI);
-    
     // Wrap and Scale for CORDIC -1 to 1 = -pi to pi
     float wrapped = (rad - k2PI * static_cast<int>((rad + kPI) / k2PI)) / kPI;
     

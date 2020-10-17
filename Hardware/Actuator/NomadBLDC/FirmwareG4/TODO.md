@@ -7,7 +7,6 @@
 7.  Position limits on output?
 8.  Clean up class access public/privates
 10. Refactor Measurement Routines (Tasks)
-12. Triple current measurements
 13. Gate driver fault checking and reporting ****
 15. Add Bus current ***
 16. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
@@ -16,5 +15,4 @@
 26. Remove all HAL timers
 27. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
 28. Optimize for 40khz
-29. __disable_irq in current loop
 31. Low Pass Current Filter.  Put in ADC peripheral?
