@@ -628,7 +628,7 @@ color:white</string>
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="configTab">
        <attribute name="title">
@@ -843,10 +843,10 @@ color:white</string>
                        <string>Phase Inductance: </string>
                       </property>
                       <property name="suffix">
-                       <string> mH</string>
+                       <string> μH</string>
                       </property>
                       <property name="decimals">
-                       <number>1</number>
+                       <number>2</number>
                       </property>
                       <property name="singleStep">
                        <double>0.100000000000000</double>
@@ -1541,71 +1541,19 @@ color:white</string>
           </rect>
          </property>
         </widget>
-        <widget class="QLabel" name="label">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>120</y>
-           <width>67</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
        </widget>
        <widget class="QGroupBox" name="groupBox_2">
         <property name="geometry">
          <rect>
           <x>40</x>
           <y>210</y>
-          <width>411</width>
-          <height>221</height>
+          <width>221</width>
+          <height>201</height>
          </rect>
         </property>
         <property name="title">
          <string>Torque Control</string>
         </property>
-        <widget class="QLabel" name="TorqueOut">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>160</y>
-           <width>261</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="CurrentOut">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>180</y>
-           <width>67</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="scaleValue">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>200</y>
-           <width>281</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
        </widget>
       </widget>
       <widget class="QWidget" name="dataViewTab">
