@@ -32,8 +32,10 @@
 
 // Project Includes
 #include "Motor.h"
-//#include "UserMenu.h"
+#include "nomad_hw.h"
+#include <Peripherals/thermistor.h>
 #include <Peripherals/flash.h>
+#include <Peripherals/cordic.h>
 #include <Utilities/utils.h>
 #include "LEDService.h"
 #include "Logger.h"
@@ -45,6 +47,8 @@ Motor *motor = 0;
 MotorController *motor_controller = 0;
 
 RMSCurrentLimiter *current_limiter = 0;
+
+Cordic cordic;
 
 // Globals
 static int32_t g_adc1_offset;
@@ -76,49 +80,22 @@ struct __attribute__((__aligned__(8))) Save_format_t
 void ms_poll_task(void *arg)
 {
 
-    // Start Measurements ADC
-    EnableADC(ADC4);
+    Thermistor fet_temp(ADC4, FET_THERM_BETA, FET_THERM_RESISTANCE, FET_THERM_RESISTANCE_BAL,FET_THERM_LUT_SIZE);
+    fet_temp.GenerateTable();
+
+    // Start Measurements ADC for VBUS
     EnableADC(ADC5);
 
-    float B = 3455.0;
-    float R_0 = 10000.0; // 10K FET Thermistor.  Should be parameter?
-    float R_bal = 10000.0; // 10K Divider Resistor
-
-    // TODO: Wait on timer signal
     for (;;)
     {
-        uint16_t fet_counts = PollADC(ADC4);
+        // Read Battery Voltage
         uint16_t batt_counts = PollADC(ADC5);
 
         // Filter bus measurement a bit
         motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)batt_counts) * voltage_scale;
-        
-        // Calc FET Temp
-        float V_out = 3.3f * fet_counts / 4096.0f;
-        float R_th = 3.3f * R_bal / V_out - R_bal;
 
-        //DWT->CYCCNT = 0;
-        // https://www.digikey.com/en/maker/projects/how-to-measure-temperature-with-an-ntc-thermistor/4a4b326095f144029df7f2eca589ca54
-        motor_controller->state_.fet_temp = 1.0f / (1.0f / (273.15f + 25.0f) + (1.0f / B) * log(R_th / R_0)) - 273.15f;
-        
-        // arm_sin_cos_f32(R_th, &s, &c);
-        // //arm_sqrt_f32(R_th, &s);
-        // //s = sinf(R_th);
-        // //Logger::Instance().Print("Volt: %f V\r\n", motor_controller->state_.Voltage_bus);
-        // //Logger::Instance().Print("FET: %f C\r\n", motor_controller->state_.fet_temp);
-        // uint32_t span = DWT->CYCCNT;
-        // Logger::Instance().Print("Thermal Count: %d and %f/%f\r\n", span, s, c);
-       
-        // DWT->CYCCNT = 0;
-        // LL_CORDIC_WriteData(CORDIC, ANGLE_CORDIC);
-
-        // /* Read cosine */
-        // float cosOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
-
-        // /* Read sine */
-        // float sinOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
-        // span = DWT->CYCCNT;
-        // Logger::Instance().Print("CORDIC Count: %d and %f/%f\r\n", span, cosOutput, sinOutput);
+        // Sample FET Thermistor for Temperature
+        motor_controller->state_.fet_temp = fet_temp.SampleTemperature();
 
         osDelay(1);
     }
@@ -127,6 +104,11 @@ void motor_controller_thread_entry(void *arg)
 {
     //printf("Motor RT Controller Task Up.\n\r");
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
+
+    // Init CORDIC Routines
+    //Cordic::Instance().Init();
+    cordic.Init();
+     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
 
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(0.000025f, 285, 12);
@@ -228,13 +210,16 @@ void current_measurement_cb()
 
     // Always Update Motor State
     motor->Update();
-
+    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
         osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
         //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     }
+ //   LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+
 }
 
 bool zero_current_sensors(uint32_t num_samples)
@@ -748,9 +733,9 @@ void MotorController::StartControlFSM()
                 LEDService::Instance().On();
                 gate_driver_->EnableDriver();
                 EnablePWM(true);
-                NVIC_DisableIRQ(USART2_IRQn);
+              //  NVIC_DisableIRQ(USART2_IRQn);
                 motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
-                NVIC_EnableIRQ(USART2_IRQn);
+               // NVIC_EnableIRQ(USART2_IRQn);
                 // TODO: Check Errors
                 //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
                 control_mode_ = IDLE_MODE;
@@ -820,22 +805,23 @@ void MotorController::StartControlFSM()
                 control_mode_ = ERROR_MODE;
                 continue;
             }
+             LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-            LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+            //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
            // DWT->CYCCNT = 0;
             // Measure
             // TODO: Transform to Id/Iq here?.  For now use last sample.  
             // TOOD: Do this in the current control loop
             // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
             static float I_sample = 0.0f;
-            arm_sqrt_f32(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q, &I_sample);
+            I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
             // Update Current Limiter
             current_limiter->AddCurrentSample(I_sample);
             motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
             motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
             
             DoMotorControl();
-            LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+           // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
            // uint32_t span = DWT->CYCCNT;
             //Logger::Instance().Print("Count: %f\r\n", j);
             break;
@@ -867,8 +853,8 @@ void MotorController::StartControlFSM()
 }
 void MotorController::DoMotorControl()
 {
-    NVIC_DisableIRQ(USART2_IRQn);
-    
+  //  NVIC_DisableIRQ(USART2_IRQn);
+    __disable_irq();
     if (control_mode_ == FOC_VOLTAGE_MODE)
     {
         motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
@@ -890,7 +876,8 @@ void MotorController::DoMotorControl()
         TorqueControl();
     }
    // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    NVIC_EnableIRQ(USART2_IRQn);
+   __enable_irq();
+  //  NVIC_EnableIRQ(USART2_IRQn);
 }
 void MotorController::CurrentControl()
 {
@@ -1051,24 +1038,35 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
     // Phase current amplitude = length of dq vector
     // i.e. iq = 1, id = 0, peak phase current of 1
 
-    float cf = arm_cos_f32(theta);
-    float sf = arm_sin_f32(theta);
+   // float cf = arm_cos_f32(theta);
+    //float sf = arm_sin_f32(theta);
+
+    float cf, sf;
+    cordic.CosSin(theta, cf, sf);
+
     *d = 0.6666667f * (cf * a + (0.86602540378f * sf - .5f * cf) * b + (-0.86602540378f * sf - .5f * cf) * c); ///Faster DQ0 Transform
     *q = 0.6666667f * (-sf * a - (-0.86602540378f * cf - .5f * sf) * b - (0.86602540378f * cf - .5f * sf) * c);
 }
 
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
 {
-    float cos_theta = arm_cos_f32(theta);
-    float sin_theta = arm_sin_f32(theta);
+    //float cos_theta = arm_cos_f32(theta);
+    //float sin_theta = arm_sin_f32(theta);
+
+    float cos_theta, sin_theta;
+    cordic.CosSin(theta, cos_theta, sin_theta);
 
     *alpha = d * cos_theta - q * sin_theta;
     *beta = q * cos_theta + d * sin_theta;
 }
 void MotorController::ParkTransform(float theta, float alpha, float beta, float *d, float *q)
 {
-    float cos_theta = arm_cos_f32(theta);
-    float sin_theta = arm_sin_f32(theta);
+   // float cos_theta = arm_cos_f32(theta);
+   // float sin_theta = arm_sin_f32(theta);
+
+    float cos_theta, sin_theta;
+    cordic.CosSin(theta, cos_theta, sin_theta);
+
 
     *d = alpha * cos_theta + beta * sin_theta;
     *q = beta * cos_theta - alpha * sin_theta;

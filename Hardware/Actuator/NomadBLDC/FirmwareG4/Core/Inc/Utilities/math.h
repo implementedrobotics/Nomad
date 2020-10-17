@@ -1,7 +1,7 @@
 /*
- * nomad_hw.h
+ * math.h
  *
- *  Created on: September 24, 2020
+ *  Created on: October 17, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -22,27 +22,26 @@
  * 
  */
 
-#ifndef NOMAD_HW_H_
-#define NOMAD_HW_H_
+#ifndef CORE_UTILITIES_MATH_H_
+#define CORE_UTILITIES_MATH_H_
+ 
+// C System Files
+#include <cmath>
+#include <cstdint>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// C++ System Files
 
-// HAL Timer for Tick Reference
-#define TICK_TIMER TIM6
+// Project Includes
 
-#define VERSION_MAJOR 2
-#define VERSION_MINOR 0
+namespace Core::Math {
 
+    // Some Const Expressions for Computations
+    constexpr float kPI   = 3.14159265359f;
+    constexpr float k2PI  = 6.28318530718f;
+    constexpr float kPI_2 = 1.57079632679f;
+    constexpr float kQ31  = 2147483648.0f;
+    constexpr float kQ15  = 32768.0f;
 
-// FET Thermistor Parameters
-#define FET_THERM_BETA 3455.0f // 
-#define FET_THERM_RESISTANCE 10000.0f // 10k
-#define FET_THERM_RESISTANCE_BAL 10000.0f // 10k
-#define FET_THERM_LUT_SIZE 64
-#ifdef __cplusplus
 }
-#endif
+#endif // CORE_UTILITIES_MATH_H_
 
-#endif // NOMAD_HW_H_
