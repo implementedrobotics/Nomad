@@ -18,3 +18,4 @@
 30. FET Thermistor/Motor Thermistor Variables in Config
 31. Get Rid of math_ops.h
 32. Adjustable LUT encoder offset size
+33. Add FSM refactor
