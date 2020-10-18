@@ -15,4 +15,3 @@
 26. Remove all HAL timers
 27. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
 28. Optimize for 40khz
-31. Low Pass Current Filter.  Put in ADC peripheral?
