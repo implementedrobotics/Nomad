@@ -37,6 +37,7 @@
 #include <Peripherals/flash.h>
 #include <Peripherals/cordic.h>
 #include <Utilities/utils.h>
+#include <Utilities/lpf.h>
 #include "LEDService.h"
 #include "Logger.h"
 #include "math_ops.h"
@@ -49,6 +50,10 @@ MotorController *motor_controller = 0;
 RMSCurrentLimiter *current_limiter = 0;
 
 Cordic cordic;
+
+LowPassFilter lpf_a;
+LowPassFilter lpf_b;
+LowPassFilter lpf_c;
 
 // Globals
 static int32_t g_adc1_offset;
@@ -79,10 +84,14 @@ struct __attribute__((__aligned__(8))) Save_format_t
 
 void ms_poll_task(void *arg)
 {
+    LowPassFilter fet_lpf(0.001f, 1000.0f*Core::Math::k2PI);
+    LowPassFilter vbus_lpf(0.001f, 1.0f*Core::Math::k2PI);
+    vbus_lpf.Init(24.0f); // 24 volts/Read default system voltage
 
     Thermistor fet_temp(ADC4, FET_THERM_BETA, FET_THERM_RESISTANCE, FET_THERM_RESISTANCE_BAL,FET_THERM_LUT_SIZE);
     fet_temp.GenerateTable();
 
+    Logger::Instance().Print("Alpha: %f\r\n", vbus_lpf.Alpha());
     // Start Measurements ADC for VBUS
     EnableADC(ADC5);
 
@@ -92,10 +101,10 @@ void ms_poll_task(void *arg)
         uint16_t batt_counts = PollADC(ADC5);
 
         // Filter bus measurement a bit
-        motor_controller->state_.Voltage_bus = 0.95f * motor_controller->state_.Voltage_bus + 0.05f * ((float)batt_counts) * voltage_scale;
+        motor_controller->state_.Voltage_bus = vbus_lpf.Filter(static_cast<float>(batt_counts) * voltage_scale);
 
         // Sample FET Thermistor for Temperature
-        motor_controller->state_.fet_temp = fet_temp.SampleTemperature();
+        motor_controller->state_.fet_temp = fet_lpf.Filter(fet_temp.SampleTemperature());
 
         osDelay(1);
     }
@@ -108,7 +117,9 @@ void motor_controller_thread_entry(void *arg)
     // Init CORDIC Routines
     //Cordic::Instance().Init();
     cordic.Init();
-     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
+    cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
+
+
 
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(0.000025f, 285, 12);
@@ -193,15 +204,15 @@ void current_measurement_cb()
     // Depends on PWM duty cycles
     if (motor->config_.phase_order) // Check Phase Ordering
     {
-        motor->state_.I_a = current_scale * (float)(adc2_raw - g_adc2_offset);
-        motor->state_.I_b = current_scale * (float)(adc3_raw - g_adc3_offset);
-        motor->state_.I_c = current_scale * (float)(adc1_raw - g_adc1_offset);
+        motor->state_.I_a = lpf_a.Filter(current_scale * (float)(adc2_raw - g_adc2_offset));
+        motor->state_.I_b = lpf_b.Filter(current_scale * (float)(adc3_raw - g_adc3_offset));
+        motor->state_.I_c = lpf_c.Filter(current_scale * (float)(adc1_raw - g_adc1_offset));
     }
     else
     {
-        motor->state_.I_a = current_scale * (float)(adc1_raw - g_adc1_offset);
-        motor->state_.I_b = current_scale * (float)(adc3_raw - g_adc3_offset);
-        motor->state_.I_c = current_scale * (float)(adc2_raw - g_adc2_offset);
+        motor->state_.I_a = lpf_a.Filter(current_scale * (float)(adc1_raw - g_adc1_offset));
+        motor->state_.I_b = lpf_b.Filter(current_scale * (float)(adc3_raw - g_adc3_offset));
+        motor->state_.I_c = lpf_c.Filter(current_scale * (float)(adc2_raw - g_adc2_offset));
     }
     // Kirchoffs Current Law to compute 3rd unmeasured current.
     //motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
@@ -644,6 +655,11 @@ void MotorController::StartControlFSM()
 
     // Disable Gate Driver
     gate_driver_->DisableDriver();
+
+    // Update Filters
+    lpf_a = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
+    lpf_b = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
+    lpf_c = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
 
     // Disable PWM
     EnablePWM(false);
