@@ -38,6 +38,8 @@
 #include <Peripherals/cordic.h>
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
+
+#include <FSM/FiniteStateMachine.h>
 #include "LEDService.h"
 #include "Logger.h"
 #include "math_ops.h"
@@ -656,219 +658,220 @@ void MotorController::StartControlFSM()
     // Start IDLE and PWM/Gate Driver Off
     static control_mode_type_t current_control_mode = IDLE_MODE;
 
-    // Disable Gate Driver
-    gate_driver_->DisableDriver();
 
-    // Update Filters
-    lpf_a = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
-    lpf_b = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
-    lpf_c = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
+    // // Disable Gate Driver
+    // gate_driver_->DisableDriver();
 
-    // Disable PWM
-    EnablePWM(false);
-    for (;;)
-    {
-        if (control_mode_ != IDLE_MODE && CheckErrors())
-        {
-            Logger::Instance().Print("Bailing Here CHECK ERROR\n");
-            control_mode_ = ERROR_MODE;
-        }
+    // // Update Filters
+    // lpf_a = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
+    // lpf_b = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
+    // lpf_c = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
 
-        // Check Current Mode
-        switch (control_mode_)
-        {
-        case (IDLE_MODE):
-            if (current_control_mode != control_mode_)
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().Off();
-                gate_driver_->DisableDriver();
-                EnablePWM(false);
+    // // Disable PWM
+    // EnablePWM(false);
+    // for (;;)
+    // {
+    //     if (control_mode_ != IDLE_MODE && CheckErrors())
+    //     {
+    //         Logger::Instance().Print("Bailing Here CHECK ERROR\n");
+    //         control_mode_ = ERROR_MODE;
+    //     }
 
-                Reset(); // Reset Controller to Zero
-            }
+    //     // Check Current Mode
+    //     switch (control_mode_)
+    //     {
+    //     case (IDLE_MODE):
+    //         if (current_control_mode != control_mode_)
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().Off();
+    //             gate_driver_->DisableDriver();
+    //             EnablePWM(false);
 
-            osDelay(1);
-            break;
-        case (ERROR_MODE):
-            if (current_control_mode != control_mode_)
-            {
-                current_control_mode = control_mode_;
-                //TODO: Flash a code... LEDService::Instance().Off();
-                //printf("Controller Error: \r\n");
+    //             Reset(); // Reset Controller to Zero
+    //         }
 
-                gate_driver_->PrintFaults();
+    //         osDelay(1);
+    //         break;
+    //     case (ERROR_MODE):
+    //         if (current_control_mode != control_mode_)
+    //         {
+    //             current_control_mode = control_mode_;
+    //             //TODO: Flash a code... LEDService::Instance().Off();
+    //             //printf("Controller Error: \r\n");
 
-                Reset(); // Reset Controller to Zero
+    //             gate_driver_->PrintFaults();
 
-                gate_driver_->DisableDriver();
-                EnablePWM(false);
-            }
+    //             Reset(); // Reset Controller to Zero
 
-            osDelay(1);
-            break;
-        case (CALIBRATION_MODE):
-            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().On();
-                gate_driver_->EnableDriver();
-                EnablePWM(true);
+    //             gate_driver_->DisableDriver();
+    //             EnablePWM(false);
+    //         }
 
-                //printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
-                motor->Calibrate(motor_controller);
-                UpdateControllerGains();
+    //         osDelay(1);
+    //         break;
+    //     case (CALIBRATION_MODE):
+    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().On();
+    //             gate_driver_->EnableDriver();
+    //             EnablePWM(true);
 
-                save_configuration();
-                // TODO: Check Errors
-                Logger::Instance().Print("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-                control_mode_ = IDLE_MODE;
-            }
-            //printf("Calib Mode!\r\n");
-            osDelay(1);
-            break;
-        case (MEASURE_RESISTANCE_MODE):
-        {
-            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().On();
-                gate_driver_->EnableDriver();
-                EnablePWM(true);
+    //             //printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
+    //             motor->Calibrate(motor_controller);
+    //             UpdateControllerGains();
 
-                motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
-                // TODO: Check Errors
-                //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-                control_mode_ = IDLE_MODE;
-            }
-            osDelay(1);
-            break;
-        }
-        case (MEASURE_INDUCTANCE_MODE):
-        {
-            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().On();
-                gate_driver_->EnableDriver();
-                EnablePWM(true);
-              //  NVIC_DisableIRQ(USART2_IRQn);
-                motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
-               // NVIC_EnableIRQ(USART2_IRQn);
-                // TODO: Check Errors
-                //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-                control_mode_ = IDLE_MODE;
-            }
-            osDelay(1);
-            break;
-        }
-        case (MEASURE_PHASE_ORDER_MODE):
-        {
-            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().On();
-                gate_driver_->EnableDriver();
-                EnablePWM(true);
-                motor->OrderPhases(this);
-                // TODO: Check Errors
-                control_mode_ = IDLE_MODE;
-            }
-            osDelay(1);
-            break;
-        }
-        case (MEASURE_ENCODER_OFFSET_MODE):
-        {
-            if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().On();
-                gate_driver_->EnableDriver();
-                EnablePWM(true);
-                motor->CalibrateEncoderOffset(this);
-                // TODO: Check Errors
-                control_mode_ = IDLE_MODE;
-            }
-            osDelay(1);
-            break;
-        }
-        case (FOC_CURRENT_MODE):
-        case (FOC_VOLTAGE_MODE):
-        case (FOC_TORQUE_MODE):
-        case (FOC_SPEED_MODE):
-        {
-            if (current_control_mode != control_mode_)
-            {
-                current_control_mode = control_mode_;
+    //             save_configuration();
+    //             // TODO: Check Errors
+    //             Logger::Instance().Print("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+    //             control_mode_ = IDLE_MODE;
+    //         }
+    //         //printf("Calib Mode!\r\n");
+    //         osDelay(1);
+    //         break;
+    //     case (MEASURE_RESISTANCE_MODE):
+    //     {
+    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().On();
+    //             gate_driver_->EnableDriver();
+    //             EnablePWM(true);
 
-                // Make sure we are calibrated:
-                if (!motor_->config_.calibrated)
-                {
-                    //printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
-                    Logger::Instance().Print("NOt Calibrated ERROR\n");
-                    control_mode_ = ERROR_MODE;
-                    continue;
-                }
+    //             motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
+    //             // TODO: Check Errors
+    //             //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+    //             control_mode_ = IDLE_MODE;
+    //         }
+    //         osDelay(1);
+    //         break;
+    //     }
+    //     case (MEASURE_INDUCTANCE_MODE):
+    //     {
+    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().On();
+    //             gate_driver_->EnableDriver();
+    //             EnablePWM(true);
+    //           //  NVIC_DisableIRQ(USART2_IRQn);
+    //             motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
+    //            // NVIC_EnableIRQ(USART2_IRQn);
+    //             // TODO: Check Errors
+    //             //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
+    //             control_mode_ = IDLE_MODE;
+    //         }
+    //         osDelay(1);
+    //         break;
+    //     }
+    //     case (MEASURE_PHASE_ORDER_MODE):
+    //     {
+    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().On();
+    //             gate_driver_->EnableDriver();
+    //             EnablePWM(true);
+    //             motor->OrderPhases(this);
+    //             // TODO: Check Errors
+    //             control_mode_ = IDLE_MODE;
+    //         }
+    //         osDelay(1);
+    //         break;
+    //     }
+    //     case (MEASURE_ENCODER_OFFSET_MODE):
+    //     {
+    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().On();
+    //             gate_driver_->EnableDriver();
+    //             EnablePWM(true);
+    //             motor->CalibrateEncoderOffset(this);
+    //             // TODO: Check Errors
+    //             control_mode_ = IDLE_MODE;
+    //         }
+    //         osDelay(1);
+    //         break;
+    //     }
+    //     case (FOC_CURRENT_MODE):
+    //     case (FOC_VOLTAGE_MODE):
+    //     case (FOC_TORQUE_MODE):
+    //     case (FOC_SPEED_MODE):
+    //     {
+    //         if (current_control_mode != control_mode_)
+    //         {
+    //             current_control_mode = control_mode_;
 
-                // Reset
-                Reset();
+    //             // Make sure we are calibrated:
+    //             if (!motor_->config_.calibrated)
+    //             {
+    //                 //printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
+    //                 Logger::Instance().Print("NOt Calibrated ERROR\n");
+    //                 control_mode_ = ERROR_MODE;
+    //                 continue;
+    //             }
 
-                LEDService::Instance().On();
-                gate_driver_->EnableDriver();
-                EnablePWM(true);
-            }
-            if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
-            {
-                // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
-                //printf("ERROR: Motor Controller Timeout!\r\n");
-                control_mode_ = ERROR_MODE;
-                continue;
-            }
-             LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //             // Reset
+    //             Reset();
 
-            //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-           // DWT->CYCCNT = 0;
-            // Measure
-            // TODO: Transform to Id/Iq here?.  For now use last sample.  
-            // TOOD: Do this in the current control loop
-            // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-            static float I_sample = 0.0f;
-            I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
-            // Update Current Limiter
-            current_limiter->AddCurrentSample(I_sample);
-            motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
-            motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
+    //             LEDService::Instance().On();
+    //             gate_driver_->EnableDriver();
+    //             EnablePWM(true);
+    //         }
+    //         if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
+    //         {
+    //             // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
+    //             //printf("ERROR: Motor Controller Timeout!\r\n");
+    //             control_mode_ = ERROR_MODE;
+    //             continue;
+    //         }
+    //          LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    //         //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //        // DWT->CYCCNT = 0;
+    //         // Measure
+    //         // TODO: Transform to Id/Iq here?.  For now use last sample.  
+    //         // TOOD: Do this in the current control loop
+    //         // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
+    //         static float I_sample = 0.0f;
+    //         I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+    //         // Update Current Limiter
+    //         current_limiter->AddCurrentSample(I_sample);
+    //         motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
+    //         motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
             
-            DoMotorControl();
-           // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-           // uint32_t span = DWT->CYCCNT;
-            //Logger::Instance().Print("Count: %f\r\n", j);
-            break;
-        }
-        // case (ENCODER_DEBUG):
-        //     if (current_control_mode != control_mode_)
-        //     {
-        //         current_control_mode = control_mode_;
-        //         gate_driver_->Disable();
-        //         EnablePWM(false);
-        //     }
-        //     motor->Update();
-        //     motor->PrintPosition();
-        //     osDelay(100);
-        //     break;
-        default:
-            if (current_control_mode != control_mode_)
-            {
-                current_control_mode = control_mode_;
-                LEDService::Instance().Off();
-                gate_driver_->DisableDriver();
-                EnablePWM(false);
-            }
-            Logger::Instance().Print("Unhandled Control Mode: %d!\r\n", control_mode_);
-            osDelay(1);
-            break;
-        }
-    }
+    //         DoMotorControl();
+    //        // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //        // uint32_t span = DWT->CYCCNT;
+    //         //Logger::Instance().Print("Count: %f\r\n", j);
+    //         break;
+    //     }
+    //     // case (ENCODER_DEBUG):
+    //     //     if (current_control_mode != control_mode_)
+    //     //     {
+    //     //         current_control_mode = control_mode_;
+    //     //         gate_driver_->Disable();
+    //     //         EnablePWM(false);
+    //     //     }
+    //     //     motor->Update();
+    //     //     motor->PrintPosition();
+    //     //     osDelay(100);
+    //     //     break;
+    //     default:
+    //         if (current_control_mode != control_mode_)
+    //         {
+    //             current_control_mode = control_mode_;
+    //             LEDService::Instance().Off();
+    //             gate_driver_->DisableDriver();
+    //             EnablePWM(false);
+    //         }
+    //         Logger::Instance().Print("Unhandled Control Mode: %d!\r\n", control_mode_);
+    //         osDelay(1);
+    //         break;
+    //     }
+    // }
 }
 void MotorController::DoMotorControl()
 {
