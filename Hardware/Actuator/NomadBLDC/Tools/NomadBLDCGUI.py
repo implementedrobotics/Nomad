@@ -457,11 +457,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
     def UpdateResistanceMeasurementValue(self, measurement):
         if(measurement is not None):
-            self.phaseResistanceVal.setValue(measurement.measurement)
+            self.phaseResistanceVal.setValue(measurement.measurement*1e3)
     
     def UpdateInductanceMeasurementValue(self, measurement):
         if(measurement is not None):
-            self.phaseInductanceVal.setValue(measurement.measurement)
+            self.phaseInductanceVal.setValue(measurement.measurement*1e6)
 
     def UpdatePhaseOrderMeasurementValue(self, measurement):
         if(measurement is not None):
@@ -496,7 +496,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
             # Motor
             self.polePairVal.setValue(self.nomad_dev.motor_config.num_pole_pairs)
-            self.KvVal.setValue(self.nomad_dev.motor_config.K_v)
+            self.KvVal.setValue(int(self.nomad_dev.motor_config.K_v))
             self.gearRatioVal.setValue(self.nomad_dev.motor_config.gear_ratio)
             self.KtMotorVal.setValue(self.nomad_dev.motor_config.K_t)
             self.KtOutputVal.setValue(self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)
@@ -694,9 +694,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.uptimeLabel.setText(f"Up Time: " + time_str)
             self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.voltage_bus))
             self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
-            self.gateDriverTempLabel.setText("Gate Driver Temp: <b>{:0.4f}</b>".format(stats.driver_temp))
-            self.fetTempLabel.setText("FET Temp D: <b>{:0.4f}</b>".format(stats.fet_temp))
-            self.motorTempLabel.setText("Motor Temp Q: <b>{:0.4f}</b>".format(stats.motor_temp))
+            self.gateDriverTempLabel.setText("Gate Driver Temp: <b>{:0.1f}</b>".format(stats.driver_temp))
+            self.fetTempLabel.setText("FET Temp D: <b>{:0.1f}</b>".format(stats.fet_temp))
+            self.motorTempLabel.setText("Motor Temp Q: <b>{:0.1f}</b>".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
             if(stats.control_status == 0):
                 self.idle = True
@@ -714,21 +714,21 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             #print(I_q)
            # print(state)
             self.idProgressVal.setFormat("I_d: {:0.2f} A".format(I_d))
-            self.idProgressVal.setValue(abs(I_d/max_current)*100)
+            self.idProgressVal.setValue(int(abs(I_d/max_current)*100))
 
             self.iqProgressVal.setFormat("I_q: {:0.2f} A".format(I_q))
-            self.iqProgressVal.setValue(abs(I_q/max_current)*100)
+            self.iqProgressVal.setValue(int(abs(I_q/max_current)*100))
 
             self.vdProgressVal.setFormat("V_d: {:0.2f} V".format(controller_state.V_d))
-            self.vdProgressVal.setValue(abs(controller_state.V_d/20.0)*100)
+            self.vdProgressVal.setValue(int(abs(controller_state.V_d/20.0)*100))
 
             self.vqProgressVal.setFormat("V_q: {:0.2f} V".format(controller_state.V_q))
-            self.vqProgressVal.setValue(abs(controller_state.V_q/20.0)*100)
+            self.vqProgressVal.setValue(int(abs(controller_state.V_q/20.0)*100))
 
 
             torque = (I_q * self.nomad_dev.motor_config.K_t * self.nomad_dev.motor_config.gear_ratio)
             self.torqueProgressVal.setFormat("Torque: {:0.2f} N*m".format(torque))
-            self.torqueProgressVal.setValue(abs((torque)/(max_current*self.nomad_dev.motor_config.K_t*self.nomad_dev.motor_config.gear_ratio))*100)
+            self.torqueProgressVal.setValue(int(abs((torque)/(max_current*self.nomad_dev.motor_config.K_t*self.nomad_dev.motor_config.gear_ratio))*100))
 
           #  print(self.nomad_dev.motor_state)
           #  print(item[1])

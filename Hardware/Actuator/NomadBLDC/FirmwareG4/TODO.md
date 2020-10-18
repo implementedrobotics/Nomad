@@ -6,11 +6,12 @@
 6.  Speed Controller ***
 7.  Position limits on output?
 8.  Clean up class access public/privates
-9.  Send mutex
-10. Refactor Measurement Routines
-11. Move voltage ADC timer reading to own timer
-12. Triple current measurements
+10. Refactor Measurement Routines (Tasks)
 13. Gate driver fault checking and reporting ****
 15. Add Bus current ***
 16. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
-
+20. RMS Current Calculator -> Low Priority Task
+24. Verify optimization flags -O3 breaks something
+26. Remove all HAL timers
+27. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
+28. Optimize for 40khz

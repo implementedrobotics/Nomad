@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    {
+        "type": "cortex-debug",
+        "request": "launch",
+        "servertype": "stutil",
+        "cwd": "${workspaceRoot}",
+        "executable": "./build/nomad_bldc_fw_g4.elf",
+        "name": "Debug (ST-Util)",
+        "device": "STM32G474CE",
+        "v1": false,
+        "svdFile": "${workspaceRoot}/STM32G474xx.svd"
+        }
+    ]
+}

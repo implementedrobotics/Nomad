@@ -186,6 +186,7 @@ class NomadBLDC:
             logger.print_info(f'Connecting to port: {self.port} [{baud} baud]')
             self.transport = SerialHandler(self.port, baud, self.commands.process_packet)
             self.device_info = self.commands.read_device_info(self.transport)
+            logger.print_info(f'Info: {self.device_info}')
             if(self.device_info  is None): # No device infor received.  Continue to next.
                 self.transport.close() # Close transport
                 continue
