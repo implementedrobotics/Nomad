@@ -33,6 +33,7 @@
 // Project Includes
 #include "main.h"
 #include <Peripherals/gpio.h>
+#include <Utilities/math.h>
 #include "math_ops.h"
 
 PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),
@@ -127,6 +128,8 @@ void PositionSensorAS5x47::Update()
 }
 void PositionSensorAS5x47::Update(float Ts)
 {
+    using namespace Core::Math;
+
     static float prev_position_norm = 0;
     static int32_t prev_counts = 0;
 
@@ -144,6 +147,7 @@ void PositionSensorAS5x47::Update(float Ts)
         spi_dev_->Deselect();
     }
 
+
     // Interpolate position offset from Lookup Table
     int32_t offset_1 = config_.offset_lut[position_raw_ >> 7];
     int32_t offset_2 = config_.offset_lut[((position_raw_ >> 7) + 1) % 128];
@@ -160,52 +164,48 @@ void PositionSensorAS5x47::Update(float Ts)
     {
         num_rotations_ += 1;
     }
-    
 
     // Update previous values for next sample period
     prev_counts = current_counts;
     prev_position_norm = position_normalized_;
 
     // Compute normalized sensor position 0 to 2PI
-    position_normalized_ = ((2.0f * PI * ((float)current_counts)) / (float)config_.cpr);
+    position_normalized_ = ((k2PI * ((float)current_counts)) / (float)config_.cpr);
 
     // Compute cumulative sensor position
-    float current_position = (2.0f * PI * ((float)current_counts + (config_.cpr * num_rotations_))) / (float)config_.cpr;
+    float current_position = (k2PI * ((float)current_counts + (config_.cpr * num_rotations_))) / (float)config_.cpr;
 
     // Compute mechanical position
     position_mechanical_ = current_position - config_.offset_mech;
 
     // Compute electrical position
-    position_electrical_ = ((2.0f * PI / (float)config_.cpr) * (float)((pole_pairs_ * current_counts) % config_.cpr)) + config_.offset_elec;
-
-
+    position_electrical_ = ((k2PI / (float)config_.cpr) * (float)((pole_pairs_ * current_counts) % config_.cpr)) + config_.offset_elec;
 
     //  Wrap 0 to 2PI
     if (position_electrical_ < 0)
     {
-        position_electrical_ += 2.0f * PI;
+        position_electrical_ += k2PI;
     }
-    else if (position_electrical_ > 2.0f * PI)
+    else if (position_electrical_ > k2PI)
     {
-        position_electrical_ -= 2.0f * PI;
+        position_electrical_ -= k2PI;
     }
 
     // Compute Velocity
     float velocity = 0.0f;
     if ((position_normalized_ - prev_position_norm) < -3.0f)
     {
-        velocity = (position_normalized_ - prev_position_norm + 2.0f * PI) / Ts;
+        velocity = (position_normalized_ - prev_position_norm + k2PI) / Ts;
     }
     else if ((position_normalized_ - prev_position_norm) > 3.0f)
     {
-        velocity = (position_normalized_ - prev_position_norm - 2.0f * PI) / Ts;
+        velocity = (position_normalized_ - prev_position_norm - k2PI) / Ts;
     }
     else
     {
         velocity = (position_normalized_ - prev_position_norm) / Ts;
     }
 
-    
     // Estimate/Filter Velocity
     // TODO: Change this to a PLL?
     float vel_sum = velocity;
@@ -220,6 +220,4 @@ void PositionSensorAS5x47::Update(float Ts)
     velocity_mechanical_ = vel_sum / ((float)filter_size_);
     velocity_electrical_ = velocity_mechanical_ * pole_pairs_;
     velocity_electrical_filtered_ = 0.99f * velocity_electrical_filtered_ + 0.01f * velocity_electrical_;
-
-
 }

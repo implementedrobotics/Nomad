@@ -72,13 +72,11 @@ uint16_t SPIDevice::Receive16(void)
     //Flush();
 
     // Transmit
-    while (!LL_SPI_IsActiveFlag_TXE(SPI_))
-        ;
+    while (!LL_SPI_IsActiveFlag_TXE(SPI_));
     LL_SPI_TransmitData16(SPI_, 0xFFFF);
 
     // Wait for receive buffer to fill
-    while (!LL_SPI_IsActiveFlag_RXNE(SPI_))
-        ;
+    while (!LL_SPI_IsActiveFlag_RXNE(SPI_));
 
     // Return receive buffer
     return LL_SPI_ReceiveData16(SPI_);
@@ -90,13 +88,11 @@ uint8_t SPIDevice::TransmitReceive8(uint8_t send_bytes)
     //Flush();
 
     // Transmit
-    while (!LL_SPI_IsActiveFlag_TXE(SPI_))
-        ;
+    while (!LL_SPI_IsActiveFlag_TXE(SPI_));
     LL_SPI_TransmitData8(SPI_, send_bytes);
 
     // Wait for receive buffer to fill
-    while (!LL_SPI_IsActiveFlag_RXNE(SPI_))
-        ;
+    while (!LL_SPI_IsActiveFlag_RXNE(SPI_));
 
     // Return receive buffer
     return LL_SPI_ReceiveData8(SPI_);
@@ -108,13 +104,11 @@ uint16_t SPIDevice::TransmitReceive16(uint16_t send_bytes)
     //Flush();
 
     // Transmit
-    while (!LL_SPI_IsActiveFlag_TXE(SPI_))
-        ;
+    while (!LL_SPI_IsActiveFlag_TXE(SPI_));
     LL_SPI_TransmitData16(SPI_, send_bytes);
 
     // Wait for receive buffer to fill
-    while (!LL_SPI_IsActiveFlag_RXNE(SPI_))
-        ;
+    while (!LL_SPI_IsActiveFlag_RXNE(SPI_));
 
     // Return receive buffer
     return LL_SPI_ReceiveData16(SPI_);
@@ -149,13 +143,11 @@ void SPIDevice::Receive(uint8_t *data, size_t length)
     for (; length > 0; --length, ++data)
     {
         // Transmit
-        while (!LL_SPI_IsActiveFlag_TXE(SPI_))
-            ;
+        while (!LL_SPI_IsActiveFlag_TXE(SPI_));
         LL_SPI_TransmitData8(SPI_, 0xFF);
 
         // Wait for receive buffer to fill and receive data
-        while (!LL_SPI_IsActiveFlag_RXNE(SPI_))
-            ;
+        while (!LL_SPI_IsActiveFlag_RXNE(SPI_));
         *data = LL_SPI_ReceiveData8(SPI_);
     }
 }

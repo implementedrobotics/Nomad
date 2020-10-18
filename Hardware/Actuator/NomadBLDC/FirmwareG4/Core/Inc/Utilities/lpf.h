@@ -62,8 +62,8 @@ public:
     }
 
     // Filter Sample
-    const float Filter(const float sample)
-    {
+    inline const float Filter(const float sample)  __attribute__((always_inline))
+    { 
         // Update Filter Output
         output_ = output_ + (sample - output_) * alpha_;
 

@@ -1,5 +1,4 @@
 # Firmware TODO:
-1.  Controller priorities.  Make sure communications priorities are straight. 
 2.  Remove all print statements and cleanup old serial
 4.  Verify CAN Messaging
 5.  Keep alive support
@@ -15,3 +14,7 @@
 26. Remove all HAL timers
 27. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
 28. Optimize for 40khz
+29. Customize HDLC Command Callback.  And make consistent with CAN Bus once implemented
+30. FET Thermistor/Motor Thermistor Variables in Config
+31. Get Rid of math_ops.h
+32. Adjustable LUT encoder offset size

@@ -84,14 +84,14 @@ struct __attribute__((__aligned__(8))) Save_format_t
 
 void ms_poll_task(void *arg)
 {
-    LowPassFilter fet_lpf(0.001f, 1000.0f*Core::Math::k2PI);
-    LowPassFilter vbus_lpf(0.001f, 1.0f*Core::Math::k2PI);
+    LowPassFilter fet_lpf(1.0f/1000.0f, 1000.0f*Core::Math::k2PI);
+    LowPassFilter vbus_lpf(1.0f/100.0f, 1.0f*Core::Math::k2PI);
     vbus_lpf.Init(24.0f); // 24 volts/Read default system voltage
 
     Thermistor fet_temp(ADC4, FET_THERM_BETA, FET_THERM_RESISTANCE, FET_THERM_RESISTANCE_BAL,FET_THERM_LUT_SIZE);
     fet_temp.GenerateTable();
 
-    Logger::Instance().Print("Alpha: %f\r\n", vbus_lpf.Alpha());
+    //Logger::Instance().Print("Alpha: %f\r\n", vbus_lpf.Alpha());
     // Start Measurements ADC for VBUS
     EnableADC(ADC5);
 
@@ -118,8 +118,6 @@ void motor_controller_thread_entry(void *arg)
     //Cordic::Instance().Init();
     cordic.Init();
     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
-
-
 
     // Init Motor and Implicitly Position Sensor
     motor = new Motor(0.000025f, 285, 12);
@@ -204,15 +202,15 @@ void current_measurement_cb()
     // Depends on PWM duty cycles
     if (motor->config_.phase_order) // Check Phase Ordering
     {
-        motor->state_.I_a = lpf_a.Filter(current_scale * (float)(adc2_raw - g_adc2_offset));
-        motor->state_.I_b = lpf_b.Filter(current_scale * (float)(adc3_raw - g_adc3_offset));
-        motor->state_.I_c = lpf_c.Filter(current_scale * (float)(adc1_raw - g_adc1_offset));
+        motor->state_.I_a = lpf_a.Filter(current_scale * static_cast<float>(adc2_raw - g_adc2_offset));
+        motor->state_.I_b = lpf_b.Filter(current_scale * static_cast<float>(adc3_raw - g_adc3_offset));
+        motor->state_.I_c = lpf_c.Filter(current_scale * static_cast<float>(adc1_raw - g_adc1_offset));
     }
     else
     {
-        motor->state_.I_a = lpf_a.Filter(current_scale * (float)(adc1_raw - g_adc1_offset));
-        motor->state_.I_b = lpf_b.Filter(current_scale * (float)(adc3_raw - g_adc3_offset));
-        motor->state_.I_c = lpf_c.Filter(current_scale * (float)(adc2_raw - g_adc2_offset));
+        motor->state_.I_a = lpf_a.Filter(current_scale * static_cast<float>(adc1_raw - g_adc1_offset));
+        motor->state_.I_b = lpf_b.Filter(current_scale * static_cast<float>(adc3_raw - g_adc3_offset));
+        motor->state_.I_c = lpf_c.Filter(current_scale * static_cast<float>(adc2_raw - g_adc2_offset));
     }
     // Kirchoffs Current Law to compute 3rd unmeasured current.
     //motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
@@ -220,8 +218,13 @@ void current_measurement_cb()
     // TODO: Use Longest Duty Cycle Measurements for which of the 3 phases to use
 
     // Always Update Motor State
+    
+     
     motor->Update();
     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    
+   LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     // Make sure control thread is ready
     if (motor_controller != 0 && motor_controller->ControlThreadReady())
     {
