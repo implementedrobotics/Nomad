@@ -39,7 +39,7 @@
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
 
-#include <FSM/FiniteStateMachine.h>
+#include <FSM/NomadBLDCFSM.h>
 #include "LEDService.h"
 #include "Logger.h"
 #include "math_ops.h"
@@ -49,6 +49,8 @@
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
+
+// TODO: All the below needs to go
 RMSCurrentLimiter *current_limiter = 0;
 
 Cordic cordic;
@@ -111,6 +113,7 @@ void ms_poll_task(void *arg)
         osDelay(1);
     }
 }
+
 void motor_controller_thread_entry(void *arg)
 {
     //printf("Motor RT Controller Task Up.\n\r");
@@ -118,11 +121,12 @@ void motor_controller_thread_entry(void *arg)
 
     // Init CORDIC Routines
     //Cordic::Instance().Init();
+    // TODO: Will have to move this
     cordic.Init();
     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
 
     // Init Motor and Implicitly Position Sensor
-    motor = new Motor(0.000025f, 285, 12);
+    motor = new Motor(0.000025f, 80, 21);
 
     // Init Motor Controller
     motor_controller = new MotorController(motor);
@@ -134,33 +138,16 @@ void motor_controller_thread_entry(void *arg)
 
     // Begin Control Loop
     motor_controller->StartControlFSM();
+
+    // for(;;)
+    // {
+    //     osDelay(100);
+    // }
+
+    osThreadExit();
     
 }
 
-// void debug_thread_entry()
-// {
-//     // TODO: Print Speed/Rate
-//     // TODO: Move Encoder Debug Print Here
-//     while (1)
-//     {
-//         if (motor_controller->GetDebugMode() == true)
-//         {
-//             if (motor_controller->GetControlMode() == FOC_TORQUE_MODE)
-//             {
-//                 MotorController::State_t state = motor_controller->state_;
-//                 Motor::Config_t config = motor->config_;
-//                 //printf("\r\nI_d: %.3f/%.3f A\tI_q: %.3f/%.3f A\t| Torque: %.2f/%.2f N*m\r\n", 
-//                 //state.I_d_filtered, state.I_d_ref, 
-//                 //state.I_q_filtered, state.I_q_ref, 
-//                 //(state.I_q_filtered * config.K_t_out), (state.I_q_ref * motor->config_.K_t_out));
-
-//                 //printf("Voltage Bus: %.3f V\r\n", state.Voltage_bus);
-//                 // TODO: Power, temperatures etc.
-//             }
-//         }
-//         osDelay(500);
-//     }
-// }
 // Controller Mode Interface
 void set_control_mode(int mode)
 {
@@ -196,6 +183,9 @@ void set_voltage_control_ref(float V_d, float V_q)
 }
 void current_measurement_cb()
 {
+    // Performance Measure
+     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
     // Measure Currents/Bus Voltage
     uint16_t adc1_raw = LL_ADC_REG_ReadConversionData12(ADC1); // Current Sense Measurement
     uint16_t adc2_raw = LL_ADC_REG_ReadConversionData12(ADC2); // Current Sense Measurement
@@ -220,21 +210,11 @@ void current_measurement_cb()
     // TODO: Use Longest Duty Cycle Measurements for which of the 3 phases to use
 
     // Always Update Motor State
-    
-     
     motor->Update();
-    //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    
-   LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    // Make sure control thread is ready
-    if (motor_controller != 0 && motor_controller->ControlThreadReady())
-    {
-        osThreadFlagsSet(motor_controller->GetThreadID(), CURRENT_MEASUREMENT_COMPLETE_SIGNAL);
-        //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    }
- //   LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
+    // Run FSM for timestep
+    motor_controller->RunControlFSM();
+    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
 }
 
@@ -370,11 +350,6 @@ void start_voltage_control()
     set_control_mode(FOC_VOLTAGE_MODE);
 }
 
-void show_encoder_debug()
-{
-    //printf("\r\nEncoder Debug Mode. Press ESC to stop.\r\n\r\n");
-    set_control_mode(ENCODER_DEBUG);
-}
 void enter_idle()
 {
     set_control_mode(IDLE_MODE);
@@ -387,99 +362,6 @@ void zero_encoder_offset()
     //motor->PrintPosition();
     //printf("\r\nEncoder Output Zeroed!. Press ESC to return to menu.\r\n\r\n");
 }
-
-void show_motor_config()
-{
-    // printf("\r\nMotor Configuration:\r\n");
-
-    // printf("\r\n Calibration Status: ");
-    // if (motor->config_.calibrated)
-    //     printf("CALIBRATED\r\n");
-    // else
-    //     printf("UNCALIBRATED\r\n");
-
-    // printf("\r\n Phase Order: ");
-    // if (motor->config_.phase_order == 1)
-    //     printf("CORRECT\r\n");
-    // else
-    //     printf("REVERSED\r\n");
-
-    // printf("\r\nMotor Constants:\r\n");
-
-    // printf("\r\n Pole Pairs: %u    K_v: %.2f RPM/V    K_t: %.4f (N*m)/A    K_t_out: %.4f (N*m)/A     Flux Linkage: %.4f Webers\r\n",
-    //        motor->config_.num_pole_pairs,
-    //        motor->config_.K_v,
-    //        motor->config_.K_t,
-    //        motor->config_.K_t_out,
-    //        motor->config_.flux_linkage);
-
-    // printf("\r\n Phase Resistance: %.5f ohms    Phase Inductance D: %.5f H    Phase Inductance Q: %.5f H\r\n",
-    //        motor->config_.phase_resistance,
-    //        motor->config_.phase_inductance_d,
-    //        motor->config_.phase_inductance_q);
-
-    // printf("\r\nCalibration Parameters: \r\n");
-    // printf("\r\n Calibration Current: %.4f\tCalibration Voltage: %.4f\r\n",
-    //        motor->config_.calib_current,
-    //        motor->config_.calib_voltage);
-
-    // printf("\r\nPress ESC to return to menu.\r\n\r\n");
-}
-void show_controller_config()
-{
-    // printf("\r\nMotor Controller Configuration:\r\n");
-
-    // printf("\r\nBus Voltage: %.4f V\r\n", motor_controller->state_.Voltage_bus);
-
-    // printf("\r\nController Timings:\r\n");
-    // //printf("\r\n PWM Freqency: %.4f khz   Control Loop Frequency: %.4f khz  Control Loop Period: %.6f s",
-    // //       motor_controller->config_.pwm_freq / 1000.0f,
-    // //       motor_controller->control_loop_freq_ / 1000.0f,
-    // //       motor_controller->control_loop_period_);
-    // printf("\r\n\r\nController Gains:\r\n");
-
-    // printf("\r\n Loop Bandwidth: %.4f hz    Loop Gain(kd/kq): %.4f/%.4f    Integrator Gain(k_i_d/k_i_q): %.4f/%.4f\r\n",
-    //        motor_controller->config_.current_bandwidth,
-    //        motor_controller->config_.k_d,
-    //        motor_controller->config_.k_q,
-    //        motor_controller->config_.k_i_d,
-    //        motor_controller->config_.k_i_q);
-
-    // printf("\r\nController Limits: \r\n");
-    // printf("\r\n Current Limit: %.4f A    Velocity Limit: %.4f rad/s   Overmodulation: %.4f\r\n",
-    //        motor_controller->config_.current_limit,
-    //        motor_controller->config_.velocity_limit,
-    //        motor_controller->config_.overmodulation);
-    // printf("\r\nPress ESC to return to menu.\r\n\r\n");
-}
-void show_encoder_config()
-{
-    // printf("\r\nAM5147 Position Sensor Configuration:\r\n");
-    // printf("\r\n Encoder CPR: %d", motor->PositionSensor()->config_.cpr);
-    // printf("\r\n\r\nSensor Offsets:\r\n");
-
-    // printf("\r\n Electrical Offset: %.4f rad    Mechanical Offset: %.4f rad\r\n",
-    //        motor->PositionSensor()->config_.offset_elec,
-    //        motor->PositionSensor()->config_.offset_mech);
-
-    // printf("\n\r Encoder non-linearity compensation table\n\r");
-    // printf(" Lookup Index : Lookup Value\n\r\n\r");
-    // for (int32_t i = 0; i < 128; i++) // Build Lookup Table
-    // {
-    //     printf("%ld\t\t%ld\n\r", i, motor->PositionSensor()->config_.offset_lut[i]);
-    // }
-    // printf("\r\nPress ESC to return to menu.\r\n\r\n");
-}
-// Control Loop Timer Interrupt Synced with PWM
-// extern "C" void TIM1_UP_TIM10_IRQHandler(void)
-// {
-//     if (TIM1->SR & TIM_SR_UIF) // TIM1 is up, and update interrupts are enabled on TIM1
-//     {
-//         ADC1->CR2 |= 0x40000000;  // Begin ADC Conversion
-//         current_measurement_cb(); // Callback
-//     }
-//     TIM1->SR = 0x0; // reset the status register
-// }
 // Statics
 MotorController *MotorController::singleton_ = nullptr;
 
@@ -490,6 +372,9 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     control_initialized_ = false;
     control_enabled_ = false;
     control_debug_ = false;
+
+    // Null FSM
+    fsm_ = nullptr;
 
     // Zero State
     memset(&state_, 0, sizeof(state_));
@@ -568,7 +453,7 @@ void MotorController::Init()
     Logger::Instance().Print("MotorController::Init() - Motor Controller Initializing...\r\n");
 
     // Update Control Thread State
-    control_thread_id_ = osThreadGetId();
+    control_thread_id_ = osThreadGetId(); // TODO: Remove
     control_thread_ready_ = true;
     control_mode_ = CALIBRATION_MODE; // Start in "Calibration" mode.
 
@@ -606,7 +491,7 @@ void MotorController::Init()
     // Load Configuration
     load_configuration();
 
-    Logger::Instance().Print("\r\nResitance: %f\r\n", motor_->config_.phase_resistance);
+   // Logger::Instance().Print("\r\nResitance: %f\r\n", motor_->config_.phase_resistance);
 
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
@@ -624,19 +509,19 @@ void MotorController::Init()
     StartADCs();
     osDelay(150); // Delay for a bit to let things stabilize
 
-    EnablePWM(true);            // Start PWM
-    zero_current_sensors(1024); // Measure current sensor zero-offset
-    EnablePWM(false);           // Stop PWM
+   // EnablePWM(true);            // Start PWM
+   // zero_current_sensors(1024); // Measure current sensor zero-offset
+   // EnablePWM(false);           // Stop PWM
 
-    // Default Mode Idle:
-    control_mode_ = IDLE_MODE;
+    // Default Mode Startup:
+    control_mode_ = STARTUP_MODE;
 
     // Initialize RMS Current limiter
     uint32_t sub_sample_count = rms_current_sample_period_/controller_update_period_;
     current_limiter = new RMSCurrentLimiter(motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau, rms_current_sample_period_, sub_sample_count);
     current_limiter->Reset();
 
-    current_limiter->AddCurrentSample(10.0f);
+    //current_limiter->AddCurrentSample(10.0f);
     //Logger::Instance().Print("Count: %d.  %f to %f\n", sub_sample_count, motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau);
     control_initialized_ = true;
 
@@ -653,11 +538,22 @@ bool MotorController::CheckErrors()
 
     return false;
 }
+bool MotorController::RunControlFSM()
+{
+    if(fsm_ == nullptr)
+        return false;
+    
+    fsm_->Run(controller_update_period_);
+    return true;
+}
 void MotorController::StartControlFSM()
 {
     // Start IDLE and PWM/Gate Driver Off
     static control_mode_type_t current_control_mode = IDLE_MODE;
 
+    fsm_ = new NomadBLDCFSM();
+    fsm_->Start(SysTick->VAL);
+   // Logger::Instance().Print("Create FSM!\r\n");
 
     // // Disable Gate Driver
     // gate_driver_->DisableDriver();

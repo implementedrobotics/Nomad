@@ -29,9 +29,9 @@
 
 // Project Include Files
 #include <FSM/NomadBLDCFSM.h>
-// #include <FSM/OffState.hpp>
-// #include <FSM/IdleState.hpp>
-// #include <FSM/StandState.hpp>
+#include <FSM/StartupState.h>
+#include <FSM/IdleState.h>
+#include <Logger.h>
 
 // Transition Events For States
 NomadBLDCTransitionEvent::NomadBLDCTransitionEvent(const std::string &name, NomadBLDCData* data)
@@ -47,7 +47,7 @@ NomadBLDCFSM::NomadBLDCFSM() : FiniteStateMachine("Nomad BLDC Controller FSM")
 
     _CreateFSM();
 }
-bool NomadBLDCFSM::Run(double dt)
+bool NomadBLDCFSM::Run(float dt)
 {
     // Now run base FSM code
     return FiniteStateMachine::Run(dt);
@@ -58,10 +58,16 @@ const NomadBLDCData* NomadBLDCFSM::GetData() const
     return data_;
 }
 
-
 void NomadBLDCFSM::_CreateFSM()
 {
     //std::cout << "[NomadControlFSM]: Creating FSM" << std::endl;
+    Logger::Instance().Print("Creating FSM\r\n");
+
+    // Initialization/Startup State
+    // Zero Current Sensors
+    // Setup and Do Things
+    // Calibrate Mode
+    // Change to Idle
 
     // ///////////////////////// Define Our States
     // // Off
@@ -69,31 +75,26 @@ void NomadBLDCFSM::_CreateFSM()
     // off->SetControllerData(data_);
     // off->SetParentFSM(this);
 
-    // // Idle
-    // std::shared_ptr<IdleState> idle = std::make_shared<IdleState>();
-    // idle->SetControllerData(data_);
-    // idle->SetParentFSM(this);
+    // Startup
+    StartupState *startup = new StartupState();
+    startup->SetControllerData(data_);
+    startup->SetParentFSM(this);
 
-    // // Stand
-    // std::shared_ptr<StandState> stand = std::make_shared<StandState>();
-    // stand->SetControllerData(data_);
-    // stand->SetParentFSM(this);
+    // Idle
+    IdleState *idle = new IdleState();
+    idle->SetControllerData(data_);
+    idle->SetParentFSM(this);
 
-    // // // Sit
-    // // std::shared_ptr<SitState> sit = std::make_shared<SitState>();
+    ///////////////////////// Define Our Transitions
+    CommandModeEvent *transition_idle = new CommandModeEvent("IDLE TRANSITION", control_mode_type_t::IDLE_MODE, data_);
 
-    // std::shared_ptr<CommandModeEvent> transition_idle = std::make_shared<CommandModeEvent>("IDLE TRANSITION", CONTROL_MODE::IDLE, data_);
-    // std::shared_ptr<CommandModeEvent> transition_stand = std::make_shared<CommandModeEvent>("STAND TRANSITION", CONTROL_MODE::STAND, data_);
+    // Setup Transitions
+    startup->AddTransitionEvent(transition_idle, idle);
 
-    // // Setup Transitions
-    // off->AddTransitionEvent(transition_idle, idle);
-    // idle->AddTransitionEvent(transition_stand, stand);
-    // stand->AddTransitionEvent(transition_idle, idle);
-    // // sit->AddTransitionEvent(up_event, stand);
+    // Add the states to the FSM
+    AddState(startup);
+    AddState(idle);
 
-    // // Add the states to the FSM
-    // AddState(off);
-
-    // // Set Initials State
-    // SetInitialState(idle);
+    // Set Initials State
+    SetInitialState(startup);
 }

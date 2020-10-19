@@ -18,4 +18,6 @@
 30. FET Thermistor/Motor Thermistor Variables in Config
 31. Get Rid of math_ops.h
 32. Adjustable LUT encoder offset size
-33. Add FSM refactor
+34. Add #DEFINE State definitions for IDS
+36. Remove Control Thread ID values from Controller
+37. Move ADC Offset to ADC Periph/Motor Controller Object

@@ -66,7 +66,7 @@ public:
     virtual bool Start(uint32_t current_time);
 
     // Run an iteration of the state machine
-    virtual bool Run(double dt);
+    virtual bool Run(float dt);
 
     // Stop state machine and cleans up
     virtual bool Stop(uint32_t current_time);

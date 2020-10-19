@@ -42,18 +42,18 @@ class NomadBLDCFSM : public FiniteStateMachine
 
 public:
 
-    typedef enum
-    {
-        OFF = 0,
-        IDLE = 1,
-        ESTOP = 7
-    } CONTROL_MODE;
+    // typedef enum
+    // {
+    //     OFF = 0,
+    //     IDLE = 1,
+    //     ESTOP = 7
+    // } CONTROL_MODE;
 
     // Base Class Primary Controller FSM
     NomadBLDCFSM();
 
     // Run an iteration of the state machine
-    bool Run(double dt);
+    bool Run(float dt);
 
     // Return Mode from Active State
     const NomadBLDCData* GetData() const;
@@ -63,16 +63,16 @@ protected:
     void _CreateFSM();
 
     // Shared Data Pointer.  TODO: Switch to ZCM Port?
-    NomadBLDCData* data_;
+    NomadBLDCData *data_;
 };
 
 class NomadBLDCTransitionEvent : public TransitionEvent
 {
 public:
-    NomadBLDCTransitionEvent(const std::string &name, NomadBLDCData* data);
+    NomadBLDCTransitionEvent(const std::string &name, NomadBLDCData *data);
 
 protected:
-    NomadBLDCData* data_;
+    NomadBLDCData *data_;
     std::string name_;
 };
 
@@ -83,7 +83,7 @@ public:
     // Base Class Transition Event
     // name = Transition Event name
     CommandModeEvent(const std::string &name,
-                     NomadBLDCFSM::CONTROL_MODE mode,
+                     control_mode_type_t mode,
                      NomadBLDCData *data) : NomadBLDCTransitionEvent(name, data), req_mode_(mode)
     {
     }
@@ -101,6 +101,6 @@ public:
     };
 
 protected:
-    NomadBLDCFSM::CONTROL_MODE req_mode_;
+    control_mode_type_t req_mode_;
 };
 #endif // NOMADBLDC_FSM_NOMADBLDCFSM_H_

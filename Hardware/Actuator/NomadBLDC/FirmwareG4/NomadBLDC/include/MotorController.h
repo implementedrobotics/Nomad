@@ -73,6 +73,7 @@ static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTA
 
 extern Motor *motor;
 extern MotorController *motor_controller;
+class NomadBLDCFSM;
 
 // Measurement Struct
 typedef union 
@@ -101,18 +102,18 @@ typedef enum
 
 typedef enum
 {
-    IDLE_MODE = 0,
-    ERROR_MODE = 1,
-    MEASURE_RESISTANCE_MODE = 2,
-    MEASURE_INDUCTANCE_MODE = 3,
-    MEASURE_PHASE_ORDER_MODE = 4,
-    MEASURE_ENCODER_OFFSET_MODE = 5,
-    CALIBRATION_MODE = 6,
-    FOC_CURRENT_MODE = 7,
-    FOC_VOLTAGE_MODE = 8,
-    FOC_TORQUE_MODE = 9,
-    FOC_SPEED_MODE = 10,
-    ENCODER_DEBUG = 11,
+    STARTUP_MODE = 0,
+    IDLE_MODE = 1,
+    ERROR_MODE = 2,
+    MEASURE_RESISTANCE_MODE = 3,
+    MEASURE_INDUCTANCE_MODE = 4,
+    MEASURE_PHASE_ORDER_MODE = 5,
+    MEASURE_ENCODER_OFFSET_MODE = 6,
+    CALIBRATION_MODE = 7,
+    FOC_CURRENT_MODE = 8,
+    FOC_VOLTAGE_MODE = 9,
+    FOC_TORQUE_MODE = 10,
+    FOC_SPEED_MODE = 11
 } control_mode_type_t;
 
 typedef enum
@@ -207,6 +208,7 @@ public:
     void Init();            // Init Controller
     void Reset();           // Reset Controller
     void StartControlFSM(); // Begin Control Loop
+    bool RunControlFSM();   // Do an FSM Step
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
 
@@ -228,10 +230,11 @@ public:
 
     void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c) __attribute__((section(".ccmram")));
 
-    inline osThreadId_t GetThreadID() { return control_thread_id_; }
+    inline osThreadId_t GetThreadID() { return control_thread_id_; } // TODO: Remove This
     inline bool IsInitialized() { return control_initialized_; }
     inline bool ControlThreadReady() { return control_thread_ready_; }
 
+    // TODO: Move this and set FSM
     inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
     inline control_mode_type_t GetControlMode() {return control_mode_;}
 
@@ -263,7 +266,6 @@ private:
     void CurrentControl(); // Current Control Loop
     void TorqueControl(); // Torque Control Fucntion
     void LinearizeDTC(float *dtc);  // Linearize Small Non-Linear Duty Cycles
-
     
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 
@@ -271,8 +273,6 @@ private:
     bool control_thread_ready_;                 // Controller thread ready/active
     bool control_initialized_;                  // Controller thread initialized
     volatile bool control_enabled_;             // Controller thread enabled
-
-    
 
     DRV8323 *gate_driver_;    // Gate Driver Device for DRV8323
     SPIDevice *spi_handle_;         // SPI Handle for Communication to Gate Driver
@@ -282,8 +282,10 @@ private:
 
     float rms_current_sample_period_;
 
-    //float control_loop_period_;
+    // Control FSM
+    NomadBLDCFSM* fsm_;
 
+    //float control_loop_period_;
     static MotorController *singleton_; // Singleton
 };
 

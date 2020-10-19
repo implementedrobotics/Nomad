@@ -1,7 +1,7 @@
 /*
- * NomadBLDCData.h
+ * StartupState.h
  *
- *  Created on: June 21, 2020
+ *  Created on: July 1, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,8 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMADBLDC_FSM_NOMADBLDCDATA_H_
-#define NOMADBLDC_FSM_NOMADBLDCDATA_H_
+#ifndef NOMADBLDC_FSM_STARTUPSTATE_H_
+#define NOMADBLDC_FSM_STARTUPSTATE_H_
 
 // C System Files
 
@@ -31,12 +31,34 @@
 // Third Party Includes
 
 // Project Include Files
-#include <MotorController.h>
+#include <FSM/NomadBLDCState.h>
 
-// Struct to hold relevant control data
-struct NomadBLDCData
+class StartupState : public NomadBLDCState
 {
-    control_mode_type_t control_mode;
+
+public:
+    StartupState();
+
+    // Called upon a state change and we enter this state
+    // current_time = current robot/controller time
+    void Enter_(uint32_t current_time);
+
+    // current_time = current robot/controller time
+    // Called upon a state change and we are exiting this state
+    void Exit_(uint32_t current_time);
+
+    // Logic to run each iteration of the state machine run
+    // dt = time step for this iteration
+    void Run_(float dt);
+
+private:
+    int16_t adc1_offset_;
+    int16_t adc2_offset_;
+    int16_t adc3_offset_;
+
+    uint16_t num_adc_calib_samples_;
+
+
 };
 
-#endif // NOMAD_NOMADBLDC_FSM_NOMADBLDCDATA_H_CONTROLDATA_H_
+#endif // NOMADBLDC_FSM_STARTUPSTATE_H_

@@ -29,7 +29,6 @@
 
 // Project Include Files
 #include <FSM/State.h>
-
 State::State(const std::string &name, std::size_t id)
     : name_(name),
       id_(id),
@@ -46,7 +45,7 @@ void State::Setup()
     // Nothing to do
 }
 
-void State::Run(double dt)
+void State::Run(float dt)
 {
 
     elapsed_time_ += dt;
@@ -74,8 +73,15 @@ void State::Exit(uint32_t current_time)
 {
     // Nothing to do
     end_time_ = current_time;
+
+    // Call Exit Routine Override
+    Exit_(current_time);
 }
 
+void State::Exit_(uint32_t current_time)
+{
+    // No op
+}
 void State::AddTransitionEvent(TransitionEvent* event, State* next_state)
 {
     transition_map_.emplace(event, next_state);

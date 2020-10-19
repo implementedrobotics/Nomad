@@ -1,7 +1,7 @@
 /*
- * NomadBLDCData.h
+ * IdleState.cpp
  *
- *  Created on: June 21, 2020
+ *  Created on: June 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,9 +21,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMADBLDC_FSM_NOMADBLDCDATA_H_
-#define NOMADBLDC_FSM_NOMADBLDCDATA_H_
-
 // C System Files
 
 // C++ System Files
@@ -31,12 +28,19 @@
 // Third Party Includes
 
 // Project Include Files
-#include <MotorController.h>
+#include <Logger.h>
+#include <FSM/IdleState.h>
 
-// Struct to hold relevant control data
-struct NomadBLDCData
+IdleState::IdleState() : NomadBLDCState("IDLE", 1)
 {
-    control_mode_type_t control_mode;
-};
-
-#endif // NOMAD_NOMADBLDC_FSM_NOMADBLDCDATA_H_CONTROLDATA_H_
+}
+void IdleState::Run_(float dt)
+{
+    //Logger::Instance().Print("Idle Running\r\n");
+    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    // Set mode to idle
+}
+void IdleState::Enter_(uint32_t current_time)
+{
+   Logger::Instance().Print("Entering Idle State!!!\r\n");
+}

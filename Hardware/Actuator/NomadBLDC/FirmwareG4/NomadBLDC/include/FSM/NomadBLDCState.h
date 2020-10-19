@@ -32,7 +32,7 @@
 
 // Project Include Files
 #include <FSM/State.h>
-//#include <FSM/NomadControlData.h>
+#include <FSM/NomadBLDCData.h>
 #include <FSM/NomadBLDCFSM.h>
 
 // Base NomadState Class
@@ -44,20 +44,20 @@ public:
     {
     }
 
-    void SetParentFSM(NomadBLDCFSM* parent)
+    void SetParentFSM(NomadBLDCFSM *parent)
     {
         parent_ = parent;
     }
 
-    // void SetControllerData(std::shared_ptr<NomadControlData> data)
-    // {
-    //     data_ = data;
-    // }
+    void SetControllerData(NomadBLDCData *data)
+    {
+        data_ = data;
+    }
 
 protected:
 
     // Data pointer to controller data pointer
-    //std::shared_ptr<NomadControlData> data_;
+    NomadBLDCData *data_;
 
     // Parent State Machine Container for this state
     NomadBLDCFSM *parent_;

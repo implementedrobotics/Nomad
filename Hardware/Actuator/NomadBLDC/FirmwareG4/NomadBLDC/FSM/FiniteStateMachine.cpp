@@ -31,7 +31,7 @@
 // Project Include Files
 #include <main.h>
 #include <FSM/FiniteStateMachine.h>
-
+#include <Logger.h>
 FiniteStateMachine::FiniteStateMachine(const std::string &name)
     : name_(name),
       current_state_(nullptr),
@@ -52,7 +52,7 @@ bool FiniteStateMachine::AddState(State* state)
 
 bool FiniteStateMachine::SetInitialState(State* state)
 {
-    initial_state_ = current_state_ = state;
+    initial_state_ = state;
     return true;
 }
 
@@ -76,6 +76,7 @@ bool FiniteStateMachine::Start(uint32_t current_time)
     {
         current_state_->Exit(current_time);
     }
+
     current_state_ = initial_state_;
     current_state_->Enter(current_time);
 
@@ -88,7 +89,7 @@ bool FiniteStateMachine::Stop(uint32_t current_time)
     return true;
 }
 
-bool FiniteStateMachine::Run(double dt)
+bool FiniteStateMachine::Run(float dt)
 {
     if (current_state_ == nullptr)
     {

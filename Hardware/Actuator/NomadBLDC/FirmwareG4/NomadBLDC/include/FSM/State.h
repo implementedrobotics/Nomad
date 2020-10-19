@@ -78,7 +78,7 @@ public:
 
     // Logic to run each iteration of the state machine run
     // dt = time step for this iteration
-    virtual void Run(double dt);
+    virtual void Run(float dt);
 
     // Next State to transition to
     State* NextState() const;
@@ -88,11 +88,15 @@ public:
 protected:
     // Logic to run each iteration of the state machine run
     // dt = time step for this iteration
-    virtual void Run_(double dt) = 0;
+    virtual void Run_(float dt) = 0;
 
     // Called upon a state change and we enter this state
-    // current_time = current robot/controller time
+    // current_time = current controller tick time
     virtual void Enter_(uint32_t current_time);
+
+    // Called upon a state change and we exit this state
+    // current_time = current controller tick time
+    virtual void Exit_(uint32_t current_time);
 
     // State name
     std::string name_;
