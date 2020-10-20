@@ -77,6 +77,12 @@ public:
         return output_;
     }
 
+    // Set Filter Alpha
+    void SetAlpha(float alpha)
+    {
+        alpha_ = alpha;
+    }
+
     // Get Filter Alpha
     const float Alpha() const
     {

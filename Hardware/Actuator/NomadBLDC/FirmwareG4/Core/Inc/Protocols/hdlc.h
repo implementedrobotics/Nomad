@@ -33,7 +33,7 @@
 #include <functional>
 
 // STM32 System Files
-#include <main.h> 
+#include <main.h>
 
 // Project Includes
 
@@ -41,12 +41,11 @@ class HDLCFrame
 {
 
 public:
-
     // Const Statics
-    static const uint16_t kFrameBoundary = 0x7E;
-    static const uint16_t kControlEscape = 0x7D;
-    static const uint16_t kEscapeInvert = 0x20;
-    static const uint16_t kPacketSizeLimit = 256;
+    static constexpr uint16_t kFrameBoundary = 0x7E;
+    static constexpr uint16_t kControlEscape = 0x7D;
+    static constexpr uint16_t kEscapeInvert = 0x20;
+    static constexpr uint16_t kPacketSizeLimit = 256;
 
     // Constructor
     HDLCFrame();

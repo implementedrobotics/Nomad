@@ -28,10 +28,14 @@
 // C System Files
 
 // C++ System Files
+#include <functional>
+
+// STM32 System Files
+#include <main.h>
 
 // Project Includes
 #include <Utilities/lpf.h>
-#include <main.h>
+
 
 // TODO:
 // TYPE: Polling/Triggered/Interrupt
@@ -46,35 +50,94 @@ class ADCDevice
 
 public:
 
-    // TODO: Triggered vs Polled. 
-    // TODO: DMA Eventually
+    // TODO: This should be up in a base "Peripheral Class"
+    static constexpr int kMaxInterrupts = 200;
 
+    // TODO: Triggered vs Polled. 
+    // TODO: DMA Eventually, Continuous vs Single Converstion etc.
+    // TODO: For now keep it simple.  Software, or Timer based at the moment
+    // Assumes a pre "inited" ADC from CubeMX
+
+    // Constructor
     ADCDevice(ADC_TypeDef *ADC);
 
     // Enable ADC
     void Enable();
 
-    // Start Sampling
-    void Start();
+    // Poll/Read a sample
+    uint16_t Sample();
 
-    // Stop Sampling
-    void Stop();
+    // Start Sampling in Continuous/Timer Triggered Mode
+    inline void Start(void) { LL_ADC_REG_StartConversion(ADC_); }
 
-    // Enable Interrupt
-    void EnableInterrupt();
+    // Stop Sampling in Continuous/Timer Triggered Mode
+    inline void Stop() { LL_ADC_REG_StopConversion(ADC1);}
 
-    // Read ADC Value
-    uint16_t Read();
+    // Enable Interrupt (End of Conversion only at the moment)
+    void EnableIT();
+
+    // Set Complete Callback
+    void Attach(const std::function<void(void)> &cplt_cb)
+    {
+        cplt_callback_ = cplt_cb;
+    }
+
+    // Update ADC Bias
+    inline void UpdateBias(int16_t bias)
+    {
+        bias_ = bias;
+    }
+
+    // Set Low Pass Filter Parameter
+    void SetFilter(float alpha)
+    {
+        filter_.SetAlpha(alpha);
+        enable_filter_ = true;
+    }
+
+    // Read Current ADC Value
+    inline uint16_t Read()
+    {
+        value_ = LL_ADC_REG_ReadConversionData12(ADC_) - bias_;
+
+        if(enable_filter_) // Filter it?
+            value_ = static_cast<uint16_t>(filter_.Filter(value_));
+        
+        return value_;
+    }
+
+    // TODO: This should be up in a base "Peripheral Class"
+    // Interrupt Setup
+    static void IRQ()
+    {
+        uint32_t IRQn = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
+        ISR_VTABLE[IRQn]->ISR();
+    }
+
+    // TODO: This should be up in a base "Peripheral Class"
+    inline void ISR()
+    {
+        // DO ADC Stuff
+        if (LL_ADC_IsActiveFlag_EOC(ADC_))
+        {
+            // Clear Flag
+            LL_ADC_ClearFlag_EOC(ADC_);
+
+            // Execute Callback
+            cplt_callback_();
+        }
+    }
 
 private:
 
+    // STM32 ADC Type
     ADC_TypeDef *ADC_;
     
     // ADC Bias
     int16_t bias_;
 
-    // Current ADC Sample Valuer
-    int16_t value_;
+    // Current ADC Sample Value
+    uint16_t value_;
 
     // Low Pass Filter
     LowPassFilter filter_;
@@ -82,6 +145,13 @@ private:
     // Low Pass Filter Enabled
     bool enable_filter_;
 
+    // Interrupts Enabled?
+    bool enable_interrupt_;
+
+    static ADCDevice* ISR_VTABLE[kMaxInterrupts];
+
+    // Interrupt Callback
+    std::function<void(void)> cplt_callback_ = [=](void) {};
 };
 
 #endif // CORE_PERIPHERAL_ADC_H_

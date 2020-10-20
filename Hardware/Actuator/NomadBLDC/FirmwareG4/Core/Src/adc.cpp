@@ -32,35 +32,112 @@
 
 // Project Includes
 
-ADCDevice::ADCDevice(ADC_TypeDef *ADC) : ADC_(ADC)
+ADCDevice::ADCDevice(ADC_TypeDef *ADC) : ADC_(ADC), bias_(0), value_(0), enable_filter_(false), enable_interrupt_(false)
 {
 }
 
+// Enable ADC
+void ADCDevice::Enable()
+{
+    __IO uint32_t wait_loop_index = 0U;
+    if (LL_ADC_IsEnabled(ADC_) == 0) // Is ADC Alread Enabled?  If so bail
+    {
+        /* Disable ADC deep power down (enabled by default after reset state) */
+        LL_ADC_DisableDeepPowerDown(ADC_);
 
-// // Interrupts.  TODO: Make this dynamic so we can "register these"
-// /**
-//   * @brief This function handles ADC3 global interrupt.
-//   */
-// extern "C" void ADC3_IRQHandler(void)
-// {
+        /* Enable ADC internal voltage regulator */
+        LL_ADC_EnableInternalRegulator(ADC_);
 
-//     if (LL_ADC_IsActiveFlag_EOC(ADC1))
-//     {
-//         /* Clear flag ADC group regular end of unitary conversion */
-//         LL_ADC_ClearFlag_EOC(ADC1);
-//     }
+        /* Delay for ADC internal voltage regulator stabilization.                */
+        /* Compute number of CPU cycles to wait for, from delay in us.            */
+        /* Note: Variable divided by 2 to compensate partially                    */
+        /*       CPU processing cycles (depends on compilation optimization).     */
+        /* Note: If system core clock frequency is below 200kHz, wait time        */
+        /*       is only a few CPU processing cycles.                             */
+        wait_loop_index = ((LL_ADC_DELAY_INTERNAL_REGUL_STAB_US * (SystemCoreClock / (100000 * 2))) / 10);
+        while (wait_loop_index != 0)
+        {
+            wait_loop_index--;
+        }
 
-//     if (LL_ADC_IsActiveFlag_EOC(ADC2))
-//     {
-//         /* Clear flag ADC group regular end of unitary conversion */
-//         LL_ADC_ClearFlag_EOC(ADC2);
-//     }
+        /* Run ADC self calibration */
+        LL_ADC_StartCalibration(ADC_, LL_ADC_SINGLE_ENDED);
 
-//     if (LL_ADC_IsActiveFlag_EOC(ADC3))
-//     {
-//         /* Clear flag ADC group regular end of unitary conversion */
-//         LL_ADC_ClearFlag_EOC(ADC3);
+        while (LL_ADC_IsCalibrationOnGoing(ADC_) != 0); // Wait for Calibration
 
-//         current_measurement_cb();
-//     }
-// }
+        /* Delay between ADC end of calibration and ADC enable.                   */
+        /* Note: Variable divided by 2 to compensate partially                    */
+        /*       CPU processing cycles (depends on compilation optimization).     */
+        /* This can be optimized.  In no hurray for our application.  Enable is not time critical. */
+        wait_loop_index = ((LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64) >> 1);
+        while (wait_loop_index != 0)
+        {
+            wait_loop_index--;
+        }
+
+        /* Enable ADC */
+        LL_ADC_Enable(ADC_);
+
+        /* Poll for ADC ready to convert */
+        while (LL_ADC_IsActiveFlag_ADRDY(ADC_) == 0);
+
+        /* Note: ADC flag ADRDY is not cleared here to be able to check ADC       */
+        /*       status afterwards.                                               */
+        /*       This flag should be cleared at ADC Deactivation, before a new    */
+        /*       ADC activation, using function "LL_ADC_ClearFlag_ADRDY()".       */
+    }
+}
+
+uint16_t ADCDevice::Sample()
+{
+    if ((LL_ADC_IsEnabled(ADC_) == 1) &&
+        (LL_ADC_IsDisableOngoing(ADC_) == 0) &&
+        (LL_ADC_REG_IsConversionOngoing(ADC_) == 0))
+    {
+        LL_ADC_REG_StartConversion(ADC_);
+    }
+    else
+    {
+        /* Error: ADC conversion start could not be performed */
+        return 0;
+    }
+
+    // Wait on Completed Conversion
+    while (LL_ADC_IsActiveFlag_EOC(ADC_) == 0);
+
+    // Clear Flag.  Not Strictly needed here as the ReadConversion clears
+    LL_ADC_ClearFlag_EOC(ADC_);
+
+    return Read();
+}
+
+void ADCDevice::EnableIT()
+{
+    enable_interrupt_ = true;
+    LL_ADC_EnableIT_EOC(ADC_);
+
+    // Find IRQ Number
+    IRQn_Type IRQn;    
+    if(ADC_ == ADC1 || ADC_ == ADC2)
+    {
+        IRQn = ADC1_2_IRQn;
+    }
+    else if(ADC_ == ADC3)
+    {
+        IRQn = ADC3_IRQn;
+    }
+    else if(ADC_ == ADC4)
+    {
+        IRQn = ADC4_IRQn;
+    }
+    else if(ADC_ == ADC5)
+    {
+        IRQn = ADC5_IRQn;
+    }
+    else // Invalid
+    {
+        return;
+    }
+    __NVIC_SetVector(IRQn, (uint32_t)&IRQ);
+}
+
