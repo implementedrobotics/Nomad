@@ -1,7 +1,7 @@
 /*
  * adc.h
  *
- *  Created on: August 27, 2019
+ *  Created on: October 20, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -35,15 +35,6 @@
 
 // Project Includes
 #include <Utilities/lpf.h>
-
-
-// TODO:
-// TYPE: Polling/Triggered/Interrupt
-// Bias
-// Filter
-// Read Value
-// ADC Interrupt Callback
-// Register Callback Function
 
 class ADCDevice
 {
