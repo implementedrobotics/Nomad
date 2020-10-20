@@ -110,34 +110,6 @@ void DebugTask()
 {
 
 }
-void dqtest(float theta, float a, float b, float c, float *d, float *q) __attribute__((section(".ccmram")));
-
-void dqtest(float theta, float a, float b, float c, float *d, float *q) 
-{
-    // DQ0 Transform
-    // Phase current amplitude = length of dq vector
-    // i.e. iq = 1, id = 0, peak phase current of 1
-    float cf, sf;
-    cordic2.CosSin(theta, cf, sf);
-    //float cf = cosf(theta);
-    //float sf = sinf(theta);
-    *d = 0.6666667f * (cf * a + (0.86602540378f * sf - .5f * cf) * b + (-0.86602540378f * sf - .5f * cf) * c); ///Faster DQ0 Transform
-    *q = 0.6666667f * (-sf * a - (-0.86602540378f * cf - .5f * sf) * b - (0.86602540378f * cf - .5f * sf) * c);
-}
-
-void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta) __attribute__((section(".ccmram")));
-void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
-{
-    float cos_theta, sin_theta;
-    cordic2.CosSin(theta, cos_theta, sin_theta);
-    //float cos_theta = arm_cos_f32(theta);
-    //float sin_theta = arm_sin_f32(theta);
-
-    *alpha = d * cos_theta - q * sin_theta;
-    *beta = q * cos_theta + d * sin_theta;
-}
-
-
 
 /**
   * @brief This function handles ADC3 global interrupt.

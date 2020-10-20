@@ -33,6 +33,7 @@
 // Project Includes
 #include "Motor.h"
 #include "nomad_hw.h"
+
 #include <Peripherals/thermistor.h>
 #include <Peripherals/flash.h>
 #include <Peripherals/cordic.h>
@@ -51,7 +52,6 @@ MotorController *motor_controller = 0;
 
 
 // TODO: All the below needs to go
-RMSCurrentLimiter *current_limiter = 0;
 
 Cordic cordic;
 
@@ -132,17 +132,8 @@ void motor_controller_thread_entry(void *arg)
     motor_controller = new MotorController(motor);
     motor_controller->Init();
 
+    //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
-    //Logger::Instance().Print("CONTROL LOOP: %f\n\r", CONTROL_LOOP_FREQ);
-    //Logger::Instance().Print("PWM FREQ :%f\n\r", PWM_FREQ);
-
-    // Begin Control Loop
-    motor_controller->StartControlFSM();
-
-    // for(;;)
-    // {
-    //     osDelay(100);
-    // }
 
     osThreadExit();
     
@@ -154,15 +145,6 @@ void set_control_mode(int mode)
     motor_controller->SetControlMode((control_mode_type_t)mode);
 }
 
-void set_controller_debug(bool debug)
-{
-    motor_controller->SetDebugMode(debug);
-}
-
-bool get_controller_debug()
-{
-    return motor_controller->GetDebugMode();
-}
 void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, float T_ff)
 {
     motor_controller->state_.K_p = K_p;
@@ -323,7 +305,7 @@ void load_configuration()
 }
 void reboot_system()
 {
-    HAL_NVIC_SystemReset();
+    NVIC_SystemReset();
 }
 
 void start_torque_control()
@@ -367,14 +349,11 @@ MotorController *MotorController::singleton_ = nullptr;
 
 MotorController::MotorController(Motor *motor) : motor_(motor)
 {
-    control_thread_id_ = 0;
-    control_thread_ready_ = false;
     control_initialized_ = false;
     control_enabled_ = false;
-    control_debug_ = false;
 
     // Null FSM
-    fsm_ = nullptr;
+    control_fsm_ = nullptr;
 
     // Zero State
     memset(&state_, 0, sizeof(state_));
@@ -452,17 +431,12 @@ void MotorController::Init()
 {
     Logger::Instance().Print("MotorController::Init() - Motor Controller Initializing...\r\n");
 
-    // Update Control Thread State
-    control_thread_id_ = osThreadGetId(); // TODO: Remove
-    control_thread_ready_ = true;
-    control_mode_ = CALIBRATION_MODE; // Start in "Calibration" mode.
-
     // Compute Maximum Allowed Current
     float margin = 1.0f;
     float max_input = margin * 0.3f * SENSE_CONDUCTANCE;
     float max_swing = margin * 1.6f * SENSE_CONDUCTANCE * (1.0f / CURRENT_SENSE_GAIN);
     current_max_ = fminf(max_input, max_swing);
-    //Logger::Instance().Print("MAX: %f\n", current_max_);
+
     // TODO: Make sure this is in a valid range?
 
     // Setup DRV Pins
@@ -481,17 +455,22 @@ void MotorController::Init()
     spi_handle_->Enable();
 
     gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
+
+    // Power Up Device
     gate_driver_->EnablePower();
     osDelay(10);
+
+    // Setup Initial DRV Values
     gate_driver_->Init();
     osDelay(10);
+
+    // Calibrate Sense Amplifier Bias/Offset
     gate_driver_->Calibrate();
     osDelay(10);
     
+    // TODO: Member Function with Callback for Command Handler
     // Load Configuration
     load_configuration();
-
-   // Logger::Instance().Print("\r\nResitance: %f\r\n", motor_->config_.phase_resistance);
 
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
@@ -500,7 +479,6 @@ void MotorController::Init()
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
-    //Logger::Instance().Print("\r\nPWM FREQ :%d\r\n", pwm_counter_period_ticks_);
     // Start PWM
     StartPWM();
     osDelay(150); // Delay for a bit to let things stabilize
@@ -509,20 +487,18 @@ void MotorController::Init()
     StartADCs();
     osDelay(150); // Delay for a bit to let things stabilize
 
-   // EnablePWM(true);            // Start PWM
-   // zero_current_sensors(1024); // Measure current sensor zero-offset
-   // EnablePWM(false);           // Stop PWM
-
     // Default Mode Startup:
     control_mode_ = STARTUP_MODE;
 
     // Initialize RMS Current limiter
     uint32_t sub_sample_count = rms_current_sample_period_/controller_update_period_;
-    current_limiter = new RMSCurrentLimiter(motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau, rms_current_sample_period_, sub_sample_count);
-    current_limiter->Reset();
+    current_limiter_ = new RMSCurrentLimiter(motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau, rms_current_sample_period_, sub_sample_count);
+    current_limiter_->Reset();
 
-    //current_limiter->AddCurrentSample(10.0f);
-    //Logger::Instance().Print("Count: %d.  %f to %f\n", sub_sample_count, motor_->config_.continuous_current_max, motor_->config_.continuous_current_tau);
+    // Create Control FSM
+    control_fsm_ = new NomadBLDCFSM();
+    control_fsm_->Start(SysTick->VAL);
+
     control_initialized_ = true;
 
     // Set Singleton
@@ -540,19 +516,14 @@ bool MotorController::CheckErrors()
 }
 bool MotorController::RunControlFSM()
 {
-    if(fsm_ == nullptr)
+    if(control_fsm_ == nullptr)
         return false;
     
-    fsm_->Run(controller_update_period_);
+    control_fsm_->Run(controller_update_period_);
     return true;
 }
-void MotorController::StartControlFSM()
-{
-    // Start IDLE and PWM/Gate Driver Off
-    static control_mode_type_t current_control_mode = IDLE_MODE;
-
-    fsm_ = new NomadBLDCFSM();
-    fsm_->Start(SysTick->VAL);
+// void MotorController::StartControlFSM()
+// {
    // Logger::Instance().Print("Create FSM!\r\n");
 
     // // Disable Gate Driver
@@ -768,7 +739,7 @@ void MotorController::StartControlFSM()
     //         break;
     //     }
     // }
-}
+// }
 void MotorController::DoMotorControl()
 {
   //  NVIC_DisableIRQ(USART2_IRQn);

@@ -44,17 +44,6 @@
 #define DTC_MAX 0.94f // Max phase duty cycle
 #define DTC_MIN 0.0f  // Min phase duty cycle
 
-//#define PWM_COUNTER_PERIOD_TICKS 0x8CA // PWM Timer Auto Reload Value
-//#define PWM_INTERRUPT_DIVIDER 1
-
-// TODO: User Configurable Parameter
-#define SYS_CLOCK_FREQ 160000000
-//#define PWM_FREQ (float)SYS_CLOCK_FREQ * (1.0f / (2 * PWM_COUNTER_PERIOD_TICKS))
-//#define PWM_TICKS (float)SYS_CLOCK_FREQ / (2 * PWM_COUNTER_PERIOD_TICKS)
-
-//#define CONTROL_LOOP_FREQ (PWM_FREQ/(PWM_INTERRUPT_DIVIDER))
-//#define CONTROL_LOOP_PERIOD (1.0f/(float)CONTROL_LOOP_FREQ)
-
 // C System Files
 #include <arm_math.h>
 
@@ -73,6 +62,7 @@ static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTA
 
 extern Motor *motor;
 extern MotorController *motor_controller;
+
 class NomadBLDCFSM;
 
 // Measurement Struct
@@ -133,6 +123,7 @@ class MotorController
 {
     // TODO: Setpoint references, etc.
 public:
+
     // Motor Controller Parameters
     struct Config_t
     {
@@ -200,39 +191,38 @@ public:
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
     };
 
-
-    MotorController(Motor *motor); // TODO: Pass in motor object
+    MotorController(Motor *motor);
 
     static MotorController* GetInstance() { return singleton_; } // Singleton Instance
     inline Motor* GetMotor() { return motor_; }
+
     void Init();            // Init Controller
     void Reset();           // Reset Controller
-    void StartControlFSM(); // Begin Control Loop
+
     bool RunControlFSM();   // Do an FSM Step
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
 
+    // TODO: Moved to PWM Generator
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
-
     void SetModulationOutput(float theta, float v_d, float v_q) __attribute__((section(".ccmram")));  // Helper Function to compute PWM Duty Cycles directly from D/Q Voltages
     void SetModulationOutput(float v_alpha, float v_beta) __attribute__((section(".ccmram")));;        // Helper Function to compute PWM Duty Cycles directly from Park Inverse Transformed Alpha/Beta Voltages
     void SetDuty(float duty_A, float duty_B, float duty_C);       // Set PWM Duty Cycles Directly
+    void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c) __attribute__((section(".ccmram")));
+
     void UpdateControllerGains();                                 // Controller Gains from Measured Motor Parameters
 
-    // Transforms
+    // TOOD: Move This outTransforms
     void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c) __attribute__((section(".ccmram"))); // DQ Transfrom -> A, B, C voltages
     void dq0(float theta, float a, float b, float c, float *d, float *q) __attribute__((section(".ccmram")));
     
+    // TODO: Move All This Out
     void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta) __attribute__((section(".ccmram")));
     void ParkTransform(float theta, float alpha, float beta, float *d, float *q) __attribute__((section(".ccmram")));
     void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c) __attribute__((section(".ccmram")));
     void ClarkeTransform(float I_a, float I_b, float *alpha, float *beta) __attribute__((section(".ccmram")));
 
-    void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c) __attribute__((section(".ccmram")));
-
-    inline osThreadId_t GetThreadID() { return control_thread_id_; } // TODO: Remove This
     inline bool IsInitialized() { return control_initialized_; }
-    inline bool ControlThreadReady() { return control_thread_ready_; }
 
     // TODO: Move this and set FSM
     inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
@@ -240,9 +230,6 @@ public:
 
     bool CheckErrors();                 // Check for Controller Errors
 
-    inline void SetDebugMode(bool debug) {control_debug_ = debug;}
-    inline bool GetDebugMode() {return control_debug_;}
-    
     inline float GetControlUpdatePeriod() {return controller_update_period_;}
 
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
@@ -259,7 +246,6 @@ public:
     float controller_loop_freq_;
     float controller_update_period_;            // Controller Update Period (Seconds)
     
-    osThreadId_t control_thread_id_;              // Controller Thread ID
 private:
 
     void DoMotorControl()  __attribute__((section(".ccmram"))); // Motor Control Loop
@@ -269,7 +255,6 @@ private:
     
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 
-    bool control_debug_;                        // Controller in Debug. TODO: Move this to a more general application struct
     bool control_thread_ready_;                 // Controller thread ready/active
     bool control_initialized_;                  // Controller thread initialized
     volatile bool control_enabled_;             // Controller thread enabled
@@ -280,10 +265,11 @@ private:
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config
 
+    RMSCurrentLimiter *current_limiter_;
     float rms_current_sample_period_;
 
     // Control FSM
-    NomadBLDCFSM* fsm_;
+    NomadBLDCFSM* control_fsm_;
 
     //float control_loop_period_;
     static MotorController *singleton_; // Singleton
