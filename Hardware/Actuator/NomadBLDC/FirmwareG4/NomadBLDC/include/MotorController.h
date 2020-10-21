@@ -56,6 +56,7 @@
 #include "DRV8323.h"
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
+//#include <Peripherals/adc.h>
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
 static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTANCE * 1.0f / CURRENT_SENSE_GAIN;
@@ -63,6 +64,7 @@ static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTA
 extern Motor *motor;
 extern MotorController *motor_controller;
 
+class ADCDevice;
 class NomadBLDCFSM;
 
 // Measurement Struct
@@ -199,9 +201,12 @@ public:
     void Init();            // Init Controller
     void Reset();           // Reset Controller
 
+    void CurrentMeasurementCB(); // Callback from ADC Current Measurement
     bool RunControlFSM();   // Do an FSM Step
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
+
+    
 
     // TODO: Moved to PWM Generator
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
@@ -231,6 +236,12 @@ public:
     bool CheckErrors();                 // Check for Controller Errors
 
     inline float GetControlUpdatePeriod() {return controller_update_period_;}
+
+    ADCDevice* GetADC1() const { return adc_1_; }
+    ADCDevice* GetADC2() const { return adc_2_; }
+    ADCDevice* GetADC3() const { return adc_3_; }
+
+    DRV8323* GetGateDriver() const { return gate_driver_; }
 
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
@@ -267,6 +278,11 @@ private:
 
     RMSCurrentLimiter *current_limiter_;
     float rms_current_sample_period_;
+
+    // ADCs
+    ADCDevice *adc_1_;
+    ADCDevice *adc_2_;
+    ADCDevice *adc_3_;
 
     // Control FSM
     NomadBLDCFSM* control_fsm_;

@@ -29,6 +29,7 @@
 
 // Project Include Files
 #include <Logger.h>
+#include <Peripherals/adc.h>
 #include <FSM/StartupState.h>
 
 StartupState::StartupState() : NomadBLDCState("Startup", 0)
@@ -38,45 +39,57 @@ StartupState::StartupState() : NomadBLDCState("Startup", 0)
 
 void StartupState::Run_(float dt)
 {
-    //Logger::Instance().Print("Startup Running\r\n");
+    // Logger::Instance().Print("Startup Running\r\n");
     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
     if (cycle_count_ < num_adc_calib_samples_)
     {
-        adc3_offset_ += LL_ADC_REG_ReadConversionData12(ADC3);
-        adc2_offset_ += LL_ADC_REG_ReadConversionData12(ADC2);
-        adc1_offset_ += LL_ADC_REG_ReadConversionData12(ADC1);
+        adc1_offset_ += data_->controller->GetADC1()->Read();
+        adc2_offset_ += data_->controller->GetADC2()->Read();
+        adc3_offset_ += data_->controller->GetADC3()->Read();
+
         return;
     }
-
 
     // Hit Calibration Count.  Compute Average and Return
     adc1_offset_ = adc1_offset_ / num_adc_calib_samples_;
     adc2_offset_ = adc2_offset_ / num_adc_calib_samples_;
     adc3_offset_ = adc3_offset_ / num_adc_calib_samples_;
 
-    // TODO: Set Offset on Motor Controller
+    // Set Offset on Motor Controller
+    data_->controller->GetADC1()->UpdateBias(adc1_offset_);
+    data_->controller->GetADC2()->UpdateBias(adc2_offset_);
+    data_->controller->GetADC3()->UpdateBias(adc3_offset_);
 
     Logger::Instance().Print("\r\nADC OFFSET: %d and %d and %d\r\n", adc1_offset_, adc2_offset_, adc3_offset_);
 
     // Set mode to idle
     data_->control_mode = control_mode_type_t::IDLE_MODE;
 }
+
 void StartupState::Enter_(uint32_t current_time)
 {
-   Logger::Instance().Print("Entering Startup State!!!\r\n");
+    Logger::Instance().Print("Entering Startup State!!!\r\n");
 
-   // Set Idle/"Zero" PWM
-   //motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
+    // Turn Status LED On
+    LEDService::Instance().On();
 
-   // Zero Offsets
-   adc1_offset_ = 0;
-   adc2_offset_ = 0;
-   adc3_offset_ = 0;
+    // Enable Gate Driver
+    data_->controller->GetGateDriver()->EnableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(true);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Zero Offsets
+    adc1_offset_ = 0;
+    adc2_offset_ = 0;
+    adc3_offset_ = 0;
 }
 
 void StartupState::Exit_(uint32_t current_time)
 {
-   Logger::Instance().Print("Exiting Startup State!!!\r\n");
+    Logger::Instance().Print("Exiting Startup State!!!\r\n");
 }
-

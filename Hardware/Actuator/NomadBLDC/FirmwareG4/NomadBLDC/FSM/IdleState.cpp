@@ -38,9 +38,22 @@ void IdleState::Run_(float dt)
 {
     //Logger::Instance().Print("Idle Running\r\n");
     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
     // Set mode to idle
 }
 void IdleState::Enter_(uint32_t current_time)
 {
-   Logger::Instance().Print("Entering Idle State!!!\r\n");
+    // Turn Status LED Off
+    LEDService::Instance().Off();
+
+    // Disable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn Off PWM
+    data_->controller->EnablePWM(false);
+
+    // Reset Controller State
+    data_->controller->Reset();
+
+    Logger::Instance().Print("Entering Idle State!!!\r\n");
 }

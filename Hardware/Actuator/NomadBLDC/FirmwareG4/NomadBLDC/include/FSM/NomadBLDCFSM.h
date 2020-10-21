@@ -31,9 +31,10 @@
 // Third Party Includes
 
 // Project Include Files
-//#include <Nomad/NomadControl.h>
 #include <FSM/FiniteStateMachine.h>
 #include <FSM/NomadBLDCData.h>
+
+#include "LEDService.h"
 
 // Finite State Machine Class
 class NomadBLDCFSM : public FiniteStateMachine
@@ -56,7 +57,7 @@ public:
     bool Run(float dt);
 
     // Return Mode from Active State
-    const NomadBLDCData* GetData() const;
+    NomadBLDCData* GetData() const;
 
 protected:
     // Helper function to create state machine

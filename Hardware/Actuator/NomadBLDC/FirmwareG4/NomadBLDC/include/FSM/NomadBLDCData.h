@@ -36,6 +36,7 @@
 // Struct to hold relevant control data
 struct NomadBLDCData
 {
+    MotorController *controller;
     control_mode_type_t control_mode;
 };
 

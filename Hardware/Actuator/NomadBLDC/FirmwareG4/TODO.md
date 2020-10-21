@@ -19,5 +19,4 @@
 31. Get Rid of math_ops.h
 32. Adjustable LUT encoder offset size
 34. Add #DEFINE / ENUM State definitions for IDS
-36. Remove Control Thread ID values from Controller
-37. Move ADC Offset to ADC Periph/Motor Controller Object
+35. Update Polling ADC to new Devices

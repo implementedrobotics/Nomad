@@ -53,7 +53,7 @@ bool NomadBLDCFSM::Run(float dt)
     return FiniteStateMachine::Run(dt);
 }
 
-const NomadBLDCData* NomadBLDCFSM::GetData() const
+NomadBLDCData* NomadBLDCFSM::GetData() const
 {
     return data_;
 }

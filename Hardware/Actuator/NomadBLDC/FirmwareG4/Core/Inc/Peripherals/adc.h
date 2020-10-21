@@ -35,6 +35,7 @@
 
 // Project Includes
 #include <Utilities/lpf.h>
+#include <Logger.h>
 
 class ADCDevice
 {
@@ -79,6 +80,9 @@ public:
         bias_ = bias;
     }
 
+    // Read Bias
+    int16_t Bias() { return bias_; }
+
     // Set Low Pass Filter Parameter
     void SetFilter(float alpha)
     {
@@ -92,18 +96,18 @@ public:
         value_ = LL_ADC_REG_ReadConversionData12(ADC_) - bias_;
 
         if(enable_filter_) // Filter it?
-            value_ = static_cast<uint16_t>(filter_.Filter(value_));
+            value_ = static_cast<uint16_t>(filter_.Filter(static_cast<float>(value_)));
         
         return value_;
     }
 
     // TODO: This should be up in a base "Peripheral Class"
     // Interrupt Setup
-    static void IRQ()
-    {
-        uint32_t IRQn = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
-        ISR_VTABLE[IRQn]->ISR();
-    }
+    // static void IRQ()
+    // {
+    //     uint32_t IRQn = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
+    //     ISR_VTABLE[IRQn]->ISR();
+    // }
 
     // TODO: This should be up in a base "Peripheral Class"
     inline void ISR()
@@ -139,7 +143,11 @@ private:
     // Interrupts Enabled?
     bool enable_interrupt_;
 
-    static ADCDevice* ISR_VTABLE[kMaxInterrupts];
+    // ISR Number
+    IRQn_Type IRQn_; 
+
+    // ISR Table
+    //static ADCDevice* ISR_VTABLE[kMaxInterrupts];
 
     // Interrupt Callback
     std::function<void(void)> cplt_callback_ = [=](void) {};

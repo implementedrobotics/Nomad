@@ -37,6 +37,8 @@
 #include <Peripherals/thermistor.h>
 #include <Peripherals/flash.h>
 #include <Peripherals/cordic.h>
+#include <Peripherals/adc.h>
+
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
 
@@ -50,19 +52,8 @@
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
-
 // TODO: All the below needs to go
-
 Cordic cordic;
-
-LowPassFilter lpf_a;
-LowPassFilter lpf_b;
-LowPassFilter lpf_c;
-
-// Globals
-static int32_t g_adc1_offset;
-static int32_t g_adc2_offset;
-static int32_t g_adc3_offset;
 
 extern "C"
 {
@@ -135,7 +126,7 @@ void motor_controller_thread_entry(void *arg)
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
 
-    osThreadExit();
+   // osThreadExit();
     
 }
 
@@ -162,72 +153,6 @@ void set_voltage_control_ref(float V_d, float V_q)
 {
     motor_controller->state_.V_d_ref = V_d;
     motor_controller->state_.V_q_ref = V_q;
-}
-void current_measurement_cb()
-{
-    // Performance Measure
-     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
-    // Measure Currents/Bus Voltage
-    uint16_t adc1_raw = LL_ADC_REG_ReadConversionData12(ADC1); // Current Sense Measurement
-    uint16_t adc2_raw = LL_ADC_REG_ReadConversionData12(ADC2); // Current Sense Measurement
-    uint16_t adc3_raw = LL_ADC_REG_ReadConversionData12(ADC3); // Current Sense Measurement
-
-    // Depends on PWM duty cycles
-    if (motor->config_.phase_order) // Check Phase Ordering
-    {
-        motor->state_.I_a = lpf_a.Filter(current_scale * static_cast<float>(adc2_raw - g_adc2_offset));
-        motor->state_.I_b = lpf_b.Filter(current_scale * static_cast<float>(adc3_raw - g_adc3_offset));
-        motor->state_.I_c = lpf_c.Filter(current_scale * static_cast<float>(adc1_raw - g_adc1_offset));
-    }
-    else
-    {
-        motor->state_.I_a = lpf_a.Filter(current_scale * static_cast<float>(adc1_raw - g_adc1_offset));
-        motor->state_.I_b = lpf_b.Filter(current_scale * static_cast<float>(adc3_raw - g_adc3_offset));
-        motor->state_.I_c = lpf_c.Filter(current_scale * static_cast<float>(adc2_raw - g_adc2_offset));
-    }
-    // Kirchoffs Current Law to compute 3rd unmeasured current.
-    //motor->state_.I_a = -motor->state_.I_b - motor->state_.I_c;
-
-    // TODO: Use Longest Duty Cycle Measurements for which of the 3 phases to use
-
-    // Always Update Motor State
-    motor->Update();
-
-    // Run FSM for timestep
-    motor_controller->RunControlFSM();
-    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
-}
-
-bool zero_current_sensors(uint32_t num_samples)
-{
-    // Zero Offsets
-    g_adc1_offset = 0;
-    g_adc2_offset = 0;
-    g_adc3_offset = 0;
-
-    // Set Idle/"Zero" PWM
-    motor_controller->SetDuty(0.5f, 0.5f, 0.5f);
-    for (uint32_t i = 0; i < num_samples; i++) // Average num_samples of the ADC
-    {
-        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
-        {
-            // TODO: Error here for timing
-            //printf("ERROR: Zero Current FAILED!\r\n");
-            Logger::Instance().Print("ERROR: Zero Current Sensor Failed!\r\n");
-            return false;
-        }
-        g_adc3_offset += ADC3->DR;
-        g_adc2_offset += ADC2->DR;
-        g_adc1_offset += ADC1->DR;
-    }
-    g_adc1_offset = g_adc1_offset / num_samples;
-    g_adc2_offset = g_adc2_offset / num_samples;
-    g_adc3_offset = g_adc3_offset / num_samples;
-
-    Logger::Instance().Print("\r\nADC OFFSET: %d and %d and %d\r\n", g_adc1_offset, g_adc2_offset, g_adc3_offset);
-    return true;
 }
 
 // Menu Callbacks
@@ -276,11 +201,9 @@ bool save_configuration()
     Logger::Instance().Print("\r\nSaved Configuration: %d\r\n",status);
 
     return status;
-    //printf("\r\nSaved.  Press ESC to return to menu.\r\n");
 }
 void load_configuration()
 {
-    //printf("\r\nLoading Configuration...\r\n");
     Save_format_t load;
 
     FlashDevice::Instance().Open(ADDR_FLASH_PAGE_60, sizeof(load), FlashDevice::READ);
@@ -289,7 +212,6 @@ void load_configuration()
 
     if (load.signature != FLASH_SAVE_SIGNATURE || load.version != FLASH_VERSION)
     {
-        //printf("\r\nERROR: No Configuration Found!.  Press ESC to return to menu.\r\n\r\n");
         Logger::Instance().Print("ERROR: No Valid Configuration Found!  Please run setup before enabling drive: %d\r\n", status);
         return;
     }
@@ -299,9 +221,6 @@ void load_configuration()
     motor_controller->config_ = load.controller_config;
 
     motor->ZeroOutputPosition();
-
-    //printf("READ Version: %d\r\n", load.version);
-    //printf("\r\nLoaded.\r\n");
 }
 void reboot_system()
 {
@@ -310,25 +229,21 @@ void reboot_system()
 
 void start_torque_control()
 {
-    //printf("\r\nFOC Torque Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_TORQUE_MODE);
 }
 
 void start_current_control()
 {
-    //printf("\r\nFOC Current Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_CURRENT_MODE);
 }
 
 void start_speed_control()
 {
-    //printf("\r\nFOC Speed Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_SPEED_MODE);
 }
 
 void start_voltage_control()
 {
-    //printf("\r\nFOC Voltage Mode Enabled. Press ESC to stop.\r\n\r\n");
     set_control_mode(FOC_VOLTAGE_MODE);
 }
 
@@ -339,10 +254,7 @@ void enter_idle()
 
 void zero_encoder_offset()
 {
-    //printf("\r\n\r\nZeroing Mechanical Offset...\r\n\r\n");
     motor->ZeroOutputPosition();
-    //motor->PrintPosition();
-    //printf("\r\nEncoder Output Zeroed!. Press ESC to return to menu.\r\n\r\n");
 }
 // Statics
 MotorController *MotorController::singleton_ = nullptr;
@@ -413,18 +325,38 @@ void MotorController::Reset()
     state_.K_d = 0.0f;
     state_.T_ff = 0.0f;
 }
-void MotorController::LinearizeDTC(float *dtc)
+
+void MotorController::CurrentMeasurementCB()
 {
-    /// linearizes the output of the inverter, which is not linear for small duty cycles ///
-    float sgn = 1.0f - (2.0f * (*dtc < 0));
-    if (abs(*dtc) >= .01f)
+    // Performance Measure
+     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    // Depends on PWM duty cycles
+    if (motor_->config_.phase_order) // Check Phase Ordering
     {
-        *dtc = *dtc * .986f + .014f * sgn;
+        motor_->state_.I_a = current_scale * static_cast<float>(adc_2_->Read());
+        motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
+        motor_->state_.I_c = current_scale * static_cast<float>(adc_1_->Read());
     }
     else
     {
-        *dtc = 2.5f * (*dtc);
+        motor_->state_.I_a = current_scale * static_cast<float>(adc_1_->Read());
+        motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
+        motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
     }
+
+    // Kirchoffs Current Law to compute 3rd unmeasured current.
+    //motor_->state_.I_a = -motor_->state_.I_b - motor_->state_.I_c;
+
+    // TODO: Use Longest Duty Cycle Measurements for which of the 3 phases to use
+
+    // Always Update Motor State
+    motor_->Update();
+
+    // Run FSM for timestep
+    RunControlFSM();
+
+    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 }
 
 void MotorController::Init()
@@ -446,9 +378,6 @@ void MotorController::Init()
 
     GPIO_t enable = {DRV_ENABLE_GPIO_Port, DRV_ENABLE_Pin};
     GPIO_t n_fault = {DRV_nFAULT_GPIO_Port, DRV_nFAULT_Pin};
-
-    spi_handle_ = new SPIDevice(SPI2, mosi, miso, nss);
-    gate_driver_ = new DRV8323(spi_handle_, enable, n_fault);
 
     // Setup Gate Driver
     spi_handle_ = new SPIDevice(SPI2, mosi, miso, nss);
@@ -497,6 +426,10 @@ void MotorController::Init()
 
     // Create Control FSM
     control_fsm_ = new NomadBLDCFSM();
+
+    // Update FSM Data.  This could be better
+    control_fsm_->GetData()->controller = this;
+
     control_fsm_->Start(SysTick->VAL);
 
     control_initialized_ = true;
@@ -520,6 +453,7 @@ bool MotorController::RunControlFSM()
         return false;
     
     control_fsm_->Run(controller_update_period_);
+    
     return true;
 }
 // void MotorController::StartControlFSM()
@@ -528,11 +462,6 @@ bool MotorController::RunControlFSM()
 
     // // Disable Gate Driver
     // gate_driver_->DisableDriver();
-
-    // // Update Filters
-    // lpf_a = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
-    // lpf_b = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
-    // lpf_c = LowPassFilter(controller_update_period_, 125000.0f * Core::Math::k2PI);
 
     // // Disable PWM
     // EnablePWM(false);
@@ -715,17 +644,6 @@ bool MotorController::RunControlFSM()
     //         //Logger::Instance().Print("Count: %f\r\n", j);
     //         break;
     //     }
-    //     // case (ENCODER_DEBUG):
-    //     //     if (current_control_mode != control_mode_)
-    //     //     {
-    //     //         current_control_mode = control_mode_;
-    //     //         gate_driver_->Disable();
-    //     //         EnablePWM(false);
-    //     //     }
-    //     //     motor->Update();
-    //     //     motor->PrintPosition();
-    //     //     osDelay(100);
-    //     //     break;
     //     default:
     //         if (current_control_mode != control_mode_)
     //         {
@@ -843,17 +761,29 @@ void MotorController::StartPWM()
 void MotorController::StartADCs()
 {
     // ADC Setup
-    EnableADC(ADC1);
-    EnableADC(ADC2);
-    EnableADC(ADC3);
+    adc_1_ = new ADCDevice(ADC1);
+    adc_2_ = new ADCDevice(ADC2);
+    adc_3_ = new ADCDevice(ADC3);
 
-    // Turn on Interrupts for ADC3 as it is not shared.
-    // Should Generate less Interrupts
-    LL_ADC_EnableIT_EOC(ADC3);
+    // Setup Filters?
+    // float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, 125e3 * Core::Math::k2PI);
+    // adc_1_->SetFilter(alpha);
+    // adc_2_->SetFilter(alpha);
+    // adc_3_->SetFilter(alpha);
+    
+    // Enable ADCs
+    adc_1_->Enable();
+    adc_2_->Enable();
+    adc_3_->Enable();
+    adc_3_->EnableIT();
 
-    LL_ADC_REG_StartConversion(ADC1);
-    LL_ADC_REG_StartConversion(ADC2);
-    LL_ADC_REG_StartConversion(ADC3);
+    // Attach Callback
+    adc_3_->Attach(std::bind(&MotorController::CurrentMeasurementCB, this));
+
+    // Start ADC Continuous Conversions from Timer Interrupt
+    adc_1_->Start();
+    adc_2_->Start();
+    adc_3_->Start();
 }
 
 void MotorController::EnablePWM(bool enable)
@@ -861,17 +791,12 @@ void MotorController::EnablePWM(bool enable)
     if (enable)
     {
         LL_TIM_EnableAllOutputs(TIM8); // Advanced Timers turn on Outputs
-        //TIM1->CR1 ^= TIM_CR1_UDIS;
-        //TIM1->BDTR |= (TIM_BDTR_MOE);
     }
     else // Disable PWM Timer Unconditionally
     {
         LL_TIM_DisableAllOutputs(TIM8); // Advanced Timers turn on Outputs
-        //TIM1->CR1 |= TIM_CR1_UDIS;
-        //TIM1->BDTR &= ~(TIM_BDTR_MOE);
     }
     osDelay(100);
-
   //  enable ? __HAL_TIM_MOE_ENABLE(&htim8) : __HAL_TIM_MOE_DISABLE_UNCONDITIONALLY(&htim8);
 }
 

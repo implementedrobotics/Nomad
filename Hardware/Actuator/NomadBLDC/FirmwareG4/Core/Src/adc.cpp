@@ -32,6 +32,9 @@
 
 // Project Includes
 
+//ADCDevice* ADCDevice::ISR_VTABLE[kMaxInterrupts];
+static ADCDevice* g_ISR_VTABLE[ADCDevice::kMaxInterrupts];
+
 ADCDevice::ADCDevice(ADC_TypeDef *ADC) : ADC_(ADC), bias_(0), value_(0), enable_filter_(false), enable_interrupt_(false)
 {
 }
@@ -117,27 +120,56 @@ void ADCDevice::EnableIT()
     LL_ADC_EnableIT_EOC(ADC_);
 
     // Find IRQ Number
-    IRQn_Type IRQn;    
-    if(ADC_ == ADC1 || ADC_ == ADC2)
+    if(ADC_ == ADC1 || ADC_ == ADC2) // TODO: Shared Interrupt actually needs a bit more work...
     {
-        IRQn = ADC1_2_IRQn;
+        IRQn_ = ADC1_2_IRQn;
     }
     else if(ADC_ == ADC3)
     {
-        IRQn = ADC3_IRQn;
+        IRQn_ = ADC3_IRQn;
     }
     else if(ADC_ == ADC4)
     {
-        IRQn = ADC4_IRQn;
+        IRQn_ = ADC4_IRQn;
     }
     else if(ADC_ == ADC5)
     {
-        IRQn = ADC5_IRQn;
+        IRQn_ = ADC5_IRQn;
     }
     else // Invalid
     {
         return;
     }
-    __NVIC_SetVector(IRQn, (uint32_t)&IRQ);
+
+    // Update ISR Table
+    g_ISR_VTABLE[IRQn_] = this;
+
+    // Not Sure Why Dynamic Does not work
+    // __disable_irq();
+    // NVIC_SetVector(IRQn, (uint32_t)&IRQ);
+    // __enable_irq();
+}
+
+
+
+// Interrupts
+extern "C" void ADC1_2_IRQHandler(void)
+{
+    g_ISR_VTABLE[ADC1_2_IRQn]->ISR();
+}
+
+extern "C" void ADC3_IRQHandler(void)
+{
+    g_ISR_VTABLE[ADC3_IRQn]->ISR();
+}
+
+extern "C" void ADC4_IRQHandler(void)
+{
+    g_ISR_VTABLE[ADC4_IRQn]->ISR();    
+}
+
+extern "C" void ADC5_IRQHandler(void)
+{
+    g_ISR_VTABLE[ADC5_IRQn]->ISR();    
 }
 

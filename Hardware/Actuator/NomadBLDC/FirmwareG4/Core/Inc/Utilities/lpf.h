@@ -55,6 +55,15 @@ public:
         alpha_ = d_t / (d_t + RC);
     }
 
+    static float ComputeAlpha(float d_t, float f_c)
+    {
+        // Compute RC
+        float RC = 1.0f/(Core::Math::k2PI *f_c);
+
+        // Compute Alpha
+        return d_t / (d_t + RC);
+    }
+    
     // Init Filter to Desired Output
     void Init(const float output)
     {
@@ -65,7 +74,7 @@ public:
     inline const float Filter(const float sample)  __attribute__((always_inline))
     { 
         // Update Filter Output
-        output_ = output_ + (sample - output_) * alpha_;
+        output_ = output_ + (sample - output_) * alpha_ ;
 
         // Return Output
         return output_;
