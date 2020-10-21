@@ -56,7 +56,6 @@
 #include "DRV8323.h"
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
-//#include <Peripherals/adc.h>
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
 static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTANCE * 1.0f / CURRENT_SENSE_GAIN;
@@ -65,6 +64,7 @@ extern Motor *motor;
 extern MotorController *motor_controller;
 
 class ADCDevice;
+class Thermistor;
 class NomadBLDCFSM;
 
 // Measurement Struct
@@ -206,7 +206,8 @@ public:
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
 
-    
+    void SampleBusVoltage();  // Poll/Update Bus Voltage ADC value
+    void SampleFETTemperature();  // Poll/Update FET Thermistor value
 
     // TODO: Moved to PWM Generator
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
@@ -283,6 +284,10 @@ private:
     ADCDevice *adc_1_;
     ADCDevice *adc_2_;
     ADCDevice *adc_3_;
+    ADCDevice *vbus_adc_;
+
+    // Thermistors
+    Thermistor *fet_therm_;
 
     // Control FSM
     NomadBLDCFSM* control_fsm_;

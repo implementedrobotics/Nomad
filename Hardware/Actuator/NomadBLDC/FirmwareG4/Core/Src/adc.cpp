@@ -116,9 +116,6 @@ uint16_t ADCDevice::Sample()
 
 void ADCDevice::EnableIT()
 {
-    enable_interrupt_ = true;
-    LL_ADC_EnableIT_EOC(ADC_);
-
     // Find IRQ Number
     if(ADC_ == ADC1 || ADC_ == ADC2) // TODO: Shared Interrupt actually needs a bit more work...
     {
@@ -141,8 +138,16 @@ void ADCDevice::EnableIT()
         return;
     }
 
+    // Make sure IRQ is enabled
+    // TODO: Priority...
+    NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
+    NVIC_EnableIRQ(IRQn_);
+
     // Update ISR Table
     g_ISR_VTABLE[IRQn_] = this;
+
+    enable_interrupt_ = true;
+    LL_ADC_EnableIT_EOC(ADC_);
 
     // Not Sure Why Dynamic Does not work
     // __disable_irq();

@@ -45,14 +45,11 @@ public:
     // Setup with precomputed alpha
     LowPassFilter(const float alpha = 0.0f) : alpha_(alpha), output_(0.0f) {}
 
-    // Setup with Sample Time/Desired cutoff frequency radians
+    // Setup with Sample Time/Desired cutoff frequency hz
     LowPassFilter(float d_t, float f_c) : output_(0.0f)
     {
-        // Compute RC
-        float RC = 1.0f/(Core::Math::k2PI *f_c);
-
         // Compute Alpha
-        alpha_ = d_t / (d_t + RC);
+        alpha_ = ComputeAlpha(d_t, f_c);
     }
 
     static float ComputeAlpha(float d_t, float f_c)

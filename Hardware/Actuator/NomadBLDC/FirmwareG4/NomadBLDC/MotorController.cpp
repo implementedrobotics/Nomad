@@ -38,6 +38,7 @@
 #include <Peripherals/flash.h>
 #include <Peripherals/cordic.h>
 #include <Peripherals/adc.h>
+#include <Peripherals/thermistor.h>
 
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
@@ -79,27 +80,14 @@ struct __attribute__((__aligned__(8))) Save_format_t
 
 void ms_poll_task(void *arg)
 {
-    LowPassFilter fet_lpf(1.0f/1000.0f, 1000.0f*Core::Math::k2PI);
-    LowPassFilter vbus_lpf(1.0f/100.0f, 1.0f*Core::Math::k2PI);
-    vbus_lpf.Init(24.0f); // 24 volts/Read default system voltage
-
-    Thermistor fet_temp(ADC4, FET_THERM_BETA, FET_THERM_RESISTANCE, FET_THERM_RESISTANCE_BAL,FET_THERM_LUT_SIZE);
-    fet_temp.GenerateTable();
-
-    //Logger::Instance().Print("Alpha: %f\r\n", vbus_lpf.Alpha());
-    // Start Measurements ADC for VBUS
-    EnableADC(ADC5);
-
+    // Main millisecond polling loop
     for (;;)
     {
-        // Read Battery Voltage
-        uint16_t batt_counts = PollADC(ADC5);
-
-        // Filter bus measurement a bit
-        motor_controller->state_.Voltage_bus = vbus_lpf.Filter(static_cast<float>(batt_counts) * voltage_scale);
+        // Sample bus voltage
+        motor_controller->SampleBusVoltage();
 
         // Sample FET Thermistor for Temperature
-        motor_controller->state_.fet_temp = fet_lpf.Filter(fet_temp.SampleTemperature());
+        motor_controller->SampleFETTemperature();
 
         osDelay(1);
     }
@@ -359,6 +347,19 @@ void MotorController::CurrentMeasurementCB()
     LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 }
 
+
+void MotorController::SampleBusVoltage()
+{
+    // Sample Bus Voltage
+    state_.Voltage_bus = static_cast<float>(vbus_adc_->Sample()) * voltage_scale;
+}
+
+void MotorController::SampleFETTemperature()
+{
+    // Sample FET Thermistor for Temperature
+    this->state_.fet_temp = fet_therm_->SampleTemperature();
+}
+
 void MotorController::Init()
 {
     Logger::Instance().Print("MotorController::Init() - Motor Controller Initializing...\r\n");
@@ -415,6 +416,13 @@ void MotorController::Init()
     // Start ADCs
     StartADCs();
     osDelay(150); // Delay for a bit to let things stabilize
+
+    // Initialize FET Thermistor
+    fet_therm_ = new Thermistor(ADC4, FET_THERM_BETA, FET_THERM_RESISTANCE, FET_THERM_RESISTANCE_BAL,FET_THERM_LUT_SIZE);
+
+    // Set Filter Alpha. TODO: Variable for this.  For now ms sampling with 1hz cutoff frequency
+    fet_therm_->SetFilterAlpha(LowPassFilter::ComputeAlpha(1e-3, 1.0f));
+    fet_therm_->GenerateTable();
 
     // Default Mode Startup:
     control_mode_ = STARTUP_MODE;
@@ -764,18 +772,25 @@ void MotorController::StartADCs()
     adc_1_ = new ADCDevice(ADC1);
     adc_2_ = new ADCDevice(ADC2);
     adc_3_ = new ADCDevice(ADC3);
+    vbus_adc_ = new ADCDevice(ADC5);
 
     // Setup Filters?
-    // float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, 125e3 * Core::Math::k2PI);
+    // float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, 125e3);
     // adc_1_->SetFilter(alpha);
     // adc_2_->SetFilter(alpha);
     // adc_3_->SetFilter(alpha);
+    // Set Filter Alpha. TODO: Variable for this.  For now ms sampling with 1000hz cutoff frequency
+    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(1e-3, 1000.0f));
+    vbus_adc_->GetFilter().Init(24.0f / voltage_scale); // 24 volts/Read default system voltage
     
     // Enable ADCs
     adc_1_->Enable();
     adc_2_->Enable();
     adc_3_->Enable();
     adc_3_->EnableIT();
+
+    // Enable Bus Voltage ADC
+    vbus_adc_->Enable();
 
     // Attach Callback
     adc_3_->Attach(std::bind(&MotorController::CurrentMeasurementCB, this));

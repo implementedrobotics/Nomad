@@ -83,12 +83,8 @@ public:
     // Read Bias
     int16_t Bias() { return bias_; }
 
-    // Set Low Pass Filter Parameter
-    void SetFilter(float alpha)
-    {
-        filter_.SetAlpha(alpha);
-        enable_filter_ = true;
-    }
+    // Get Filter
+    LowPassFilter& GetFilter() { return filter_; }
 
     // Read Current ADC Value
     inline uint16_t Read()
