@@ -30,6 +30,7 @@
 // Project Include Files
 #include <FSM/NomadBLDCFSM.h>
 #include <FSM/StartupState.h>
+#include <FSM/CalibrationStates.h>
 #include <FSM/IdleState.h>
 #include <Logger.h>
 
@@ -60,25 +61,22 @@ NomadBLDCData* NomadBLDCFSM::GetData() const
 
 void NomadBLDCFSM::_CreateFSM()
 {
-    //std::cout << "[NomadControlFSM]: Creating FSM" << std::endl;
-    Logger::Instance().Print("Creating FSM\r\n");
+    //Logger::Instance().Print("Creating FSM\r\n");
 
     // Initialization/Startup State
-    // Zero Current Sensors
     // Setup and Do Things
     // Calibrate Mode
     // Change to Idle
 
-    // ///////////////////////// Define Our States
-    // // Off
-    // std::shared_ptr<OffState> off = std::make_shared<OffState>();
-    // off->SetControllerData(data_);
-    // off->SetParentFSM(this);
-
-    // Startup
+    ///////////////////////// Define Our States
     StartupState *startup = new StartupState();
     startup->SetControllerData(data_);
     startup->SetParentFSM(this);
+
+    // Measure Resistance
+    MeasureResistanceState *measure_resistance = new MeasureResistanceState();
+    measure_resistance->SetControllerData(data_);
+    measure_resistance->SetParentFSM(this);
 
     // Idle
     IdleState *idle = new IdleState();
@@ -87,14 +85,20 @@ void NomadBLDCFSM::_CreateFSM()
 
     ///////////////////////// Define Our Transitions
     CommandModeEvent *transition_idle = new CommandModeEvent("IDLE TRANSITION", control_mode_type_t::IDLE_MODE, data_);
+    CommandModeEvent *transition_measure_resistance = new CommandModeEvent("MEASURE RESISTANCE", control_mode_type_t::MEASURE_RESISTANCE_MODE, data_);
 
-    // Setup Transitions
+    /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);
+    measure_resistance->AddTransitionEvent(transition_idle, idle);
+
+    // Enter Measure Resistance Transition
+    idle->AddTransitionEvent(transition_measure_resistance, measure_resistance);
 
     // Add the states to the FSM
     AddState(startup);
     AddState(idle);
-
+    AddState(measure_resistance);
+    
     // Set Initials State
     SetInitialState(startup);
 }

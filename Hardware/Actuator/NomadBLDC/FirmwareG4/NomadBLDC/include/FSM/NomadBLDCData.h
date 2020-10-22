@@ -37,7 +37,7 @@
 struct NomadBLDCData
 {
     MotorController *controller;
-    control_mode_type_t control_mode;
+    //control_mode_type_t control_mode;
 };
 
 #endif // NOMAD_NOMADBLDC_FSM_NOMADBLDCDATA_H_CONTROLDATA_H_

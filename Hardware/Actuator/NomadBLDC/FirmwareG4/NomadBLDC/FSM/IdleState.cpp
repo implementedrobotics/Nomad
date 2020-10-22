@@ -55,5 +55,5 @@ void IdleState::Enter_(uint32_t current_time)
     // Reset Controller State
     data_->controller->Reset();
 
-    Logger::Instance().Print("Entering Idle State!!!\r\n");
+   // Logger::Instance().Print("Entering Idle State!!!\r\n");
 }

@@ -85,16 +85,8 @@ void StartLEDService()
 
 void StartMotorControlThread()
 {
-    // // Start Motor Control Thread
-    // osThreadAttr_t task_attributes;
-    // memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-    // task_attributes.name = "MOTOR_CONTROL_TASK";
-    // task_attributes.priority = (osPriority_t)osPriorityRealtime1;
-    // task_attributes.stack_size = 2048;
-
-    // osThreadNew(motor_controller_thread_entry, NULL, &task_attributes);
-
-    motor_controller_thread_entry(NULL);
+    // Start Motor Control Thread
+    init_motor_controller();
 }
 
 void StartPollingThread()
@@ -111,8 +103,6 @@ void StartPollingThread()
 
 void DebugTask()
 {
-    uint16_t val = 10;
- Logger::Instance().Print("Callback DEBUG: %d\r\n", val);
 }
 
 
@@ -138,10 +128,10 @@ extern "C" int app_main() //
     StartPollingThread();
     osDelay(5);
 
-    //osDelay(2000);
+   // osDelay(3000);
     //measure_motor_inductance();
-
-    //measure_motor_resistance();
+//
+    // measure_motor_resistance();
     //measure_motor_phase_order();
     //measure_motor_parameters();;
 

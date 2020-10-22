@@ -93,7 +93,7 @@ public:
     bool Triggered()
     {
         //std::cout << "Check: " << data_->control_mode << std::endl;
-        if (data_->control_mode == req_mode_)
+        if (data_->controller->GetControlMode() == req_mode_)
         {
             //std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
             return true;

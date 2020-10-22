@@ -89,11 +89,12 @@ void ms_poll_task(void *arg)
         // Sample FET Thermistor for Temperature
         motor_controller->SampleFETTemperature();
 
+        // Delay 1 ms
         osDelay(1);
     }
 }
 
-void motor_controller_thread_entry(void *arg)
+void init_motor_controller()
 {
     //printf("Motor RT Controller Task Up.\n\r");
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
@@ -114,7 +115,7 @@ void motor_controller_thread_entry(void *arg)
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
 
-   // osThreadExit();
+  // osThreadExit();
     
 }
 
@@ -317,7 +318,7 @@ void MotorController::Reset()
 void MotorController::CurrentMeasurementCB()
 {
     // Performance Measure
-     LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
     // Depends on PWM duty cycles
     if (motor_->config_.phase_order) // Check Phase Ordering
@@ -461,7 +462,6 @@ bool MotorController::RunControlFSM()
         return false;
     
     control_fsm_->Run(controller_update_period_);
-    
     return true;
 }
 // void MotorController::StartControlFSM()

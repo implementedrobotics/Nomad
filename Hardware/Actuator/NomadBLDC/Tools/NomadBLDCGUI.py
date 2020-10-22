@@ -268,7 +268,7 @@ class NomadBasicProgressDialog(QtWidgets.QDialog):
     
    # def CloseWindow(self):
 
-Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['STARTUP', 'IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()

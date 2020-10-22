@@ -1,7 +1,7 @@
 /*
- * StartupState.h
+ * CalibrationStates.h
  *
- *  Created on: July 1, 2020
+ *  Created on: October 21, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -21,8 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef NOMADBLDC_FSM_STARTUPSTATE_H_
-#define NOMADBLDC_FSM_STARTUPSTATE_H_
+#ifndef NOMADBLDC_FSM_CALIBRATIONSTATES_H_
+#define NOMADBLDC_FSM_CALIBRATIONSTATES_H_
 
 // C System Files
 
@@ -33,11 +33,11 @@
 // Project Include Files
 #include <FSM/NomadBLDCState.h>
 
-class StartupState : public NomadBLDCState
+class MeasureResistanceState : public NomadBLDCState
 {
 
 public:
-    StartupState();
+    MeasureResistanceState();
 
     // Called upon a state change and we enter this state
     // current_time = current robot/controller time
@@ -51,14 +51,16 @@ public:
     // dt = time step for this iteration
     void Run_(float dt);
 
-private:
-    uint32_t adc1_offset_;
-    uint32_t adc2_offset_;
-    uint32_t adc3_offset_;
+private:    
+    
+    // kI for current step ramping  [(V/s)/A]
+    float kI_; 
+    
+    // Cycles to run for Resistance Test
+    uint32_t num_measure_cycles_;
 
-    uint16_t num_adc_calib_samples_;
-
-
+    // Current test voltage @ step
+    float test_voltage_;  
 };
 
 #endif // NOMADBLDC_FSM_STARTUPSTATE_H_

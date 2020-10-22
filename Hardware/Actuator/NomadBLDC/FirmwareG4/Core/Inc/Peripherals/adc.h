@@ -35,7 +35,6 @@
 
 // Project Includes
 #include <Utilities/lpf.h>
-#include <Logger.h>
 
 class ADCDevice
 {
@@ -63,7 +62,7 @@ public:
     inline void Start(void) { LL_ADC_REG_StartConversion(ADC_); }
 
     // Stop Sampling in Continuous/Timer Triggered Mode
-    inline void Stop() { LL_ADC_REG_StopConversion(ADC1);}
+    inline void Stop() { LL_ADC_REG_StopConversion(ADC_);}
 
     // Enable Interrupt (End of Conversion only at the moment)
     void EnableIT();
@@ -87,12 +86,12 @@ public:
     LowPassFilter& GetFilter() { return filter_; }
 
     // Read Current ADC Value
-    inline uint16_t Read()
+    inline int16_t Read()
     {
         value_ = LL_ADC_REG_ReadConversionData12(ADC_) - bias_;
 
         if(enable_filter_) // Filter it?
-            value_ = static_cast<uint16_t>(filter_.Filter(static_cast<float>(value_)));
+            value_ = static_cast<int16_t>(filter_.Filter(static_cast<float>(value_)));
         
         return value_;
     }
@@ -109,14 +108,14 @@ public:
     inline void ISR()
     {
         // DO ADC Stuff
-        if (LL_ADC_IsActiveFlag_EOC(ADC_))
-        {
-            // Clear Flag
-            LL_ADC_ClearFlag_EOC(ADC_);
-
+       if (LL_ADC_IsActiveFlag_EOC(ADC_))
+       {
             // Execute Callback
             cplt_callback_();
-        }
+
+           // Clear Flag
+           LL_ADC_ClearFlag_EOC(ADC_);
+       }
     }
 
 private:
@@ -128,7 +127,7 @@ private:
     int16_t bias_;
 
     // Current ADC Sample Value
-    uint16_t value_;
+    int16_t value_;
 
     // Low Pass Filter
     LowPassFilter filter_;

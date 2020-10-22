@@ -72,7 +72,7 @@ void ADCDevice::Enable()
         /* Note: Variable divided by 2 to compensate partially                    */
         /*       CPU processing cycles (depends on compilation optimization).     */
         /* This can be optimized.  In no hurray for our application.  Enable is not time critical. */
-        wait_loop_index = ((LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64) >> 1);
+       // wait_loop_index = ((LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64) >> 1);
         while (wait_loop_index != 0)
         {
             wait_loop_index--;
