@@ -128,7 +128,7 @@ extern "C" int app_main() //
     StartPollingThread();
     osDelay(5);
 
-   // osDelay(3000);
+    //osDelay(3000);
     //measure_motor_inductance();
 //
     // measure_motor_resistance();

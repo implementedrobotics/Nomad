@@ -61,13 +61,7 @@ NomadBLDCData* NomadBLDCFSM::GetData() const
 
 void NomadBLDCFSM::_CreateFSM()
 {
-    //Logger::Instance().Print("Creating FSM\r\n");
-
-    // Initialization/Startup State
-    // Setup and Do Things
-    // Calibrate Mode
-    // Change to Idle
-
+    
     ///////////////////////// Define Our States
     StartupState *startup = new StartupState();
     startup->SetControllerData(data_);
@@ -78,6 +72,11 @@ void NomadBLDCFSM::_CreateFSM()
     measure_resistance->SetControllerData(data_);
     measure_resistance->SetParentFSM(this);
 
+    // Measure Inductance
+    MeasureInductanceState *measure_inductance = new MeasureInductanceState();
+    measure_inductance->SetControllerData(data_);
+    measure_inductance->SetParentFSM(this);
+
     // Idle
     IdleState *idle = new IdleState();
     idle->SetControllerData(data_);
@@ -86,18 +85,24 @@ void NomadBLDCFSM::_CreateFSM()
     ///////////////////////// Define Our Transitions
     CommandModeEvent *transition_idle = new CommandModeEvent("IDLE TRANSITION", control_mode_type_t::IDLE_MODE, data_);
     CommandModeEvent *transition_measure_resistance = new CommandModeEvent("MEASURE RESISTANCE", control_mode_type_t::MEASURE_RESISTANCE_MODE, data_);
+    CommandModeEvent *transition_measure_inductance = new CommandModeEvent("MEASURE INDUCTANCE", control_mode_type_t::MEASURE_INDUCTANCE_MODE, data_);
 
     /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);
     measure_resistance->AddTransitionEvent(transition_idle, idle);
+    measure_inductance->AddTransitionEvent(transition_idle, idle);
 
     // Enter Measure Resistance Transition
     idle->AddTransitionEvent(transition_measure_resistance, measure_resistance);
+
+    // Enter Measure Inductance Transition
+    idle->AddTransitionEvent(transition_measure_inductance, measure_inductance);
 
     // Add the states to the FSM
     AddState(startup);
     AddState(idle);
     AddState(measure_resistance);
+    AddState(measure_inductance);
     
     // Set Initials State
     SetInitialState(startup);

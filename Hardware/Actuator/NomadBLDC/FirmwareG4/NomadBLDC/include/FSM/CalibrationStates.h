@@ -40,10 +40,10 @@ public:
     MeasureResistanceState();
 
     // Called upon a state change and we enter this state
-    // current_time = current robot/controller time
+    // current_time = current controller tick time
     void Enter_(uint32_t current_time);
 
-    // current_time = current robot/controller time
+    // current_time = current controller tick time
     // Called upon a state change and we are exiting this state
     void Exit_(uint32_t current_time);
 
@@ -61,6 +61,35 @@ private:
 
     // Current test voltage @ step
     float test_voltage_;  
+};
+
+class MeasureInductanceState : public NomadBLDCState
+{
+
+public:
+    MeasureInductanceState();
+
+    // Called upon a state change and we enter this state
+    // current_time = current controller tick time
+    void Enter_(uint32_t current_time);
+
+    // current_time = current controller tick time
+    // Called upon a state change and we are exiting this state
+    void Exit_(uint32_t current_time);
+
+    // Logic to run each iteration of the state machine run
+    // dt = time step for this iteration
+    void Run_(float dt);
+
+private:    
+    
+    // Low/High Current Steps on Alpha Axis
+    float I_alpha_[2];
+    
+    // Cycles to run for Resistance Test
+    uint32_t num_measure_cycles_;
+
+    int step_id_;
 };
 
 #endif // NOMADBLDC_FSM_STARTUPSTATE_H_

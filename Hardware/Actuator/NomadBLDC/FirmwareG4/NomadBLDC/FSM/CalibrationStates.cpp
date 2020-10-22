@@ -39,7 +39,7 @@ MeasureResistanceState::MeasureResistanceState() : NomadBLDCState("Measure Resis
 void MeasureResistanceState::Run_(float dt)
 {
     // Logger::Instance().Print("Startup Running\r\n");
-    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
     // Get Motor Ref
     Motor *motor = data_->controller->GetMotor();
@@ -60,7 +60,6 @@ void MeasureResistanceState::Run_(float dt)
         
         return;
     }
-//Logger::Instance().Print("MAX VOLTAGE: %f\r\n", motor->config_.calib_current);
 
     // Measurement is Complete. Process and Send Back
     // R = V/I
@@ -127,4 +126,110 @@ void MeasureResistanceState::Exit_(uint32_t current_time)
     // Set Idle/"Zero" PWM
     data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
 
+}
+
+
+
+MeasureInductanceState::MeasureInductanceState() : NomadBLDCState("Measure Inductance", 4)
+{
+}
+
+void MeasureInductanceState::Run_(float dt)
+{
+    // Logger::Instance().Print("Startup Running\r\n");
+    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    float voltage_high = motor->config_.calib_voltage;
+    float voltage_low = -motor->config_.calib_voltage;
+
+    float test_voltages[2] = {voltage_low, voltage_high};
+
+    // Get Motor Ref
+    Motor *motor = data_->controller->GetMotor();
+    if (cycle_count_ < num_measure_cycles_) // Send Measure Signal
+    {
+        // for (int i = 0; i < 2; ++i)
+        // TODO: Case Step_Low, Step_High etc
+
+        if (step_id_++ == 0) // When you step you are reading the previous step.  TODO: Make this Better!
+            I_alpha_[1] += motor->state_.I_a;
+        else
+            I_alpha_[0] += motor->state_.I_a;
+
+        if (step_id_ == 2)
+            step_id_ = 0;
+
+        // Test voltage along phase A
+        data_->controller->SetModulationOutput(0.0f, test_voltages[step_id_], 0.0f);
+
+        return;
+    }
+
+    // Measurement is Complete. Process and Send Back
+    float v_L = 0.5f * (voltage_high - voltage_low); // Inductor Voltage
+
+    // di/dt
+    float dI_by_dt = (I_alpha_[1] - I_alpha_[0]) / (dt * static_cast<float>(num_measure_cycles_));
+
+    // Compute Inductance
+    float L = v_L / dI_by_dt;
+    
+    // Update Measurement
+    measurement_t measurement;
+    measurement.f32 = L;
+
+    // TODO: arbitrary values set for now
+    if (L < 1e-6f || L > 500e-6f)
+    {
+        //Logger::Instance().Print("ERROR: Inductance Measurement Out of Range: %f\r\n", L);
+        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
+    }
+
+    // PMSM D/Q Inductance are the same.
+    motor->config_.phase_inductance_d = L;
+    motor->config_.phase_inductance_q = L;
+
+    // Logger::Instance().Print("Phase Inductance: %f Henries\r\n", L);
+    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+
+    // Set next state to idle
+    data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
+}
+
+void MeasureInductanceState::Enter_(uint32_t current_time)
+{
+    //Logger::Instance().Print("Entering Measure Resistance State.\r\n");
+
+    // Turn Status LED On
+    LEDService::Instance().On();
+
+    // Enable Gate Driver
+    data_->controller->GetGateDriver()->EnableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(true);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Zero Current Alphas
+    I_alpha_[0] = 0.0f;
+    I_alpha_[1] = 0.0f;
+
+    step_id_ = 0;
+
+    // How Many Test Cycles?
+    num_measure_cycles_ = static_cast<uint32_t>(3.0f / data_->controller->GetControlUpdatePeriod()); // Test runs for 3s
+}
+
+void MeasureInductanceState::Exit_(uint32_t current_time)
+{
+    // Enable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(false);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
 }
