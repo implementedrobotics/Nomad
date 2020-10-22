@@ -19,4 +19,5 @@
 31. Get Rid of math_ops.h
 32. Adjustable LUT encoder offset size
 34. Add #DEFINE / ENUM State definitions for IDS
-
+35. Remove Calibrations From Motor
+36. Get Flash Size Down.  Remove Strings etc form FSM desc.

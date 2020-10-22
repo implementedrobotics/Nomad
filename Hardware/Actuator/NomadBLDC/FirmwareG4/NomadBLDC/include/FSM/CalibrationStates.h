@@ -92,4 +92,41 @@ private:
     int step_id_;
 };
 
-#endif // NOMADBLDC_FSM_STARTUPSTATE_H_
+class MeasurePhaseOrderState : public NomadBLDCState
+{
+
+public:
+    MeasurePhaseOrderState();
+
+    // Called upon a state change and we enter this state
+    // current_time = current controller tick time
+    void Enter_(uint32_t current_time);
+
+    // current_time = current controller tick time
+    // Called upon a state change and we are exiting this state
+    void Exit_(uint32_t current_time);
+
+    // Logic to run each iteration of the state machine run
+    // dt = time step for this iteration
+    void Run_(float dt);
+
+private:    
+    
+    // Mechnical Theta Start Angle
+    float theta_start_;
+
+    // Mechanical Theta End Angle after Scan
+    float theta_end_;
+
+    // Scan Test Voltage
+    float test_voltage_;
+
+    // Current Reference Angle
+    float reference_angle_; 
+
+    // Current State of Calibration
+    int state_;
+};
+
+
+#endif // NOMADBLDC_FSM_CALIBRATIONSTATES_H_

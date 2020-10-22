@@ -107,10 +107,7 @@ public:
 private:
     
     // Measure Routines
-    bool MeasureMotorResistance(MotorController *controller, float test_current, float max_voltage);
-    bool MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high);
     bool CalibrateEncoderOffset(MotorController *controller); // Calibrate Encoder Offset
-    bool OrderPhases(MotorController *controller);     // Check Phase Order
     bool LockRotor(MotorController *controller, float lock_duration, float lock_voltage); // Lock Rotor to A/D Axis
 
     float sample_time_; // Update Sample Time (=Current Control Update Rate)

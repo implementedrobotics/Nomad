@@ -30,6 +30,7 @@
 // Project Include Files
 #include <Logger.h>
 #include <FSM/CalibrationStates.h>
+#include <Utilities/math.h>
 
 MeasureResistanceState::MeasureResistanceState() : NomadBLDCState("Measure Resistance", 3)
 {
@@ -223,6 +224,120 @@ void MeasureInductanceState::Enter_(uint32_t current_time)
 }
 
 void MeasureInductanceState::Exit_(uint32_t current_time)
+{
+    // Enable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(false);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+}
+
+
+
+
+
+MeasurePhaseOrderState::MeasurePhaseOrderState() : NomadBLDCState("Measure Phase Order", 5)
+{
+}
+
+void MeasurePhaseOrderState::Run_(float dt)
+{
+
+    // Some Statics
+    static float step_size = 1.0f / 5000.0f;
+    static float scan_range = 8.0f * Core::Math::kPI;
+
+    // Get Motor Ref
+    Motor *motor = data_->controller->GetMotor();
+    float test_voltage = motor->config_.calib_current * motor->config_.phase_resistance;
+
+    // Check Current Mode
+    switch (state_)
+    {
+    case (0):
+        if (cycle_count_ < 2.0f * dt) // 2.0 Second Lock Duration
+        {
+            data_->controller->SetModulationOutput(0.0f, test_voltage, 0.0f);
+        }
+        else
+        {
+            state_ = 1;
+            motor->Update(); // Update Rotor Position Reading
+
+            // Update Start Theta Value
+            theta_start_ = motor->state_.theta_mech_true;
+        }
+        break;
+    case (1):
+        if (reference_angle_ < scan_range)
+        {
+            // Set Modulation Output
+            data_->controller->SetModulationOutput(reference_angle_, test_voltage, 0.0f);
+
+            // Update State/Position Sensor
+            motor->Update();
+
+            // Update Reference Angle
+            reference_angle_ += step_size;
+        }
+        else
+        {
+            theta_end_ = motor->state_.theta_mech_true;
+
+            // Compute Phase Order
+            if (theta_end_ - theta_start_ > 0)
+            {
+                motor->config_.phase_order = 1;
+            }
+            else
+            {
+                motor->config_.phase_order = 0;
+            }
+
+            // Feedback measurement
+            measurement_t measurement;
+            measurement.i32 = motor->config_.phase_order;
+
+            // Send Complete Feedback
+            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+
+            // Set next state to idle
+            data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void MeasurePhaseOrderState::Enter_(uint32_t current_time)
+{
+    //Logger::Instance().Print("Entering Measure Resistance State.\r\n");
+
+    // Turn Status LED On
+    LEDService::Instance().On();
+
+    // Enable Gate Driver
+    data_->controller->GetGateDriver()->EnableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(true);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Reset Calibration Variables
+    reference_angle_ = 0.f;
+    theta_start_ = 0.f;
+    theta_end_ = 0.f;
+    state_ = 0;
+
+}
+
+void MeasurePhaseOrderState::Exit_(uint32_t current_time)
 {
     // Enable Gate Driver
     data_->controller->GetGateDriver()->DisableDriver();

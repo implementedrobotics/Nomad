@@ -100,25 +100,25 @@ bool Motor::Calibrate(MotorController *controller)
 
     // TODO: Check Error Here
     // Measure Resistance
-    MeasureMotorResistance(controller, config_.calib_current, config_.calib_voltage);
+    //MeasureMotorResistance(controller, config_.calib_current, config_.calib_voltage);
 
-    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+    //controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
-    osDelay(1);
+   // osDelay(1);
 
     // AND Here
     // Measure Inductance
-    MeasureMotorInductance(controller, -config_.calib_voltage, config_.calib_voltage);
+    //MeasureMotorInductance(controller, -config_.calib_voltage, config_.calib_voltage);
 
-    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+    //controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
     // Order Phases
-    OrderPhases(controller);
+   // OrderPhases(controller);
 
-    controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
+   // controller->SetDuty(0.5f, 0.5f, 0.5f); // Make sure we have no PWM period
 
     //printf("\r\nCooling Down 3s...\r\n");
-    osDelay(3);
+   // osDelay(3);
     
     // Offset Calibration
     CalibrateEncoderOffset(controller);
@@ -126,74 +126,6 @@ bool Motor::Calibrate(MotorController *controller)
     config_.calibrated = 1; // Update Flag
     dirty_ = true;
 
-    return true;
-}
-
-bool Motor::OrderPhases(MotorController *controller)
-{
-    Logger::Instance().Print("[MOTOR]: Running phase direction scan...\r\n");
-
-    float theta_start = 0;
-    float theta_end = 0;
-    float test_voltage = config_.calib_current * config_.phase_resistance;
-    float rotor_lock_duration = 2.0f;
-    float scan_step_size = 1.0f / 5000.0f; // Amount to step in open loop
-    float scan_range = 8.0f * M_PI;        // Scan range for phase order (electrical range)
-
-    config_.phase_order = 1;               // Reset Phase Order to Default
-
-    // Feedback measurement
-    measurement_t measurement;
-    measurement.i32 = config_.phase_order;
-
-    //Logger::Instance().Print("Locking Rotor to D-Axis...\r\n");
-    LockRotor(controller, rotor_lock_duration, test_voltage);
-    //Logger::Instance().Print("Rotor stabilized.\r\n");
-
-    Update(); // Update State/Position Sensor
-
-    osDelay(1); // Wait a ms
-
-    theta_start = state_.theta_mech_true;
-    for (float ref_angle = 0; ref_angle < scan_range; ref_angle += scan_step_size)
-    {
-        if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
-        {
-            // TODO: Error
-            Logger::Instance().Print("[MOTOR]: Phase Direction Scan Timeout!\r\n");
-            // Send Complete Feedback
-            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::MEASUREMENT_TIMEOUT, measurement);
-            return false;
-        }
-        // Set PWM Output
-       //  Logger::Instance().Print("Test: %f!\r\n", test_voltage);
-        controller->SetModulationOutput(ref_angle, test_voltage, 0.0f);
-
-        Update(); // Update State/Position Sensor
-
-       // Logger::Instance().Print("[MOTOR]: Turn and Burn Direction Scan Timeout!\r\n");
-
-    }
-    theta_end = state_.theta_mech_true;
-
-    Logger::Instance().Print("Angle Start: %f, Angle End: %f\r\n", theta_start, theta_end);
-    if (theta_end - theta_start > 0)
-    {
-        Logger::Instance().Print("[MOTOR]: Phase Order CORRECT.\r\n");
-        //printf("Phase Order is CORRECT!\n\r");
-        //rotor_sensor_->SetDirection(1);
-        config_.phase_order = 1;
-    }
-    else
-    {
-        printf("Phase Order is INCORRECT!\r\n");
-        Logger::Instance().Print("[MOTOR]: rPhase Order REVERSED.\r\n");
-        //rotor_sensor_->SetDirection(-1);
-        config_.phase_order = 0;
-    }
-    measurement.i32 = config_.phase_order;
-    // Send Complete Feedback
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
     return true;
 }
 
