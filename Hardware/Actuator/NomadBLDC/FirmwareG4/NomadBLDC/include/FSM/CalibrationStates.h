@@ -96,6 +96,12 @@ class MeasurePhaseOrderState : public NomadBLDCState
 {
 
 public:
+    typedef enum
+    {
+        LOCK_ROTOR = 0,
+        MEASURE_PHASE_ORDER = 1
+    } state_t;
+
     MeasurePhaseOrderState();
 
     // Called upon a state change and we enter this state
@@ -125,8 +131,90 @@ private:
     float reference_angle_; 
 
     // Current State of Calibration
-    int state_;
+    state_t state_;
 };
+
+
+
+class MeasureEncoderOffsetState : public NomadBLDCState
+{
+
+public:
+    typedef enum
+    {
+        LOCK_ROTOR = 0,
+        CALIBRATE_FORWARD = 1,
+        CALIBRATE_BACKWARD = 2
+    } state_t;
+
+    static constexpr int16_t kLUTSize = 128;
+ 
+    MeasureEncoderOffsetState();
+    ~MeasureEncoderOffsetState();
+
+    // Called upon a state change and we enter this state
+    // current_time = current controller tick time
+    void Enter_(uint32_t current_time);
+
+    // current_time = current controller tick time
+    // Called upon a state change and we are exiting this state
+    void Exit_(uint32_t current_time);
+
+    // Logic to run each iteration of the state machine run
+    // dt = time step for this iteration
+    void Run_(float dt);
+
+    // Run Initilization Setup, Allocate Memory Etc
+    void Setup();
+
+protected:
+    void ComputeOffsetLUT();
+
+private:    
+
+    Motor *motor_;
+
+    // Constants
+
+    // Sampling Window Size
+    int32_t window_size_;
+
+    // Number of samples per window.  Should be multiple of number of pole pairs
+    int32_t num_samples_;
+
+    // Sub Sample Smoothing
+    int32_t num_sub_samples_;     
+    
+    // Mechnical Theta Actual (Non Compensated) Angle
+    float theta_actual_;
+
+    // Scan Test Voltage
+    float test_voltage_;
+
+    // Current Reference Angle
+    float reference_angle_; 
+
+    /* Compensation Table Variables */
+    // Error Vector Forward Rotation
+    float *error_forward_;  
+
+    // Error Vector Backward Rotation
+    float *error_backward_;
+
+    // Lookup Table
+    int8_t *LUT_;
+
+    // Raw Positions (Counts)
+    int32_t *raw_forward_;
+    int32_t *raw_backward_;
+
+    float *error_;
+    float *error_filtered_;
+
+    // Current State of Calibration
+    state_t state_;
+};
+
 
 
 #endif // NOMADBLDC_FSM_CALIBRATIONSTATES_H_

@@ -56,7 +56,7 @@ const osThreadAttr_t defaultTask_attributes = {
 // // Place FreeRTOS heap in core coupled memory for better performance
 // __attribute__((section(".ccmram")))
 // #endif
-uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+//uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -414,8 +414,8 @@ static void MX_ADC3_Init(void)
   LL_GPIO_Init(I_B_GPIO_Port, &GPIO_InitStruct);
 
   /* ADC3 interrupt Init */
-  NVIC_SetPriority(ADC3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
-  NVIC_EnableIRQ(ADC3_IRQn);
+  // NVIC_SetPriority(ADC3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  // NVIC_EnableIRQ(ADC3_IRQn);
 
   /* USER CODE BEGIN ADC3_Init 1 */
 
@@ -510,7 +510,7 @@ static void MX_ADC4_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC4, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC4, 0);
   LL_ADC_SetOverSamplingScope(ADC4, LL_ADC_OVS_DISABLE);
@@ -592,7 +592,7 @@ static void MX_ADC5_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC5, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC5, 0);
   LL_ADC_SetOverSamplingScope(ADC5, LL_ADC_OVS_DISABLE);

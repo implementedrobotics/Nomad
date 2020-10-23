@@ -698,7 +698,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.fetTempLabel.setText("FET Temp D: <b>{:0.1f}</b>".format(stats.fet_temp))
             self.motorTempLabel.setText("Motor Temp Q: <b>{:0.1f}</b>".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
-            if(stats.control_status == 0):
+            if(Mode_Map[stats.control_status] == 'IDLE'):
                 self.idle = True
             else:
                 self.idle = False

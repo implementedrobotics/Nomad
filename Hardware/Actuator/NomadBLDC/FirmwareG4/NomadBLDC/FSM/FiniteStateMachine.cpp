@@ -64,6 +64,15 @@ bool FiniteStateMachine::Reset(uint32_t current_time)
     return Start(current_time);
 }
 
+bool FiniteStateMachine::Setup()
+{
+    // Loop All Starts and setup
+    for(auto state : state_list_)
+    {
+        state->Setup();
+    }
+    return true;
+}
 bool FiniteStateMachine::Start(uint32_t current_time)
 {
     cycle_count_ = 0;

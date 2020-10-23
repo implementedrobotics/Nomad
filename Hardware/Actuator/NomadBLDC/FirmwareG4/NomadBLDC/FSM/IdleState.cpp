@@ -37,9 +37,7 @@ IdleState::IdleState() : NomadBLDCState("IDLE", 1)
 void IdleState::Run_(float dt)
 {
     //Logger::Instance().Print("Idle Running\r\n");
-    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
-    // Set mode to idle
+    // Idle Task does Idle Things
 }
 void IdleState::Enter_(uint32_t current_time)
 {

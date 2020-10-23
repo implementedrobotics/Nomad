@@ -61,6 +61,9 @@ public:
     // Reset state machine to initial start conditions
     virtual bool Reset(uint32_t current_time);
 
+    // Run Initilization Setup, Allocate and Memory Etc
+    virtual bool Setup();
+
     // Initializes the state machine and runs any setup code needed before state machine
     // can be ran
     virtual bool Start(uint32_t current_time);

@@ -72,7 +72,7 @@ void ADCDevice::Enable()
         /* Note: Variable divided by 2 to compensate partially                    */
         /*       CPU processing cycles (depends on compilation optimization).     */
         /* This can be optimized.  In no hurray for our application.  Enable is not time critical. */
-       // wait_loop_index = ((LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64) >> 1);
+        wait_loop_index = ((LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64) >> 1);
         while (wait_loop_index != 0)
         {
             wait_loop_index--;
@@ -140,7 +140,7 @@ void ADCDevice::EnableIT()
 
     // Make sure IRQ is enabled
     // TODO: Priority...
-    NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
+    NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
     NVIC_EnableIRQ(IRQn_);
 
     // Update ISR Table
@@ -165,7 +165,9 @@ extern "C" void ADC1_2_IRQHandler(void)
 
 extern "C" void ADC3_IRQHandler(void)
 {
+    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     g_ISR_VTABLE[ADC3_IRQn]->ISR();
+    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 }
 
 extern "C" void ADC4_IRQHandler(void)

@@ -43,13 +43,6 @@ class NomadBLDCFSM : public FiniteStateMachine
 
 public:
 
-    // typedef enum
-    // {
-    //     OFF = 0,
-    //     IDLE = 1,
-    //     ESTOP = 7
-    // } CONTROL_MODE;
-
     // Base Class Primary Controller FSM
     NomadBLDCFSM();
 

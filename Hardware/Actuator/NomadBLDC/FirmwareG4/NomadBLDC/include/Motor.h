@@ -94,7 +94,7 @@ public:
     void ZeroOutputPosition();                         // Zero Mechanical Position Offset
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
     void SetSampleTime(float sample_time);             // Update controller sample rate
-    void Update();                                     // Update Motor State
+    void Update() __attribute__((section(".ccmram"))); // Update Motor State
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
     //bool WriteConfig(); // Write Configuration to Flash Memory
@@ -108,7 +108,6 @@ private:
     
     // Measure Routines
     bool CalibrateEncoderOffset(MotorController *controller); // Calibrate Encoder Offset
-    bool LockRotor(MotorController *controller, float lock_duration, float lock_voltage); // Lock Rotor to A/D Axis
 
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
     bool dirty_; // Has unsaved changes to config

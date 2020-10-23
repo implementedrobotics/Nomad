@@ -58,6 +58,7 @@ public:
     void Reset();                                 // Reset position sensor to defaults, i.e. ignore any saved/restored settings
     void ZeroPosition(); // Zero Mechanical Position Offset
 
+    inline float GetElectricalOffset() { return config_.offset_elec; }
     inline int32_t GetCPR() { return config_.cpr;}
     inline int32_t GetRawPosition() { return position_raw_; }                                 // Get Sensor Raw Position (counts)
     inline int32_t GetNumRotations() { return num_rotations_; }                 // Get number of sensor rotations

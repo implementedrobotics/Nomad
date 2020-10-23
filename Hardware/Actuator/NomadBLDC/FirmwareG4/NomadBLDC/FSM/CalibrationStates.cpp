@@ -257,21 +257,21 @@ void MeasurePhaseOrderState::Run_(float dt)
     // Check Current Mode
     switch (state_)
     {
-    case (0):
-        if (cycle_count_ < 2.0f * dt) // 2.0 Second Lock Duration
+    case (state_t::LOCK_ROTOR):
+        if (cycle_count_ < 2.0f / dt) // 2.0 Second Lock Duration
         {
             data_->controller->SetModulationOutput(0.0f, test_voltage, 0.0f);
         }
         else
         {
-            state_ = 1;
+            state_ = MEASURE_PHASE_ORDER;
             motor->Update(); // Update Rotor Position Reading
 
             // Update Start Theta Value
             theta_start_ = motor->state_.theta_mech_true;
         }
         break;
-    case (1):
+    case (state_t::MEASURE_PHASE_ORDER):
         if (reference_angle_ < scan_range)
         {
             // Set Modulation Output
@@ -285,6 +285,7 @@ void MeasurePhaseOrderState::Run_(float dt)
         }
         else
         {
+            // Update End Theta Value
             theta_end_ = motor->state_.theta_mech_true;
 
             // Compute Phase Order
@@ -333,8 +334,9 @@ void MeasurePhaseOrderState::Enter_(uint32_t current_time)
     reference_angle_ = 0.f;
     theta_start_ = 0.f;
     theta_end_ = 0.f;
-    state_ = 0;
 
+    // Initial State
+    state_ = state_t::LOCK_ROTOR; 
 }
 
 void MeasurePhaseOrderState::Exit_(uint32_t current_time)
@@ -347,4 +349,297 @@ void MeasurePhaseOrderState::Exit_(uint32_t current_time)
 
     // Set Idle/"Zero" PWM
     data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+}
+
+
+
+MeasureEncoderOffsetState::MeasureEncoderOffsetState() : NomadBLDCState("Measure Encoder Offset", 6)
+{
+}
+MeasureEncoderOffsetState::~MeasureEncoderOffsetState()
+{
+    // Clear Memory
+    delete[] error_forward_; 
+    delete[] error_backward_;
+    delete[] LUT_;
+    delete[] raw_forward_;
+    delete[] raw_backward_;
+    delete[] error_;
+    delete[] error_filtered_;
+}
+
+void MeasureEncoderOffsetState::Setup()
+{
+    Motor *motor = data_->controller->GetMotor();
+
+    // Init Tables
+    window_size_ = 128;
+
+    // Samples per mechanical rotation.  Multiple of Pole Pairs for filtering
+    num_samples_ = window_size_ * motor->config_.num_pole_pairs;  
+
+    // Sub sampling for smoothing         
+    num_sub_samples_ = 160;                                             
+
+    error_forward_ = new float[num_samples_];
+    error_backward_ = new float[num_samples_];
+
+    error_ = new float[num_samples_];
+    error_filtered_ = new float[num_samples_];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    // memset(error_forward_, 0, sizeof(float)*num_samples_);
+    // memset(error_backward_, 0, sizeof(float)*num_samples_);
+    // memset(error_, 0, sizeof(float)*num_samples_);
+    // memset(error_filtered_, 0, sizeof(float)*num_samples_);
+
+    LUT_ = new int8_t[kLUTSize]; // Clear the previous lookup table.
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    // memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
+    
+    raw_forward_ = new int32_t[num_samples_];
+    raw_backward_ = new int32_t[num_samples_];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    // memset(raw_forward_, 0, sizeof(int32_t)*num_samples_);
+    // memset(raw_backward_, 0, sizeof(int32_t)*num_samples_);
+    
+}
+void MeasureEncoderOffsetState::Run_(float dt)
+{
+
+    static int32_t sample_idx = 0;
+    static int32_t subsample_idx = 0;
+    
+    // delta angle between samples
+    float delta_sample = 2.0f * Core::Math::kPI * motor_->config_.num_pole_pairs / (num_samples_ * num_sub_samples_); 
+    
+    // Check Current Mode
+    switch (state_)
+    {
+    case (state_t::LOCK_ROTOR):
+        if (cycle_count_ < (2.0f / dt)) // 2.0 Second Lock Duration
+        {
+            data_->controller->SetModulationOutput(0.0f, test_voltage_, 0.0f);
+        }
+        else
+        {   
+            // Reset Sample Index
+            sample_idx = 0; 
+
+            // Sample new rotor positipm
+            motor_->Update(); 
+
+            // Set Next State
+            state_ = state_t::CALIBRATE_FORWARD;
+        }
+        break;
+    case (state_t::CALIBRATE_FORWARD):
+        if (sample_idx < num_samples_)
+        {
+            if(subsample_idx++ < num_sub_samples_)
+            {
+                // Update Reference Angle
+                reference_angle_ += delta_sample;
+
+                // Set Modulation Output
+                data_->controller->SetModulationOutput(reference_angle_, test_voltage_, 0.0f);
+
+                // Update State/Position Sensor
+                motor_->Update();
+            }
+            else
+            {
+                // Update State/Position Sensor
+                motor_->Update(); 
+
+                // Get Mechanical Position
+                theta_actual_ = motor_->PositionSensor()->GetMechanicalPositionTrue();
+
+                // Update Error Table and Encoder Count Table
+                error_forward_[sample_idx] = reference_angle_ / motor_->config_.num_pole_pairs - theta_actual_;
+                raw_forward_[sample_idx] = motor_->PositionSensor()->GetRawPosition();
+
+                sample_idx++;
+                subsample_idx = 0;
+            }
+        }
+        else
+        {
+            // Reset
+            sample_idx = 0;
+            subsample_idx = 0;
+            
+            // Set Next State
+            state_ = state_t::CALIBRATE_BACKWARD;
+        }
+        break;
+
+    case (state_t::CALIBRATE_BACKWARD):
+        if (sample_idx < num_samples_)
+        {
+            if (subsample_idx++ < num_sub_samples_)
+            {
+                // Update Reference Angle
+                reference_angle_ -= delta_sample;
+
+                // Set Modulation Output
+                data_->controller->SetModulationOutput(reference_angle_, test_voltage_, 0.0f);
+
+                // Update State/Position Sensor
+                motor_->Update();
+            }
+            else
+            {
+                // Update State/Position Sensor
+                motor_->Update();
+
+                // Get Mechanical Position
+                theta_actual_ = motor_->PositionSensor()->GetMechanicalPositionTrue();
+
+                // Update Error Table and Encoder Count Table
+                error_backward_[sample_idx] = reference_angle_ / motor_->config_.num_pole_pairs - theta_actual_;
+                raw_backward_[sample_idx] = motor_->PositionSensor()->GetRawPosition();
+
+                sample_idx++;
+                subsample_idx = 0;
+            }
+        }
+        else
+        {
+            // Reset
+            sample_idx = 0;
+            subsample_idx = 0;
+            
+            // Compute Offset and LUT
+            ComputeOffsetLUT();
+
+            // Build Measurement
+            measurement_t elec_offset;
+            elec_offset.f32 = motor_->PositionSensor()->GetElectricalOffset();
+
+            // Send Complete Feedback
+            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
+
+            // Set next state to idle
+            data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+void MeasureEncoderOffsetState::Enter_(uint32_t current_time)
+{
+   // Logger::Instance().Print("Entering Measure Encoder Offset State.\r\n");
+
+    // Turn Status LED On
+    LEDService::Instance().On();
+
+    // Enable Gate Driver
+    data_->controller->GetGateDriver()->EnableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(true);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Get Motor Ref
+    motor_ = data_->controller->GetMotor();
+
+    // Update Test Voltage
+    test_voltage_ = motor_->config_.calib_current * motor_->config_.phase_resistance;
+
+    // Reset Calibration Variables
+    reference_angle_ = 0.f;
+    theta_actual_ = 0.f;
+
+    // Reset Encoder Calibration
+    motor_->PositionSensor()->Reset();
+
+    // Initial State
+    state_ = state_t::LOCK_ROTOR; 
+}
+
+void MeasureEncoderOffsetState::Exit_(uint32_t current_time)
+{
+    // Disable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn On PWM Outputs
+    data_->controller->EnablePWM(false);
+
+    // Set Idle/"Zero" PWM
+    data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+}
+
+void MeasureEncoderOffsetState::ComputeOffsetLUT()
+{
+    // Compute Electrical Offset
+    float offset = 0;
+    for (int32_t i = 0; i < num_samples_; i++)
+    {
+        offset += (error_forward_[i] + error_backward_[num_samples_ - 1 - i]) / (2.0f * num_samples_); // calclate average position sensor offset
+    }
+    offset = fmod(offset * motor_->config_.num_pole_pairs, 2 * Core::Math::kPI); // convert mechanical angle to electrical angle
+    
+    while(offset < 0) // Keep offset 0 to 2*PI
+        offset += Core::Math::k2PI;
+
+
+    
+
+    // Update Offset
+    motor_->PositionSensor()->SetElectricalOffset(offset); // Set Offset
+
+    // Perform filtering to linearize position sensor eccentricity
+    // FIR n-sample average, where n = number of samples in one electrical cycle
+    // This filter has zero gain at electrical frequency and all integer multiples
+    // So cogging effects should be completely filtered out.
+    float mean = 0;
+
+    // Average Forward and Backward Directions
+    for (int32_t i = 0; i < num_samples_; i++)
+    {
+       error_[i] = 0.5f * (error_forward_[i] + error_backward_[num_samples_ - i - 1]);
+    }
+
+    for (int32_t i = 0; i < num_samples_; i++)
+    {
+        error_filtered_[i] = 0.0f; // Zero Filtered Index
+        for (int32_t j = 0; j < window_size_; j++)
+        {
+            int32_t index = -window_size_ / 2 + j + i; // Indices from -window/2 to + window/2
+            if (index < 0)
+            {
+                index += num_samples_;
+            } // Moving average wraps around
+            else if (index > num_samples_ - 1)
+            {
+                index -= num_samples_;
+            }
+            error_filtered_[i] += error_[index] / static_cast<float>(window_size_);
+            
+        }
+        mean += error_filtered_[i] / num_samples_;
+    }
+
+    int32_t raw_offset = (raw_forward_[0] + raw_backward_[num_samples_ - 1]) / 2; //Insensitive to errors in this direction, so 2 points is plenty
+
+    // Build our Lookup Table
+    for (int32_t i = 0; i < kLUTSize; i++)
+    {
+        int32_t index = (raw_offset >> 7) + i;
+        if (index > (kLUTSize - 1))
+        {
+            index -= kLUTSize;
+        }
+        LUT_[index] = static_cast<int8_t>((error_filtered_[i * motor_->config_.num_pole_pairs] - mean) * static_cast<float>(motor_->PositionSensor()->GetCPR()) / Core::Math::k2PI);
+    }
+    motor_->PositionSensor()->SetOffsetLUT(LUT_); // Write Compensated Lookup Table
+    return;
 }

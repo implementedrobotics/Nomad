@@ -201,8 +201,8 @@ public:
     void Init();            // Init Controller
     void Reset();           // Reset Controller
 
-    void CurrentMeasurementCB(); // Callback from ADC Current Measurement
-    bool RunControlFSM();   // Do an FSM Step
+    void CurrentMeasurementCB() __attribute__((section(".ccmram"))); // Callback from ADC Current Measurement
+    bool RunControlFSM() __attribute__((section(".ccmram"))); ;   // Do an FSM Step
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
 

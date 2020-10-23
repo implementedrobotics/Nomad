@@ -105,9 +105,9 @@ public:
     // }
 
     // TODO: This should be up in a base "Peripheral Class"
-    inline void ISR()
+    inline void ISR() 
     {
-        // DO ADC Stuff
+        // Do ADC Stuff
        if (LL_ADC_IsActiveFlag_EOC(ADC_))
        {
             // Execute Callback

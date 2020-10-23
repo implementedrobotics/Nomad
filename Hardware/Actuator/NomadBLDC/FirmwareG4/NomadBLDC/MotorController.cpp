@@ -114,8 +114,6 @@ void init_motor_controller()
 
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
-
-  // osThreadExit();
     
 }
 
@@ -318,8 +316,8 @@ void MotorController::Reset()
 void MotorController::CurrentMeasurementCB()
 {
     // Performance Measure
-    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
+    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+    
     // Depends on PWM duty cycles
     if (motor_->config_.phase_order) // Check Phase Ordering
     {
@@ -333,7 +331,7 @@ void MotorController::CurrentMeasurementCB()
         motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
         motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
     }
-
+    
     // Kirchoffs Current Law to compute 3rd unmeasured current.
     //motor_->state_.I_a = -motor_->state_.I_b - motor_->state_.I_c;
 
@@ -344,8 +342,6 @@ void MotorController::CurrentMeasurementCB()
 
     // Run FSM for timestep
     RunControlFSM();
-
-    LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 }
 
 
@@ -438,7 +434,7 @@ void MotorController::Init()
 
     // Update FSM Data.  This could be better
     control_fsm_->GetData()->controller = this;
-
+    control_fsm_->Setup();
     control_fsm_->Start(SysTick->VAL);
 
     control_initialized_ = true;
@@ -466,10 +462,6 @@ bool MotorController::RunControlFSM()
 }
 // void MotorController::StartControlFSM()
 // {
-   // Logger::Instance().Print("Create FSM!\r\n");
-
-    // // Disable Gate Driver
-    // gate_driver_->DisableDriver();
 
     // // Disable PWM
     // EnablePWM(false);
@@ -484,19 +476,7 @@ bool MotorController::RunControlFSM()
     //     // Check Current Mode
     //     switch (control_mode_)
     //     {
-    //     case (IDLE_MODE):
-    //         if (current_control_mode != control_mode_)
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().Off();
-    //             gate_driver_->DisableDriver();
-    //             EnablePWM(false);
 
-    //             Reset(); // Reset Controller to Zero
-    //         }
-
-    //         osDelay(1);
-    //         break;
     //     case (ERROR_MODE):
     //         if (current_control_mode != control_mode_)
     //         {
@@ -514,91 +494,7 @@ bool MotorController::RunControlFSM()
 
     //         osDelay(1);
     //         break;
-    //     case (CALIBRATION_MODE):
-    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().On();
-    //             gate_driver_->EnableDriver();
-    //             EnablePWM(true);
-
-    //             //printf("\r\n\r\nMotor Calibration Starting...\r\n\r\n");
-    //             motor->Calibrate(motor_controller);
-    //             UpdateControllerGains();
-
-    //             save_configuration();
-    //             // TODO: Check Errors
-    //             Logger::Instance().Print("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-    //             control_mode_ = IDLE_MODE;
-    //         }
-    //         //printf("Calib Mode!\r\n");
-    //         osDelay(1);
-    //         break;
-    //     case (MEASURE_RESISTANCE_MODE):
-    //     {
-    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().On();
-    //             gate_driver_->EnableDriver();
-    //             EnablePWM(true);
-
-    //             motor->MeasureMotorResistance(motor_controller, motor->config_.calib_current, motor->config_.calib_voltage);
-    //             // TODO: Check Errors
-    //             //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-    //             control_mode_ = IDLE_MODE;
-    //         }
-    //         osDelay(1);
-    //         break;
-    //     }
-    //     case (MEASURE_INDUCTANCE_MODE):
-    //     {
-    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().On();
-    //             gate_driver_->EnableDriver();
-    //             EnablePWM(true);
-    //           //  NVIC_DisableIRQ(USART2_IRQn);
-    //             motor->MeasureMotorInductance(motor_controller, -motor_->config_.calib_voltage, motor_->config_.calib_voltage);
-    //            // NVIC_EnableIRQ(USART2_IRQn);
-    //             // TODO: Check Errors
-    //             //printf("\r\nMotor Calibration Complete.  Press ESC to return to menu.\r\n");
-    //             control_mode_ = IDLE_MODE;
-    //         }
-    //         osDelay(1);
-    //         break;
-    //     }
-    //     case (MEASURE_PHASE_ORDER_MODE):
-    //     {
-    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().On();
-    //             gate_driver_->EnableDriver();
-    //             EnablePWM(true);
-    //             motor->OrderPhases(this);
-    //             // TODO: Check Errors
-    //             control_mode_ = IDLE_MODE;
-    //         }
-    //         osDelay(1);
-    //         break;
-    //     }
-    //     case (MEASURE_ENCODER_OFFSET_MODE):
-    //     {
-    //         if (current_control_mode != control_mode_) // Need PWM Enabled for Calibration
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().On();
-    //             gate_driver_->EnableDriver();
-    //             EnablePWM(true);
-    //             motor->CalibrateEncoderOffset(this);
-    //             // TODO: Check Errors
-    //             control_mode_ = IDLE_MODE;
-    //         }
-    //         osDelay(1);
-    //         break;
-    //     }
+    
     //     case (FOC_CURRENT_MODE):
     //     case (FOC_VOLTAGE_MODE):
     //     case (FOC_TORQUE_MODE):

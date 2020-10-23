@@ -40,7 +40,7 @@ StartupState::StartupState() : NomadBLDCState("Startup", 0)
 void StartupState::Run_(float dt)
 {
   //  Logger::Instance().Print("Startup Running\r\n");
-    LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+   // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
     if (cycle_count_ < num_adc_calib_samples_)
     {

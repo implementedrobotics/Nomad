@@ -35,6 +35,7 @@
 #include <Peripherals/gpio.h>
 #include <Utilities/math.h>
 #include "math_ops.h"
+#include <Logger.h>
 
 PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),
                                                                                                    position_mechanical_(0),
@@ -146,8 +147,7 @@ void PositionSensorAS5x47::Update(float Ts)
         position_raw_ &= 0x3FFF; // Data in last 14 bits.
         spi_dev_->Deselect();
     }
-
-
+    
     // Interpolate position offset from Lookup Table
     int32_t offset_1 = config_.offset_lut[position_raw_ >> 7];
     int32_t offset_2 = config_.offset_lut[((position_raw_ >> 7) + 1) % 128];

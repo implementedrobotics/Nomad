@@ -82,6 +82,12 @@ void NomadBLDCFSM::_CreateFSM()
     measure_phase_order->SetControllerData(data_);
     measure_phase_order->SetParentFSM(this);
 
+    // Measure Encoder Offset
+    MeasureEncoderOffsetState *measure_encoder_offset = new MeasureEncoderOffsetState();
+    measure_encoder_offset->SetControllerData(data_);
+    measure_encoder_offset->SetParentFSM(this);
+
+
     // Idle
     IdleState *idle = new IdleState();
     idle->SetControllerData(data_);
@@ -92,12 +98,14 @@ void NomadBLDCFSM::_CreateFSM()
     CommandModeEvent *transition_measure_resistance = new CommandModeEvent("MEASURE RESISTANCE", control_mode_type_t::MEASURE_RESISTANCE_MODE, data_);
     CommandModeEvent *transition_measure_inductance = new CommandModeEvent("MEASURE INDUCTANCE", control_mode_type_t::MEASURE_INDUCTANCE_MODE, data_);
     CommandModeEvent *transition_measure_phase_order = new CommandModeEvent("MEASURE PHASE ORDER", control_mode_type_t::MEASURE_PHASE_ORDER_MODE, data_);
+    CommandModeEvent *transition_measure_encoder_offset = new CommandModeEvent("MEASURE ENCODER OFFSET", control_mode_type_t::MEASURE_ENCODER_OFFSET_MODE, data_);
 
     /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);
     measure_resistance->AddTransitionEvent(transition_idle, idle);
     measure_inductance->AddTransitionEvent(transition_idle, idle);
     measure_phase_order->AddTransitionEvent(transition_idle, idle);
+    measure_encoder_offset->AddTransitionEvent(transition_idle, idle);
 
     // Enter Measure Resistance Transition
     idle->AddTransitionEvent(transition_measure_resistance, measure_resistance);
@@ -108,12 +116,16 @@ void NomadBLDCFSM::_CreateFSM()
     // Enter Measure Inductance Transition
     idle->AddTransitionEvent(transition_measure_phase_order, measure_phase_order);
 
+    // Enter Measure Inductance Transition
+    idle->AddTransitionEvent(transition_measure_encoder_offset, measure_encoder_offset);
+
     // Add the states to the FSM
     AddState(startup);
     AddState(idle);
     AddState(measure_resistance);
     AddState(measure_inductance);
     AddState(measure_phase_order);
+    AddState(measure_encoder_offset);
     
     // Set Initials State
     SetInitialState(startup);
