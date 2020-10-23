@@ -32,6 +32,8 @@
 #include <FSM/StartupState.h>
 #include <FSM/CalibrationStates.h>
 #include <FSM/IdleState.h>
+#include <FSM/ErrorState.h>
+#include <FSM/FOCState.h>
 #include <Logger.h>
 
 // Transition Events For States
@@ -87,11 +89,22 @@ void NomadBLDCFSM::_CreateFSM()
     measure_encoder_offset->SetControllerData(data_);
     measure_encoder_offset->SetParentFSM(this);
 
+    // Motor Drive States
+    
+    // Field Oriented Control - Voltage
+    FOCVoltageState *foc_voltage = new FOCVoltageState();
+    foc_voltage->SetControllerData(data_);
+    foc_voltage->SetParentFSM(this);
 
     // Idle
     IdleState *idle = new IdleState();
     idle->SetControllerData(data_);
     idle->SetParentFSM(this);
+
+    // Error
+    ErrorState *error = new ErrorState();
+    error->SetControllerData(data_);
+    error->SetParentFSM(this);
 
     ///////////////////////// Define Our Transitions
     CommandModeEvent *transition_idle = new CommandModeEvent("IDLE TRANSITION", control_mode_type_t::IDLE_MODE, data_);
@@ -99,6 +112,7 @@ void NomadBLDCFSM::_CreateFSM()
     CommandModeEvent *transition_measure_inductance = new CommandModeEvent("MEASURE INDUCTANCE", control_mode_type_t::MEASURE_INDUCTANCE_MODE, data_);
     CommandModeEvent *transition_measure_phase_order = new CommandModeEvent("MEASURE PHASE ORDER", control_mode_type_t::MEASURE_PHASE_ORDER_MODE, data_);
     CommandModeEvent *transition_measure_encoder_offset = new CommandModeEvent("MEASURE ENCODER OFFSET", control_mode_type_t::MEASURE_ENCODER_OFFSET_MODE, data_);
+    CommandModeEvent *transition_foc_voltage = new CommandModeEvent("FOC VOLTAGE", control_mode_type_t::FOC_VOLTAGE_MODE, data_);
 
     /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);
@@ -106,6 +120,7 @@ void NomadBLDCFSM::_CreateFSM()
     measure_inductance->AddTransitionEvent(transition_idle, idle);
     measure_phase_order->AddTransitionEvent(transition_idle, idle);
     measure_encoder_offset->AddTransitionEvent(transition_idle, idle);
+    foc_voltage->AddTransitionEvent(transition_idle, idle);
 
     // Enter Measure Resistance Transition
     idle->AddTransitionEvent(transition_measure_resistance, measure_resistance);
@@ -119,6 +134,9 @@ void NomadBLDCFSM::_CreateFSM()
     // Enter Measure Inductance Transition
     idle->AddTransitionEvent(transition_measure_encoder_offset, measure_encoder_offset);
 
+    // Enter FOC Voltage Drive Transition
+    idle->AddTransitionEvent(transition_foc_voltage, foc_voltage);
+
     // Add the states to the FSM
     AddState(startup);
     AddState(idle);
@@ -126,6 +144,7 @@ void NomadBLDCFSM::_CreateFSM()
     AddState(measure_inductance);
     AddState(measure_phase_order);
     AddState(measure_encoder_offset);
+    AddState(foc_voltage);
     
     // Set Initials State
     SetInitialState(startup);

@@ -585,7 +585,7 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
     {
         offset += (error_forward_[i] + error_backward_[num_samples_ - 1 - i]) / (2.0f * num_samples_); // calclate average position sensor offset
     }
-    offset = fmod(offset * motor_->config_.num_pole_pairs, 2 * Core::Math::kPI); // convert mechanical angle to electrical angle
+    offset = fmod(offset * motor_->config_.num_pole_pairs, Core::Math::k2PI); // convert mechanical angle to electrical angle
     
     while(offset < 0) // Keep offset 0 to 2*PI
         offset += Core::Math::k2PI;

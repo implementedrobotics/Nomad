@@ -89,6 +89,7 @@ void ms_poll_task(void *arg)
         // Sample FET Thermistor for Temperature
         motor_controller->SampleFETTemperature();
 
+      //  Logger::Instance().Print("Pos: %f\r\n", motor->PositionSensor()->GetMechanicalPosition());
         // Delay 1 ms
         osDelay(1);
     }
@@ -763,7 +764,7 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
     // Phase current amplitude = length of dq vector
     // i.e. iq = 1, id = 0, peak phase current of 1
 
-   // float cf = arm_cos_f32(theta);
+    //float cf = arm_cos_f32(theta);
     //float sf = arm_sin_f32(theta);
 
     float cf, sf;
@@ -775,11 +776,11 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
 
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
 {
-    //float cos_theta = arm_cos_f32(theta);
-    //float sin_theta = arm_sin_f32(theta);
+    float cos_theta = arm_cos_f32(theta);
+    float sin_theta = arm_sin_f32(theta);
 
-    float cos_theta, sin_theta;
-    cordic.CosSin(theta, cos_theta, sin_theta);
+    //float cos_theta, sin_theta;
+    //cordic.CosSin(theta, cos_theta, sin_theta);
 
     *alpha = d * cos_theta - q * sin_theta;
     *beta = q * cos_theta + d * sin_theta;
