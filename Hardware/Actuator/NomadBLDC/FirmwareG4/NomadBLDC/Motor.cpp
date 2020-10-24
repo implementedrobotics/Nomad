@@ -99,7 +99,7 @@ void Motor::ZeroOutputPosition()
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {
     config_.num_pole_pairs = pole_pairs;
-
+    
     // Compute other parameters
     config_.flux_linkage = 60.0f / (SQRT3 * config_.K_v * PI * config_.num_pole_pairs * 2);
     config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f; // rotor_flux_*Pole_Pairs*3/2

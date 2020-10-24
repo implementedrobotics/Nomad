@@ -115,7 +115,6 @@ void init_motor_controller()
 
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
-    
 }
 
 // Controller Mode Interface
@@ -206,6 +205,7 @@ void load_configuration()
 
     motor->config_ = load.motor_config;
     motor->PositionSensor()->config_ = load.position_sensor_config;
+    motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
     motor_controller->config_ = load.controller_config;
 
     motor->ZeroOutputPosition();
@@ -776,11 +776,11 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
 
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
 {
-    float cos_theta = arm_cos_f32(theta);
-    float sin_theta = arm_sin_f32(theta);
+    // float cos_theta = arm_cos_f32(theta);
+    // float sin_theta = arm_sin_f32(theta);
 
-    //float cos_theta, sin_theta;
-    //cordic.CosSin(theta, cos_theta, sin_theta);
+    float cos_theta, sin_theta;
+    cordic.CosSin(theta, cos_theta, sin_theta);
 
     *alpha = d * cos_theta - q * sin_theta;
     *beta = q * cos_theta + d * sin_theta;
@@ -792,7 +792,6 @@ void MotorController::ParkTransform(float theta, float alpha, float beta, float 
 
     float cos_theta, sin_theta;
     cordic.CosSin(theta, cos_theta, sin_theta);
-
 
     *d = alpha * cos_theta + beta * sin_theta;
     *q = beta * cos_theta - alpha * sin_theta;

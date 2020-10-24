@@ -38,25 +38,25 @@ FOCVoltageState::FOCVoltageState() : NomadBLDCState("FOC Voltage", 10)
 
 void FOCVoltageState::Run_(float dt)
 {
-    // Critical Section
-   // __disable_irq();
+    // Enter Critical Section
+    __disable_irq();
+
     // Get Motor Ref
     Motor *motor = data_->controller->GetMotor();
     MotorController *controller = data_->controller;
 
-    controller->state_.V_d_ref = 0.0f;
-    controller->state_.V_q_ref = 1.0f;
-
     controller->state_.V_d = controller->state_.V_d_ref;
     controller->state_.V_q = controller->state_.V_q_ref;
+    
     controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
-   // Logger::Instance().Print("Theta: %f\r\n", motor->state_.theta_elec);
     // Update V_d/V_q   
     // TODO: Should probably have this more universal somewhere
-    // controller->dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &controller->state_.I_d, &controller->state_.I_q); //dq0 transform on currents
-    // controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
-    // controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
-  //  __enable_irq();
+    controller->dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &controller->state_.I_d, &controller->state_.I_q); //dq0 transform on currents
+    controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
+    controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
+
+    // Exit Critical
+    __enable_irq();
 }
 
 void FOCVoltageState::Enter_(uint32_t current_time)
