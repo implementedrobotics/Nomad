@@ -55,8 +55,6 @@ void MeasureResistanceState::Run_(float dt)
 
         // Test voltage along phase A
         data_->controller->SetModulationOutput(0.0f, test_voltage_, 0.0f);
-
-        
         return;
     }
 
@@ -228,7 +226,7 @@ void MeasurePhaseOrderState::Run_(float dt)
 {
     // Some Statics
     static float step_size = 1.0f / 5000.0f;
-    static float scan_range = 8.0f * Core::Math::kPI;
+    static float scan_range = 4.0f * Core::Math::k2PI;
 
     // Get Motor Ref
     Motor *motor = data_->controller->GetMotor();
@@ -277,6 +275,21 @@ void MeasurePhaseOrderState::Run_(float dt)
             {
                 motor->config_.phase_order = 0;
             }
+
+            // Compute Pole Pairs
+            float total_theta_mech = std::abs(theta_end_ - theta_start_);
+            uint16_t pole_pairs = static_cast<uint16_t>(scan_range/total_theta_mech);
+
+            // Pole pairs should be evenly divisible by 3(3 phases)
+            if(pole_pairs % 3 != 0)
+            {
+                // If not.  We have some error but should be close enough to tick +/- to find it
+                pole_pairs = (pole_pairs+1) % 3 == 0 ? pole_pairs + 1 : pole_pairs - 1;
+            }
+
+            // Update Config
+            motor->config_.num_pole_pairs = pole_pairs;
+            motor->PositionSensor()->SetPolePairs(pole_pairs);
 
             // Feedback measurement
             measurement_t measurement;
@@ -329,14 +342,8 @@ void MeasurePhaseOrderState::Exit_(uint32_t current_time)
     data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
 }
 
-
-
 MeasureEncoderOffsetState::MeasureEncoderOffsetState() : NomadBLDCState(NomadBLDCStateID::STATE_CALIB_ENCODER)
 {
-}
-MeasureEncoderOffsetState::~MeasureEncoderOffsetState()
-{
-
 }
 
 void MeasureEncoderOffsetState::Setup()

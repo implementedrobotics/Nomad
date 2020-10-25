@@ -145,9 +145,7 @@ public:
     } state_t;
 
     static constexpr int16_t kLUTSize = 128;
- 
     MeasureEncoderOffsetState();
-    ~MeasureEncoderOffsetState();
 
     // Called upon a state change and we enter this state
     // current_time = current controller tick time
