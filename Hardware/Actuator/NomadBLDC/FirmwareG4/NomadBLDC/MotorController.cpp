@@ -176,6 +176,10 @@ bool save_configuration()
     Save_format_t save;
     save.signature = FLASH_SAVE_SIGNATURE;
     save.version = FLASH_VERSION; // Set Version
+
+    // If we are writing a config assume for now we are calibrated
+    // TODO: Do something better so we don't have to make this assumption
+    motor->config_.calibrated = 1;
     save.motor_config = motor->config_;
     save.position_sensor_config = motor->PositionSensor()->config_;
     save.controller_config = motor_controller->config_;
@@ -563,34 +567,7 @@ bool MotorController::RunControlFSM()
     //     }
     // }
 // }
-void MotorController::DoMotorControl()
-{
-  //  NVIC_DisableIRQ(USART2_IRQn);
-    __disable_irq();
-    if (control_mode_ == FOC_VOLTAGE_MODE)
-    {
-        motor_controller->state_.V_d = motor_controller->state_.V_d_ref;
-        motor_controller->state_.V_q = motor_controller->state_.V_q_ref;
-        SetModulationOutput(motor->state_.theta_elec, motor_controller->state_.V_d_ref, motor_controller->state_.V_q_ref);
 
-        // Update V_d/V_q
-        // TODO: Should probably have this more universal somewhere
-        dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
-        motor_controller->state_.V_d = motor_controller->state_.I_d * motor->config_.phase_resistance;
-        motor_controller->state_.V_q = motor_controller->state_.I_q * motor->config_.phase_resistance;
-    }
-    else if (control_mode_ == FOC_CURRENT_MODE)
-    {
-        CurrentControl();
-    }
-    else if (control_mode_ == FOC_TORQUE_MODE)
-    {
-        TorqueControl();
-    }
-   // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-   __enable_irq();
-  //  NVIC_EnableIRQ(USART2_IRQn);
-}
 void MotorController::CurrentControl()
 {
     dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents

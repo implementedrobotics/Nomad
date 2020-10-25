@@ -52,11 +52,6 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 512 * 4
 };
 /* USER CODE BEGIN PV */
-// #if defined(STM32G474xx)
-// // Place FreeRTOS heap in core coupled memory for better performance
-// __attribute__((section(".ccmram")))
-// #endif
-//uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

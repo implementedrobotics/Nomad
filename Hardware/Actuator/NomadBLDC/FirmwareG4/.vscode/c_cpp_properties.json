@@ -29,7 +29,8 @@
                 "USE_DEVICE_MODE",
                 "USE_FULL_ASSERT",
                 "USE_HAL_DRIVER",
-                "USE_FULL_LL_DRIVER"
+                "USE_FULL_LL_DRIVER",
+                "USE_CCM"
             ],
             "intelliSenseMode": "clang-x64",
             "browse": {

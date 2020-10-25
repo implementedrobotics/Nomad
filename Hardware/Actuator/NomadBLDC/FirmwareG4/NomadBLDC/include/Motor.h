@@ -31,6 +31,7 @@
 
 // Project Includes
 #include "PositionSensor.h"
+#include <nomad_hw.h>
 
 class MotorController;
 class Motor
@@ -94,7 +95,7 @@ public:
     void ZeroOutputPosition();                         // Zero Mechanical Position Offset
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
     void SetSampleTime(float sample_time);             // Update controller sample rate
-    void Update();// __attribute__(section(".ccmram")); // Update Motor State
+    void CCM_ATTRIBUTE Update(); // Update Motor State
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
     //bool WriteConfig(); // Write Configuration to Flash Memory

@@ -56,6 +56,7 @@
 #include "DRV8323.h"
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
+#include <nomad_hw.h>
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
 static const float current_scale = 3.3f / (float)(1 << ADC_RES) * SENSE_CONDUCTANCE * 1.0f / CURRENT_SENSE_GAIN;
@@ -201,8 +202,8 @@ public:
     void Init();            // Init Controller
     void Reset();           // Reset Controller
 
-    void CurrentMeasurementCB();// __attribute__(section(".ccmram")); // Callback from ADC Current Measurement
-    bool RunControlFSM();// __attribute__(section(".ccmram")); ;   // Do an FSM Step
+    void CurrentMeasurementCB() CCM_ATTRIBUTE; // Callback from ADC Current Measurement
+    bool RunControlFSM() CCM_ATTRIBUTE;   // Do an FSM Step
     void StartPWM();        // Setup PWM Timers/Registers
     void StartADCs();       // Start ADC Inputs
 
@@ -211,22 +212,22 @@ public:
 
     // TODO: Moved to PWM Generator
     void EnablePWM(bool enable); // Enable/Disable PWM Timers
-    void SetModulationOutput(float theta, float v_d, float v_q);// __attribute__((section(".ccmram")));  // Helper Function to compute PWM Duty Cycles directly from D/Q Voltages
-    void SetModulationOutput(float v_alpha, float v_beta);// __attribute__((section(".ccmram")));;        // Helper Function to compute PWM Duty Cycles directly from Park Inverse Transformed Alpha/Beta Voltages
-    void SetDuty(float duty_A, float duty_B, float duty_C);       // Set PWM Duty Cycles Directly
-    void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c);// __attribute__((section(".ccmram")));
+    void SetModulationOutput(float theta, float v_d, float v_q) CCM_ATTRIBUTE;  // Helper Function to compute PWM Duty Cycles directly from D/Q Voltages
+    void SetModulationOutput(float v_alpha, float v_beta) CCM_ATTRIBUTE;        // Helper Function to compute PWM Duty Cycles directly from Park Inverse Transformed Alpha/Beta Voltages
+    void SetDuty(float duty_A, float duty_B, float duty_C) ;       // Set PWM Duty Cycles Directly
+    void SVM(float a, float b, float c, float *dtc_a, float *dtc_b, float *dtc_c) CCM_ATTRIBUTE;
 
     void UpdateControllerGains();                                 // Controller Gains from Measured Motor Parameters
 
     // TOOD: Move This outTransforms
-    void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c);// __attribute__((section(".ccmram"))); // DQ Transfrom -> A, B, C voltages
-    void dq0(float theta, float a, float b, float c, float *d, float *q);// __attribute__((section(".ccmram")));
+    void dqInverseTransform(float theta, float d, float q, float *a, float *b, float *c) CCM_ATTRIBUTE; // DQ Transfrom -> A, B, C voltages
+    void dq0(float theta, float a, float b, float c, float *d, float *q) CCM_ATTRIBUTE;
     
     // TODO: Move All This Out
-    void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta);// __attribute__((section(".ccmram")));
-    void ParkTransform(float theta, float alpha, float beta, float *d, float *q);// __attribute__((section(".ccmram")));
-    void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c);// __attribute__((section(".ccmram")));
-    void ClarkeTransform(float I_a, float I_b, float *alpha, float *beta);// __attribute__((section(".ccmram")));
+    void ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta) CCM_ATTRIBUTE;
+    void ParkTransform(float theta, float alpha, float beta, float *d, float *q) CCM_ATTRIBUTE;
+    void ClarkeInverseTransform(float alpha, float beta, float *a, float *b, float *c) CCM_ATTRIBUTE;
+    void ClarkeTransform(float I_a, float I_b, float *alpha, float *beta) CCM_ATTRIBUTE;
 
     inline bool IsInitialized() { return control_initialized_; }
 
@@ -260,10 +261,8 @@ public:
     
 private:
 
-    void DoMotorControl();//  __attribute__((section(".ccmram"))); // Motor Control Loop
     void CurrentControl(); // Current Control Loop
     void TorqueControl(); // Torque Control Fucntion
-    void LinearizeDTC(float *dtc);  // Linearize Small Non-Linear Duty Cycles
     
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 

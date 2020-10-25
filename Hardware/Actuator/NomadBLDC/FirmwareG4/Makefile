@@ -23,6 +23,8 @@ TARGET = FirmwareG4
 DEBUG = 1
 # optimization
 OPT = -O2
+# enable ccm (default on)
+CCM = 1
 
 
 #######################################
@@ -137,6 +139,10 @@ C_DEFS =  \
 -DUSE_FULL_LL_DRIVER \
 -DUSE_HAL_DRIVER \
 -DSTM32G474xx
+
+ifeq ($(CCM), 1)
+C_DEFS += -DUSE_CCM
+endif
 
 
 # AS includes

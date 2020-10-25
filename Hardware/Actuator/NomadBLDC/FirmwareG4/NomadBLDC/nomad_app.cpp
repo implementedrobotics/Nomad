@@ -143,7 +143,7 @@ extern "C" int app_main() //
     //DebugTask();
 
     //  float theta = PI;
-    int i = 0;
+   // int i = 0;
 
     // uint32_t start_ticks;
     // uint32_t stop_ticks;

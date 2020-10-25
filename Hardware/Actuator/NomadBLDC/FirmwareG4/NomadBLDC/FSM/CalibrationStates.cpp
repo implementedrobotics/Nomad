@@ -358,14 +358,7 @@ MeasureEncoderOffsetState::MeasureEncoderOffsetState() : NomadBLDCState("Measure
 }
 MeasureEncoderOffsetState::~MeasureEncoderOffsetState()
 {
-    // Clear Memory
-    delete[] error_forward_; 
-    delete[] error_backward_;
-    delete[] LUT_;
-    delete[] raw_forward_;
-    delete[] raw_backward_;
-    delete[] error_;
-    delete[] error_filtered_;
+
 }
 
 void MeasureEncoderOffsetState::Setup()
@@ -388,22 +381,22 @@ void MeasureEncoderOffsetState::Setup()
     error_filtered_ = new float[num_samples_];
 
     // Zero Array.  Do this explicitly in case compilers vary
-    // memset(error_forward_, 0, sizeof(float)*num_samples_);
-    // memset(error_backward_, 0, sizeof(float)*num_samples_);
-    // memset(error_, 0, sizeof(float)*num_samples_);
-    // memset(error_filtered_, 0, sizeof(float)*num_samples_);
+    memset(error_forward_, 0, sizeof(float)*num_samples_);
+    memset(error_backward_, 0, sizeof(float)*num_samples_);
+    memset(error_, 0, sizeof(float)*num_samples_);
+    memset(error_filtered_, 0, sizeof(float)*num_samples_);
 
     LUT_ = new int8_t[kLUTSize]; // Clear the previous lookup table.
 
     // Zero Array.  Do this explicitly in case compilers vary
-    // memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
+    memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
     
     raw_forward_ = new int32_t[num_samples_];
     raw_backward_ = new int32_t[num_samples_];
 
     // Zero Array.  Do this explicitly in case compilers vary
-    // memset(raw_forward_, 0, sizeof(int32_t)*num_samples_);
-    // memset(raw_backward_, 0, sizeof(int32_t)*num_samples_);
+    memset(raw_forward_, 0, sizeof(int32_t)*num_samples_);
+    memset(raw_backward_, 0, sizeof(int32_t)*num_samples_);
     
 }
 void MeasureEncoderOffsetState::Run_(float dt)
@@ -575,6 +568,15 @@ void MeasureEncoderOffsetState::Exit_(uint32_t current_time)
 
     // Set Idle/"Zero" PWM
     data_->controller->SetDuty(0.5f, 0.5f, 0.5f);
+
+    // Clear Memory
+    delete[] error_forward_; 
+    delete[] error_backward_;
+    delete[] LUT_;
+    delete[] raw_forward_;
+    delete[] raw_backward_;
+    delete[] error_;
+    delete[] error_filtered_;
 }
 
 void MeasureEncoderOffsetState::ComputeOffsetLUT()
@@ -589,9 +591,6 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
     
     while(offset < 0) // Keep offset 0 to 2*PI
         offset += Core::Math::k2PI;
-
-
-    
 
     // Update Offset
     motor_->PositionSensor()->SetElectricalOffset(offset); // Set Offset
@@ -610,7 +609,6 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
 
     for (int32_t i = 0; i < num_samples_; i++)
     {
-        error_filtered_[i] = 0.0f; // Zero Filtered Index
         for (int32_t j = 0; j < window_size_; j++)
         {
             int32_t index = -window_size_ / 2 + j + i; // Indices from -window/2 to + window/2
@@ -637,7 +635,7 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
         if (index > (kLUTSize - 1))
         {
             index -= kLUTSize;
-        }
+        }  
         LUT_[index] = static_cast<int8_t>((error_filtered_[i * motor_->config_.num_pole_pairs] - mean) * static_cast<float>(motor_->PositionSensor()->GetCPR()) / Core::Math::k2PI);
     }
     motor_->PositionSensor()->SetOffsetLUT(LUT_); // Write Compensated Lookup Table

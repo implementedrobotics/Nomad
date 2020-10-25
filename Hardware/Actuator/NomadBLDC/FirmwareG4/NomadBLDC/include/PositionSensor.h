@@ -31,6 +31,7 @@
 
 // Project Includes
 #include <Peripherals/spi.h>
+#include <nomad_hw.h>
 
 class PositionSensorAS5x47
 {
@@ -69,8 +70,8 @@ public:
     inline float GetElectricalVelocityFiltered() { return velocity_electrical_filtered_ ; }                    // Get Sensor Electrical Velocity Filtered (radians/sec)
     inline float GetMechanicalVelocity() { return velocity_mechanical_ ; }                    // Get Sensor Mechanical Velocity (radians/sec)
     
-    void Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
-    void Update(float Ts);// __attribute__((section(".ccmram"))); // Update Position Sensor State w/ Sample Time (for velocity estimation)
+    void CCM_ATTRIBUTE Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
+    void CCM_ATTRIBUTE Update(float Ts); // Update Position Sensor State w/ Sample Time (for velocity estimation)
 
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
@@ -89,6 +90,7 @@ private:
     int32_t num_rotations_;              // Keep Track of Sensor Rotations
 
     // TODO: Redundant.  Also in motor.  Should only track one variable
+    // Move to HW config
     uint32_t pole_pairs_;                // Pole Pairs in Motor to Compute Electrical Positions
 
     int32_t filter_size_; // Velocity Filter Window Size
