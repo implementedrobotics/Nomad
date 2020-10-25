@@ -30,8 +30,8 @@
 // Project Include Files
 #include <FSM/State.h>
 
-TransitionEvent::TransitionEvent(const std::string &name)
-    : name_(name)
+TransitionEvent::TransitionEvent(/*const std::string &name*/)
+    // : name_(name)
 {
     // Nothing to do
 }

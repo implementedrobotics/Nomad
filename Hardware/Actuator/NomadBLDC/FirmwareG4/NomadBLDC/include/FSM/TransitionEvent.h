@@ -42,20 +42,20 @@ class TransitionEvent
 public:
     // Base Class Transition Event
     // name = Transition Event name
-    TransitionEvent(const std::string &name);
+    TransitionEvent(/* const std::string &name */);
 
-    // Get the name of this transition event
-    inline const std::string &GetName() const
-    {
-        return name_;
-    }
+    // // Get the name of this transition event
+    // inline const std::string &GetName() const
+    // {
+    //     return name_;
+    // }
 
     // Stop state machine and cleans up
     virtual bool Triggered() = 0;
 
 protected:
-    // State machine name
-    std::string name_;
+    // // State machine name
+    // std::string name_;
 };
 
 #endif // NOMADBLDC_FSM_TRANSITIONEVENT_H_

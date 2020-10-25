@@ -32,7 +32,7 @@
 #include <FSM/FOCState.h>
 #include <Utilities/math.h>
 
-FOCVoltageState::FOCVoltageState() : NomadBLDCState("FOC Voltage", 10)
+FOCVoltageState::FOCVoltageState() : NomadBLDCState(NomadBLDCStateID::STATE_FOC)
 {
 }
 
@@ -49,6 +49,7 @@ void FOCVoltageState::Run_(float dt)
     controller->state_.V_q = controller->state_.V_q_ref;
     
     controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
+
     // Update V_d/V_q   
     // TODO: Should probably have this more universal somewhere
     controller->dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &controller->state_.I_d, &controller->state_.I_q); //dq0 transform on currents
@@ -64,7 +65,7 @@ void FOCVoltageState::Enter_(uint32_t current_time)
     // Check Motor Calibribration
     if (!data_->controller->GetMotor()->config_.calibrated)
     {
-        Logger::Instance().Print("[FOCVoltageState]: ERROR: NOT Calibrated!\r\n");
+        Logger::Instance().Print("[FOCVoltageState]: ERROR: Motor NOT Calibrated!\r\nPlease calibrate and save a valid configuration.\r\n");
         data_->controller->SetControlMode(control_mode_type_t::ERROR_MODE);
         return;
     }

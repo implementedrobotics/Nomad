@@ -31,12 +31,11 @@
 #include <Logger.h>
 #include <FSM/IdleState.h>
 
-IdleState::IdleState() : NomadBLDCState("IDLE", 1)
+IdleState::IdleState() : NomadBLDCState(NomadBLDCStateID::STATE_IDLE)
 {
 }
 void IdleState::Run_(float dt)
 {
-    //Logger::Instance().Print("Idle Running\r\n");
     // Idle Task does Idle Things
 }
 void IdleState::Enter_(uint32_t current_time)
@@ -52,6 +51,4 @@ void IdleState::Enter_(uint32_t current_time)
 
     // Reset Controller State
     data_->controller->Reset();
-
-   // Logger::Instance().Print("Entering Idle State!!!\r\n");
 }

@@ -53,9 +53,6 @@ public:
 
 private:    
     
-    // kI for current step ramping  [(V/s)/A]
-    float kI_; 
-    
     // Cycles to run for Resistance Test
     uint32_t num_measure_cycles_;
 

@@ -40,7 +40,7 @@ class NomadBLDCState : public State
 {
 public:
     // Base Class NomadState
-    NomadBLDCState(const std::string &name, std::size_t id) : State(name, id), parent_(nullptr)
+    NomadBLDCState(std::size_t id) : State(id), parent_(nullptr)
     {
     }
 

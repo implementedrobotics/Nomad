@@ -32,8 +32,8 @@
 #include <main.h>
 #include <FSM/FiniteStateMachine.h>
 #include <Logger.h>
-FiniteStateMachine::FiniteStateMachine(const std::string &name)
-    : name_(name),
+FiniteStateMachine::FiniteStateMachine()
+    : 
       current_state_(nullptr),
       initial_state_(nullptr),
       start_time_(0),
@@ -130,7 +130,7 @@ void FiniteStateMachine::TransitionTo(State* state)
     current_state_->Enter(elapsed_time_);
 }
 
-FiniteStateMachine* FiniteStateMachine::Create(const std::string &name)
+FiniteStateMachine* FiniteStateMachine::Create()
 {
-    return new FiniteStateMachine(name);
+    return new FiniteStateMachine();
 };

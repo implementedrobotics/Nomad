@@ -41,14 +41,7 @@ class FiniteStateMachine
 {
 public:
     // Base Class Finite State Machine
-    // name = Finite State Machine Name
-    FiniteStateMachine(const std::string &name);
-
-    // Get the name of this state machine
-    inline const std::string &GetName() const
-    {
-        return name_;
-    }
+    FiniteStateMachine();
 
     // Add a new state to the state machine
     // state = Pointer to state object
@@ -80,11 +73,9 @@ public:
 
     // Create new state machine object
     // name = Finite State Machine name
-    static FiniteStateMachine *Create(const std::string &name);
+    static FiniteStateMachine *Create();
 
 protected:
-    // State machine name
-    std::string name_;
 
     // Current state of the state machine
     State *current_state_;
@@ -110,7 +101,7 @@ protected:
 private:
     // Find State
     // name = State name of state to find
-    State *FindState(const std::string &name);
+    //State *FindState(const std::string &name);
 
     // Checks for state being a valid state
     // state = State to check for validity

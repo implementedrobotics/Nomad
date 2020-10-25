@@ -31,7 +31,7 @@
 #include <Logger.h>
 #include <FSM/ErrorState.h>
 
-ErrorState::ErrorState() : NomadBLDCState("ERROR", 100)
+ErrorState::ErrorState() : NomadBLDCState(NomadBLDCStateID::STATE_ERROR)
 {
 }
 void ErrorState::Run_(float dt)

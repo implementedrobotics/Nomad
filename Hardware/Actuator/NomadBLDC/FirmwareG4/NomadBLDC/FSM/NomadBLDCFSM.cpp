@@ -37,13 +37,13 @@
 #include <Logger.h>
 
 // Transition Events For States
-NomadBLDCTransitionEvent::NomadBLDCTransitionEvent(const std::string &name, NomadBLDCData* data)
-    : TransitionEvent(name), data_(data)
+NomadBLDCTransitionEvent::NomadBLDCTransitionEvent(NomadBLDCData* data)
+    : TransitionEvent(), data_(data)
 {
     data_ = data;
 }
 
-NomadBLDCFSM::NomadBLDCFSM() : FiniteStateMachine("Nomad BLDC Controller FSM")
+NomadBLDCFSM::NomadBLDCFSM() : FiniteStateMachine()
 {
     // Create Data Pointer
     data_ = new NomadBLDCData();
@@ -107,12 +107,12 @@ void NomadBLDCFSM::_CreateFSM()
     error->SetParentFSM(this);
 
     ///////////////////////// Define Our Transitions
-    CommandModeEvent *transition_idle = new CommandModeEvent("IDLE TRANSITION", control_mode_type_t::IDLE_MODE, data_);
-    CommandModeEvent *transition_measure_resistance = new CommandModeEvent("MEASURE RESISTANCE", control_mode_type_t::MEASURE_RESISTANCE_MODE, data_);
-    CommandModeEvent *transition_measure_inductance = new CommandModeEvent("MEASURE INDUCTANCE", control_mode_type_t::MEASURE_INDUCTANCE_MODE, data_);
-    CommandModeEvent *transition_measure_phase_order = new CommandModeEvent("MEASURE PHASE ORDER", control_mode_type_t::MEASURE_PHASE_ORDER_MODE, data_);
-    CommandModeEvent *transition_measure_encoder_offset = new CommandModeEvent("MEASURE ENCODER OFFSET", control_mode_type_t::MEASURE_ENCODER_OFFSET_MODE, data_);
-    CommandModeEvent *transition_foc_voltage = new CommandModeEvent("FOC VOLTAGE", control_mode_type_t::FOC_VOLTAGE_MODE, data_);
+    CommandModeEvent *transition_idle = new CommandModeEvent(control_mode_type_t::IDLE_MODE, data_);
+    CommandModeEvent *transition_measure_resistance = new CommandModeEvent(control_mode_type_t::MEASURE_RESISTANCE_MODE, data_);
+    CommandModeEvent *transition_measure_inductance = new CommandModeEvent(control_mode_type_t::MEASURE_INDUCTANCE_MODE, data_);
+    CommandModeEvent *transition_measure_phase_order = new CommandModeEvent(control_mode_type_t::MEASURE_PHASE_ORDER_MODE, data_);
+    CommandModeEvent *transition_measure_encoder_offset = new CommandModeEvent(control_mode_type_t::MEASURE_ENCODER_OFFSET_MODE, data_);
+    CommandModeEvent *transition_foc_voltage = new CommandModeEvent(control_mode_type_t::FOC_VOLTAGE_MODE, data_);
 
     /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);

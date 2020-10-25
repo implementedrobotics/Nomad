@@ -29,8 +29,8 @@
 
 // Project Include Files
 #include <FSM/State.h>
-State::State(const std::string &name, std::size_t id)
-    : name_(name),
+State::State(std::size_t id)
+    : 
       id_(id),
       start_time_(0),
       end_time_(0),

@@ -32,23 +32,21 @@
 #include <FSM/CalibrationStates.h>
 #include <Utilities/math.h>
 
-MeasureResistanceState::MeasureResistanceState() : NomadBLDCState("Measure Resistance", 3)
+MeasureResistanceState::MeasureResistanceState() : NomadBLDCState(NomadBLDCStateID::STATE_CALIB_RESISTANCE)
 {
-    kI_ = 10.0f;                          // [(V/s)/A]
 }
 
 void MeasureResistanceState::Run_(float dt)
 {
-    // Logger::Instance().Print("Startup Running\r\n");
-    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
+    
+    const static float kp_I = 10.0f; // [(V/s)/A]
     // Get Motor Ref
     Motor *motor = data_->controller->GetMotor();
     float alpha = 0.0f;
     if (cycle_count_ < num_measure_cycles_) // Send Measure Signal
     {
         float I_alpha = motor->state_.I_a;
-        test_voltage_ += (kI_ * dt) * (motor->config_.calib_current - I_alpha);
+        test_voltage_ += (kp_I * dt) * (motor->config_.calib_current - I_alpha);
         alpha = std::max(alpha,I_alpha);
         if (test_voltage_ > motor->config_.calib_voltage)
             test_voltage_ = motor->config_.calib_voltage; // Clamp Voltage
@@ -81,8 +79,6 @@ void MeasureResistanceState::Run_(float dt)
         // Update Command Interface
         CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
     }
-    
-    Logger::Instance().Print("Phase Resistance: %f ohms\r\n", motor->config_.phase_resistance);
 
     // Send Complete Signal
     CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
@@ -93,8 +89,6 @@ void MeasureResistanceState::Run_(float dt)
 
 void MeasureResistanceState::Enter_(uint32_t current_time)
 {
-    //Logger::Instance().Print("Entering Measure Resistance State.\r\n");
-
     // Turn Status LED On
     LEDService::Instance().On();
 
@@ -116,8 +110,6 @@ void MeasureResistanceState::Enter_(uint32_t current_time)
 
 void MeasureResistanceState::Exit_(uint32_t current_time)
 {
-   // Logger::Instance().Print("Exiting Measure Resistance State.\r\n");
-
     // Enable Gate Driver
     data_->controller->GetGateDriver()->DisableDriver();
 
@@ -131,15 +123,12 @@ void MeasureResistanceState::Exit_(uint32_t current_time)
 
 
 
-MeasureInductanceState::MeasureInductanceState() : NomadBLDCState("Measure Inductance", 4)
+MeasureInductanceState::MeasureInductanceState() : NomadBLDCState(NomadBLDCStateID::STATE_CALIB_INDUCTANCE)
 {
 }
 
 void MeasureInductanceState::Run_(float dt)
 {
-    // Logger::Instance().Print("Startup Running\r\n");
-    //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
     float voltage_high = motor->config_.calib_voltage;
     float voltage_low = -motor->config_.calib_voltage;
 
@@ -149,9 +138,7 @@ void MeasureInductanceState::Run_(float dt)
     Motor *motor = data_->controller->GetMotor();
     if (cycle_count_ < num_measure_cycles_) // Send Measure Signal
     {
-        // for (int i = 0; i < 2; ++i)
         // TODO: Case Step_Low, Step_High etc
-
         if (step_id_++ == 0) // When you step you are reading the previous step.  TODO: Make this Better!
             I_alpha_[1] += motor->state_.I_a;
         else
@@ -182,7 +169,6 @@ void MeasureInductanceState::Run_(float dt)
     // TODO: arbitrary values set for now
     if (L < 1e-6f || L > 500e-6f)
     {
-        //Logger::Instance().Print("ERROR: Inductance Measurement Out of Range: %f\r\n", L);
         CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
     }
 
@@ -199,8 +185,6 @@ void MeasureInductanceState::Run_(float dt)
 
 void MeasureInductanceState::Enter_(uint32_t current_time)
 {
-    //Logger::Instance().Print("Entering Measure Resistance State.\r\n");
-
     // Turn Status LED On
     LEDService::Instance().On();
 
@@ -236,16 +220,12 @@ void MeasureInductanceState::Exit_(uint32_t current_time)
 }
 
 
-
-
-
-MeasurePhaseOrderState::MeasurePhaseOrderState() : NomadBLDCState("Measure Phase Order", 5)
+MeasurePhaseOrderState::MeasurePhaseOrderState() : NomadBLDCState(NomadBLDCStateID::STATE_CALIB_PHASE_ORDER)
 {
 }
 
 void MeasurePhaseOrderState::Run_(float dt)
 {
-
     // Some Statics
     static float step_size = 1.0f / 5000.0f;
     static float scan_range = 8.0f * Core::Math::kPI;
@@ -316,8 +296,6 @@ void MeasurePhaseOrderState::Run_(float dt)
 
 void MeasurePhaseOrderState::Enter_(uint32_t current_time)
 {
-    //Logger::Instance().Print("Entering Measure Resistance State.\r\n");
-
     // Turn Status LED On
     LEDService::Instance().On();
 
@@ -353,7 +331,7 @@ void MeasurePhaseOrderState::Exit_(uint32_t current_time)
 
 
 
-MeasureEncoderOffsetState::MeasureEncoderOffsetState() : NomadBLDCState("Measure Encoder Offset", 6)
+MeasureEncoderOffsetState::MeasureEncoderOffsetState() : NomadBLDCState(NomadBLDCStateID::STATE_CALIB_ENCODER)
 {
 }
 MeasureEncoderOffsetState::~MeasureEncoderOffsetState()
@@ -401,7 +379,6 @@ void MeasureEncoderOffsetState::Setup()
 }
 void MeasureEncoderOffsetState::Run_(float dt)
 {
-
     static int32_t sample_idx = 0;
     static int32_t subsample_idx = 0;
     
@@ -527,8 +504,6 @@ void MeasureEncoderOffsetState::Run_(float dt)
 
 void MeasureEncoderOffsetState::Enter_(uint32_t current_time)
 {
-   // Logger::Instance().Print("Entering Measure Encoder Offset State.\r\n");
-
     // Turn Status LED On
     LEDService::Instance().On();
 

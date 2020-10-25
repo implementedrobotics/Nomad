@@ -33,8 +33,18 @@
 // Project Include Files
 #include <FSM/FiniteStateMachine.h>
 #include <FSM/NomadBLDCData.h>
-
-#include "LEDService.h"
+#include <LEDService.h>
+typedef enum
+{
+    STATE_STARTUP = 0,
+    STATE_IDLE = 1,
+    STATE_ERROR = 2,
+    STATE_FOC = 3,
+    STATE_CALIB_RESISTANCE = 4,
+    STATE_CALIB_INDUCTANCE = 5,
+    STATE_CALIB_PHASE_ORDER = 6,
+    STATE_CALIB_ENCODER = 7
+} NomadBLDCStateID;
 
 // Finite State Machine Class
 class NomadBLDCFSM : public FiniteStateMachine
@@ -63,11 +73,11 @@ protected:
 class NomadBLDCTransitionEvent : public TransitionEvent
 {
 public:
-    NomadBLDCTransitionEvent(const std::string &name, NomadBLDCData *data);
+    NomadBLDCTransitionEvent(/*const std::string &name, */NomadBLDCData *data);
 
 protected:
     NomadBLDCData *data_;
-    std::string name_;
+    // std::string name_;
 };
 
 // Transitions
@@ -76,9 +86,9 @@ class CommandModeEvent : public NomadBLDCTransitionEvent
 public:
     // Base Class Transition Event
     // name = Transition Event name
-    CommandModeEvent(const std::string &name,
+    CommandModeEvent(/*const std::string &name,*/
                      control_mode_type_t mode,
-                     NomadBLDCData *data) : NomadBLDCTransitionEvent(name, data), req_mode_(mode)
+                     NomadBLDCData *data) : NomadBLDCTransitionEvent(data), req_mode_(mode)
     {
     }
 

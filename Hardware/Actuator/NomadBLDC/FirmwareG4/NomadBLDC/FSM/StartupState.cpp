@@ -32,16 +32,13 @@
 #include <Peripherals/adc.h>
 #include <FSM/StartupState.h>
 
-StartupState::StartupState() : NomadBLDCState("Startup", 0)
+StartupState::StartupState() : NomadBLDCState(NomadBLDCStateID::STATE_STARTUP)
 {
     num_adc_calib_samples_ = 1024;
 }
 
 void StartupState::Run_(float dt)
 {
-  //  Logger::Instance().Print("Startup Running\r\n");
-   // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
     if (cycle_count_ < num_adc_calib_samples_)
     {
         adc1_offset_ += data_->controller->GetADC1()->Read();
@@ -63,16 +60,12 @@ void StartupState::Run_(float dt)
     data_->controller->GetADC2()->UpdateBias(adc2_offset_);
     data_->controller->GetADC3()->UpdateBias(adc3_offset_);
 
-    //Logger::Instance().Print("\r\nADC OFFSET: %d and %d and %d\r\n", adc1_offset_, adc2_offset_, adc3_offset_);
-
     // Set mode to idle
     data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
 }
 
 void StartupState::Enter_(uint32_t current_time)
 {
-   // Logger::Instance().Print("Entering Startup State!!!\r\n");
-
     // Turn Status LED On
     LEDService::Instance().On();
 
@@ -93,5 +86,12 @@ void StartupState::Enter_(uint32_t current_time)
 
 void StartupState::Exit_(uint32_t current_time)
 {
-    //Logger::Instance().Print("Exiting Startup State!!!\r\n");
+    // Disable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn Off PWM
+    data_->controller->EnablePWM(false);
+
+    // Reset Controller State
+    data_->controller->Reset();
 }

@@ -40,16 +40,10 @@
 class State
 {
 public:
-    // Base Class State
-    // name = State name
-    // id = State id
-    State(const std::string &name, std::size_t id);
 
-    // Get the name of this state
-    inline const std::string &GetName() const
-    {
-        return name_;
-    }
+    // Base Class State
+    // id = State id
+    State(std::size_t id);
 
     // Get the id of this state
     inline const uint8_t &id() const
@@ -97,9 +91,6 @@ protected:
     // Called upon a state change and we exit this state
     // current_time = current controller tick time
     virtual void Exit_(uint32_t current_time);
-
-    // State name
-    std::string name_;
 
     // State id
     uint8_t id_; // Can't see more than 256 states?
