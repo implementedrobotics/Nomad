@@ -51,6 +51,12 @@ public:
     void Flush();
 
     // Receive  8 bitsfrom SPI (Will send dummy bytes 0xFF to shift in data)
+    void Transmit8(uint8_t send_byte) CCM_ATTRIBUTE;
+
+    // Receive 16 bits from SPI (Will send dummy bytes 0xFFFF to shift in data)
+    void Transmit16(uint16_t send_bytes) CCM_ATTRIBUTE;
+
+    // Receive  8 bitsfrom SPI (Will send dummy bytes 0xFF to shift in data)
     uint16_t Receive8(void) CCM_ATTRIBUTE;
 
     // Receive 16 bits from SPI (Will send dummy bytes 0xFFFF to shift in data)
@@ -60,7 +66,7 @@ public:
     uint16_t TransmitReceive16(uint16_t send_bytes) CCM_ATTRIBUTE;
 
     // Receive 8 bits from SPI (Transmit send_bytes)
-    uint8_t TransmitReceive8(uint8_t send_bytes) CCM_ATTRIBUTE;
+    uint8_t TransmitReceive8(uint8_t send_byte) CCM_ATTRIBUTE;
 
     // Transmit/Receive Large Buffers
     void TransmitReceive(uint8_t *tx_buffer, size_t tx_length, uint8_t *rx_buffer, size_t rx_length) CCM_ATTRIBUTE;

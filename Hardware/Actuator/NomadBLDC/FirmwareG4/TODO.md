@@ -20,4 +20,4 @@
 19. Add ErrorTransition FSM Function
 20. Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
 21. SPI DMA? ADC DMA?
-22. Decouple start/read for position sensor and see if we can get some more concurrency
+22. Move RMS to down time while posisiton sensor is sampling

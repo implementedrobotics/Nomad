@@ -71,7 +71,7 @@ void Motor::SetSampleTime(float sample_time)
 void Motor::Update()
 {
     // Update Position Sensor
-    rotor_sensor_->Update(sample_time_);
+    //rotor_sensor_->Update(sample_time_);
     
     // Update State
     state_.theta_mech = rotor_sensor_->GetMechanicalPosition();

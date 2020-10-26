@@ -69,7 +69,8 @@ public:
     inline float GetElectricalVelocity() { return velocity_electrical_; }                    // Get Sensor Electrical Velocity (radians/sec)
     inline float GetElectricalVelocityFiltered() { return velocity_electrical_filtered_ ; }                    // Get Sensor Electrical Velocity Filtered (radians/sec)
     inline float GetMechanicalVelocity() { return velocity_mechanical_ ; }                    // Get Sensor Mechanical Velocity (radians/sec)
-    
+    void CCM_ATTRIBUTE StartUpdate();
+    void CCM_ATTRIBUTE EndUpdate();
     void CCM_ATTRIBUTE Update();         // Update Position Sensor State w/ Implciit Sample Time (for velocity estimation)
     void CCM_ATTRIBUTE Update(float Ts); // Update Position Sensor State w/ Sample Time (for velocity estimation)
 

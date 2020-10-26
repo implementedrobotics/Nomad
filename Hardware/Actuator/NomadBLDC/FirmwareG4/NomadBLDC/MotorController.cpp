@@ -83,8 +83,8 @@ void ms_poll_task(void *arg)
     // Main millisecond polling loop
     for (;;)
     {
-        // // Sample bus voltage
-        // motor_controller->SampleBusVoltage();
+        // Sample bus voltage
+        motor_controller->SampleBusVoltage();
 
         // Sample FET Thermistor for Temperature
         motor_controller->SampleFETTemperature();
@@ -322,6 +322,9 @@ void MotorController::CurrentMeasurementCB()
     // Performance Measure
     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     
+    // Start Position Sampling
+    motor_->PositionSensor()->StartUpdate();
+
     // Depends on PWM duty cycles
     if (motor_->config_.phase_order) // Check Phase Ordering
     {
@@ -336,6 +339,7 @@ void MotorController::CurrentMeasurementCB()
         motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
     }
     
+    // We have some time to do things here.  We should squeeze in RMS current here
     // Kirchoffs Current Law to compute 3rd unmeasured current.
     //motor_->state_.I_a = -motor_->state_.I_b - motor_->state_.I_c;
 
@@ -343,9 +347,13 @@ void MotorController::CurrentMeasurementCB()
 
     // TODO: Move to DMA Continuous sampling + oversampling?
     // Sample bus voltage
-    SampleBusVoltage();
+    //SampleBusVoltage();
 
-    // Always Update Motor State
+    // Finish Position Sensor Update
+    motor_->PositionSensor()->EndUpdate();
+   // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
+
+    // Update Motor State
     motor_->Update();
 
     // Run FSM for timestep
