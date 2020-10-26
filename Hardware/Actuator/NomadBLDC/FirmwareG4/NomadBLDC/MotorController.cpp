@@ -83,13 +83,12 @@ void ms_poll_task(void *arg)
     // Main millisecond polling loop
     for (;;)
     {
-        // Sample bus voltage
-        motor_controller->SampleBusVoltage();
+        // // Sample bus voltage
+        // motor_controller->SampleBusVoltage();
 
         // Sample FET Thermistor for Temperature
         motor_controller->SampleFETTemperature();
 
-      //  Logger::Instance().Print("Pos: %f\r\n", motor->PositionSensor()->GetMechanicalPosition());
         // Delay 1 ms
         osDelay(1);
     }
@@ -342,6 +341,10 @@ void MotorController::CurrentMeasurementCB()
 
     // TODO: Use Longest Duty Cycle Measurements for which of the 3 phases to use
 
+    // TODO: Move to DMA Continuous sampling + oversampling?
+    // Sample bus voltage
+    SampleBusVoltage();
+
     // Always Update Motor State
     motor_->Update();
 
@@ -465,108 +468,6 @@ bool MotorController::RunControlFSM()
     control_fsm_->Run(controller_update_period_);
     return true;
 }
-// void MotorController::StartControlFSM()
-// {
-
-    // // Disable PWM
-    // EnablePWM(false);
-    // for (;;)
-    // {
-    //     if (control_mode_ != IDLE_MODE && CheckErrors())
-    //     {
-    //         Logger::Instance().Print("Bailing Here CHECK ERROR\n");
-    //         control_mode_ = ERROR_MODE;
-    //     }
-
-    //     // Check Current Mode
-    //     switch (control_mode_)
-    //     {
-
-    //     case (ERROR_MODE):
-    //         if (current_control_mode != control_mode_)
-    //         {
-    //             current_control_mode = control_mode_;
-    //             //TODO: Flash a code... LEDService::Instance().Off();
-    //             //printf("Controller Error: \r\n");
-
-    //             gate_driver_->PrintFaults();
-
-    //             Reset(); // Reset Controller to Zero
-
-    //             gate_driver_->DisableDriver();
-    //             EnablePWM(false);
-    //         }
-
-    //         osDelay(1);
-    //         break;
-    
-    //     case (FOC_CURRENT_MODE):
-    //     case (FOC_VOLTAGE_MODE):
-    //     case (FOC_TORQUE_MODE):
-    //     case (FOC_SPEED_MODE):
-    //     {
-    //         if (current_control_mode != control_mode_)
-    //         {
-    //             current_control_mode = control_mode_;
-
-    //             // Make sure we are calibrated:
-    //             if (!motor_->config_.calibrated)
-    //             {
-    //                 //printf("Motor is NOT Calibrated.  Please run Motor Calibration before entering control modes!\r\n");
-    //                 Logger::Instance().Print("NOt Calibrated ERROR\n");
-    //                 control_mode_ = ERROR_MODE;
-    //                 continue;
-    //             }
-
-    //             // Reset
-    //             Reset();
-
-    //             LEDService::Instance().On();
-    //             gate_driver_->EnableDriver();
-    //             EnablePWM(true);
-    //         }
-    //         if (osThreadFlagsWait(CURRENT_MEASUREMENT_COMPLETE_SIGNAL, osFlagsWaitAny, CURRENT_MEASUREMENT_TIMEOUT) != CURRENT_MEASUREMENT_COMPLETE_SIGNAL)
-    //         {
-    //             // TODO: Should have a check for number of missed deadlines, then bail.  Leaky Integrator
-    //             //printf("ERROR: Motor Controller Timeout!\r\n");
-    //             control_mode_ = ERROR_MODE;
-    //             continue;
-    //         }
-    //          LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-
-    //         //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    //        // DWT->CYCCNT = 0;
-    //         // Measure
-    //         // TODO: Transform to Id/Iq here?.  For now use last sample.  
-    //         // TOOD: Do this in the current control loop
-    //         // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-    //         static float I_sample = 0.0f;
-    //         I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
-    //         // Update Current Limiter
-    //         current_limiter->AddCurrentSample(I_sample);
-    //         motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
-    //         motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
-            
-    //         DoMotorControl();
-    //        // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    //        // uint32_t span = DWT->CYCCNT;
-    //         //Logger::Instance().Print("Count: %f\r\n", j);
-    //         break;
-    //     }
-    //     default:
-    //         if (current_control_mode != control_mode_)
-    //         {
-    //             current_control_mode = control_mode_;
-    //             LEDService::Instance().Off();
-    //             gate_driver_->DisableDriver();
-    //             EnablePWM(false);
-    //         }
-    //         Logger::Instance().Print("Unhandled Control Mode: %d!\r\n", control_mode_);
-    //         osDelay(1);
-    //         break;
-    //     }
-    // }
-// }
 
 void MotorController::CurrentControl()
 {
@@ -575,7 +476,6 @@ void MotorController::CurrentControl()
     state_.I_d_filtered = 0.95f * state_.I_d_filtered + 0.05f * state_.I_d;
     state_.I_q_filtered = 0.95f * state_.I_q_filtered + 0.05f * state_.I_q;
     
-
     // Filter the current references to the desired closed-loop bandwidth
     state_.I_d_ref_filtered = (1.0f - config_.alpha) * state_.I_d_ref_filtered + config_.alpha * state_.I_d_ref;
     state_.I_q_ref_filtered = (1.0f - config_.alpha) * state_.I_q_ref_filtered + config_.alpha * state_.I_q_ref;
@@ -611,8 +511,6 @@ void MotorController::CurrentControl()
 
     float dtc_d = motor_controller->state_.V_d / state_.Voltage_bus;
     float dtc_q = motor_controller->state_.V_q / state_.Voltage_bus;
-    //LinearizeDTC(&dtc_d);
-    //LinearizeDTC(&dtc_q);
 
     motor_controller->state_.V_d = dtc_d * state_.Voltage_bus;
     motor_controller->state_.V_q = dtc_q * state_.Voltage_bus;
@@ -648,13 +546,18 @@ void MotorController::StartADCs()
     adc_3_ = new ADCDevice(ADC3);
     vbus_adc_ = new ADCDevice(ADC5);
 
-    // Setup Filters?
-    // float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, 125e3);
-    // adc_1_->SetFilter(alpha);
-    // adc_2_->SetFilter(alpha);
-    // adc_3_->SetFilter(alpha);
-    // Set Filter Alpha. TODO: Variable for this.  For now ms sampling with 1000hz cutoff frequency
-    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(1e-3, 1000.0f));
+    // Setup Filters
+    // Filter to desired closed loop current control bandwidth
+    float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, config_.current_bandwidth);
+    adc_1_->GetFilter().SetAlpha(alpha);
+    adc_1_->GetFilter().Init(0.0f); 
+    adc_2_->GetFilter().SetAlpha(alpha);
+    adc_2_->GetFilter().Init(0.0f);
+    adc_3_->GetFilter().SetAlpha(alpha);
+    adc_3_->GetFilter().Init(0.0f);
+    
+    // Set Bus Filter Alpha. For now ms sampling with 1000hz cutoff frequency
+    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(controller_update_period_, config_.current_bandwidth));
     vbus_adc_->GetFilter().Init(24.0f / voltage_scale); // 24 volts/Read default system voltage
     
     // Enable ADCs
@@ -706,18 +609,12 @@ void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
     // TODO: Perf compare these.  Direct Reg vs LL
     if (motor_->config_.phase_order) // Check which phase order to use
     { 
-        // TIM8->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A); // Write duty cycles
-        // TIM8->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
-        // TIM8->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
         LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A)); // Set Duty Cycle Channel 1
         LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B)); // Set Duty Cycle Channel 2
         LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
     }
     else
     {
-        // TIM8->CCR1 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A);
-        // TIM8->CCR3 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B);
-        // TIM8->CCR2 = (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C);
         LL_TIM_OC_SetCompareCH1(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_A)); // Set Duty Cycle Channel 1
         LL_TIM_OC_SetCompareCH3(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_B)); // Set Duty Cycle Channel 2
         LL_TIM_OC_SetCompareCH2(TIM8, (uint16_t)(pwm_counter_period_ticks_) * (1.0f - duty_C)); // Set Duty Cycle Channel 3
@@ -741,9 +638,6 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
     // Phase current amplitude = length of dq vector
     // i.e. iq = 1, id = 0, peak phase current of 1
 
-    //float cf = arm_cos_f32(theta);
-    //float sf = arm_sin_f32(theta);
-
     float cf, sf;
     cordic.CosSin(theta, cf, sf);
 
@@ -753,9 +647,6 @@ void MotorController::dq0(float theta, float a, float b, float c, float *d, floa
 
 void MotorController::ParkInverseTransform(float theta, float d, float q, float *alpha, float *beta)
 {
-    // float cos_theta = arm_cos_f32(theta);
-    // float sin_theta = arm_sin_f32(theta);
-
     float cos_theta, sin_theta;
     cordic.CosSin(theta, cos_theta, sin_theta);
 
@@ -764,9 +655,6 @@ void MotorController::ParkInverseTransform(float theta, float d, float q, float 
 }
 void MotorController::ParkTransform(float theta, float alpha, float beta, float *d, float *q)
 {
-   // float cos_theta = arm_cos_f32(theta);
-   // float sin_theta = arm_sin_f32(theta);
-
     float cos_theta, sin_theta;
     cordic.CosSin(theta, cos_theta, sin_theta);
 

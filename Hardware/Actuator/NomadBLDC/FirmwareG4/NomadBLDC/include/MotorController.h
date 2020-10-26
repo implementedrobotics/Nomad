@@ -248,6 +248,9 @@ public:
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
+    void CurrentControl(); // Current Control Loop
+    void TorqueControl(); // Torque Control Fucntion
+
     // Public for now...  TODO: Need something better here
     volatile control_mode_type_t control_mode_; // Controller Mode
 
@@ -261,8 +264,7 @@ public:
     
 private:
 
-    void CurrentControl(); // Current Control Loop
-    void TorqueControl(); // Torque Control Fucntion
+
     
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 

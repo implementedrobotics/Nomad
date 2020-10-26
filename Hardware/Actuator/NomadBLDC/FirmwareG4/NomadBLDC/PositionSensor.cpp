@@ -125,7 +125,9 @@ void PositionSensorAS5x47::ZeroPosition()
 }
 void PositionSensorAS5x47::Update()
 {
+    
     Update(sample_time_);
+    
 }
 void PositionSensorAS5x47::Update(float Ts)
 {
@@ -219,5 +221,7 @@ void PositionSensorAS5x47::Update(float Ts)
     // Update Velocities
     velocity_mechanical_ = vel_sum / ((float)filter_size_);
     velocity_electrical_ = velocity_mechanical_ * pole_pairs_;
+    // TODO: Add in out LPF Filter
     velocity_electrical_filtered_ = 0.99f * velocity_electrical_filtered_ + 0.01f * velocity_electrical_;
+    
 }

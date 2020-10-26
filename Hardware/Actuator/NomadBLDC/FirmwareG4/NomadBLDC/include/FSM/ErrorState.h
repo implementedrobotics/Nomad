@@ -43,9 +43,9 @@ public:
     // current_time = current robot/controller time
     void Enter_(uint32_t current_time);
 
-    // // current_time = current robot/controller time
-    // // Called upon a state change and we are exiting this state
-    // void Exit(double current_time);
+    // current_time = current robot/controller time
+    // Called upon a state change and we are exiting this state
+    void Exit_(uint32_t current_time);
 
     // Logic to run each iteration of the state machine run
     // dt = time step for this iteration

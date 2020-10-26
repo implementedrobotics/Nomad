@@ -56,3 +56,20 @@ void ErrorState::Enter_(uint32_t current_time)
 
     Logger::Instance().Print("Entering Error State!!!\r\n");
 }
+
+void ErrorState::Exit_(uint32_t current_time)
+{
+    // Turn Status LED Off
+    LEDService::Instance().Off();
+
+    // Disable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn Off PWM
+    data_->controller->EnablePWM(false);
+
+    // Reset Controller State
+    data_->controller->Reset();
+
+    Logger::Instance().Print("Exiting Error State!!!\r\n");
+}

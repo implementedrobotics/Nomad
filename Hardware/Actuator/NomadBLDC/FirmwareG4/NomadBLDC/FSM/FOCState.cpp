@@ -32,35 +32,65 @@
 #include <FSM/FOCState.h>
 #include <Utilities/math.h>
 
-FOCVoltageState::FOCVoltageState() : NomadBLDCState(NomadBLDCStateID::STATE_FOC)
+FOCState::FOCState() : NomadBLDCState(NomadBLDCStateID::STATE_FOC)
 {
 }
 
-void FOCVoltageState::Run_(float dt)
+void FOCState::Run_(float dt)
 {
     // Enter Critical Section
     __disable_irq();
 
+    // DWT->CYCCNT = 0;
     // Get Motor Ref
     Motor *motor = data_->controller->GetMotor();
     MotorController *controller = data_->controller;
+    //controller->state_.I_max = 40.0f;
+    switch (data_->controller->GetControlMode())
+    {
+        case (control_mode_type_t::FOC_VOLTAGE_MODE):
+        {
+            controller->state_.V_d = controller->state_.V_d_ref;
+            controller->state_.V_q = controller->state_.V_q_ref;
 
-    controller->state_.V_d = controller->state_.V_d_ref;
-    controller->state_.V_q = controller->state_.V_q_ref;
-    
-    controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
+            controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
 
-    // Update V_d/V_q   
-    // TODO: Should probably have this more universal somewhere
-    controller->dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &controller->state_.I_d, &controller->state_.I_q); //dq0 transform on currents
-    controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
-    controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
+            // Update V_d/V_q
+            // TODO: Should probably have this more universal somewhere
+            controller->dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &controller->state_.I_d, &controller->state_.I_q); //dq0 transform on currents
+            controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
+            controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
+            break;
+        }
+        case (control_mode_type_t::FOC_CURRENT_MODE):
+        {
+            controller->CurrentControl();
+            break;
+        }
+        case (control_mode_type_t::FOC_TORQUE_MODE):
+        {
+            controller->TorqueControl();
+            break;
+        }
+        default:
+            break;
+    }
 
+    // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
+    //         static float I_sample = 0.0f;
+    //         I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+    //         // Update Current Limiter
+    //         current_limiter->AddCurrentSample(I_sample);
+    //         motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
+    //         motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
+
+    // uint32_t span = DWT->CYCCNT;
+    //Logger::Instance().Print("Count: %f\r\n", j);
     // Exit Critical
     __enable_irq();
 }
 
-void FOCVoltageState::Enter_(uint32_t current_time)
+void FOCState::Enter_(uint32_t current_time)
 {
     // Check Motor Calibribration
     if (!data_->controller->GetMotor()->config_.calibrated)
@@ -86,7 +116,7 @@ void FOCVoltageState::Enter_(uint32_t current_time)
     data_->controller->Reset();
 }
 
-void FOCVoltageState::Exit_(uint32_t current_time)
+void FOCState::Exit_(uint32_t current_time)
 {
    // Logger::Instance().Print("Exiting Measure Resistance State.\r\n");
 

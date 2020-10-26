@@ -92,7 +92,7 @@ void NomadBLDCFSM::_CreateFSM()
     // Motor Drive States
     
     // Field Oriented Control - Voltage
-    FOCVoltageState *foc_voltage = new FOCVoltageState();
+    FOCState *foc_voltage = new FOCState();
     foc_voltage->SetControllerData(data_);
     foc_voltage->SetParentFSM(this);
 

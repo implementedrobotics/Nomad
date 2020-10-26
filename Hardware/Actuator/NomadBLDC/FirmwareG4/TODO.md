@@ -4,16 +4,20 @@
 3.  Keep alive support
 4.  Speed Controller ***
 5.  Position limits on output?
-6.  Clean up class access public/privates
-7.  Refactor Measurement Routines (Tasks)
-8.  Gate driver fault checking and reporting ****
-9.  Add Bus current ***
-10. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
-11. RMS Current Calculator -> Low Priority Task
-12. Verify optimization flags -O3 breaks something.  Looks like PWM timers don't start?
-13. Remove all HAL timers
-14. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
-15. Customize HDLC Command Callback.  And make consistent with CAN Bus once implemented
-16. FET Thermistor/Motor Thermistor Variables in Config
-17. Get Rid of math_ops.h
-18. Adjustable LUT encoder offset size
+6.  Gate driver fault checking and reporting ****
+7.  Add Bus current ***
+8.  Verify optimization flags -O3 breaks something.  Looks like PWM timers don't start?
+9.  Remove all HAL timers
+10. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
+11. Customize HDLC Command Callback.  And make consistent with CAN Bus once implemented
+12. FET Thermistor/Motor Thermistor Variables in Config
+13. Get Rid of math_ops.h
+14. Adjustable LUT encoder offset size.  Update position sensor % modulus when this happens
+15. Save stats for loop cycle time if in debug mode etc.
+16. Error out if missing deadlines etc
+17. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
+18. RMS Current Calculator -> Low Priority Task
+19. Add ErrorTransition FSM Function
+20. Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
+21. SPI DMA? ADC DMA?
+22. Decouple start/read for position sensor and see if we can get some more concurrency

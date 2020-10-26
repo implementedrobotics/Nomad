@@ -636,11 +636,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     
     def SetTorqueSetPoint(self):
         self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), self.torqueFF_spin.value()) 
-        self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
-        self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
-        arm = 0.490
-        force = (self.torqueFF_spin.value()) / arm
-        self.scaleValue.setText(f"{1000*(force/9.81)}")
+        # self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
+        # self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
+        # arm = 0.490
+        # force = (self.torqueFF_spin.value()) / arm
+        # self.scaleValue.setText(f"{1000*(force/9.81)}")
 
     def AutoComputeControllerGains(self):
 

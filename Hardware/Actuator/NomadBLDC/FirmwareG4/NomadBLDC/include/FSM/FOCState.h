@@ -33,11 +33,11 @@
 // Project Include Files
 #include <FSM/NomadBLDCState.h>
 
-class FOCVoltageState : public NomadBLDCState
+class FOCState : public NomadBLDCState
 {
 
 public:
-    FOCVoltageState();
+    FOCState();
 
     // Called upon a state change and we enter this state
     // current_time = current controller tick time

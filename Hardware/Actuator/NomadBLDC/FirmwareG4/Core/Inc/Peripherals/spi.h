@@ -32,6 +32,7 @@
 // Project Includes
 #include "stm32g4xx_ll_spi.h"
 #include <Peripherals/gpio.h>
+#include <nomad_hw.h>
 
 class SPIDevice
 {
@@ -50,21 +51,21 @@ public:
     void Flush();
 
     // Receive  8 bitsfrom SPI (Will send dummy bytes 0xFF to shift in data)
-    uint16_t Receive8(void);
+    uint16_t Receive8(void) CCM_ATTRIBUTE;
 
     // Receive 16 bits from SPI (Will send dummy bytes 0xFFFF to shift in data)
-    uint16_t Receive16(void);
+    uint16_t Receive16(void) CCM_ATTRIBUTE;
 
     // Receive 16 bits from SPI (Transmit send_bytes)
-    uint16_t TransmitReceive16(uint16_t send_bytes);
+    uint16_t TransmitReceive16(uint16_t send_bytes) CCM_ATTRIBUTE;
 
     // Receive 8 bits from SPI (Transmit send_bytes)
-    uint8_t TransmitReceive8(uint8_t send_bytes);
+    uint8_t TransmitReceive8(uint8_t send_bytes) CCM_ATTRIBUTE;
 
     // Transmit/Receive Large Buffers
-    void TransmitReceive(uint8_t *tx_buffer, size_t tx_length, uint8_t *rx_buffer, size_t rx_length);
-    void Transmit(uint8_t *tx_buffer, size_t tx_length);
-    void Receive(uint8_t *rx_buffer, size_t rx_length);
+    void TransmitReceive(uint8_t *tx_buffer, size_t tx_length, uint8_t *rx_buffer, size_t rx_length) CCM_ATTRIBUTE;
+    void Transmit(uint8_t *tx_buffer, size_t tx_length) CCM_ATTRIBUTE;
+    void Receive(uint8_t *rx_buffer, size_t rx_length) CCM_ATTRIBUTE;
 
 private:
 
