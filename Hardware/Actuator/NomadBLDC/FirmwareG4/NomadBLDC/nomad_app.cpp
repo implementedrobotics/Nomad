@@ -129,17 +129,13 @@ extern "C" int app_main() //
     osDelay(5);
 
    // osDelay(3000);
-    //measure_motor_inductance();
-//
- //   measure_encoder_offset();
-    // measure_motor_resistance();
-    //measure_motor_phase_order();
-    //measure_motor_parameters();;
-
-  //  start_voltage_control();
+   //measure_motor_inductance();
+   //measure_encoder_offset();
+   // measure_motor_resistance();
+   //measure_motor_phase_order();
+   //measure_motor_parameters();;
 
     // Init a temp debug Task
-
     //DebugTask();
 
     //  float theta = PI;

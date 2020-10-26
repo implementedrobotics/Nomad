@@ -113,6 +113,8 @@ void NomadBLDCFSM::_CreateFSM()
     CommandModeEvent *transition_measure_phase_order = new CommandModeEvent(control_mode_type_t::MEASURE_PHASE_ORDER_MODE, data_);
     CommandModeEvent *transition_measure_encoder_offset = new CommandModeEvent(control_mode_type_t::MEASURE_ENCODER_OFFSET_MODE, data_);
     CommandModeEvent *transition_foc_voltage = new CommandModeEvent(control_mode_type_t::FOC_VOLTAGE_MODE, data_);
+    CommandModeEvent *transition_foc_current = new CommandModeEvent(control_mode_type_t::FOC_CURRENT_MODE, data_);
+    CommandModeEvent *transition_foc_torque = new CommandModeEvent(control_mode_type_t::FOC_TORQUE_MODE, data_);
 
     /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);
@@ -136,6 +138,12 @@ void NomadBLDCFSM::_CreateFSM()
 
     // Enter FOC Voltage Drive Transition
     idle->AddTransitionEvent(transition_foc_voltage, foc_voltage);
+
+    // Enter FOC Current Drive Transition
+    idle->AddTransitionEvent(transition_foc_current, foc_voltage);
+
+    // Enter FOC Torque Drive Transition
+    idle->AddTransitionEvent(transition_foc_torque, foc_voltage);
 
     // Add the states to the FSM
     AddState(startup);
