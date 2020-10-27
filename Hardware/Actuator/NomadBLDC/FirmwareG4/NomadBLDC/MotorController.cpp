@@ -340,6 +340,15 @@ void MotorController::CurrentMeasurementCB()
     }
     
     // We have some time to do things here.  We should squeeze in RMS current here
+    // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
+    static float I_sample = 0.0f;
+    I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
+    
+    // Update Current Limiter
+    current_limiter_->AddCurrentSample(I_sample);
+    state_.I_rms = current_limiter_->GetRMSCurrent();
+    state_.I_max = current_limiter_->GetMaxAllowableCurrent();
+
     // Kirchoffs Current Law to compute 3rd unmeasured current.
     //motor_->state_.I_a = -motor_->state_.I_b - motor_->state_.I_c;
 

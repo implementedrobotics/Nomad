@@ -30,6 +30,7 @@
 // C++ System Files
 
 // Project Includes
+#include <nomad_hw.h>
 #include <RingBuffer.h>
 
 class RMSCurrentLimiter
@@ -38,11 +39,11 @@ public:
 
     RMSCurrentLimiter(float continuous_current=20.0f, float period=60.0f, float sample_time=1.0f/10.0f, uint32_t sub_sample_count=1);
 
-    void AddCurrentSample(float sample); // Add current sample to our window
-    void Reset(); // Reset Running RMS Calculation
+    void AddCurrentSample(float sample) CCM_ATTRIBUTE; // Add current sample to our window
+    void Reset() CCM_ATTRIBUTE; // Reset Running RMS Calculation
 
-    float GetRMSCurrent(); // Get the current RMS Current Value
-    float GetMaxAllowableCurrent(); // Get the maximum allowable current for the next time step that keeps value in allowable thermal envelope
+    inline float GetRMSCurrent() { return I_rms; };          // Get the current RMS Current Value
+    inline float GetMaxAllowableCurrent() { return I_max; }; // Get the maximum allowable current for the next time step that keeps value in allowable thermal envelope
 
 private:
 
@@ -64,8 +65,8 @@ private:
     float ONE_OVER_DT;
     float ONE_OVER_T;
 
-    void ComputeRMSCurrent();
-    void ComputeMaxAllowableCurrent();
+    void ComputeRMSCurrent() CCM_ATTRIBUTE;
+    void ComputeMaxAllowableCurrent() CCM_ATTRIBUTE;
 };
 
 #endif // RMS_CURRENT_LIMITER_H

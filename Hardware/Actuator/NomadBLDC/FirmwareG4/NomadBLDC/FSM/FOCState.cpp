@@ -45,13 +45,14 @@ void FOCState::Run_(float dt)
     // Get Motor Ref
     Motor *motor = data_->controller->GetMotor();
     MotorController *controller = data_->controller;
-    //controller->state_.I_max = 40.0f;
     switch (data_->controller->GetControlMode())
     {
         case (control_mode_type_t::FOC_VOLTAGE_MODE):
         {
             controller->state_.V_d = controller->state_.V_d_ref;
             controller->state_.V_q = controller->state_.V_q_ref;
+
+            // TODO: Voltage Limit for I_rms.  V_max = I_max * Phase_R -> Limit Norm/Modulus
 
             controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
 
@@ -75,15 +76,6 @@ void FOCState::Run_(float dt)
         default:
             break;
     }
-
-    // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
-    //         static float I_sample = 0.0f;
-    //         I_sample = sqrt(motor_controller->state_.I_d * motor_controller->state_.I_d + motor_controller->state_.I_q * motor_controller->state_.I_q);
-    //         // Update Current Limiter
-    //         current_limiter->AddCurrentSample(I_sample);
-    //         motor_controller->state_.I_rms = current_limiter->GetRMSCurrent();
-    //         motor_controller->state_.I_max = current_limiter->GetMaxAllowableCurrent();
-
     // uint32_t span = DWT->CYCCNT;
     //Logger::Instance().Print("Count: %f\r\n", j);
     // Exit Critical

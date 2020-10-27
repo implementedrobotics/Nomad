@@ -36,9 +36,22 @@
 class RingBuffer
 {
 public:
-    RingBuffer(size_t buffer_size);
 
-    void put(float val);
+    RingBuffer(size_t buffer_size);
+    inline void put(float val)
+    {
+        buffer_[head_] = val;
+        if (full_)
+        {
+            if (++tail_ >= buffer_size_)
+                tail_ = 0;
+        }
+        if (++head_ >= buffer_size_)
+            head_ = 0;
+
+        full_ = head_ == tail_;
+    }
+
     float get();
     float peak();
     bool full() const;

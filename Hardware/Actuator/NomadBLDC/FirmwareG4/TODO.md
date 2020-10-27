@@ -15,9 +15,8 @@
 14. Adjustable LUT encoder offset size.  Update position sensor % modulus when this happens
 15. Save stats for loop cycle time if in debug mode etc.
 16. Error out if missing deadlines etc
-17. Lo Pri - Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
-18. RMS Current Calculator -> Low Priority Task
+17. Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
 19. Add ErrorTransition FSM Function
 20. Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
 21. SPI DMA? ADC DMA?
-22. Move RMS to down time while posisiton sensor is sampling
+23. Remove "Filtered" Phase Currents/Voltages
