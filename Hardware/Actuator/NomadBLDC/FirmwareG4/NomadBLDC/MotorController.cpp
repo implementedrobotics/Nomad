@@ -564,7 +564,7 @@ void MotorController::StartADCs()
 
     // Setup Filters
     // Filter to desired closed loop current control bandwidth
-    float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, config_.current_bandwidth);
+    float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, 0.001);
     adc_1_->GetFilter().SetAlpha(alpha);
     adc_1_->GetFilter().Init(0.0f); 
     adc_2_->GetFilter().SetAlpha(alpha);
