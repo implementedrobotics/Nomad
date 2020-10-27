@@ -71,7 +71,7 @@ void Motor::SetSampleTime(float sample_time)
 void Motor::Update()
 {
     // Update Position Sensor
-    //rotor_sensor_->Update(sample_time_);
+    rotor_sensor_->Update(sample_time_);
     
     // Update State
     state_.theta_mech = rotor_sensor_->GetMechanicalPosition();
@@ -83,10 +83,6 @@ void Motor::Update()
     // Update Temparature Observer
 }
 
-void Motor::PrintPosition()
-{
-    //printf(" Mechanical Angle:  %f/%f/%f    Electrical Angle:  %f    Raw:  %ld\n\r", state_.theta_mech, state_.theta_mech_true, rotor_sensor_->config_.offset_mech, state_.theta_elec, rotor_sensor_->GetRawPosition());
-}
 void Motor::ZeroOutputPosition()
 {
     Update(); // Make sure we are updated

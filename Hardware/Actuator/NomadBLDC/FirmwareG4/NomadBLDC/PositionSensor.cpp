@@ -152,19 +152,19 @@ void PositionSensorAS5x47::Update(float Ts)
     static float prev_position_norm = 0;
     static int32_t prev_counts = 0;
 
-    // spi_dev_->Select();
-    // position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
-    // position_raw_ &= 0x3FFF; // Data in last 14 bits.
-    // spi_dev_->Deselect();
+    spi_dev_->Select();
+    position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
+    position_raw_ &= 0x3FFF; // Data in last 14 bits.
+    spi_dev_->Deselect();
     
-    // // Double Check High/Low Values
-    // if (position_raw_ == 0 || position_raw_ == 0x3FFF)
-    // {
-    //     spi_dev_->Select();
-    //     position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
-    //     position_raw_ &= 0x3FFF; // Data in last 14 bits.
-    //     spi_dev_->Deselect();
-    // }
+    // Double Check High/Low Values
+    if (position_raw_ == 0 || position_raw_ == 0x3FFF)
+    {
+        spi_dev_->Select();
+        position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
+        position_raw_ &= 0x3FFF; // Data in last 14 bits.
+        spi_dev_->Deselect();
+    }
     
     // Interpolate position offset from Lookup Table
     int32_t offset_1 = config_.offset_lut[position_raw_ >> 7];

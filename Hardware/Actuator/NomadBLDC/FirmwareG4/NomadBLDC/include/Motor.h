@@ -100,16 +100,12 @@ public:
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
     //bool WriteConfig(); // Write Configuration to Flash Memory
     //bool ReadConfig();  // Read Configuration from Flash Memory
-    void PrintPosition();
     
     State_t state_;  // Motor State
     Config_t config_; // Motor Params
     
 private:
     
-    // Measure Routines
-    bool CalibrateEncoderOffset(MotorController *controller); // Calibrate Encoder Offset
-
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
     bool dirty_; // Has unsaved changes to config
 

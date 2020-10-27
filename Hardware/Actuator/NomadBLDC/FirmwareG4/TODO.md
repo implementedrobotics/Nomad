@@ -1,5 +1,4 @@
 # Firmware TODO:
-1.  Remove all print statements and cleanup old serial
 2.  Verify CAN Messaging
 3.  Keep alive support
 4.  Speed Controller ***

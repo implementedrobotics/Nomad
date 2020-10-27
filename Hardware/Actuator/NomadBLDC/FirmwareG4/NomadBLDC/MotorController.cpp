@@ -96,7 +96,6 @@ void ms_poll_task(void *arg)
 
 void init_motor_controller()
 {
-    //printf("Motor RT Controller Task Up.\n\r");
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
     // Init CORDIC Routines
@@ -323,7 +322,7 @@ void MotorController::CurrentMeasurementCB()
     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
     
     // Start Position Sampling
-    motor_->PositionSensor()->StartUpdate();
+   // motor_->PositionSensor()->StartUpdate();
 
     // Depends on PWM duty cycles
     if (motor_->config_.phase_order) // Check Phase Ordering
@@ -359,7 +358,7 @@ void MotorController::CurrentMeasurementCB()
  
     // Finish Position Sensor Update
     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    motor_->PositionSensor()->EndUpdate();
+    //motor_->PositionSensor()->EndUpdate();
     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
     // Update Motor State
