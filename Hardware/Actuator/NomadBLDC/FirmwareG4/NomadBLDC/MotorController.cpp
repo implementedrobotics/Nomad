@@ -280,6 +280,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.pwm_freq = 40000.0f; // 40 khz
     config_.foc_ccl_divider = 1; // Default to not divide.  Current loops runs at same freq as PWM
 
+    state_.Voltage_bus = 24.0f;
     // TODO: Parameter
     rms_current_sample_period_ = 1.0f/10.0f;
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
@@ -341,11 +342,16 @@ void MotorController::CurrentMeasurementCB()
     // We have some time to do things here.  We should squeeze in RMS current here
     // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
 
+    // Compute Bus Current
+  //  float I_motor = Core::Math::Vector2d::Magnitude(state_.I_d, state_.I_q);
+   // float P_motor = I_motor * I_motor * motor_->config_.phase_resistance;
+    //state_.I_bus = P_motor / state_.Voltage_bus;
+
     // Update Current Limiter
     // TODO: This is technically from previous time step but that should be okay.
-   current_limiter_->AddCurrentSample(Core::Math::Vector2d::Magnitude(state_.I_d, state_.I_q));
-   state_.I_rms = current_limiter_->GetRMSCurrent();
-   state_.I_max = current_limiter_->GetMaxAllowableCurrent();
+   // current_limiter_->AddCurrentSample(I_motor);
+    state_.I_rms = current_limiter_->GetRMSCurrent();
+    state_.I_max = current_limiter_->GetMaxAllowableCurrent();
 
     // Kirchoffs Current Law to compute 3rd unmeasured current.
     //motor_->state_.I_a = -motor_->state_.I_b - motor_->state_.I_c;
@@ -564,7 +570,7 @@ void MotorController::StartADCs()
 
     // Setup Filters
     // Filter to desired closed loop current control bandwidth
-    float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, 0.001);
+    float alpha = LowPassFilter::ComputeAlpha(controller_update_period_, config_.current_bandwidth);
     adc_1_->GetFilter().SetAlpha(alpha);
     adc_1_->GetFilter().Init(0.0f); 
     adc_2_->GetFilter().SetAlpha(alpha);

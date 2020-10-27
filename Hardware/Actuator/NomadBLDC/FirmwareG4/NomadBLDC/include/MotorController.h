@@ -187,6 +187,7 @@ public:
         float I_rms;                 // Motor RMS Current Value
         float I_max;                 // Maximum Allowable Commanded Current in next Time Step
 
+      //  float I_bus;                 // Bus Current
         // Temps
         float fet_temp;              // FET Temperature
 

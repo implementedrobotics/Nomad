@@ -4,7 +4,6 @@
 4.  Speed Controller ***
 5.  Position limits on output?
 6.  Gate driver fault checking and reporting ****
-7.  Add Bus current *** P = VBUS*IBUS, P = I_dq^2 * R? or I_a*R+I_b*R+I_c*R?
 8.  Verify optimization flags -O3 breaks something.  Looks like PWM timers don't start?
 9.  Remove all HAL timers
 10. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
