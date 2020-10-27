@@ -41,7 +41,16 @@ namespace Core::Math {
     constexpr float kPI_2 = 1.57079632679f;
     constexpr float kQ31  = 2147483648.0f;
     constexpr float kQ15  = 32768.0f;
+    constexpr float kSqrt3 = 1.73205080757f;
 
+    namespace Vector2d
+    {
+        // Vector Magnitude
+        float inline Magnitude(float &x, float &y)
+        {
+            return sqrt(x * x + y * y);
+        }
+    } // namespace Vector
 }
 #endif // CORE_UTILITIES_MATH_H_
 
