@@ -57,8 +57,6 @@ void FOCState::Run_(float dt)
             controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
 
             // Update V_d/V_q
-            // TODO: Should probably have this more universal somewhere
-            controller->dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &controller->state_.I_d, &controller->state_.I_q); //dq0 transform on currents
             controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
             controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
             break;

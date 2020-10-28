@@ -34,7 +34,6 @@
 #include "main.h"
 #include <Peripherals/gpio.h>
 #include <Utilities/math.h>
-#include "math_ops.h"
 #include <Logger.h>
 
 PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),

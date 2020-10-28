@@ -9,7 +9,6 @@
 10. Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
 11. Customize HDLC Command Callback.  And make consistent with CAN Bus once implemented
 12. FET Thermistor/Motor Thermistor Variables in Config
-13. Get Rid of math_ops.h
 14. Adjustable LUT encoder offset size.  Update position sensor % modulus when this happens
 15. Save stats for loop cycle time if in debug mode etc.
 16. Error out if missing deadlines etc
@@ -19,3 +18,4 @@
 21. SPI DMA? ADC DMA?
 23. Remove "Filtered" Phase Currents/Voltages
 24. Update Tool UI for Bus Current/Remove Gate Driver Temperature
+25. Test fixed point conversion functions

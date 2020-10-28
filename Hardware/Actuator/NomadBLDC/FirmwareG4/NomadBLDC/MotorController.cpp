@@ -46,7 +46,6 @@
 #include <FSM/NomadBLDCFSM.h>
 #include "LEDService.h"
 #include "Logger.h"
-#include "math_ops.h"
 
 #define FLASH_VERSION 2
 
@@ -338,17 +337,22 @@ void MotorController::CurrentMeasurementCB()
         motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
         motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
     }
-
     // We have some time to do things here.  We should squeeze in RMS current here
-    // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
+    
+    // Update Motor/Rotor Position State
+    motor_->Update();
 
+    // Update I_d, I_q values
+    dq0(motor->state_.theta_elec, motor->state_.I_a, motor->state_.I_b, motor->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
+    
     // Compute Bus Current
+    // TODO: This is technically from previous time step but that should be okay.
     float I_motor = Core::Math::Vector2d::Magnitude(state_.I_d, state_.I_q);
     float P_motor = I_motor * I_motor * motor_->config_.phase_resistance;
     state_.I_bus = P_motor / state_.Voltage_bus;
 
+    // TODO: Also need to make this work for voltage mode Vrms=Irms * R should work hopefully
     // Update Current Limiter
-    // TODO: This is technically from previous time step but that should be okay.
     current_limiter_->AddCurrentSample(I_motor);
     state_.I_rms = current_limiter_->GetRMSCurrent();
     state_.I_max = current_limiter_->GetMaxAllowableCurrent();
@@ -367,8 +371,7 @@ void MotorController::CurrentMeasurementCB()
     //motor_->PositionSensor()->EndUpdate();
     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-    // Update Motor State
-    motor_->Update();
+
       
     // Run FSM for timestep
     RunControlFSM();
@@ -384,7 +387,7 @@ void MotorController::SampleBusVoltage()
 void MotorController::SampleFETTemperature()
 {
     // Sample FET Thermistor for Temperature
-    this->state_.fet_temp = fet_therm_->SampleTemperature();
+    state_.fet_temp = fet_therm_->SampleTemperature();
 }
 
 void MotorController::Init()
@@ -502,8 +505,8 @@ void MotorController::CurrentControl()
     state_.I_d_ref_filtered = (1.0f - config_.alpha) * state_.I_d_ref_filtered + config_.alpha * state_.I_d_ref;
     state_.I_q_ref_filtered = (1.0f - config_.alpha) * state_.I_q_ref_filtered + config_.alpha * state_.I_q_ref;
 
-    float curr_limit = std::min(motor_controller->state_.I_max, config_.current_limit);
-    limit_norm(&state_.I_d_ref, &state_.I_q_ref, curr_limit);
+    float curr_limit = std::min(state_.I_max, config_.current_limit);
+    Core::Math::Vector2d::Limit(&state_.I_d_ref, &state_.I_q_ref, curr_limit);
 
     // PI Controller
     float i_d_error = state_.I_d_ref - state_.I_d;
@@ -517,27 +520,27 @@ void MotorController::CurrentControl()
     state_.d_int += config_.k_d * config_.k_i_d * i_d_error;
     state_.q_int += config_.k_q * config_.k_i_q * i_q_error;
 
-    state_.d_int = fmaxf(fminf(state_.d_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
-    state_.q_int = fmaxf(fminf(state_.q_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
+    state_.d_int = std::max(std::min(state_.d_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
+    state_.q_int = std::max(std::min(state_.q_int, config_.overmodulation * state_.Voltage_bus), -config_.overmodulation * state_.Voltage_bus);
 
-    //limit_norm(&controller->d_int, &controller->q_int, OVERMODULATION*controller->v_bus);
-    motor_controller->state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
-    motor_controller->state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
+    //limit_norm(&controller->d_int, &controller->q_int, config_.overmodulation * state_->Voltage_bus);
+    state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
+    state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
 
     //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
-    limit_norm(&motor_controller->state_.V_d, &motor_controller->state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
+    Core::Math::Vector2d::Limit(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
     // TODO: Do we need this linearization?
     //float v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q)
     //float dtc = v_ref / state_.Voltage_bus;
 
-    float dtc_d = motor_controller->state_.V_d / state_.Voltage_bus;
-    float dtc_q = motor_controller->state_.V_q / state_.Voltage_bus;
+    float dtc_d = state_.V_d / state_.Voltage_bus;
+    float dtc_q = state_.V_q / state_.Voltage_bus;
 
-    motor_controller->state_.V_d = dtc_d * state_.Voltage_bus;
-    motor_controller->state_.V_q = dtc_q * state_.Voltage_bus;
+    state_.V_d = dtc_d * state_.Voltage_bus;
+    state_.V_q = dtc_q * state_.Voltage_bus;
 
-    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, motor_controller->state_.V_d, motor_controller->state_.V_q);
+    SetModulationOutput(motor->state_.theta_elec + 0.0f * controller_update_period_ * motor->state_.theta_elec_dot, state_.V_d, state_.V_q);
 }
 void MotorController::StartPWM()
 {
@@ -702,11 +705,11 @@ void MotorController::SVM(float a, float b, float c, float *dtc_a, float *dtc_b,
 {
     // Space Vector Modulation
     // a,b,c amplitude = Bus Voltage for Full Modulation Depth
-    float v_offset = (fminf3(a, b, c) + fmaxf3(a, b, c)) * 0.5f;
+    float v_offset = (Core::Math::Vector3d::Min(a, b, c) + Core::Math::Vector3d::Max(a, b, c)) * 0.5f;
 
-    *dtc_a = fminf(fmaxf(((a - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
-    *dtc_b = fminf(fmaxf(((b - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
-    *dtc_c = fminf(fmaxf(((c - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_a = std::min(std::max(((a - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_b = std::min(std::max(((b - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
+    *dtc_c = std::min(std::max(((c - v_offset) / state_.Voltage_bus + 0.5f), DTC_MIN), DTC_MAX);
 }
 
 void MotorController::SetModulationOutput(float theta, float v_d, float v_q)
