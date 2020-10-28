@@ -321,7 +321,7 @@ void MotorController::CurrentMeasurementCB()
 {
     // Performance Measure
     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-    
+   
     // Start Position Sampling
    // motor_->PositionSensor()->StartUpdate();
 
@@ -338,18 +338,18 @@ void MotorController::CurrentMeasurementCB()
         motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
         motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
     }
-    
+
     // We have some time to do things here.  We should squeeze in RMS current here
     // TODO: Also need to make this work for voltage mode Vrms=IrmsR should work hopefully
 
     // Compute Bus Current
-  //  float I_motor = Core::Math::Vector2d::Magnitude(state_.I_d, state_.I_q);
-   // float P_motor = I_motor * I_motor * motor_->config_.phase_resistance;
-    //state_.I_bus = P_motor / state_.Voltage_bus;
+    float I_motor = Core::Math::Vector2d::Magnitude(state_.I_d, state_.I_q);
+    float P_motor = I_motor * I_motor * motor_->config_.phase_resistance;
+    state_.I_bus = P_motor / state_.Voltage_bus;
 
     // Update Current Limiter
     // TODO: This is technically from previous time step but that should be okay.
-   // current_limiter_->AddCurrentSample(I_motor);
+    current_limiter_->AddCurrentSample(I_motor);
     state_.I_rms = current_limiter_->GetRMSCurrent();
     state_.I_max = current_limiter_->GetMaxAllowableCurrent();
 
@@ -369,7 +369,7 @@ void MotorController::CurrentMeasurementCB()
 
     // Update Motor State
     motor_->Update();
-
+      
     // Run FSM for timestep
     RunControlFSM();
 }

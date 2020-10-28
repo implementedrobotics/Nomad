@@ -692,9 +692,9 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         if(stats is not None): # Update Stats
             time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
             self.uptimeLabel.setText(f"Up Time: " + time_str)
-            self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.I_bus))
+            self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f} V</b>".format(stats.voltage_bus))
             self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
-            self.gateDriverTempLabel.setText("Gate Driver Temp: <b>{:0.1f}</b>".format(stats.driver_temp))
+            self.gateDriverTempLabel.setText("I<sub>(bus)</sub>: <b>{:0.2f} A</b>".format(stats.current_bus))
             self.fetTempLabel.setText("FET Temp D: <b>{:0.1f}</b>".format(stats.fet_temp))
             self.motorTempLabel.setText("Motor Temp Q: <b>{:0.1f}</b>".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")

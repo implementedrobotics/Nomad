@@ -43,7 +43,7 @@ class DeviceStats:
     control_status: int = None
     uptime: int = None
     voltage_bus: float = None
-    driver_temp: float = None
+    current_bus: float = None
     fet_temp: float = None
     motor_temp: float = None
 
