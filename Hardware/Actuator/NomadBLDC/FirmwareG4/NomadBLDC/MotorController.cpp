@@ -318,9 +318,13 @@ void MotorController::Reset()
 
 void MotorController::CurrentMeasurementCB()
 {
+    // Make Sure We are Fully Initialized
+    if (!IsInitialized())
+        return;
+
     // Performance Measure
     //LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
-   
+
     // Start Position Sampling
    // motor_->PositionSensor()->StartUpdate();
 
@@ -372,7 +376,7 @@ void MotorController::CurrentMeasurementCB()
     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
 
-      
+
     // Run FSM for timestep
     RunControlFSM();
 }
@@ -380,12 +384,17 @@ void MotorController::CurrentMeasurementCB()
 
 void MotorController::SampleBusVoltage()
 {
+    if(!IsInitialized())
+        return;
+
     // Sample Bus Voltage
     state_.Voltage_bus = static_cast<float>(vbus_adc_->Sample()) * voltage_scale;
 }
 
 void MotorController::SampleFETTemperature()
 {
+    if(!IsInitialized())
+        return;
     // Sample FET Thermistor for Temperature
     state_.fet_temp = fet_therm_->SampleTemperature();
 }
@@ -398,7 +407,7 @@ void MotorController::Init()
     float margin = 1.0f;
     float max_input = margin * 0.3f * SENSE_CONDUCTANCE;
     float max_swing = margin * 1.6f * SENSE_CONDUCTANCE * (1.0f / CURRENT_SENSE_GAIN);
-    current_max_ = fminf(max_input, max_swing);
+    current_max_ = std::min(max_input, max_swing);
 
     // TODO: Make sure this is in a valid range?
 
@@ -442,7 +451,7 @@ void MotorController::Init()
     // Start PWM
     StartPWM();
     osDelay(150); // Delay for a bit to let things stabilize
-
+       
     // Start ADCs
     StartADCs();
     osDelay(150); // Delay for a bit to let things stabilize

@@ -118,7 +118,7 @@ extern "C" int app_main() //
 
     // Init LED Service Task
     StartLEDService();
-    osDelay(1);
+    osDelay(50);
 
     // Start Motor Control Task
     StartMotorControlThread();
