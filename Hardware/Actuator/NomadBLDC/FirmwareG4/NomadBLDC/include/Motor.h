@@ -31,6 +31,7 @@
 
 // Project Includes
 #include "PositionSensor.h"
+#include <nomad_hw.h>
 
 class MotorController;
 class Motor
@@ -94,25 +95,17 @@ public:
     void ZeroOutputPosition();                         // Zero Mechanical Position Offset
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
     void SetSampleTime(float sample_time);             // Update controller sample rate
-    void Update();                                     // Update Motor State
+    void CCM_ATTRIBUTE Update(); // Update Motor State
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
     //bool WriteConfig(); // Write Configuration to Flash Memory
     //bool ReadConfig();  // Read Configuration from Flash Memory
-    void PrintPosition();
     
     State_t state_;  // Motor State
     Config_t config_; // Motor Params
     
 private:
     
-    // Measure Routines
-    bool MeasureMotorResistance(MotorController *controller, float test_current, float max_voltage);
-    bool MeasureMotorInductance(MotorController *controller, float voltage_low, float voltage_high);
-    bool CalibrateEncoderOffset(MotorController *controller); // Calibrate Encoder Offset
-    bool OrderPhases(MotorController *controller);     // Check Phase Order
-    bool LockRotor(MotorController *controller, float lock_duration, float lock_voltage); // Lock Rotor to A/D Axis
-
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
     bool dirty_; // Has unsaved changes to config
 

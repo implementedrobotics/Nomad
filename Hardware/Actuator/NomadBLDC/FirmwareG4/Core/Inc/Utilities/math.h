@@ -41,6 +41,73 @@ namespace Core::Math {
     constexpr float kPI_2 = 1.57079632679f;
     constexpr float kQ31  = 2147483648.0f;
     constexpr float kQ15  = 32768.0f;
+    constexpr float kSqrt3 = 1.73205080757f;
+
+    namespace FixedPoint
+    {
+        // Convert Floating to Fixed Point
+        int32_t inline Convert(float value, uint8_t bits)
+        {
+            return static_cast<int32_t>(value * static_cast<float>((1 << bits) - 1));
+        }
+
+        // Convert Floating to Fixed Point of specified range from min to max
+        int32_t inline Convert(float value, float min_value, float max_value, uint8_t bits)
+        {
+            float range = max_value - min_value;
+            return static_cast<int32_t>(((value-min_value) * static_cast<float>((1 << bits) - 1))/range);
+        }
+
+        // Convert Fixed to Floating Point
+        float inline Convert(int32_t value, uint8_t bits)
+        {
+            return static_cast<float>(value) / (static_cast<float>((1 << bits) - 1));
+        }
+
+        // Convert Fixed to Floating Point of specified range from min to max
+        float inline Convert(int32_t value, float min_value, float max_value, uint8_t bits)
+        {
+            float range = max_value - min_value;
+            return static_cast<float>(value)*range / (static_cast<float>((1 << bits) - 1))+min_value;
+        }
+    }
+    namespace Vector2d
+    {
+        // Vector Magnitude
+        float inline Magnitude(float &x, float &y)
+        {
+            return sqrt(x * x + y * y);
+        }
+        void inline Limit(float *x, float *y, float max)
+        {
+            float length_squared = *x * *x + *y * *y;
+            if((length_squared > max * max) && length_squared > 0)
+            {
+                float ratio = max / sqrt(length_squared);
+                *x *= ratio;
+                *y *= ratio;
+            }
+        }
+    } // namespace Vector2d
+
+    namespace Vector3d
+    {
+        // Vector Magnitude
+        float inline Magnitude(float &x, float &y, float &z)
+        {
+            return sqrt(x * x + y * y + z * z);
+        }
+        // Return Maximum component of vector
+        float inline Max(float &x, float &y, float &z)
+        {
+            return (x > y ? (x > z ? x : z) : (y > z ? y : z));
+        }
+        // Return Minimum component of vector
+        float inline Min(float &x, float &y, float &z)
+        {
+            return (x < y ? (x < z ? x : z) : (y < z ? y : z));
+        }
+    } // namespace Vector3d
 
 }
 #endif // CORE_UTILITIES_MATH_H_

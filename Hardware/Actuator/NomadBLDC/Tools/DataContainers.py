@@ -43,7 +43,7 @@ class DeviceStats:
     control_status: int = None
     uptime: int = None
     voltage_bus: float = None
-    driver_temp: float = None
+    current_bus: float = None
     fet_temp: float = None
     motor_temp: float = None
 
@@ -206,7 +206,7 @@ class MotorState:
 
 @dataclass
 class ControllerState:
-    __packet : ClassVar[struct.Struct] = struct.Struct('<26fI')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<27fI')
     I_d: float = None
     I_q: float = None
     I_d_filt: float = None
@@ -232,6 +232,7 @@ class ControllerState:
     dtc_C: float = None
     I_rms: float = None
     I_max: float = None
+    I_bus: float = None
     fet_temp: float = None
     timeout: int = None
 
@@ -262,6 +263,7 @@ class ControllerState:
         self.dtc_C,
         self.I_rms,
         self.I_max,
+        self.I_bus,
         self.fet_temp,
         self.timeout)
 

@@ -1,8 +1,7 @@
-
 /*
- * Logger.cpp
+ * NomadBLDCState.h
  *
- *  Created on: March 27, 2020
+ *  Created on: July 1, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -20,61 +19,47 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
  */
 
-// Primary Include
-#include "Logger.h"
+#ifndef NOMADBLDC_FSM_NOMADBLDCSTATE_H_
+#define NOMADBLDC_FSM_NOMADBLDCSTATE_H_
 
 // C System Files
 
 // C++ System Files
-#include <cstdarg>
-#include <string>
-#include <vector>
 
-// Project Includes
-#include "CommandHandler.h"
+// Third Party Includes
 
-Logger::Logger() : enable_logging_(false), uart_(nullptr)
+// Project Include Files
+#include <FSM/State.h>
+#include <FSM/NomadBLDCData.h>
+#include <FSM/NomadBLDCFSM.h>
+
+// Base NomadState Class
+class NomadBLDCState : public State
 {
+public:
+    // Base Class NomadState
+    NomadBLDCState(std::size_t id) : State(id), parent_(nullptr)
+    {
+    }
 
-}
+    void SetParentFSM(NomadBLDCFSM *parent)
+    {
+        parent_ = parent;
+    }
 
-// Singleton Insance
-Logger &Logger::Instance()
-{
-    static Logger instance;
-    return instance;
-}
+    void SetControllerData(NomadBLDCData *data)
+    {
+        data_ = data;
+    }
 
-// Enable/Disable Logging
-void Logger::Enable(bool enable)
-{
-    enable_logging_ = enable;
-}
+protected:
 
-// Formatted Logging print function
-void Logger::Print(const char *format ...) 
-{
-    if (!enable_logging_ || uart_ == nullptr) // Logging not currently enabled
-        return;
+    // Data pointer to controller data pointer
+    NomadBLDCData *data_;
 
-    // Variable argument array list
-    va_list vaArgs;
-    va_start(vaArgs, format);
-
-    va_list vaCopy;
-    va_copy(vaCopy, vaArgs);
-    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
-    va_end(vaCopy);
-
-    // Return formatted string
-    std::vector<char> zc(iLen + 1);
-    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-    va_end(vaArgs);
-
-    // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-    //uart_->SendString(zc.data());
-} 
+    // Parent State Machine Container for this state
+    NomadBLDCFSM *parent_;
+};
+#endif // NOMAD_FSM_NOMADSTATE_H_

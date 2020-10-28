@@ -1,78 +1,151 @@
-// /*
-//  * LED.h
-//  *
-//  *  Created on: August 27, 2019
-//  *      Author: Quincy Jones
-//  *
-//  * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
-//  * Permission is hereby granted, free of charge, to any person obtaining a
-//  * copy of this software and associated documentation files (the "Software"),
-//  * to deal in the Software without restriction, including without limitation
-//  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
-//  * and/or sell copies of the Software, and to permit persons to whom the Software
-//  * is furnished to do so, subject to the following conditions:
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-//  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-//  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//  * 
-//  */
+/*
+ * adc.h
+ *
+ *  Created on: October 20, 2020
+ *      Author: Quincy Jones
+ *
+ * Copyright (c) <2019> <Quincy Jones - quincy@implementedrobotics.com/>
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ */
 
-// #ifndef CORE_PERIPHERAL_SPI_H_
-// #define CORE_PERIPHERAL_SPI_H_
+#ifndef CORE_PERIPHERAL_ADC_H_
+#define CORE_PERIPHERAL_ADC_H_
 
-// // C System Files
+// C System Files
 
-// // C++ System Files
+// C++ System Files
+#include <functional>
 
-// // Project Includes
-// #include "stm32g4xx_ll_spi.h"
-// #include <Peripherals/gpio.h>
+// STM32 System Files
+#include <main.h>
 
-// class SPIDevice
-// {
+// Project Includes
+#include <Utilities/lpf.h>
 
-// public:
+class ADCDevice
+{
 
-//     SPIDevice(SPI_TypeDef *SPI, GPIO_t mosi_pin, GPIO_t miso_pin, GPIO_t nss_pin);
+public:
 
-//     // Chips Select/Deselects
-//     inline void Select() { LL_GPIO_ResetOutputPin(nss_.port, nss_.pin); }
-//     inline void Deselect() { LL_GPIO_SetOutputPin(nss_.port, nss_.pin); }
-//     inline void Enable() { LL_SPI_Enable(SPI_); }
-//     inline void Disable() { LL_SPI_Disable(SPI_); }
+    // TODO: This should be up in a base "Peripheral Class"
+    static constexpr int kMaxInterrupts = 200;
+
+    // TODO: Triggered vs Polled. 
+    // TODO: DMA Eventually, Continuous vs Single Converstion etc.
+    // TODO: For now keep it simple.  Software, or Timer based at the moment
+    // Assumes a pre "inited" ADC from CubeMX
+
+    // Constructor
+    ADCDevice(ADC_TypeDef *ADC);
+
+    // Enable ADC
+    void Enable();
+
+    // Poll/Read a sample
+    uint16_t Sample();
+
+    // Start Sampling in Continuous/Timer Triggered Mode
+    inline void Start(void) { LL_ADC_REG_StartConversion(ADC_); }
+
+    // Stop Sampling in Continuous/Timer Triggered Mode
+    inline void Stop() { LL_ADC_REG_StopConversion(ADC_);}
+
+    // Enable Interrupt (End of Conversion only at the moment)
+    void EnableIT();
+
+    // Set Complete Callback
+    void Attach(const std::function<void(void)> &cplt_cb)
+    {
+        cplt_callback_ = cplt_cb;
+    }
+
+    // Update ADC Bias
+    inline void UpdateBias(int16_t bias)
+    {
+        bias_ = bias;
+    }
+
+    // Read Bias
+    int16_t Bias() { return bias_; }
+
+    // Get Filter
+    LowPassFilter& GetFilter() { return filter_; }
+
+    // Read Current ADC Value
+    inline int16_t Read()
+    {
+        value_ = LL_ADC_REG_ReadConversionData12(ADC_) - bias_;
+
+        if(enable_filter_) // Filter it?
+            value_ = static_cast<int16_t>(filter_.Filter(static_cast<float>(value_)));
+        
+        return value_;
+    }
+
+    // TODO: This should be up in a base "Peripheral Class"
+    // Interrupt Setup
+    // static void IRQ()
+    // {
+    //     uint32_t IRQn = SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk;
+    //     ISR_VTABLE[IRQn]->ISR();
+    // }
+
+    // TODO: This should be up in a base "Peripheral Class"
+    inline void ISR() 
+    {
+        // Do ADC Stuff
+       if (LL_ADC_IsActiveFlag_EOC(ADC_))
+       {
+            // Execute Callback
+            cplt_callback_();
+
+           // Clear Flag
+           LL_ADC_ClearFlag_EOC(ADC_);
+       }
+    }
+
+private:
+
+    // STM32 ADC Type
+    ADC_TypeDef *ADC_;
     
-//     // Flush FIFOs
-//     void Flush();
+    // ADC Bias
+    int16_t bias_;
 
-//     // Receive  8 bitsfrom SPI (Will send dummy bytes 0xFF to shift in data)
-//     uint16_t Receive8(void);
+    // Current ADC Sample Value
+    int16_t value_;
 
-//     // Receive 16 bits from SPI (Will send dummy bytes 0xFFFF to shift in data)
-//     uint16_t Receive16(void);
+    // Low Pass Filter
+    LowPassFilter filter_;
 
-//     // Receive 16 bits from SPI (Transmit send_bytes)
-//     uint16_t TransmitReceive16(uint16_t send_bytes);
+    // Low Pass Filter Enabled
+    bool enable_filter_;
 
-//     // Receive 8 bits from SPI (Transmit send_bytes)
-//     uint8_t TransmitReceive8(uint8_t send_bytes);
+    // Interrupts Enabled?
+    bool enable_interrupt_;
 
-//     // Transmit/Receive Large Buffers
-//     void TransmitReceive(uint8_t *tx_buffer, size_t tx_length, uint8_t *rx_buffer, size_t rx_length);
-//     void Transmit(uint8_t *tx_buffer, size_t tx_length);
-//     void Receive(uint8_t *rx_buffer, size_t rx_length);
+    // ISR Number
+    IRQn_Type IRQn_; 
 
-// private:
+    // ISR Table
+    //static ADCDevice* ISR_VTABLE[kMaxInterrupts];
 
-//     SPI_TypeDef *SPI_;
-//     GPIO_t mosi_;
-//     GPIO_t miso_;
-//     GPIO_t nss_;
+    // Interrupt Callback
+    std::function<void(void)> cplt_callback_ = [=](void) {};
+};
 
-// };
-
-// #endif // CORE_PERIPHERAL_SPI_H_
+#endif // CORE_PERIPHERAL_ADC_H_

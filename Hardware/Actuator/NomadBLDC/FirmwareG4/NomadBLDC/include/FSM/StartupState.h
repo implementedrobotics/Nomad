@@ -1,8 +1,7 @@
-
 /*
- * Logger.cpp
+ * StartupState.h
  *
- *  Created on: March 27, 2020
+ *  Created on: July 1, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -20,61 +19,46 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
  */
 
-// Primary Include
-#include "Logger.h"
+#ifndef NOMADBLDC_FSM_STARTUPSTATE_H_
+#define NOMADBLDC_FSM_STARTUPSTATE_H_
 
 // C System Files
 
 // C++ System Files
-#include <cstdarg>
-#include <string>
-#include <vector>
 
-// Project Includes
-#include "CommandHandler.h"
+// Third Party Includes
 
-Logger::Logger() : enable_logging_(false), uart_(nullptr)
+// Project Include Files
+#include <FSM/NomadBLDCState.h>
+
+class StartupState : public NomadBLDCState
 {
 
-}
+public:
+    StartupState();
 
-// Singleton Insance
-Logger &Logger::Instance()
-{
-    static Logger instance;
-    return instance;
-}
+    // Called upon a state change and we enter this state
+    // current_time = current robot/controller time
+    void Enter_(uint32_t current_time);
 
-// Enable/Disable Logging
-void Logger::Enable(bool enable)
-{
-    enable_logging_ = enable;
-}
+    // current_time = current robot/controller time
+    // Called upon a state change and we are exiting this state
+    void Exit_(uint32_t current_time);
 
-// Formatted Logging print function
-void Logger::Print(const char *format ...) 
-{
-    if (!enable_logging_ || uart_ == nullptr) // Logging not currently enabled
-        return;
+    // Logic to run each iteration of the state machine run
+    // dt = time step for this iteration
+    void Run_(float dt);
 
-    // Variable argument array list
-    va_list vaArgs;
-    va_start(vaArgs, format);
+private:
+    uint32_t adc1_offset_;
+    uint32_t adc2_offset_;
+    uint32_t adc3_offset_;
 
-    va_list vaCopy;
-    va_copy(vaCopy, vaArgs);
-    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
-    va_end(vaCopy);
+    uint16_t num_adc_calib_samples_;
 
-    // Return formatted string
-    std::vector<char> zc(iLen + 1);
-    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-    va_end(vaArgs);
 
-    // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-    //uart_->SendString(zc.data());
-} 
+};
+
+#endif // NOMADBLDC_FSM_STARTUPSTATE_H_

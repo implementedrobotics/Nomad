@@ -262,7 +262,7 @@ public:
         /* Fault Status Register 1 */
         FAULT = (1 << 10),  //!< Logic OR of FAULT status registers. Mirrors nFAULT pin
         VDS_OCP = (1 << 9), //!< VDS monitor Over Current Fault
-        GDF = (1 << 8),     //!< Under Voltage Lockout Fault
+        GDF = (1 << 8),     //!< Gate Drive Fault
         UVLO = (1 << 7),    //!< Under Voltage Lockout Fault
         OTSD = (1 << 6),    //!< Over Temperature Shutdown Fault
         VDS_HA = (1 << 5),  //!< FET High side, Phase A Over Current fault

@@ -1,8 +1,7 @@
-
 /*
- * Logger.cpp
+ * IdleState.cpp
  *
- *  Created on: March 27, 2020
+ *  Created on: June 27, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -20,61 +19,36 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
  */
-
-// Primary Include
-#include "Logger.h"
 
 // C System Files
 
 // C++ System Files
-#include <cstdarg>
-#include <string>
-#include <vector>
 
-// Project Includes
-#include "CommandHandler.h"
+// Third Party Includes
 
-Logger::Logger() : enable_logging_(false), uart_(nullptr)
+// Project Include Files
+#include <Logger.h>
+#include <FSM/IdleState.h>
+
+IdleState::IdleState() : NomadBLDCState(NomadBLDCStateID::STATE_IDLE)
 {
-
 }
-
-// Singleton Insance
-Logger &Logger::Instance()
+void IdleState::Run_(float dt)
 {
-    static Logger instance;
-    return instance;
+    // Idle Task does Idle Things
 }
-
-// Enable/Disable Logging
-void Logger::Enable(bool enable)
+void IdleState::Enter_(uint32_t current_time)
 {
-    enable_logging_ = enable;
+    // Turn Status LED Off
+    LEDService::Instance().Off();
+
+    // Disable Gate Driver
+    data_->controller->GetGateDriver()->DisableDriver();
+
+    // Turn Off PWM
+    data_->controller->EnablePWM(false);
+
+    // Reset Controller State
+    data_->controller->Reset();
 }
-
-// Formatted Logging print function
-void Logger::Print(const char *format ...) 
-{
-    if (!enable_logging_ || uart_ == nullptr) // Logging not currently enabled
-        return;
-
-    // Variable argument array list
-    va_list vaArgs;
-    va_start(vaArgs, format);
-
-    va_list vaCopy;
-    va_copy(vaCopy, vaArgs);
-    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
-    va_end(vaCopy);
-
-    // Return formatted string
-    std::vector<char> zc(iLen + 1);
-    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-    va_end(vaArgs);
-
-    // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-    //uart_->SendString(zc.data());
-} 

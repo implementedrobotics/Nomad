@@ -30,8 +30,8 @@ extern "C" {
 #endif
 
 // Entry point to facilitate transition to C++ for RTOS Task
-void motor_controller_thread_entry(void *arg);
-void ms_poll_task(void *arg);//  __attribute__((section(".ccmram")));
+void init_motor_controller();
+void ms_poll_task(void *arg);
 
 // void debug_thread_entry();
 
@@ -54,12 +54,7 @@ void start_current_control();
 void start_speed_control();
 void start_voltage_control();
 void enter_idle();
-void show_encoder_debug();
 void zero_encoder_offset();
-
-void show_motor_config();
-void show_encoder_config();
-void show_controller_config();
 
 //
 void set_control_mode(int mode);

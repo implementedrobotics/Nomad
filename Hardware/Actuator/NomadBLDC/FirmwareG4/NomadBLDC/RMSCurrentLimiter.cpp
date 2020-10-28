@@ -101,16 +101,6 @@ void RMSCurrentLimiter::AddCurrentSample(float sample)
     }
 }
 
-float RMSCurrentLimiter::GetRMSCurrent()
-{
-    return I_rms;
-}
-
-float RMSCurrentLimiter::GetMaxAllowableCurrent()
-{
-    return I_max;
-}
-
 void RMSCurrentLimiter::ComputeRMSCurrent()
 {
     I_rms = sqrt(running_sum_ * ONE_OVER_T);

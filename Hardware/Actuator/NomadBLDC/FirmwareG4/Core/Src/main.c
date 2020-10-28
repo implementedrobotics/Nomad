@@ -52,11 +52,6 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 512 * 4
 };
 /* USER CODE BEGIN PV */
-// #if defined(STM32G474xx)
-// // Place FreeRTOS heap in core coupled memory for better performance
-// __attribute__((section(".ccmram")))
-// #endif
-uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -271,7 +266,7 @@ static void MX_ADC1_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC1, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC1, 0);
   LL_ADC_SetOverSamplingScope(ADC1, LL_ADC_OVS_DISABLE);
@@ -350,7 +345,7 @@ static void MX_ADC2_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC2, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC2, 0);
   LL_ADC_SetOverSamplingScope(ADC2, LL_ADC_OVS_DISABLE);
@@ -414,8 +409,8 @@ static void MX_ADC3_Init(void)
   LL_GPIO_Init(I_B_GPIO_Port, &GPIO_InitStruct);
 
   /* ADC3 interrupt Init */
-  NVIC_SetPriority(ADC3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
-  NVIC_EnableIRQ(ADC3_IRQn);
+  // NVIC_SetPriority(ADC3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  // NVIC_EnableIRQ(ADC3_IRQn);
 
   /* USER CODE BEGIN ADC3_Init 1 */
 
@@ -431,7 +426,7 @@ static void MX_ADC3_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC3, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC3, 0);
   LL_ADC_SetOverSamplingScope(ADC3, LL_ADC_OVS_DISABLE);
@@ -510,7 +505,7 @@ static void MX_ADC4_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC4, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC4, 0);
   LL_ADC_SetOverSamplingScope(ADC4, LL_ADC_OVS_DISABLE);
@@ -592,7 +587,7 @@ static void MX_ADC5_Init(void)
   ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE;
   ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
   ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_NONE;
-  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
   LL_ADC_REG_Init(ADC5, &ADC_REG_InitStruct);
   LL_ADC_SetGainCompensation(ADC5, 0);
   LL_ADC_SetOverSamplingScope(ADC5, LL_ADC_OVS_DISABLE);
@@ -827,7 +822,7 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV64;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 7;
@@ -1016,140 +1011,6 @@ static void MX_TIM8_Init(void)
 
 }
 
-// /**
-//   * @brief USART2 Initialization Function
-//   * @param None
-//   * @retval None
-//   */
-// static void MX_USART2_UART_Init(void)
-// {
-
-//   /* USER CODE BEGIN USART2_Init 0 */
-
-//   /* USER CODE END USART2_Init 0 */
-
-//   LL_USART_InitTypeDef USART_InitStruct = {0};
-
-//   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-//   /* Peripheral clock enable */
-//   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
-
-//   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
-//   /**USART2 GPIO Configuration
-//   PA2   ------> USART2_TX
-//   PA3   ------> USART2_RX
-//   */
-//   GPIO_InitStruct.Pin = USART_TX_Pin;
-//   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-//   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
-//   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-//   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-//   GPIO_InitStruct.Alternate = LL_GPIO_AF_7;
-//   LL_GPIO_Init(USART_TX_GPIO_Port, &GPIO_InitStruct);
-
-//   GPIO_InitStruct.Pin = USART_RX_Pin;
-//   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-//   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
-//   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-//   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-//   GPIO_InitStruct.Alternate = LL_GPIO_AF_7;
-//   LL_GPIO_Init(USART_RX_GPIO_Port, &GPIO_InitStruct);
-
-//   /* USART2 DMA Init */
-
-//   /* USART2_RX Init */
-//   LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_1, LL_DMAMUX_REQ_USART2_RX);
-
-//   LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_1, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-
-//   LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PRIORITY_HIGH);
-
-//   LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MODE_CIRCULAR);
-
-//   LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PERIPH_NOINCREMENT);
-
-//   LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MEMORY_INCREMENT);
-
-//   LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PDATAALIGN_BYTE);
-
-//   LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_BYTE);
-
-//   /* USART2 interrupt Init */
-//   NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
-//   NVIC_EnableIRQ(USART2_IRQn);
-
-//   /* USER CODE BEGIN USART2_Init 1 */
-
-//   /* Configure the DMA functional parameters for reception */
-//   LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_1,
-//                          LL_USART_DMA_GetRegAddr(USART2, LL_USART_DMA_REG_DATA_RECEIVE),
-//                          (uint32_t)uart_rx_buffer,
-//                          LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_1));
-//   LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, RX_DMA_BUFFER_SIZE);
-
-//   /* Enable DMA transfer complete/error interrupts  */
-//   LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_1);
-//   LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_1);
-
-//   /* Enable USART idle line interrupts */
-//   LL_USART_EnableIT_IDLE(USART2);
-
-//   /* USER CODE END USART2_Init 1 */
-//   USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
-//   USART_InitStruct.BaudRate = 115200;
-//   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-//   USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-//   USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-//   USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
-//   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-//   USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-//   LL_USART_Init(USART2, &USART_InitStruct);
-//   LL_USART_SetTXFIFOThreshold(USART2, LL_USART_FIFOTHRESHOLD_1_8);
-//   LL_USART_SetRXFIFOThreshold(USART2, LL_USART_FIFOTHRESHOLD_1_8);
-//   LL_USART_DisableFIFO(USART2);
-//   LL_USART_ConfigAsyncMode(USART2);
-
-//   /* USER CODE BEGIN WKUPType USART2 */
-
-//   /* USER CODE END WKUPType USART2 */
-
-//   LL_USART_Enable(USART2);
-
-//   /* Polling USART2 initialisation */
-//   while((!(LL_USART_IsActiveFlag_TEACK(USART2))) || (!(LL_USART_IsActiveFlag_REACK(USART2))))
-//   {
-//   }
-//   /* USER CODE BEGIN USART2_Init 2 */
-  
-//   /* Enable DMA RX Interrupt */
-//   LL_USART_EnableDMAReq_RX(USART2);
-
-//   /* Enable DMA Channel Rx */
-//   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_1);
-
-//   /* USER CODE END USART2_Init 2 */
-
-// }
-
-// /**
-//   * Enable DMA controller clock
-//   */
-// static void MX_DMA_Init(void)
-// {
-
-//   /* Init with LL driver */
-//   /* DMA controller clock enable */
-//   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMAMUX1);
-//   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-
-//   /* DMA interrupt init */
-//   /* DMA1_Channel1_IRQn interrupt configuration */
-//   NVIC_SetPriority(DMA1_Channel1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),5, 0));
-//   NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-
-// }
-
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -1229,81 +1090,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void EnableADC(ADC_TypeDef * ADCx)
-{
-  __IO uint32_t wait_loop_index = 0U;
-  if (LL_ADC_IsEnabled(ADCx) == 0) // Is ADC Alread Enabled?  If so bail
-  {
-    /* Disable ADC deep power down (enabled by default after reset state) */
-    LL_ADC_DisableDeepPowerDown(ADCx);
-    
-    /* Enable ADC internal voltage regulator */
-    LL_ADC_EnableInternalRegulator(ADCx);
-    
-    /* Delay for ADC internal voltage regulator stabilization.                */
-    /* Compute number of CPU cycles to wait for, from delay in us.            */
-    /* Note: Variable divided by 2 to compensate partially                    */
-    /*       CPU processing cycles (depends on compilation optimization).     */
-    /* Note: If system core clock frequency is below 200kHz, wait time        */
-    /*       is only a few CPU processing cycles.                             */
-    wait_loop_index = ((LL_ADC_DELAY_INTERNAL_REGUL_STAB_US * (SystemCoreClock / (100000 * 2))) / 10);
-    while(wait_loop_index != 0)
-    {
-      wait_loop_index--;
-    }
-    
-    /* Run ADC self calibration */
-    LL_ADC_StartCalibration(ADCx, LL_ADC_SINGLE_ENDED);
-    
-    while (LL_ADC_IsCalibrationOnGoing(ADCx) != 0) // Wait for Calibration
-    {
-    }
-    
-    /* Delay between ADC end of calibration and ADC enable.                   */
-    /* Note: Variable divided by 2 to compensate partially                    */
-    /*       CPU processing cycles (depends on compilation optimization).     */
-    /* This can be optimized.  In no hurray for our application.  Enable is not time critical.
-    wait_loop_index = ((LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64) >> 1);     */
-    while(wait_loop_index != 0)
-    {
-      wait_loop_index--;
-    }
-    
-    /* Enable ADC */
-    LL_ADC_Enable(ADCx);
-    
-    /* Poll for ADC ready to convert */    
-    while (LL_ADC_IsActiveFlag_ADRDY(ADCx) == 0);
-    
-    /* Note: ADC flag ADRDY is not cleared here to be able to check ADC       */
-    /*       status afterwards.                                               */
-    /*       This flag should be cleared at ADC Deactivation, before a new    */
-    /*       ADC activation, using function "LL_ADC_ClearFlag_ADRDY()".       */
-  }
-}
 
-uint16_t PollADC(ADC_TypeDef *ADCx)
-{
-  if ((LL_ADC_IsEnabled(ADCx) == 1) &&
-      (LL_ADC_IsDisableOngoing(ADCx) == 0) &&
-      (LL_ADC_REG_IsConversionOngoing(ADCx) == 0))
-  {
-    LL_ADC_REG_StartConversion(ADCx);
-  }
-  else
-  {
-    /* Error: ADC conversion start could not be performed */
-    return 0;
-  }
-
-  // Wait on Completed Conversion
-  while (LL_ADC_IsActiveFlag_EOC(ADCx) == 0);
-
-  // Clear Flag.  Not Strictly needed here as the ReadConversion clears
-  LL_ADC_ClearFlag_EOC(ADCx);
-
-  return LL_ADC_REG_ReadConversionData12(ADCx);
-}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */

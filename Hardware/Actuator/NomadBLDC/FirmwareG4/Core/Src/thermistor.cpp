@@ -36,15 +36,24 @@
 // Project Includes
 #include <main.h> // STM32 Driver Includes
 
-Thermistor::Thermistor(ADC_TypeDef *ADC, float Beta, float R_0, float R_bal, size_t lut_size ) : ADC_(ADC), Beta_(Beta), R_0_(R_0), R_bal_(R_bal), lut_size_(lut_size), temp_lut_(nullptr)
+Thermistor::Thermistor(ADC_TypeDef *ADCx, float Beta, float R_0, float R_bal, size_t lut_size ) : Beta_(Beta), R_0_(R_0), R_bal_(R_bal), lut_size_(lut_size), temp_lut_(nullptr)
 {
-    EnableADC(ADC);
+    // Create ADC
+    ADC_ = new ADCDevice(ADCx);
+
+    // Enable ADC
+    ADC_->Enable();
+}
+
+void Thermistor::SetFilterAlpha(float alpha)
+{
+    ADC_->GetFilter().SetAlpha(alpha);
 }
 
 float Thermistor::SampleTemperature()
 {
     // Read ADC
-    uint16_t counts = PollADC(ADC_);
+    uint16_t counts = ADC_->Sample();
 
     // Have LUT?  If not compute and return
     if(temp_lut_ == nullptr)

@@ -79,23 +79,6 @@ size_t RingBuffer::size() const
     return size;
 }
 
-void RingBuffer::put(float val)
-{
-    buffer_[head_] = val;
-    if (full_)
-    {
-        //tail_ = (tail_ + 1) % buffer_size_;
-        if (++tail_ >= buffer_size_)
-            tail_ = 0;
-    }
-    //head_ = (head_ + 1) % buffer_size_;
-    //if (++head_ >= buffer_size_)
-    //    head_ -= buffer_size_;
-    if (++head_ >= buffer_size_)
-        head_ = 0;
-    
-    full_ = head_ == tail_;
-}
 float RingBuffer::peak()
 {
     return buffer_[tail_];

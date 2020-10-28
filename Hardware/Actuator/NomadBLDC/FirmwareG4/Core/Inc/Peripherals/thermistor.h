@@ -35,16 +35,18 @@
 #include <main.h> 
 
 // Project Includes
+#include <Peripherals/adc.h>
+#include <Utilities/lpf.h>
 
 
 class Thermistor
 {
 
 public:
-    static constexpr uint16_t kADCMaxValue = 4096;
+    static constexpr uint16_t kADCMaxValue = (1 << 12);
 
     // Constructor
-    Thermistor(ADC_TypeDef *ADC, float Beta, float R_0, float R_bal, size_t lut_size = 64);
+    Thermistor(ADC_TypeDef *ADCx, float Beta, float R_0, float R_bal, size_t lut_size = 64);
 
     // Sample Temperature from Thermistor
     float SampleTemperature();
@@ -55,10 +57,13 @@ public:
     // Generate Thermistor Table
     void GenerateTable();
 
+    // Set Filter Alpha
+    void SetFilterAlpha(float alpha);
+
 private:
 
     // STM32 ADC Device Pointer
-    ADC_TypeDef *ADC_;
+    ADCDevice *ADC_;
 
     // Thermistor Beta Value
     float Beta_;

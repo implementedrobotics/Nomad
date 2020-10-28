@@ -34,7 +34,7 @@
 #include "main.h"
 #include <Peripherals/gpio.h>
 #include <Utilities/math.h>
-#include "math_ops.h"
+#include <Logger.h>
 
 PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),
                                                                                                    position_mechanical_(0),
@@ -122,9 +122,27 @@ void PositionSensorAS5x47::ZeroPosition()
     config_.offset_mech = GetMechanicalPosition();
     dirty_ = true;
 }
+
+void PositionSensorAS5x47::StartUpdate()
+{
+    spi_dev_->Select();
+    spi_dev_->Transmit16(0xFFFF);
+}
+void PositionSensorAS5x47::EndUpdate()
+{
+    position_raw_ = spi_dev_->Receive16();
+    spi_dev_->Deselect();
+    Update(sample_time_);
+}
+
 void PositionSensorAS5x47::Update()
 {
+    spi_dev_->Select();
+    position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
+    position_raw_ &= 0x3FFF; // Data in last 14 bits.
+    spi_dev_->Deselect();
     Update(sample_time_);
+    
 }
 void PositionSensorAS5x47::Update(float Ts)
 {
@@ -134,7 +152,7 @@ void PositionSensorAS5x47::Update(float Ts)
     static int32_t prev_counts = 0;
 
     spi_dev_->Select();
-    position_raw_ = spi_dev_->Receive16();
+    position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
     position_raw_ &= 0x3FFF; // Data in last 14 bits.
     spi_dev_->Deselect();
     
@@ -142,12 +160,11 @@ void PositionSensorAS5x47::Update(float Ts)
     if (position_raw_ == 0 || position_raw_ == 0x3FFF)
     {
         spi_dev_->Select();
-        position_raw_ = spi_dev_->Receive16();
+        position_raw_ = spi_dev_->TransmitReceive16(0xFFFF);
         position_raw_ &= 0x3FFF; // Data in last 14 bits.
         spi_dev_->Deselect();
     }
-
-
+    
     // Interpolate position offset from Lookup Table
     int32_t offset_1 = config_.offset_lut[position_raw_ >> 7];
     int32_t offset_2 = config_.offset_lut[((position_raw_ >> 7) + 1) % 128];
@@ -219,5 +236,7 @@ void PositionSensorAS5x47::Update(float Ts)
     // Update Velocities
     velocity_mechanical_ = vel_sum / ((float)filter_size_);
     velocity_electrical_ = velocity_mechanical_ * pole_pairs_;
+    // TODO: Add in out LPF Filter
     velocity_electrical_filtered_ = 0.99f * velocity_electrical_filtered_ + 0.01f * velocity_electrical_;
+    
 }

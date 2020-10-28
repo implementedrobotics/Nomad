@@ -23,6 +23,8 @@ TARGET = FirmwareG4
 DEBUG = 1
 # optimization
 OPT = -O2
+# enable ccm (default on)
+CCM = 1
 
 
 #######################################
@@ -138,6 +140,10 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32G474xx
 
+ifeq ($(CCM), 1)
+C_DEFS += -DUSE_CCM
+endif
+
 
 # AS includes
 AS_INCLUDES = 
@@ -204,6 +210,7 @@ vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 # list of application files
 CPP_SOURCES := $(wildcard NomadBLDC/*.cpp)
+CPP_SOURCES += $(wildcard NomadBLDC/FSM/*.cpp)
 CPP_SOURCES += $(wildcard Core/Src/*.cpp)
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(notdir $(CPP_SOURCES:.cpp=.o)))
 vpath %.cpp $(sort $(dir $(CPP_SOURCES)))

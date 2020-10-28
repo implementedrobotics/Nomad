@@ -68,7 +68,7 @@ struct __attribute__((__packed__)) Device_stats_t
     uint8_t control_status;    // Controller status/mode
     uint32_t uptime;           // Device Uptime
     float voltage_bus;         // System Bus Voltage
-    float driver_temp;         // Gate Driver Temp
+    float current_bus;         // System Bus Current
     float fet_temp;            // FET Temp
     float motor_temp;          // Motor Temp
 };
@@ -261,7 +261,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         stats.fault = 0;
         stats.control_status = motor_controller->GetControlMode();
         stats.voltage_bus = motor_controller->state_.Voltage_bus;
-        stats.driver_temp = -1.0f;
+        stats.current_bus = motor_controller->state_.I_bus;
         stats.fet_temp = motor_controller->state_.fet_temp;
         stats.motor_temp = 80.0f;
 

@@ -41,6 +41,14 @@ extern "C" {
 #define FET_THERM_RESISTANCE 10000.0f // 10k
 #define FET_THERM_RESISTANCE_BAL 10000.0f // 10k
 #define FET_THERM_LUT_SIZE 64
+
+// TODO: Should have a better macro for handling different optimization types
+#if defined(USE_CCM)
+#define CCM_ATTRIBUTE __attribute__ ((section (".ccmram")))
+#else
+#define CCM_ATTRIBUTE // Blank
+#endif
+
 #ifdef __cplusplus
 }
 #endif

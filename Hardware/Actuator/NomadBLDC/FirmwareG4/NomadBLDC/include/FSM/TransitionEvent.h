@@ -1,8 +1,7 @@
-
 /*
- * Logger.cpp
+ * TransitionEvent.h
  *
- *  Created on: March 27, 2020
+ *  Created on: June 22, 2020
  *      Author: Quincy Jones
  *
  * Copyright (c) <2020> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -20,61 +19,43 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
  */
 
-// Primary Include
-#include "Logger.h"
+#ifndef NOMADBLDC_FSM_TRANSITIONEVENT_H_
+#define NOMADBLDC_FSM_TRANSITIONEVENT_H_
 
 // C System Files
 
 // C++ System Files
-#include <cstdarg>
+#include <memory>
 #include <string>
 #include <vector>
 
-// Project Includes
-#include "CommandHandler.h"
+// Third Party Includes
 
-Logger::Logger() : enable_logging_(false), uart_(nullptr)
+// Project Include Files
+#include <FSM/State.h>
+
+// Transition Event Class
+class TransitionEvent
 {
+public:
+    // Base Class Transition Event
+    // name = Transition Event name
+    TransitionEvent(/* const std::string &name */);
 
-}
+    // // Get the name of this transition event
+    // inline const std::string &GetName() const
+    // {
+    //     return name_;
+    // }
 
-// Singleton Insance
-Logger &Logger::Instance()
-{
-    static Logger instance;
-    return instance;
-}
+    // Stop state machine and cleans up
+    virtual bool Triggered() = 0;
 
-// Enable/Disable Logging
-void Logger::Enable(bool enable)
-{
-    enable_logging_ = enable;
-}
+protected:
+    // // State machine name
+    // std::string name_;
+};
 
-// Formatted Logging print function
-void Logger::Print(const char *format ...) 
-{
-    if (!enable_logging_ || uart_ == nullptr) // Logging not currently enabled
-        return;
-
-    // Variable argument array list
-    va_list vaArgs;
-    va_start(vaArgs, format);
-
-    va_list vaCopy;
-    va_copy(vaCopy, vaArgs);
-    const int iLen = std::vsnprintf(NULL, 0, format, vaCopy);
-    va_end(vaCopy);
-
-    // Return formatted string
-    std::vector<char> zc(iLen + 1);
-    std::vsnprintf(zc.data(), zc.size(), format, vaArgs);
-    va_end(vaArgs);
-
-    // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-    //uart_->SendString(zc.data());
-} 
+#endif // NOMADBLDC_FSM_TRANSITIONEVENT_H_

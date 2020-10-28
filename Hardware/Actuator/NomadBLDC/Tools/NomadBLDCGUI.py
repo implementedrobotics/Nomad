@@ -268,7 +268,7 @@ class NomadBasicProgressDialog(QtWidgets.QDialog):
     
    # def CloseWindow(self):
 
-Mode_Map = ['IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['STARTUP', 'IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -636,11 +636,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
     
     def SetTorqueSetPoint(self):
         self.nomad_dev.set_torque_setpoint(self.k_p_spin.value(), self.k_d_spin.value(), self.pos_spin.value(), self.vel_spin.value(), self.torqueFF_spin.value()) 
-        self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
-        self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
-        arm = 0.490
-        force = (self.torqueFF_spin.value()) / arm
-        self.scaleValue.setText(f"{1000*(force/9.81)}")
+        # self.TorqueOut.setText(f"Torque Out: {self.torqueFF_spin.value()}")
+        # self.CurrentOut.setText(f"Iq: {self.torqueFF_spin.value() / (self.nomad_dev.motor_config.gear_ratio * self.nomad_dev.motor_config.K_t)}")
+        # arm = 0.490
+        # force = (self.torqueFF_spin.value()) / arm
+        # self.scaleValue.setText(f"{1000*(force/9.81)}")
 
     def AutoComputeControllerGains(self):
 
@@ -692,13 +692,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         if(stats is not None): # Update Stats
             time_str = time.strftime("%Hh %Mm %Ss", time.gmtime(stats.uptime))
             self.uptimeLabel.setText(f"Up Time: " + time_str)
-            self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f}v</b>".format(stats.voltage_bus))
+            self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f} V</b>".format(stats.voltage_bus))
             self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
-            self.gateDriverTempLabel.setText("Gate Driver Temp: <b>{:0.1f}</b>".format(stats.driver_temp))
-            self.fetTempLabel.setText("FET Temp D: <b>{:0.1f}</b>".format(stats.fet_temp))
-            self.motorTempLabel.setText("Motor Temp Q: <b>{:0.1f}</b>".format(stats.motor_temp))
+            self.gateDriverTempLabel.setText("I<sub>(bus)</sub>: <b>{:0.2f} A</b>".format(stats.current_bus))
+            self.fetTempLabel.setText("FET Temp: <b>{:0.1f}</b> C".format(stats.fet_temp))
+            self.motorTempLabel.setText("Motor Temp: <b>{:0.1f}</b> C".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")
-            if(stats.control_status == 0):
+            if(Mode_Map[stats.control_status] == 'IDLE'):
                 self.idle = True
             else:
                 self.idle = False
