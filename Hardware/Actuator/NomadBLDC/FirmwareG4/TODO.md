@@ -18,4 +18,3 @@
 21. SPI DMA? ADC DMA?
 23. Remove "Filtered" Phase Currents/Voltages
 24. Update Tool UI for Bus Current/Remove Gate Driver Temperature
-25. Test fixed point conversion functions

@@ -89,7 +89,7 @@ void ms_poll_task(void *arg)
         motor_controller->SampleFETTemperature();
 
         // Delay 1 ms
-        osDelay(1);
+        osDelay(1000);
     }
 }
 
