@@ -740,7 +740,7 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 
 void MotorController::TorqueControl()
 {
-    float torque_ref = state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.T_ff + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+    float torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
     state_.I_d_ref = 0.0f;
     CurrentControl(); // Do Current Controller
