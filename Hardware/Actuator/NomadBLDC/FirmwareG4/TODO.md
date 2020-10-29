@@ -17,4 +17,3 @@
 20. Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
 21. SPI DMA? ADC DMA?
 23. Remove "Filtered" Phase Currents/Voltages
-24. Update Tool UI for Bus Current/Remove Gate Driver Temperature

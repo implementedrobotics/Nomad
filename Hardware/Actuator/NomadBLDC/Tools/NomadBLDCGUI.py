@@ -326,7 +326,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.loadTestStart.clicked.connect(self.DoLoadTest)
         self.thermalTestButton.clicked.connect(self.DoThermalTest)
         # Clear Status
-        self.gateDriverTempLabel.setText("")
+        self.busCurrentLabel.setText("")
         self.fetTempLabel.setText("")
         self.motorTempLabel.setText("")
         self.busVoltageLabel.setText("")
@@ -694,7 +694,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.uptimeLabel.setText(f"Up Time: " + time_str)
             self.busVoltageLabel.setText("V<sub>(bus)</sub>: <b>{:0.2f} V</b>".format(stats.voltage_bus))
             self.controllerStatusLabel.setText(f"Controller Status: <b>{Mode_Map[stats.control_status]}</b>")
-            self.gateDriverTempLabel.setText("I<sub>(bus)</sub>: <b>{:0.2f} A</b>".format(stats.current_bus))
+            self.busCurrentLabel.setText("I<sub>(bus)</sub>: <b>{:0.2f} A</b>".format(stats.current_bus))
             self.fetTempLabel.setText("FET Temp: <b>{:0.1f}</b> C".format(stats.fet_temp))
             self.motorTempLabel.setText("Motor Temp: <b>{:0.1f}</b> C".format(stats.motor_temp))
             self.controllerFaultLabel.setText("Fault: <b>None</b>")

@@ -218,7 +218,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="gateDriverTempLabel">
+          <widget class="QLabel" name="busCurrentLabel">
            <property name="font">
             <font>
              <weight>50</weight>
@@ -226,7 +226,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Gate Driver Temp: 50 C</string>
+            <string>I&lt;sub&gt;(bus)&lt;/sub&gt;: </string>
            </property>
           </widget>
          </item>
@@ -628,7 +628,7 @@ color:white</string>
        <enum>Qt::NoFocus</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="configTab">
        <attribute name="title">
