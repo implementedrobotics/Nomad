@@ -292,12 +292,8 @@ void MotorController::Reset()
 
     state_.I_d = 0.0f;
     state_.I_q = 0.0f;
-    state_.I_d_filtered = 0.0f;
-    state_.I_q_filtered = 0.0f;
     state_.I_d_ref = 0.0f;
     state_.I_q_ref = 0.0f;
-    state_.I_d_ref_filtered = 0.0f;
-    state_.I_q_ref_filtered = 0.0f;
     state_.V_d_ref = 0.0f;
     state_.V_q_ref = 0.0f;
 
@@ -505,14 +501,7 @@ bool MotorController::RunControlFSM()
 
 void MotorController::CurrentControl()
 {
-    dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on currents
-
-    state_.I_d_filtered = 0.95f * state_.I_d_filtered + 0.05f * state_.I_d;
-    state_.I_q_filtered = 0.95f * state_.I_q_filtered + 0.05f * state_.I_q;
-    
-    // Filter the current references to the desired closed-loop bandwidth
-    state_.I_d_ref_filtered = (1.0f - config_.alpha) * state_.I_d_ref_filtered + config_.alpha * state_.I_d_ref;
-    state_.I_q_ref_filtered = (1.0f - config_.alpha) * state_.I_q_ref_filtered + config_.alpha * state_.I_q_ref;
+    dq0(motor_->state_.theta_elec, motor_->state_.I_a, motor_->state_.I_b, motor_->state_.I_c, &state_.I_d, &state_.I_q); //dq0 transform on current
 
     float curr_limit = std::min(state_.I_max, config_.current_limit);
     Core::Math::Vector2d::Limit(&state_.I_d_ref, &state_.I_q_ref, curr_limit);
@@ -536,7 +525,6 @@ void MotorController::CurrentControl()
     state_.V_d = config_.k_d * i_d_error + state_.d_int; //+ v_d_ff;
     state_.V_q = config_.k_q * i_q_error + state_.q_int; //+ v_q_ff;
 
-    //controller->v_ref = sqrt(controller->v_d * controller->v_d + controller->v_q * controller->v_q);
     Core::Math::Vector2d::Limit(&state_.V_d, &state_.V_q, config_.overmodulation * state_.Voltage_bus); // Normalize voltage vector to lie within circle of radius v_bus
 
     // TODO: Do we need this linearization?

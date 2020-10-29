@@ -25,20 +25,13 @@
 #ifndef CORE_MOTOR_CONTROLLER_H_
 #define CORE_MOTOR_CONTROLLER_H_
 
+// TODO: Move from macros to c++ constexpr/configuratble variables from Tool UI
 // Some Constants
 #define ADC_RES 12                    // ADC Resolution (12-Bits)
-#define CURRENT_MEASUREMENT_TIMEOUT 2 // 2 ms
-#define CALIBRATION_MEASUREMENT_TIMEOUT 15000 // 15 seconds
-#define VBUS_DIVIDER 16           // (150K+10K/10K)
+#define VBUS_DIVIDER 16               // (150K+10K/10K)
 #define SENSE_RESISTANCE (5e-4)       // 0.5 milliohm sense resistor
 #define SENSE_CONDUCTANCE (2000)      // SENSE_RESISTANCE^-1
 #define CURRENT_SENSE_GAIN 40         // Gain from current amplifier.  TODO: A Parameter
-
-// Hardware Pins
-#define PIN_A PA_10      // PWM Ouput PIN A
-#define PIN_B PA_9       // PWM Ouput PIN B
-#define PIN_C PA_8       // PWM Ouput PIN C
-#define ENABLE_PIN PC_9 // DRV8323 Enable Pin
 
 // Duty Cycle Min/Max
 #define DTC_MAX 0.94f // Max phase duty cycle
@@ -75,15 +68,6 @@ typedef union
     int32_t i32;
     uint32_t u32;
 } measurement_t;
-
-// Signals
-typedef enum
-{
-    CURRENT_MEASUREMENT_COMPLETE_SIGNAL = 0x1,
-    MOTOR_ERROR_SIGNAL = 0x2,
-    CHANGE_MODE_SIGNAL = 0x3,
-    CALIBRATION_MEASUREMENT_COMPLETE_SIGNAL = 0x4
-} thread_signal_type_t;
 
 typedef enum
 {
@@ -154,13 +138,9 @@ public:
         // Current Control
         float I_d;                   // Transformed Current (D Axis)
         float I_q;                   // Transformed Current (Q Axis)
-        float I_d_filtered;          // Measured Current Filtered (D Axis)
-        float I_q_filtered;          // Measured Current Filtered (Q Axis)
 
         float I_d_ref;               // Current Reference (D Axis)
         float I_q_ref;               // Current Reference (Q Axis)
-        float I_d_ref_filtered;      // Current Reference Filtered (D Axis)
-        float I_q_ref_filtered;      // Current Reference Filtered (Q Axis)
 
         float d_int;                 // Current Integral Error
         float q_int;                 // Current Integral Error
@@ -194,6 +174,13 @@ public:
 
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
+    };
+
+    struct Debug_t                    // Debug Struct
+    {
+        uint32_t control_loop_ticks;  // DWT Ticks for control loop execution
+        uint32_t missed_deadlines;    // How manyh control deadlines have been misseduint
+        uint32_t cpu_utilization;     // Current CPU Utlization by the uC5
     };
 
     MotorController(Motor *motor);
