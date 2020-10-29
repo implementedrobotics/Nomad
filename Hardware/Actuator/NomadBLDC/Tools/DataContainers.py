@@ -206,15 +206,11 @@ class MotorState:
 
 @dataclass
 class ControllerState:
-    __packet : ClassVar[struct.Struct] = struct.Struct('<27fI')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<23fI')
     I_d: float = None
     I_q: float = None
-    I_d_filt: float = None
-    I_q_filt: float = None
     I_d_ref: float = None
     I_q_ref: float = None
-    I_d_ref_filt: float = None
-    I_q_ref_filt: float = None
     d_int: float = None
     q_int: float = None
     V_d: float = None
@@ -240,12 +236,8 @@ class ControllerState:
         return self.__packet.pack(self.I_d,
         self.I_q,
         self.I_c,
-        self.I_d_filt,
-        self.I_q_filt,
         self.I_d_ref,
         self.I_q_ref,
-        self.I_d_ref_filt,
-        self.I_q_ref_filt,
         self.d_int,
         self.q_int,
         self.V_d,
