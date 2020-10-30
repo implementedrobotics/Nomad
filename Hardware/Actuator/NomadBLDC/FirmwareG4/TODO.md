@@ -16,3 +16,4 @@
 * Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
 * SPI DMA? ADC DMA?
 * Add Theta Electrical + Speed Feedword in FOC
+* Increase Clock to 170mhz
