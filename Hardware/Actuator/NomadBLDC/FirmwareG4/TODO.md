@@ -1,5 +1,4 @@
 # Firmware TODO:
-* Verify CAN Messaging
 * Keep alive support
 * Speed Controller ***
 * Position limits on output?
@@ -17,3 +16,4 @@
 * SPI DMA? ADC DMA?
 * Add Theta Electrical + Speed Feedword in FOC
 * Increase Clock to 170mhz
+* Start FDCAN
