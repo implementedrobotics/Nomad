@@ -52,7 +52,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+extern  FDCAN_HandleTypeDef hfdcan3;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

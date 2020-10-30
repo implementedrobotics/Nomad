@@ -63,7 +63,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::HDLC_MODE);
+    uart->SetMode(UARTDevice::ASCII_MODE);
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
     // TODO: Need to make this a proper class
@@ -116,30 +116,60 @@ extern "C" int app_main() //
     Logger::Instance().Enable(true);
     Logger::Instance().SetUART(uart);
 
-    // Init LED Service Task
-    StartLEDService();
-    osDelay(50);
+    Logger::Instance().Print("Starting!\r\n");
 
-    // Start Motor Control Task
-    StartMotorControlThread();
-    osDelay(100);
+    FDCAN_FilterTypeDef sFilterConfig;
+    FDCAN_TxHeaderTypeDef TxHeader;
+    FDCAN_RxHeaderTypeDef RxHeader;
+    uint8_t TxData0[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'};
+    uint8_t RxData[12];
 
-    // Start Misc Polling Task
-    StartPollingThread();
-    osDelay(5);
+    /* Configure standard ID reception filter to Rx FIFO 0 */
+    sFilterConfig.IdType = FDCAN_STANDARD_ID;
+    sFilterConfig.FilterIndex = 0;
+    sFilterConfig.FilterType = FDCAN_FILTER_RANGE;
+    sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    sFilterConfig.FilterID1 = 0x100;
+    sFilterConfig.FilterID2 = 0x200;
+    if (HAL_FDCAN_ConfigFilter(&hfdcan3, &sFilterConfig) != HAL_OK)
+    {
+      Error_Handler();
+    }
 
-   // osDelay(3000);
-   //measure_motor_inductance();
-   //measure_encoder_offset();
-   // measure_motor_resistance();
-   //measure_motor_phase_order();
-   //measure_motor_parameters();;
+    if (HAL_FDCAN_ConfigGlobalFilter(&hfdcan3, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    if (HAL_FDCAN_Start(&hfdcan3) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    Logger::Instance().Print("CAN START!\r\n");
+
+
+
+
+    // // Init LED Service Task
+    // StartLEDService();
+    // osDelay(50);
+
+    // // Start Motor Control Task
+    // StartMotorControlThread();
+    // osDelay(100);
+
+    // // Start Misc Polling Task
+    // StartPollingThread();
+    // osDelay(5);
+
+    // osDelay(3000);
 
     // Init a temp debug Task
     //DebugTask();
 
     //  float theta = PI;
-   // int i = 0;
+    // int i = 0;
 
     // uint32_t start_ticks;
     // uint32_t stop_ticks;
@@ -159,6 +189,49 @@ extern "C" int app_main() //
         // stop_ticks = SysTick->VAL;
         // elapsed_ticks = start_ticks-stop_ticks;
         //  uint32_t span = DWT->CYCCNT;
+
+    /* Add message to Tx FIFO */
+    TxHeader.Identifier = 0x100;
+    TxHeader.IdType = FDCAN_STANDARD_ID;
+    TxHeader.TxFrameType = FDCAN_DATA_FRAME;
+    TxHeader.DataLength = FDCAN_DLC_BYTES_12;
+    TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    TxHeader.BitRateSwitch = FDCAN_BRS_ON;
+    TxHeader.FDFormat = FDCAN_FD_CAN;
+    TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    TxHeader.MessageMarker = 0;
+    if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan3, &TxHeader, TxData0) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+  //  Logger::Instance().Print("ADDED!\r\n");
+
+    //osDelay(1);
+    /* Wait transmissions complete */
+    while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan3) != 3) {
+        Logger::Instance().Print("WAITING!\r\n");
+        HAL_Delay(100);
+    }
+
+  //  Logger::Instance().Print("OUT!\r\n");
+
+
+
+    /* Check one message is received in Rx FIFO 0 */
+      if(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan3, FDCAN_RX_FIFO0) != 1)
+      {
+    	Logger::Instance().Print("BAILED FILL\r\n");
+        Error_Handler();
+      }
+
+      /* Retrieve message from Rx FIFO 0 */
+      if (HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
+      {
+    	 Logger::Instance().Print("BAILED RX\r\n");
+        Error_Handler();
+      }
+  	Logger::Instance().Print("Got: %s\r\n", RxData);
 
         osDelay(1000);
     }
