@@ -26,12 +26,18 @@
 #include <nomad_app.h>
 /* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
+/* Private typedef --------------      // if(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan3, FDCAN_RX_FIFO0) != 1)
+      // {
+    	// //Logger::Instance().Print("BAILED FILL\r\n");
+      //   Error_Handler();
+      // }
 
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
+      // /* Retrieve message from Rx FIFO 0 */
+      // if (HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
+      // {
+    	//  //Logger::Instance().Print("BAILED RX\r\n");
+      //   Error_Handler();
+      // }---------------------------------------------*/
 /* USER CODE BEGIN PD */
 /* USER CODE END PD */
 
@@ -661,21 +667,23 @@ static void MX_FDCAN3_Init(void)
   /* USER CODE END FDCAN3_Init 1 */
   hfdcan3.Instance = FDCAN3;
   hfdcan3.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
-  hfdcan3.Init.Mode = FDCAN_MODE_EXTERNAL_LOOPBACK;
+  hfdcan3.Init.Mode = FDCAN_MODE_NORMAL;
   hfdcan3.Init.AutoRetransmission = DISABLE;
   hfdcan3.Init.TransmitPause = DISABLE;
   hfdcan3.Init.ProtocolException = DISABLE;
-  hfdcan3.Init.NominalPrescaler = 1;
-  hfdcan3.Init.NominalSyncJumpWidth = 42;
-  hfdcan3.Init.NominalTimeSeg1 = 127;
-  hfdcan3.Init.NominalTimeSeg2 = 42;
-  hfdcan3.Init.DataPrescaler = 17;
-  hfdcan3.Init.DataSyncJumpWidth = 3;
-  hfdcan3.Init.DataTimeSeg1 = 6;
-  hfdcan3.Init.DataTimeSeg2 = 3;
+  hfdcan3.Init.NominalPrescaler = 5; // Between 1 and 512
+  hfdcan3.Init.NominalTimeSeg1 = 254; // Between 2 and 256
+  hfdcan3.Init.NominalTimeSeg2 = 68; // Between 2 and 128
+  hfdcan3.Init.NominalSyncJumpWidth = 68; // Between 1 and 128
+  hfdcan3.Init.DataPrescaler = 17; // Between 1 and 32
+  hfdcan3.Init.DataTimeSeg1 = 24; // Between 1 and 32
+  hfdcan3.Init.DataTimeSeg2 = 15; // Between 1 and 16
+  hfdcan3.Init.DataSyncJumpWidth = 15; // Between 1 and 16
   hfdcan3.Init.StdFiltersNbr = 1;
   hfdcan3.Init.ExtFiltersNbr = 1;
   hfdcan3.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+
+
   if (HAL_FDCAN_Init(&hfdcan3) != HAL_OK)
   {
     Error_Handler();

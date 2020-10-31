@@ -121,8 +121,8 @@ extern "C" int app_main() //
     FDCAN_FilterTypeDef sFilterConfig;
     FDCAN_TxHeaderTypeDef TxHeader;
     FDCAN_RxHeaderTypeDef RxHeader;
-    uint8_t TxData0[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'};
-    uint8_t RxData[12];
+    uint8_t TxData0[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    uint8_t RxData[8];
 
     /* Configure standard ID reception filter to Rx FIFO 0 */
     sFilterConfig.IdType = FDCAN_STANDARD_ID;
@@ -194,46 +194,46 @@ extern "C" int app_main() //
     TxHeader.Identifier = 0x100;
     TxHeader.IdType = FDCAN_STANDARD_ID;
     TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-    TxHeader.DataLength = FDCAN_DLC_BYTES_12;
+    TxHeader.DataLength = FDCAN_DLC_BYTES_8;
     TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     TxHeader.BitRateSwitch = FDCAN_BRS_ON;
     TxHeader.FDFormat = FDCAN_FD_CAN;
-    TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    TxHeader.MessageMarker = 0;
+    TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
+    TxHeader.MessageMarker = 1;
     if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan3, &TxHeader, TxData0) != HAL_OK)
     {
       Error_Handler();
     }
 
-  //  Logger::Instance().Print("ADDED!\r\n");
+   Logger::Instance().Print("ADDED!\r\n");
 
-    //osDelay(1);
+   osDelay(100);
     /* Wait transmissions complete */
     while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan3) != 3) {
         Logger::Instance().Print("WAITING!\r\n");
         HAL_Delay(100);
     }
 
-  //  Logger::Instance().Print("OUT!\r\n");
+   Logger::Instance().Print("OUT!\r\n");
 
 
 
-    /* Check one message is received in Rx FIFO 0 */
-      if(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan3, FDCAN_RX_FIFO0) != 1)
-      {
-    	Logger::Instance().Print("BAILED FILL\r\n");
-        Error_Handler();
-      }
+    // /* Check one message is received in Rx FIFO 0 */
+    //   if(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan3, FDCAN_RX_FIFO0) != 1)
+    //   {
+    // 	Logger::Instance().Print("BAILED FILL\r\n");
+    //     Error_Handler();
+    //   }
 
-      /* Retrieve message from Rx FIFO 0 */
-      if (HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-      {
-    	 Logger::Instance().Print("BAILED RX\r\n");
-        Error_Handler();
-      }
-  	Logger::Instance().Print("Got: %s\r\n", RxData);
+    //   /* Retrieve message from Rx FIFO 0 */
+    //   if (HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
+    //   {
+    // 	 Logger::Instance().Print("BAILED RX\r\n");
+    //     Error_Handler();
+    //   }
+  	// Logger::Instance().Print("Got: %s\r\n", RxData);
 
-        osDelay(1000);
+        osDelay(100);
     }
 
     // Should not get here
