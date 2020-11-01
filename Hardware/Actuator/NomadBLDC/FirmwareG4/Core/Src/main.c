@@ -121,7 +121,7 @@ int main(void)
   MX_ADC3_Init();
   MX_ADC4_Init();
   MX_ADC5_Init();
-  MX_FDCAN3_Init();
+  
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_TIM2_Init();
@@ -131,7 +131,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
  // LL_Init1msTick(SystemCoreClock);
   /* USER CODE END 2 */
-
+  MX_FDCAN3_Init();
   /* Init scheduler */
   osKernelInitialize();
 
@@ -666,21 +666,22 @@ static void MX_FDCAN3_Init(void)
 
   /* USER CODE END FDCAN3_Init 1 */
   hfdcan3.Instance = FDCAN3;
-  hfdcan3.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
+  hfdcan3.Init.ClockDivider = FDCAN_CLOCK_DIV1;
+  hfdcan3.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
   hfdcan3.Init.Mode = FDCAN_MODE_NORMAL;
   hfdcan3.Init.AutoRetransmission = DISABLE;
   hfdcan3.Init.TransmitPause = DISABLE;
   hfdcan3.Init.ProtocolException = DISABLE;
-  hfdcan3.Init.NominalPrescaler = 5; // Between 1 and 512
-  hfdcan3.Init.NominalTimeSeg1 = 254; // Between 2 and 256
-  hfdcan3.Init.NominalTimeSeg2 = 68; // Between 2 and 128
-  hfdcan3.Init.NominalSyncJumpWidth = 68; // Between 1 and 128
+  hfdcan3.Init.NominalPrescaler = 1; // Between 1 and 512
+  hfdcan3.Init.NominalTimeSeg1 = 31; // Between 2 and 256
+  hfdcan3.Init.NominalTimeSeg2 = 2; // Between 2 and 128
+  hfdcan3.Init.NominalSyncJumpWidth = 2; // Between 1 and 128
   hfdcan3.Init.DataPrescaler = 17; // Between 1 and 32
   hfdcan3.Init.DataTimeSeg1 = 24; // Between 1 and 32
   hfdcan3.Init.DataTimeSeg2 = 15; // Between 1 and 16
   hfdcan3.Init.DataSyncJumpWidth = 15; // Between 1 and 16
   hfdcan3.Init.StdFiltersNbr = 1;
-  hfdcan3.Init.ExtFiltersNbr = 1;
+  hfdcan3.Init.ExtFiltersNbr = 0;
   hfdcan3.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
 
 

@@ -118,10 +118,11 @@ extern "C" int app_main() //
 
     Logger::Instance().Print("Starting!\r\n");
 
+  Logger::Instance().Print("Clock: %d\r\n", HAL_RCC_GetPCLK1Freq());
     FDCAN_FilterTypeDef sFilterConfig;
     FDCAN_TxHeaderTypeDef TxHeader;
     FDCAN_RxHeaderTypeDef RxHeader;
-    uint8_t TxData0[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    uint8_t TxData0[] = {0x25, 0x00, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF};
     uint8_t RxData[8];
 
     /* Configure standard ID reception filter to Rx FIFO 0 */
@@ -141,8 +142,19 @@ extern "C" int app_main() //
       Error_Handler();
     }
 
+    if (HAL_FDCAN_ConfigTxDelayCompensation(&hfdcan3, 408, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_FDCAN_EnableTxDelayCompensation(&hfdcan3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+
     if (HAL_FDCAN_Start(&hfdcan3) != HAL_OK)
     {
+          Logger::Instance().Print("CAN START ERROR!\r\n");
       Error_Handler();
     }
 
@@ -191,50 +203,64 @@ extern "C" int app_main() //
         //  uint32_t span = DWT->CYCCNT;
 
     /* Add message to Tx FIFO */
-    TxHeader.Identifier = 0x100;
+    TxHeader.Identifier = 0x144;
     TxHeader.IdType = FDCAN_STANDARD_ID;
     TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-    TxHeader.DataLength = FDCAN_DLC_BYTES_8;
+    TxHeader.DataLength = FDCAN_DLC_BYTES_1;
     TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    TxHeader.BitRateSwitch = FDCAN_BRS_ON;
-    TxHeader.FDFormat = FDCAN_FD_CAN;
-    TxHeader.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
-    TxHeader.MessageMarker = 1;
+    TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
+    TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
+    TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    TxHeader.MessageMarker = 0;
     if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan3, &TxHeader, TxData0) != HAL_OK)
     {
       Error_Handler();
     }
 
-   Logger::Instance().Print("ADDED!\r\n");
+   //Logger::Instance().Print("ADDED!\r\n");
 
-   osDelay(100);
+  // osDelay(1000);
+
     /* Wait transmissions complete */
     while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan3) != 3) {
-        Logger::Instance().Print("WAITING!\r\n");
-        HAL_Delay(100);
+       // Logger::Instance().Print("WAITING!\r\n");
     }
 
-   Logger::Instance().Print("OUT!\r\n");
+  osDelay(1);
+    if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan3, &TxHeader, TxData0) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan3) != 3) {
+       // Logger::Instance().Print("WAITING!\r\n");
+    }
+  osDelay(10000);
+  //  Logger::Instance().Print("OUT!\r\n");
 
 
 
     // /* Check one message is received in Rx FIFO 0 */
     //   if(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan3, FDCAN_RX_FIFO0) != 1)
     //   {
-    // 	Logger::Instance().Print("BAILED FILL\r\n");
+    // 	//Logger::Instance().Print("BAILED FILL\r\n");
     //     Error_Handler();
     //   }
 
     //   /* Retrieve message from Rx FIFO 0 */
     //   if (HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
     //   {
-    // 	 Logger::Instance().Print("BAILED RX\r\n");
+    // 	 //Logger::Instance().Print("BAILED RX\r\n");
     //     Error_Handler();
     //   }
   	// Logger::Instance().Print("Got: %s\r\n", RxData);
 
-        osDelay(100);
+    // RxData[0] = '1';
+    // RxData[1] = '2';
+    //     osDelay(100);
     }
+
+
 
     // Should not get here
     return 0;
