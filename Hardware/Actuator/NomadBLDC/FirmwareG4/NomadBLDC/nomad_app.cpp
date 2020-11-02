@@ -235,7 +235,7 @@ extern "C" int app_main() //
     while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan3) != 3) {
        // Logger::Instance().Print("WAITING!\r\n");
     }
-  osDelay(10000);
+  osDelay(100);
   //  Logger::Instance().Print("OUT!\r\n");
 
 

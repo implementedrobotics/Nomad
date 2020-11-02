@@ -226,6 +226,7 @@ void SystemClock_Config(void)
   LL_RCC_SetUSARTClockSource(LL_RCC_USART2_CLKSOURCE_PCLK1);
   LL_RCC_SetADCClockSource(LL_RCC_ADC12_CLKSOURCE_SYSCLK);
   LL_RCC_SetADCClockSource(LL_RCC_ADC345_CLKSOURCE_SYSCLK);
+  LL_RCC_SetFDCANClockSource(LL_RCC_FDCAN_CLKSOURCE_PCLK1);
 }
 
 /**
@@ -672,10 +673,10 @@ static void MX_FDCAN3_Init(void)
   hfdcan3.Init.AutoRetransmission = DISABLE;
   hfdcan3.Init.TransmitPause = DISABLE;
   hfdcan3.Init.ProtocolException = DISABLE;
-  hfdcan3.Init.NominalPrescaler = 1; // Between 1 and 512
-  hfdcan3.Init.NominalTimeSeg1 = 31; // Between 2 and 256
-  hfdcan3.Init.NominalTimeSeg2 = 2; // Between 2 and 128
-  hfdcan3.Init.NominalSyncJumpWidth = 2; // Between 1 and 128
+  hfdcan3.Init.NominalPrescaler = 17; // Between 1 and 512
+  hfdcan3.Init.NominalTimeSeg1 = 36; // Between 2 and 256
+  hfdcan3.Init.NominalTimeSeg2 = 3; // Between 2 and 128
+  hfdcan3.Init.NominalSyncJumpWidth = 3; // Between 1 and 128
   hfdcan3.Init.DataPrescaler = 17; // Between 1 and 32
   hfdcan3.Init.DataTimeSeg1 = 24; // Between 1 and 32
   hfdcan3.Init.DataTimeSeg2 = 15; // Between 1 and 16
