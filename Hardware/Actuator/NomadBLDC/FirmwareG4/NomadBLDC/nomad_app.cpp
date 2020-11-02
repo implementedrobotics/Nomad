@@ -142,7 +142,9 @@ extern "C" int app_main() //
       Error_Handler();
     }
 
-    if (HAL_FDCAN_ConfigTxDelayCompensation(&hfdcan3, 408, 0) != HAL_OK)
+if(hfdcan3.Init.DataPrescaler <=2) // Onyl valid for Data Prescaler less than 2
+{
+  if (HAL_FDCAN_ConfigTxDelayCompensation(&hfdcan3, hfdcan3.Init.DataPrescaler * hfdcan3.Init.DataTimeSeg1, 0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -151,7 +153,7 @@ extern "C" int app_main() //
     Error_Handler();
   }
 
-
+}
     if (HAL_FDCAN_Start(&hfdcan3) != HAL_OK)
     {
           Logger::Instance().Print("CAN START ERROR!\r\n");
@@ -235,7 +237,7 @@ extern "C" int app_main() //
     while (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan3) != 3) {
        // Logger::Instance().Print("WAITING!\r\n");
     }
-  osDelay(100);
+  osDelay(500);
   //  Logger::Instance().Print("OUT!\r\n");
 
 
