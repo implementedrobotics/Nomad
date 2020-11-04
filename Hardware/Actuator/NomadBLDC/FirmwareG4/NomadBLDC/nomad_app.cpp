@@ -44,6 +44,7 @@
 #include <Peripherals/thermistor.h>
 #include <Peripherals/cordic.h>
 #include <Peripherals/adc.h>
+#include <Peripherals/fdcan.h>
 #include <nomad_hw.h>
 
 #include <DRV8323.h>
@@ -54,6 +55,8 @@
 
 
 UARTDevice *uart;
+FDCANDevice *fdcan;
+
 Cordic cordic2;
 void StartCommunicationThreads()
 {
@@ -68,7 +71,9 @@ void StartCommunicationThreads()
     
     // TODO: Need to make this a proper class
     CommandHandler::SetUART(uart);
+    
     // Start CAN
+    fdcan = new FDCANDevice(FDCAN3);
 }
 
 void StartLEDService()

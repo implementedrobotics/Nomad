@@ -69,7 +69,7 @@ static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_ADC4_Init(void);
 static void MX_ADC5_Init(void);
-static void MX_FDCAN3_Init(void);
+// static void MX_FDCAN3_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
@@ -131,7 +131,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
  // LL_Init1msTick(SystemCoreClock);
   /* USER CODE END 2 */
-  MX_FDCAN3_Init();
+  //MX_FDCAN3_Init();
   /* Init scheduler */
   osKernelInitialize();
 
@@ -648,51 +648,6 @@ static void MX_CORDIC_Init(void)
   /* USER CODE BEGIN CORDIC_Init 2 */
 
   /* USER CODE END CORDIC_Init 2 */
-
-}
-
-/**
-  * @brief FDCAN3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_FDCAN3_Init(void)
-{
-
-  /* USER CODE BEGIN FDCAN3_Init 0 */
-
-  /* USER CODE END FDCAN3_Init 0 */
-
-  /* USER CODE BEGIN FDCAN3_Init 1 */
-
-  /* USER CODE END FDCAN3_Init 1 */
-  hfdcan3.Instance = FDCAN3;
-  hfdcan3.Init.ClockDivider = FDCAN_CLOCK_DIV1;
-  hfdcan3.Init.FrameFormat = FDCAN_FRAME_FD_BRS;
-  hfdcan3.Init.Mode = FDCAN_MODE_NORMAL;
-  hfdcan3.Init.AutoRetransmission = DISABLE;
-  hfdcan3.Init.TransmitPause = DISABLE;
-  hfdcan3.Init.ProtocolException = DISABLE;
-  hfdcan3.Init.NominalPrescaler = 1; // Between 1 and 512
-  hfdcan3.Init.NominalTimeSeg1 = 135; // Between 2 and 256
-  hfdcan3.Init.NominalTimeSeg2 = 34; // Between 2 and 128
-  hfdcan3.Init.NominalSyncJumpWidth = 34; // Between 1 and 128
-  hfdcan3.Init.DataPrescaler = 17; // Between 1 and 32
-  hfdcan3.Init.DataTimeSeg1 = 2; // Between 1 and 32
-  hfdcan3.Init.DataTimeSeg2 = 2; // Between 1 and 16
-  hfdcan3.Init.DataSyncJumpWidth = 2; // Between 1 and 16
-  hfdcan3.Init.StdFiltersNbr = 1;
-  hfdcan3.Init.ExtFiltersNbr = 0;
-  hfdcan3.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
-
-
-  if (HAL_FDCAN_Init(&hfdcan3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN FDCAN3_Init 2 */
-
-  /* USER CODE END FDCAN3_Init 2 */
 
 }
 
