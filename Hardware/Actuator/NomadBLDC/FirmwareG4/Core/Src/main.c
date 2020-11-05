@@ -26,18 +26,7 @@
 #include <nomad_app.h>
 /* USER CODE END Includes */
 
-/* Private typedef --------------      // if(HAL_FDCAN_GetRxFifoFillLevel(&hfdcan3, FDCAN_RX_FIFO0) != 1)
-      // {
-    	// //Logger::Instance().Print("BAILED FILL\r\n");
-      //   Error_Handler();
-      // }
-
-      // /* Retrieve message from Rx FIFO 0 */
-      // if (HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
-      // {
-    	//  //Logger::Instance().Print("BAILED RX\r\n");
-      //   Error_Handler();
-      // }---------------------------------------------*/
+/* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 /* USER CODE END PD */
 
