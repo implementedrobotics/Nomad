@@ -39,8 +39,29 @@ class FDCANDevice
 
 public:
 
+    // Const Expressions
+    static constexpr uint16_t kMaxNominalPrescaler = 512;
+    static constexpr uint16_t kMaxNominalTimeSeg1 = 256;
+    static constexpr uint16_t kMaxNominalTimeSeg2 = 128;
+    static constexpr uint16_t kMinNominalTimeSeg = 2;
+
+    static constexpr uint16_t kMaxDataPrescaler = 32;
+    static constexpr uint16_t kMaxDataTimeSeg1 = 32;
+    static constexpr uint16_t kMaxDataTimeSeg2 = 16;
+    static constexpr uint16_t kMinDataTimeSeg = 1;
+
     // TODO: This should be up in a base "Peripheral Class"
     static constexpr int kMaxInterrupts = 200;
+
+    struct Config_t
+    {
+        uint32_t id;       // CAN ID
+        uint32_t bitrate;  // Nominal Bitrate
+        uint32_t dbitrate; // Data Bitrate
+        uint8_t mode_fd;   // FD mode or classic
+        float sp;          // Nominal Bitrate Sample Point Target
+        float data_sp;     // Data Sample Point Target
+    };
 
     // TODO: Interrupted vs Polled. 
     // Assumes a pre "inited" FDCAN from CubeMX
@@ -48,13 +69,19 @@ public:
     // Constructor
     FDCANDevice(FDCAN_GlobalTypeDef *FDCAN);
 
+    // Init CAN
+    bool Init();
+
     // Enable FDCAN
-    void Enable();
+    bool Enable();
+
+    // Disable FDCAN
+    void Disable();
 
     // Enable Interrupt
     void EnableIT();
 
-    void Send(uint8_t *data, uint16_t length);
+    void Send(uint32_t dest_id, uint8_t *data, uint16_t length);
 
     void Receive();
 
@@ -66,18 +93,33 @@ public:
 
 private:
 
+    // Calc Bit Timing Helper Function
+    bool CalculateTimings();
+
     // STM32 FDCAN Type
     FDCAN_GlobalTypeDef *FDCAN_;
     FDCAN_HandleTypeDef hfdcan_;
 
+    // Transmit Header
+    FDCAN_TxHeaderTypeDef tx_header_;
+    FDCAN_RxHeaderTypeDef rx_header_;
+
+    // Config
+    Config_t config_;
+
     // Interrupts Enabled?
     bool enable_interrupt_;
+
+    // Valid Timings
+    bool timings_valid_;
 
     // ISR Number
     IRQn_Type IRQn_; 
 
     // ISR Table
     //static ADCDevice* ISR_VTABLE[kMaxInterrupts];
+
+   
 };
 
 #endif // CORE_PERIPHERAL_FDCAN_H_

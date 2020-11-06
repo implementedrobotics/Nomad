@@ -17,3 +17,4 @@
 * Add Theta Electrical + Speed Feedword in FOC
 * Register Command Interfaace Class
 * FD CAN Peripheral
+* FD CAN Filter/CAN ID Support
