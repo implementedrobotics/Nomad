@@ -36,18 +36,43 @@
 
 static FDCANDevice* g_ISR_VTABLE[FDCANDevice::kMaxInterrupts];
 
-FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN) : FDCAN_(FDCAN), enable_interrupt_(false), timings_valid_(false)
-{
+// Data Length Code Conversion LUT
+static const uint8_t DLC_LUT[] = {
+    // 1 to 8 Bytes
+    0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
+    // 9 to 12 Bytes
+    0x9, 0x9, 0x9, 0x9,
+    // 13 to 16 Bytes
+    0xA, 0xA, 0xA, 0xA,
+    // 17 to 20 Bytes
+    0xB, 0xB, 0xB, 0xB,
+    // 21 to 24 Bytes
+    0xC, 0xC, 0xC, 0xC,
+    // 25 to 32 Bytes
+    0xD, 0xD, 0xD, 0xD, 0xD, 0xD, 0xD, 0xD,
+    // 33 to 48 Bytes
+    0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE,
+    0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE,
+    // 49 to 64 Bytes
+    0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF,
+    0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF};
 
-    config_.bitrate = 1000000;  // 1mbps
-    config_.dbitrate = 5000000; // 5mbps
+FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t bitrate, uint32_t dbitrate) : FDCAN_(FDCAN), enable_interrupt_(false), timings_valid_(false)
+{
+    config_.id = node_id;          // Lowest Priority Standard ID (2047 max 11-bit)
+    config_.bitrate = bitrate;   // 250 kbps
+    config_.dbitrate = dbitrate; // 250 kbps
     config_.sp = 0.8f;           // 80%
     config_.data_sp = 0.625f;    // 62.5%
-    config_.mode_fd = 1;        // FD CAN
+    config_.mode_fd = 1;         // FD CAN ( Default to FD CAN? It is my preference anyways...)
 
     CalculateTimings();
 }
 
+FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config) : FDCAN_(FDCAN), config_(config), enable_interrupt_(false), timings_valid_(false)
+{
+    CalculateTimings();
+}
 
 // Init FDCAN
 bool FDCANDevice::Init()
@@ -55,6 +80,7 @@ bool FDCANDevice::Init()
     // No Valid Timings Computed
     if (!timings_valid_)
         return false;
+
 
     hfdcan_.Instance = FDCAN_;
     hfdcan_.Init.ClockDivider = FDCAN_CLOCK_DIV1;
@@ -67,8 +93,10 @@ bool FDCANDevice::Init()
     hfdcan_.Init.ExtFiltersNbr = 0;
     hfdcan_.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
 
+    Logger::Instance().Print("Nominal : %d, %d, %d, %d\r\n",hfdcan_.Init.NominalPrescaler, hfdcan_.Init.NominalTimeSeg1, hfdcan_.Init.NominalTimeSeg2, hfdcan_.Init.NominalSyncJumpWidth);
+    
     // Update Base Header
-    tx_header_.IdType = FDCAN_STANDARD_ID;
+    tx_header_.IdType = FDCAN_STANDARD_ID; // Support Extended IDs?
     tx_header_.TxFrameType = FDCAN_DATA_FRAME;
     tx_header_.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     tx_header_.BitRateSwitch = config_.bitrate != config_.dbitrate ? FDCAN_BRS_ON : FDCAN_BRS_OFF;
@@ -76,44 +104,50 @@ bool FDCANDevice::Init()
     tx_header_.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
     tx_header_.MessageMarker = 0;
 
+    Logger::Instance().Print("Format: %d : %d\r\n", tx_header_.BitRateSwitch , FDCAN_BRS_ON);
+
     // Init CAN
     if (HAL_FDCAN_Init(&hfdcan_) != HAL_OK)
     {
+        Logger::Instance().Print("Init Error!\r\n");
         Error_Handler();
         return false;
     }
+    Logger::Instance().Print("Init Error!\r\n");
 
     // Compensation Delay
-    if (hfdcan_.Init.DataPrescaler <= 2) // Only valid for Data Prescaler less than 2
-    {
-        if (HAL_FDCAN_ConfigTxDelayCompensation(&hfdcan_, hfdcan_.Init.DataPrescaler * hfdcan_.Init.DataTimeSeg1, 0) != HAL_OK)
-        {
-            Error_Handler();
-            return false;
-        }
-        if (HAL_FDCAN_EnableTxDelayCompensation(&hfdcan_) != HAL_OK)
-        {
-            Error_Handler();
-            return false;
-        }
-    }
+    // if (hfdcan_.Init.DataPrescaler <= 2) // Only valid for Data Prescaler less than 2
+    // {
+    //     if (HAL_FDCAN_ConfigTxDelayCompensation(&hfdcan_, hfdcan_.Init.DataPrescaler * hfdcan_.Init.DataTimeSeg1, 0) != HAL_OK)
+    //     {
+    //         Error_Handler();
+    //         return false;
+    //     }
+    //     if (HAL_FDCAN_EnableTxDelayCompensation(&hfdcan_) != HAL_OK)
+    //     {
+    //         Error_Handler();
+    //         return false;
+    //     }
+    // }
 
     // Setup Filters
     FDCAN_FilterTypeDef sFilterConfig;
 
+    // TODO: Different types of filters.  For now mask to this ID
     // Configure standard ID reception filter to Rx FIFO 0
     sFilterConfig.IdType = FDCAN_STANDARD_ID;
     sFilterConfig.FilterIndex = 0;
     sFilterConfig.FilterType = FDCAN_FILTER_MASK;
     sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
     sFilterConfig.FilterID1 = config_.id;
-    sFilterConfig.FilterID2 = config_.id;
+    sFilterConfig.FilterID2 = 0x7FF;
     if (HAL_FDCAN_ConfigFilter(&hfdcan_, &sFilterConfig) != HAL_OK)
     {
         Error_Handler();
         return false;
     }
 
+    // TODO: We should technically probably refject extended remote ids also?
     if (HAL_FDCAN_ConfigGlobalFilter(&hfdcan_, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE) != HAL_OK)
     {
         Error_Handler();
@@ -131,8 +165,8 @@ bool FDCANDevice::Enable()
         Error_Handler();
         return false;
     }
-    return true;
     Logger::Instance().Print("CAN START!\r\n");
+    return true;
 }
 
 // Disable FDCAN
@@ -149,9 +183,15 @@ void FDCANDevice::Disable()
 // Send CAN Packet
 void FDCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
 {
+    // Invalid Frame Size
+    if((config_.mode_fd && length > 64) ||
+    (!config_.mode_fd && length > 8))
+    {
+        return;
+    }
     // TODO: DLC Parse
     tx_header_.Identifier = dest_id;
-    tx_header_.DataLength = FDCAN_DLC_BYTES_1;
+    tx_header_.DataLength = DLC_LUT[length] << 4;
 
     if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan_, &tx_header_, data) != HAL_OK)
     {
@@ -186,6 +226,13 @@ void FDCANDevice::EnableIT()
     // Update ISR Table
     g_ISR_VTABLE[IRQn_] = this;
 
+    /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
+    if (HAL_FDCAN_ActivateNotification(&hfdcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    // Set Interrupt Enabled Bookeeping flag
     enable_interrupt_ = true;
 
     // Not Sure Why Dynamic Does not work
@@ -195,6 +242,37 @@ void FDCANDevice::EnableIT()
 }
 
 // Interrupts
+// TODO: For now assumes we will register callbacks which will handle filtering
+// TODO: We should be able to directly do our callback here...
+void FDCAN1_IT0_IRQHandler(void)
+{
+    g_ISR_VTABLE[FDCAN1_IT0_IRQn]->ISR();    
+}
+
+void FDCAN1_IT1_IRQHandler(void)
+{
+    g_ISR_VTABLE[FDCAN1_IT1_IRQn]->ISR();    
+}
+
+void FDCAN2_IT0_IRQHandler(void)
+{
+    g_ISR_VTABLE[FDCAN2_IT0_IRQn]->ISR();    
+}
+
+void FDCAN2_IT1_IRQHandler(void)
+{
+    g_ISR_VTABLE[FDCAN2_IT1_IRQn]->ISR();    
+}
+
+void FDCAN3_IT0_IRQHandler(void)
+{
+    g_ISR_VTABLE[FDCAN3_IT0_IRQn]->ISR();    
+}
+
+void FDCAN3_IT1_IRQHandler(void)
+{
+    g_ISR_VTABLE[FDCAN3_IT1_IRQn]->ISR();    
+}
 
 // Helpers
 bool FDCANDevice::CalculateTimings()
@@ -258,12 +336,15 @@ bool FDCANDevice::CalculateTimings()
     if(!timings_valid_)
         return false;
 
+    Logger::Instance().Print("Nominal: %d, %d, %d, %d\r\n",prescaler, t_seg1, t_seg2, t_seg2);
+
     // Bit time for desired data rate
     bit_time = 1.0f / config_.dbitrate;
 
     // TODO: Support Propagation Delays?
     t_seg1 = 0;
     t_seg2 = 0;
+
 
     // Update Valid Return
     timings_valid_ = false;
@@ -308,6 +389,8 @@ bool FDCANDevice::CalculateTimings()
         break;
     }
 
+    Logger::Instance().Print("Data: %d, %d, %d, %d\r\n",prescaler, t_seg1, t_seg2, t_seg2);
+    
     return timings_valid_;
 }
 

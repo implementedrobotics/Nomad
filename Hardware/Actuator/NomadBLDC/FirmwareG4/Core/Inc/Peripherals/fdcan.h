@@ -28,6 +28,7 @@
 // C System Files
 
 // C++ System Files
+#include <functional>
 
 // STM32 System Files
 #include <main.h>
@@ -51,7 +52,7 @@ public:
     static constexpr uint16_t kMinDataTimeSeg = 1;
 
     // TODO: This should be up in a base "Peripheral Class"
-    static constexpr int kMaxInterrupts = 200;
+    static constexpr int kMaxInterrupts = 127;
 
     struct Config_t
     {
@@ -63,11 +64,13 @@ public:
         float data_sp;     // Data Sample Point Target
     };
 
+    // TODO: Support Extended IDs
     // TODO: Interrupted vs Polled. 
     // Assumes a pre "inited" FDCAN from CubeMX
 
-    // Constructor
-    FDCANDevice(FDCAN_GlobalTypeDef *FDCAN);
+    // Constructors ( Default 250kbps without Bit rate switching)
+    FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id = 0x123, uint32_t bitrate = 250000, uint32_t dbitrate = 250000);
+    FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config);
 
     // Init CAN
     bool Init();
@@ -81,6 +84,13 @@ public:
     // Enable Interrupt
     void EnableIT();
 
+    // Set Complete Callback
+    // TODO: We have 2 interrupt lines.  For now attach only to 0
+    void Attach(const std::function<void(void)> &recv_cb)
+    {
+        recv_callback_ = recv_cb;
+    }
+
     void Send(uint32_t dest_id, uint8_t *data, uint16_t length);
 
     void Receive();
@@ -88,8 +98,16 @@ public:
     // TODO: This should be up in a base "Peripheral Class"
     inline void ISR() 
     {
+        // Execute Callback
+        recv_callback_();
+
+        // Handle clearing registers etc
+        HAL_FDCAN_IRQHandler(&hfdcan_);
 
     }
+    
+    // Return Handle to FDCAN TypeDef
+    inline FDCAN_HandleTypeDef* Handle() { return &hfdcan_; };
 
 private:
 
@@ -119,7 +137,8 @@ private:
     // ISR Table
     //static ADCDevice* ISR_VTABLE[kMaxInterrupts];
 
-   
+    // Interrupt Callback
+    std::function<void(void)> recv_callback_ = [=](void) {};
 };
 
 #endif // CORE_PERIPHERAL_FDCAN_H_

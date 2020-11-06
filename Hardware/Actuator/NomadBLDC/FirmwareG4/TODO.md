@@ -16,5 +16,6 @@
 * SPI DMA? ADC DMA?
 * Add Theta Electrical + Speed Feedword in FOC
 * Register Command Interfaace Class
-* FD CAN Peripheral
-* FD CAN Filter/CAN ID Support
+* FD CAN Peripheral Abort Request
+* FD CAN Error Handler Function
+* Move Load/Save Config out of Motor Controller

@@ -71,9 +71,16 @@ void StartCommunicationThreads()
     
     // TODO: Need to make this a proper class
     CommandHandler::SetUART(uart);
-    
+
+    // Start Logger Service
+    Logger::Instance().Enable(true);
+    Logger::Instance().SetUART(uart);
+
     // Start CAN
-    fdcan = new FDCANDevice(FDCAN3);
+  //  Logger::Instance().Print("Initting CAN!\r\n");
+   // fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 2e6);
+   // fdcan->Init();
+    //fdcan->Enable();
 }
 
 void StartLEDService()
@@ -117,10 +124,6 @@ extern "C" int app_main() //
     StartCommunicationThreads();
     osDelay(100);
 
-     // Start Logger Service
-    Logger::Instance().Enable(true);
-    Logger::Instance().SetUART(uart);
-
     // // Init LED Service Task
     // StartLEDService();
     // osDelay(50);
@@ -145,9 +148,13 @@ extern "C" int app_main() //
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
+    uint8_t Rx_Data[2] = {0x5,0x10};
+
     // Infinite Loop.
     for (;;)
     {
+            fdcan->Send(0x123, Rx_Data, 1);
+            osDelay(500);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();
 

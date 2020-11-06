@@ -145,8 +145,8 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* hfdcan)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_3|GPIO_PIN_4);
 
     /* FDCAN3 interrupt DeInit */
-    HAL_NVIC_DisableIRQ(FDCAN3_IT0_IRQn);
-    HAL_NVIC_DisableIRQ(FDCAN3_IT1_IRQn);
+    //HAL_NVIC_DisableIRQ(FDCAN3_IT0_IRQn);
+    //HAL_NVIC_DisableIRQ(FDCAN3_IT1_IRQn);
   /* USER CODE BEGIN FDCAN3_MspDeInit 1 */
 
   /* USER CODE END FDCAN3_MspDeInit 1 */
