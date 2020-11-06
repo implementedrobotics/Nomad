@@ -102,12 +102,12 @@ public:
         recv_callback_();
 
         // Handle clearing registers etc
-        HAL_FDCAN_IRQHandler(&hfdcan_);
+        HAL_FDCAN_IRQHandler(hfdcan_);
 
     }
-    
+        
     // Return Handle to FDCAN TypeDef
-    inline FDCAN_HandleTypeDef* Handle() { return &hfdcan_; };
+    inline FDCAN_HandleTypeDef* Handle() { return hfdcan_; };
 
 private:
 
@@ -116,7 +116,8 @@ private:
 
     // STM32 FDCAN Type
     FDCAN_GlobalTypeDef *FDCAN_;
-    FDCAN_HandleTypeDef hfdcan_;
+    FDCAN_HandleTypeDef *hfdcan_;
+    
 
     // Transmit Header
     FDCAN_TxHeaderTypeDef tx_header_;
@@ -135,7 +136,7 @@ private:
     IRQn_Type IRQn_; 
 
     // ISR Table
-    //static ADCDevice* ISR_VTABLE[kMaxInterrupts];
+    //static FDCANDevice* ISR_VTABLE[kMaxInterrupts];
 
     // Interrupt Callback
     std::function<void(void)> recv_callback_ = [=](void) {};

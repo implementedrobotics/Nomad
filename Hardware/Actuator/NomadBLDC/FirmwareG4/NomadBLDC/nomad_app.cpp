@@ -1,7 +1,7 @@
 
 
 /*
- * Logger.cpp
+ * nomad_app.cpp
  *
  *  Created on: March 27, 2020
  *      Author: Quincy Jones
@@ -77,10 +77,9 @@ void StartCommunicationThreads()
     Logger::Instance().SetUART(uart);
 
     // Start CAN
-  //  Logger::Instance().Print("Initting CAN!\r\n");
-   // fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 2e6);
-   // fdcan->Init();
-    //fdcan->Enable();
+    fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 5e6);
+    fdcan->Init();
+    fdcan->Enable();
 }
 
 void StartLEDService()
@@ -148,12 +147,12 @@ extern "C" int app_main() //
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
-    uint8_t Rx_Data[2] = {0x5,0x10};
+    uint8_t Rx_Data[10] = {0x5,0x10,0x11,0x12,0x12,0x12,0x12,0x12,0x12,0x12};
 
     // Infinite Loop.
     for (;;)
     {
-            fdcan->Send(0x123, Rx_Data, 1);
+            fdcan->Send(0x123, Rx_Data, 10);
             osDelay(500);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();
