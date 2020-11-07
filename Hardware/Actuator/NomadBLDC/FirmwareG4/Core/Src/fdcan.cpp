@@ -35,32 +35,6 @@
 
 static FDCANDevice* g_ISR_VTABLE[FDCANDevice::kMaxInterrupts];
 
-// Length to Data Length Code Conversion LUT
-static const uint8_t DLC_LUT[] = {
-    // 1 to 8 Bytes
-    0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
-    // 9 to 12 Bytes
-    0x9, 0x9, 0x9, 0x9,
-    // 13 to 16 Bytes
-    0xA, 0xA, 0xA, 0xA,
-    // 17 to 20 Bytes
-    0xB, 0xB, 0xB, 0xB,
-    // 21 to 24 Bytes
-    0xC, 0xC, 0xC, 0xC,
-    // 25 to 32 Bytes
-    0xD, 0xD, 0xD, 0xD, 0xD, 0xD, 0xD, 0xD,
-    // 33 to 48 Bytes
-    0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE,
-    0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE,
-    // 49 to 64 Bytes
-    0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF,
-    0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF};
-
-// Data Length Code to Length Conversion LUT
-static const uint8_t LEN_LUT[] = {
-    0, 1, 2, 3, 4, 5, 6, 7,
-    8, 12, 16, 20, 24, 32, 48, 64};
-
 FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t bitrate, uint32_t dbitrate) : FDCAN_(FDCAN), enable_interrupt_(false), timings_valid_(false)
 {
     config_.id = node_id;          // Lowest Priority Standard ID (2047 max 11-bit)
@@ -99,7 +73,7 @@ bool FDCANDevice::Init()
     hfdcan_->Init.AutoRetransmission = DISABLE;
     hfdcan_->Init.TransmitPause = DISABLE;
     hfdcan_->Init.ProtocolException = DISABLE;
-    hfdcan_->Init.StdFiltersNbr = 1; // TODO: Move to filter support somewhere
+    hfdcan_->Init.StdFiltersNbr = 1; // TODO: Move to filter support somewhere. "Add Filter"
     hfdcan_->Init.ExtFiltersNbr = 0;
     hfdcan_->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
 
@@ -112,6 +86,7 @@ bool FDCANDevice::Init()
     tx_header_.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
     tx_header_.MessageMarker = 0;
 
+    // Init CAN
     if (HAL_FDCAN_Init(hfdcan_) != HAL_OK)
     {
         Error_Handler();
@@ -120,11 +95,13 @@ bool FDCANDevice::Init()
     // Setup Filters
     FDCAN_FilterTypeDef sFilterConfig;
 
-    /* Configure standard ID reception filter to Rx FIFO 0 */
+    // Configure standard ID reception filter to Rx FIFO 0
+    // TODO: Need more filter types, range etc
+    // TODO: High Priority Messages?
     sFilterConfig.IdType = FDCAN_STANDARD_ID;
     sFilterConfig.FilterIndex = 0;
     sFilterConfig.FilterType = FDCAN_FILTER_MASK;
-    sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
+    sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
     sFilterConfig.FilterID1 = config_.id;
     sFilterConfig.FilterID2 = 0x7FF;
     if (HAL_FDCAN_ConfigFilter(hfdcan_, &sFilterConfig) != HAL_OK)
@@ -149,13 +126,11 @@ bool FDCANDevice::Init()
         }
     }
 
-    /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
+    // Activate Rx FIFO 0 new message notification on both FDCAN instances
     if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK)
     {
-        Logger::Instance().Print("NOT OKAY\r\n");
         Error_Handler();
     }
-    Logger::Instance().Print("OKAY\r\n");
     return true;
 }
 
@@ -180,25 +155,29 @@ void FDCANDevice::Disable()
 }
 
 // Send CAN Packet
-void FDCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
+bool FDCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
 {
     // Invalid Frame Size
     if((config_.mode_fd && length > 64) ||
     (!config_.mode_fd && length > 8))
     {
-        return;
+        return false;
     }
 
+    // Update Identifier and DLC Code
     tx_header_.Identifier = dest_id;
     tx_header_.DataLength = DLC_LUT[length] << 16;
 
+    // Add Message to TX Fifo
     if (HAL_FDCAN_AddMessageToTxFifoQ(hfdcan_, &tx_header_, data) != HAL_OK)
     {
       Error_Handler();
+      return false;
     }
+    return true;
 }
 
-// Receive CAN Packet
+// Receive CAN Packet (Polling)
 bool FDCANDevice::Receive(uint8_t *data, uint16_t &length)
 {
     if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, can_rx_buffer_) != HAL_OK)
@@ -234,22 +213,24 @@ void FDCANDevice::EnableIT()
     {
         return;
     }
+    using namespace std::placeholders;
+    Attach(std::bind(&FDCANDevice::TestCB, this, _1));
 
     // Make sure IRQ is enabled
-    // // TODO: Priority...
-    // NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
-    // NVIC_EnableIRQ(IRQn_);
+    // TODO: Priority Parameter...
+    NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+    NVIC_EnableIRQ(IRQn_);
 
     // Update ISR Table
     g_ISR_VTABLE[IRQn_] = this;
 
-    // /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
-    // if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
-    // {
-    //     Error_Handler();
-    // }
+    // Activate Rx FIFO 0 new message notification on both FDCAN instances
+    // Low Priority Messages to FIFO 1?
+    if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-    Logger::Instance().Print("GOT: %x to %x", this, g_ISR_VTABLE[FDCAN3_IT0_IRQn] );
     // Set Interrupt Enabled Bookeeping flag
     enable_interrupt_ = true;
 
@@ -258,54 +239,69 @@ void FDCANDevice::EnableIT()
     // NVIC_SetVector(IRQn, (uint32_t)&IRQ);
     // __enable_irq();
 }
+void FDCANDevice::TestCB(FDCAN_msg_t& msg)
+{
+    // uint8_t buffer[64];
+    // FDCAN_RxHeaderTypeDef rx_header_;
 
+    // uint32_t RxFifo0ITs = FDCAN_->IR & (FDCAN_IR_RF0L | FDCAN_IR_RF0F | FDCAN_IR_RF0N);
+    // RxFifo0ITs &= FDCAN_->IE;
+    // if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+    // {
+    //     /* Retrieve Rx messages from RX FIFO0 */
+    //     if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, buffer) != HAL_OK)
+    //     {
+    //         Error_Handler();
+    //     }
+        Logger::Instance().Print("Receive!!! : \r\n");
+  //  }
+}
 // Interrupts
-// void FDCAN1_IT0_IRQHandler(void)
-// {
-//     g_ISR_VTABLE[FDCAN1_IT0_IRQn]->ISR();    
-// }
-
-// void FDCAN1_IT1_IRQHandler(void)
-// {
-//     g_ISR_VTABLE[FDCAN1_IT1_IRQn]->ISR();    
-// }
-
-// void FDCAN2_IT0_IRQHandler(void)
-// {
-//     g_ISR_VTABLE[FDCAN2_IT0_IRQn]->ISR();    
-// }
-
-// void FDCAN2_IT1_IRQHandler(void)
-// {
-//     g_ISR_VTABLE[FDCAN2_IT1_IRQn]->ISR();    
-// }
-
-void FDCAN3_IT0_IRQHandler(void)
+extern "C"  void FDCAN1_IT0_IRQHandler(void)
 {
-    Logger::Instance().Print("IT\r\n");
-    g_ISR_VTABLE[FDCAN3_IT0_IRQn]->ISR();    
+  g_ISR_VTABLE[FDCAN1_IT0_IRQn]->ISR();
 }
 
-void FDCAN3_IT1_IRQHandler(void)
+extern "C"  void FDCAN1_IT1_IRQHandler(void)
 {
-    Logger::Instance().Print("IT\r\n");
-    g_ISR_VTABLE[FDCAN3_IT1_IRQn]->ISR();    
+  g_ISR_VTABLE[FDCAN1_IT1_IRQn]->ISR();
 }
 
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+extern "C"  void FDCAN2_IT0_IRQHandler(void)
 {
-    uint8_t buffer[64];
-    FDCAN_RxHeaderTypeDef rx_header_;
-  if((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
-  {
-    /* Retrieve Rx messages from RX FIFO0 */
-    if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header_, buffer) != HAL_OK)
-    {
-      Error_Handler();
-    }
-    Logger::Instance().Print("Hello!!!\r\n");
-  }
+  g_ISR_VTABLE[FDCAN2_IT0_IRQn]->ISR();
 }
+
+extern "C"  void FDCAN2_IT1_IRQHandler(void)
+{
+  g_ISR_VTABLE[FDCAN2_IT1_IRQn]->ISR();
+}
+
+extern "C"  void FDCAN3_IT0_IRQHandler(void)
+{
+  g_ISR_VTABLE[FDCAN3_IT0_IRQn]->ISR();
+}
+
+extern "C"  void FDCAN3_IT1_IRQHandler(void)
+{
+  g_ISR_VTABLE[FDCAN3_IT1_IRQn]->ISR();
+}
+
+// extern "C" void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+// {
+//     uint8_t buffer[64];
+//     FDCAN_RxHeaderTypeDef rx_header_;
+//     if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+//     {
+//         /* Retrieve Rx messages from RX FIFO0 */
+//         if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header_, buffer) != HAL_OK)
+//         {
+//             Error_Handler();
+//         }
+//         Logger::Instance().Print("ReceiveHAL!!!\r\n");
+//     }
+    
+// }
 
 // Helpers
 bool FDCANDevice::CalculateTimings()

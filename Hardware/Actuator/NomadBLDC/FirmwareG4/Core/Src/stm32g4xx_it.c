@@ -57,7 +57,6 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern FDCAN_HandleTypeDef hfdcan3;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */

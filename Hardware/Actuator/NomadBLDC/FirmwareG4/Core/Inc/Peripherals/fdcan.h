@@ -59,14 +59,47 @@ public:
     // TODO: This should be up in a base "Peripheral Class"
     static constexpr int kMaxInterrupts = 127;
 
+    // Length to Data Length Code Conversion LUT
+    static constexpr uint8_t DLC_LUT[] = {
+        // 1 to 8 Bytes
+        0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
+        // 9 to 12 Bytes
+        0x9, 0x9, 0x9, 0x9,
+        // 13 to 16 Bytes
+        0xA, 0xA, 0xA, 0xA,
+        // 17 to 20 Bytes
+        0xB, 0xB, 0xB, 0xB,
+        // 21 to 24 Bytes
+        0xC, 0xC, 0xC, 0xC,
+        // 25 to 32 Bytes
+        0xD, 0xD, 0xD, 0xD, 0xD, 0xD, 0xD, 0xD,
+        // 33 to 48 Bytes
+        0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE,
+        0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE, 0xE,
+        // 49 to 64 Bytes
+        0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF,
+        0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF};
+
+    // Data Length Code to Length Conversion LUT
+    static constexpr uint8_t LEN_LUT[] = {
+        0, 1, 2, 3, 4, 5, 6, 7,
+        8, 12, 16, 20, 24, 32, 48, 64};
+
     struct Config_t
     {
-        uint32_t id;       // CAN ID
+        uint32_t id;       // CAN ID 11-bit max is 0x7ff
         uint32_t bitrate;  // Nominal Bitrate
         uint32_t dbitrate; // Data Bitrate
         uint8_t mode_fd;   // FD mode or classic
         float sp;          // Nominal Bitrate Sample Point Target
         float data_sp;     // Data Sample Point Target
+    };
+
+    struct FDCAN_msg_t
+    {
+        uint32_t id = 0x000; // 11-bit max is 0x7ff
+        uint8_t length = 64; // Max FD CAN Length
+        uint8_t data[64];    // Buffer for message data
     };
 
     // TODO: Support Extended IDs
@@ -91,26 +124,49 @@ public:
 
     // Set Complete Callback
     // TODO: We have 2 interrupt lines.  For now attach only to 0
-    void Attach(const std::function<void(void)> &recv_cb)
+    void Attach(const std::function<void(FDCAN_msg_t&)> &recv_cb)
     {
         recv_callback_ = recv_cb;
     }
 
-    void Send(uint32_t dest_id, uint8_t *data, uint16_t length) CCM_ATTRIBUTE;
+    // Send CAN Message Function
+    bool Send(uint32_t dest_id, uint8_t *data, uint16_t length) CCM_ATTRIBUTE;
 
+    // Receive CAN Message Function
     bool Receive(uint8_t *data, uint16_t &length) CCM_ATTRIBUTE;
 
     // TODO: This should be up in a base "Peripheral Class"
+    // TODO: Also for FDCAN this is ONLY a receive interrupt supporting function.
+    // TODO: Eventually make this handle all things interrupt...
     inline void ISR() 
     {
-        // Execute Callback
-        recv_callback_();
+        // Read Message
+        uint32_t RxFifo0ITs = FDCAN_->IR & (FDCAN_IR_RF0L | FDCAN_IR_RF0F | FDCAN_IR_RF0N);
+        RxFifo0ITs &= FDCAN_->IE;
+        if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+        {
+            // TODO: Call "Msg Received"? Pass FDCANDevice to handler, or send/copy message.  Need to profile this.
+            /* Retrieve Rx messages from RX FIFO0 */
+            if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, fdcan_msg_.data) != HAL_OK)
+            {
+                Error_Handler();
+            }
+
+            // Convert Data Length Code
+            fdcan_msg_.length = LEN_LUT[rx_header_.DataLength >> 16];
+        }
+
+        // Execute Callback ( Forward Message to Handler )
+        recv_callback_(fdcan_msg_);
 
         // Handle clearing registers etc
+        // TODO: As usual HAL IRQ handlers are way overbloated.  
+        // TODO: Optimize register clearing etc.
         HAL_FDCAN_IRQHandler(hfdcan_);
-
     }
         
+    void TestCB(FDCAN_msg_t& msg);
+
     // Return Handle to FDCAN TypeDef
     inline FDCAN_HandleTypeDef* Handle() { return hfdcan_; };
 
@@ -119,13 +175,16 @@ private:
     // Calc Bit Timing Helper Function
     bool CalculateTimings();
 
-    // STM32 FDCAN Type
+    // STM32 FDCAN Types
     FDCAN_GlobalTypeDef *FDCAN_;
     FDCAN_HandleTypeDef *hfdcan_;
 
-    // Transmit Header
+    // CAN Transmit/Receive Header
     FDCAN_TxHeaderTypeDef tx_header_;
     FDCAN_RxHeaderTypeDef rx_header_;
+
+    // CAN Receive Message Container
+    FDCAN_msg_t fdcan_msg_;
 
     // Data Buffer
     uint8_t can_rx_buffer_[kBufferSizeRX]; 
@@ -146,7 +205,8 @@ private:
     //static FDCANDevice* ISR_VTABLE[kMaxInterrupts];
 
     // Interrupt Callback
-    std::function<void(void)> recv_callback_ = [=](void) {};
+    //std::function<void(void)> recv_callback_ = [=](void) {};
+    std::function<void(FDCAN_msg_t&)> recv_callback_ = [=](FDCAN_msg_t&) {};
 };
 
 #endif // CORE_PERIPHERAL_FDCAN_H_
