@@ -239,20 +239,7 @@ void FDCANDevice::EnableIT()
 }
 void FDCANDevice::TestCB(FDCAN_msg_t& msg)
 {
-    // uint8_t buffer[64];
-    // FDCAN_RxHeaderTypeDef rx_header_;
-
-    // uint32_t RxFifo0ITs = FDCAN_->IR & (FDCAN_IR_RF0L | FDCAN_IR_RF0F | FDCAN_IR_RF0N);
-    // RxFifo0ITs &= FDCAN_->IE;
-    // if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
-    // {
-    //     /* Retrieve Rx messages from RX FIFO0 */
-    //     if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, buffer) != HAL_OK)
-    //     {
-    //         Error_Handler();
-    //     }
-    Logger::Instance().Print("Receive!!! : %s\r\n", msg.data);
-  //  }
+    Logger::Instance().Print("Received : %s\r\n", msg.data);
 }
 // Interrupts
 extern "C"  void FDCAN1_IT0_IRQHandler(void)
