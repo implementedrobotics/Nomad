@@ -124,7 +124,7 @@ bool FDCANDevice::Init()
     sFilterConfig.IdType = FDCAN_STANDARD_ID;
     sFilterConfig.FilterIndex = 0;
     sFilterConfig.FilterType = FDCAN_FILTER_MASK;
-    sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+    sFilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
     sFilterConfig.FilterID1 = config_.id;
     sFilterConfig.FilterID2 = 0x7FF;
     if (HAL_FDCAN_ConfigFilter(hfdcan_, &sFilterConfig) != HAL_OK)
@@ -148,6 +148,14 @@ bool FDCANDevice::Init()
             Error_Handler();
         }
     }
+
+    /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
+    if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK)
+    {
+        Logger::Instance().Print("NOT OKAY\r\n");
+        Error_Handler();
+    }
+    Logger::Instance().Print("OKAY\r\n");
     return true;
 }
 
@@ -235,12 +243,13 @@ void FDCANDevice::EnableIT()
     // Update ISR Table
     g_ISR_VTABLE[IRQn_] = this;
 
-    /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
+    // /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
     // if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
     // {
     //     Error_Handler();
     // }
 
+    Logger::Instance().Print("GOT: %x to %x", this, g_ISR_VTABLE[FDCAN3_IT0_IRQn] );
     // Set Interrupt Enabled Bookeeping flag
     enable_interrupt_ = true;
 
