@@ -34,6 +34,7 @@
 #include <main.h>
 
 // Project Includes
+#include <nomad_hw.h>
 
 class FDCANDevice
 {
@@ -50,6 +51,10 @@ public:
     static constexpr uint16_t kMaxDataTimeSeg1 = 32;
     static constexpr uint16_t kMaxDataTimeSeg2 = 16;
     static constexpr uint16_t kMinDataTimeSeg = 1;
+
+    // Receive Buffer Size. For now match max CANFD Frame Size
+    // TODO: Support CAN Classic + Multi Packet 
+    static const uint16_t kBufferSizeRX = 64;
 
     // TODO: This should be up in a base "Peripheral Class"
     static constexpr int kMaxInterrupts = 127;
@@ -91,9 +96,9 @@ public:
         recv_callback_ = recv_cb;
     }
 
-    void Send(uint32_t dest_id, uint8_t *data, uint16_t length);
+    void Send(uint32_t dest_id, uint8_t *data, uint16_t length) CCM_ATTRIBUTE;
 
-    void Receive();
+    bool Receive(uint8_t *data, uint16_t &length) CCM_ATTRIBUTE;
 
     // TODO: This should be up in a base "Peripheral Class"
     inline void ISR() 
@@ -117,11 +122,13 @@ private:
     // STM32 FDCAN Type
     FDCAN_GlobalTypeDef *FDCAN_;
     FDCAN_HandleTypeDef *hfdcan_;
-    
 
     // Transmit Header
     FDCAN_TxHeaderTypeDef tx_header_;
     FDCAN_RxHeaderTypeDef rx_header_;
+
+    // Data Buffer
+    uint8_t can_rx_buffer_[kBufferSizeRX]; 
 
     // Config
     Config_t config_;

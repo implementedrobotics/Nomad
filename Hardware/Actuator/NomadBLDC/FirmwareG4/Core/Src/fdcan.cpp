@@ -31,10 +31,11 @@
 #include <cmath>
 
 // Project Includes
+#include <Logger.h>
 
 static FDCANDevice* g_ISR_VTABLE[FDCANDevice::kMaxInterrupts];
 
-// Data Length Code Conversion LUT
+// Length to Data Length Code Conversion LUT
 static const uint8_t DLC_LUT[] = {
     // 1 to 8 Bytes
     0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
@@ -54,6 +55,11 @@ static const uint8_t DLC_LUT[] = {
     // 49 to 64 Bytes
     0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF,
     0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF};
+
+// Data Length Code to Length Conversion LUT
+static const uint8_t LEN_LUT[] = {
+    0, 1, 2, 3, 4, 5, 6, 7,
+    8, 12, 16, 20, 24, 32, 48, 64};
 
 FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t bitrate, uint32_t dbitrate) : FDCAN_(FDCAN), enable_interrupt_(false), timings_valid_(false)
 {
@@ -183,6 +189,24 @@ void FDCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
       Error_Handler();
     }
 }
+
+// Receive CAN Packet
+bool FDCANDevice::Receive(uint8_t *data, uint16_t &length)
+{
+    if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, can_rx_buffer_) != HAL_OK)
+    {
+        data = nullptr;
+        return false;
+    }
+
+    // Convert Data Length Code
+    length = LEN_LUT[rx_header_.DataLength >> 16];
+
+    // Update Data Pointer
+    memcpy(data, can_rx_buffer_, length); 
+    return true;
+}
+
 void FDCANDevice::EnableIT()
 {
     // Find IRQ Number
@@ -204,18 +228,18 @@ void FDCANDevice::EnableIT()
     }
 
     // Make sure IRQ is enabled
-    // TODO: Priority...
-    NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
-    NVIC_EnableIRQ(IRQn_);
+    // // TODO: Priority...
+    // NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+    // NVIC_EnableIRQ(IRQn_);
 
     // Update ISR Table
     g_ISR_VTABLE[IRQn_] = this;
 
     /* Activate Rx FIFO 0 new message notification on both FDCAN instances */
-    if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
-    {
-        Error_Handler();
-    }
+    // if (HAL_FDCAN_ActivateNotification(hfdcan_, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
+    // {
+    //     Error_Handler();
+    // }
 
     // Set Interrupt Enabled Bookeeping flag
     enable_interrupt_ = true;
@@ -227,34 +251,51 @@ void FDCANDevice::EnableIT()
 }
 
 // Interrupts
-void FDCAN1_IT0_IRQHandler(void)
-{
-    g_ISR_VTABLE[FDCAN1_IT0_IRQn]->ISR();    
-}
+// void FDCAN1_IT0_IRQHandler(void)
+// {
+//     g_ISR_VTABLE[FDCAN1_IT0_IRQn]->ISR();    
+// }
 
-void FDCAN1_IT1_IRQHandler(void)
-{
-    g_ISR_VTABLE[FDCAN1_IT1_IRQn]->ISR();    
-}
+// void FDCAN1_IT1_IRQHandler(void)
+// {
+//     g_ISR_VTABLE[FDCAN1_IT1_IRQn]->ISR();    
+// }
 
-void FDCAN2_IT0_IRQHandler(void)
-{
-    g_ISR_VTABLE[FDCAN2_IT0_IRQn]->ISR();    
-}
+// void FDCAN2_IT0_IRQHandler(void)
+// {
+//     g_ISR_VTABLE[FDCAN2_IT0_IRQn]->ISR();    
+// }
 
-void FDCAN2_IT1_IRQHandler(void)
-{
-    g_ISR_VTABLE[FDCAN2_IT1_IRQn]->ISR();    
-}
+// void FDCAN2_IT1_IRQHandler(void)
+// {
+//     g_ISR_VTABLE[FDCAN2_IT1_IRQn]->ISR();    
+// }
 
 void FDCAN3_IT0_IRQHandler(void)
 {
+    Logger::Instance().Print("IT\r\n");
     g_ISR_VTABLE[FDCAN3_IT0_IRQn]->ISR();    
 }
 
 void FDCAN3_IT1_IRQHandler(void)
 {
+    Logger::Instance().Print("IT\r\n");
     g_ISR_VTABLE[FDCAN3_IT1_IRQn]->ISR();    
+}
+
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+    uint8_t buffer[64];
+    FDCAN_RxHeaderTypeDef rx_header_;
+  if((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+  {
+    /* Retrieve Rx messages from RX FIFO0 */
+    if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header_, buffer) != HAL_OK)
+    {
+      Error_Handler();
+    }
+    Logger::Instance().Print("Hello!!!\r\n");
+  }
 }
 
 // Helpers
