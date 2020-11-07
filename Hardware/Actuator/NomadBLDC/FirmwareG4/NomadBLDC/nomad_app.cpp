@@ -149,7 +149,7 @@ extern "C" int app_main() //
     // uint32_t elapsed_ticks;
 
     uint8_t Tx_Data[10] = {0x5,0x10,0x11,0x12,0x12,0x12,0x12,0x12,0x12,0x12};
-    uint8_t Rx_Data[64];
+
     int i =0;
     // Infinite Loop.
     for (;;)
@@ -158,7 +158,7 @@ extern "C" int app_main() //
             osDelay(100);
             //uint16_t length;
            // fdcan->Receive(Rx_Data, length);
-            Logger::Instance().Print("Here: %d\r\n", i++);
+           // Logger::Instance().Print("Here: %d\r\n", i++);
             //osDelay(50);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();

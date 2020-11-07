@@ -39,9 +39,9 @@ FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t 
 {
     config_.id = node_id;          // Lowest Priority Standard ID (2047 max 11-bit)
     config_.bitrate = bitrate;   // 250 kbps
-    config_.dbitrate = dbitrate; // 250 kbps
-    config_.sp = 0.8f;           // 80%
-    config_.data_sp = 0.625f;    // 62.5%
+    config_.d_bitrate = dbitrate; // 250 kbps
+    config_.sample_point = 0.8f;           // 80%
+    config_.d_sample_point = 0.625f;    // 62.5%
     config_.mode_fd = 1;         // FD CAN ( Default to FD CAN? It is my preference anyways...)
 
     // For some reason using the stack is not working and communications is faulty. This should not effect or perf.
@@ -68,7 +68,7 @@ bool FDCANDevice::Init()
     // Update Handle Defaults.Bit Timing
     hfdcan_->Instance = FDCAN_;
     hfdcan_->Init.ClockDivider = FDCAN_CLOCK_DIV1;
-    hfdcan_->Init.FrameFormat = config_.mode_fd == 0 ? FDCAN_FRAME_CLASSIC : config_.bitrate != config_.dbitrate ? FDCAN_FRAME_FD_BRS : FDCAN_FRAME_FD_NO_BRS;
+    hfdcan_->Init.FrameFormat = config_.mode_fd == 0 ? FDCAN_FRAME_CLASSIC : config_.bitrate != config_.d_bitrate ? FDCAN_FRAME_FD_BRS : FDCAN_FRAME_FD_NO_BRS;
     hfdcan_->Init.Mode = FDCAN_MODE_NORMAL;
     hfdcan_->Init.AutoRetransmission = DISABLE;
     hfdcan_->Init.TransmitPause = DISABLE;
@@ -81,7 +81,7 @@ bool FDCANDevice::Init()
     tx_header_.IdType = FDCAN_STANDARD_ID; // Support Extended IDs?
     tx_header_.TxFrameType = FDCAN_DATA_FRAME;
     tx_header_.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    tx_header_.BitRateSwitch = config_.bitrate != config_.dbitrate ? FDCAN_BRS_ON : FDCAN_BRS_OFF;
+    tx_header_.BitRateSwitch = config_.bitrate != config_.d_bitrate ? FDCAN_BRS_ON : FDCAN_BRS_OFF;
     tx_header_.FDFormat = config_.mode_fd == 0 ? FDCAN_CLASSIC_CAN : FDCAN_FD_CAN;
     tx_header_.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
     tx_header_.MessageMarker = 0;
@@ -177,10 +177,10 @@ bool FDCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
     return true;
 }
 
-// Receive CAN Packet (Polling)
+// Receive CAN Packet
 bool FDCANDevice::Receive(uint8_t *data, uint16_t &length)
 {
-    if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, can_rx_buffer_) != HAL_OK)
+    if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, data) != HAL_OK)
     {
         data = nullptr;
         return false;
@@ -189,8 +189,6 @@ bool FDCANDevice::Receive(uint8_t *data, uint16_t &length)
     // Convert Data Length Code
     length = LEN_LUT[rx_header_.DataLength >> 16];
 
-    // Update Data Pointer
-    memcpy(data, can_rx_buffer_, length); 
     return true;
 }
 
@@ -253,7 +251,7 @@ void FDCANDevice::TestCB(FDCAN_msg_t& msg)
     //     {
     //         Error_Handler();
     //     }
-        Logger::Instance().Print("Receive!!! : \r\n");
+    Logger::Instance().Print("Receive!!! : %s\r\n", msg.data);
   //  }
 }
 // Interrupts
@@ -336,7 +334,7 @@ bool FDCANDevice::CalculateTimings()
         if(std::fmod(num_tq, 1) != 0)
             continue;
 
-        t_seg1 = num_tq * config_.sp - t_sync;
+        t_seg1 = num_tq * config_.sample_point - t_sync;
         t_seg2 = num_tq - t_seg1 - t_sync;
 
         // Verify Time Segment Range 1
@@ -367,7 +365,7 @@ bool FDCANDevice::CalculateTimings()
         return false;
 
     // Bit time for desired data rate
-    bit_time = 1.0f / config_.dbitrate;
+    bit_time = 1.0f / config_.d_bitrate;
 
     // TODO: Support Propagation Delays?
     t_seg1 = 0;
@@ -390,7 +388,7 @@ bool FDCANDevice::CalculateTimings()
         if(std::fmod(num_tq, 1) != 0)
             continue;
 
-        t_seg1 = num_tq * config_.data_sp - t_sync;
+        t_seg1 = num_tq * config_.d_sample_point - t_sync;
         t_seg2 = num_tq - t_seg1 - t_sync;
 
         // Verify Time Segment Range 1

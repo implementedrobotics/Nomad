@@ -87,25 +87,22 @@ public:
 
     struct Config_t
     {
-        uint32_t id;       // CAN ID 11-bit max is 0x7ff
-        uint32_t bitrate;  // Nominal Bitrate
-        uint32_t dbitrate; // Data Bitrate
-        uint8_t mode_fd;   // FD mode or classic
-        float sp;          // Nominal Bitrate Sample Point Target
-        float data_sp;     // Data Sample Point Target
+        uint32_t id;         // CAN ID 11-bit max is 0x7ff
+        uint32_t bitrate;    // Nominal Bitrate
+        uint32_t d_bitrate;   // Data Bitrate
+        uint8_t mode_fd;     // FD mode or classic
+        float sample_point;  // Nominal Bitrate Sample Point Target
+        float d_sample_point;  // Data Sample Point Target
     };
 
     struct FDCAN_msg_t
     {
-        uint32_t id = 0x000; // 11-bit max is 0x7ff
-        uint8_t length = 64; // Max FD CAN Length
-        uint8_t data[64];    // Buffer for message data
+        uint32_t id = 0x7FF; // 11-bit max is 0x7FF.  Default to lowest prio message id
+        uint16_t length = kBufferSizeRX; // Max FD CAN Length
+        uint8_t data[kBufferSizeRX];    // Buffer for message data
     };
 
     // TODO: Support Extended IDs
-    // TODO: Interrupted vs Polled. 
-    // Assumes a pre "inited" FDCAN from CubeMX
-
     // Constructors ( Default 250kbps without Bit rate switching)
     FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id = 0x123, uint32_t bitrate = 250000, uint32_t dbitrate = 250000);
     FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config);
@@ -141,28 +138,25 @@ public:
     inline void ISR() 
     {
         // Read Message
-        uint32_t RxFifo0ITs = FDCAN_->IR & (FDCAN_IR_RF0L | FDCAN_IR_RF0F | FDCAN_IR_RF0N);
-        RxFifo0ITs &= FDCAN_->IE;
-        if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
+        if ((GetRxFIFOITFlags() & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
         {
-            // TODO: Call "Msg Received"? Pass FDCANDevice to handler, or send/copy message.  Need to profile this.
-            /* Retrieve Rx messages from RX FIFO0 */
-            if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, fdcan_msg_.data) != HAL_OK)
-            {
-                Error_Handler();
-            }
+            // Get Message From Buffer
+            Receive(fdcan_msg_.data, fdcan_msg_.length);
 
-            // Convert Data Length Code
-            fdcan_msg_.length = LEN_LUT[rx_header_.DataLength >> 16];
+            // Execute Callback ( Forward Message to Handler )
+            recv_callback_(fdcan_msg_);
         }
-
-        // Execute Callback ( Forward Message to Handler )
-        recv_callback_(fdcan_msg_);
 
         // Handle clearing registers etc
         // TODO: As usual HAL IRQ handlers are way overbloated.  
         // TODO: Optimize register clearing etc.
         HAL_FDCAN_IRQHandler(hfdcan_);
+    }
+    inline uint32_t GetRxFIFOITFlags()
+    {
+        uint32_t RxFifo0ITs = FDCAN_->IR & (FDCAN_IR_RF0L | FDCAN_IR_RF0F | FDCAN_IR_RF0N);
+        RxFifo0ITs &= FDCAN_->IE;
+        return RxFifo0ITs;
     }
         
     void TestCB(FDCAN_msg_t& msg);
@@ -187,7 +181,7 @@ private:
     FDCAN_msg_t fdcan_msg_;
 
     // Data Buffer
-    uint8_t can_rx_buffer_[kBufferSizeRX]; 
+    //uint8_t can_rx_buffer_[kBufferSizeRX]; 
 
     // Config
     Config_t config_;
@@ -205,7 +199,6 @@ private:
     //static FDCANDevice* ISR_VTABLE[kMaxInterrupts];
 
     // Interrupt Callback
-    //std::function<void(void)> recv_callback_ = [=](void) {};
     std::function<void(FDCAN_msg_t&)> recv_callback_ = [=](FDCAN_msg_t&) {};
 };
 

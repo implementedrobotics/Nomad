@@ -18,6 +18,6 @@
 * Register Command Interfaace Class
 * FD CAN Peripheral Abort Request
 * FD CAN Error Handler Function
-* FD CAN Receive Functionality | Poll/Interrupt
-* FD CAN Need a CAN Message Header Object
+* Peripheral Base Class
 * Move Load/Save Config out of Motor Controller
+* Profile/Optimize CAN Interrupt Handling Function
