@@ -54,7 +54,7 @@ public:
 
     // Receive Buffer Size. For now match max CANFD Frame Size
     // TODO: Support CAN Classic + Multi Packet 
-    static const uint16_t kBufferSizeRX = 64;
+    static constexpr uint16_t kBufferSizeRX = 64;
 
     // TODO: This should be up in a base "Peripheral Class"
     static constexpr int kMaxInterrupts = 127;
@@ -129,8 +129,11 @@ public:
     // Send CAN Message Function
     bool Send(uint32_t dest_id, uint8_t *data, uint16_t length) CCM_ATTRIBUTE;
 
-    // Receive CAN Message Function
+    // Receive CAN Data Function
     bool Receive(uint8_t *data, uint16_t &length) CCM_ATTRIBUTE;
+
+    // Receive CAN Message Function
+    bool Receive(FDCAN_msg_t &msg) CCM_ATTRIBUTE;
 
     // TODO: This should be up in a base "Peripheral Class"
     // TODO: Also for FDCAN this is ONLY a receive interrupt supporting function.
@@ -158,8 +161,6 @@ public:
         RxFifo0ITs &= FDCAN_->IE;
         return RxFifo0ITs;
     }
-        
-    void TestCB(FDCAN_msg_t& msg);
 
     // Return Handle to FDCAN TypeDef
     inline FDCAN_HandleTypeDef* Handle() { return hfdcan_; };

@@ -52,7 +52,7 @@
 #include <Logger.h>
 #include <motor_controller_interface.h>
 #include <MotorController.h>
-
+#include <RegisterInterface.h>
 
 UARTDevice *uart;
 FDCANDevice *fdcan;
@@ -81,6 +81,7 @@ void StartCommunicationThreads()
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
+    fdcan->Attach(&RegisterInterface::HandleCommand);
 }
 
 void StartLEDService()

@@ -182,12 +182,28 @@ bool FDCANDevice::Receive(uint8_t *data, uint16_t &length)
 {
     if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, data) != HAL_OK)
     {
-        data = nullptr;
         return false;
     }
 
     // Convert Data Length Code
     length = LEN_LUT[rx_header_.DataLength >> 16];
+
+    return true;
+}
+
+// Receive CAN MEssage
+bool FDCANDevice::Receive(FDCAN_msg_t &msg)
+{
+    if (HAL_FDCAN_GetRxMessage(hfdcan_, FDCAN_RX_FIFO0, &rx_header_, msg.data) != HAL_OK)
+    {
+        return false;
+    }
+
+    // Get MSG ID.  We are most likely already filtered. But send it over anyway
+    msg.id = rx_header_.Identifier;
+
+    // Convert Data Length Code
+    msg.length = LEN_LUT[rx_header_.DataLength >> 16];
 
     return true;
 }
@@ -211,9 +227,7 @@ void FDCANDevice::EnableIT()
     {
         return;
     }
-    using namespace std::placeholders;
-    Attach(std::bind(&FDCANDevice::TestCB, this, _1));
-
+    
     // Make sure IRQ is enabled
     // TODO: Priority Parameter...
     NVIC_SetPriority(IRQn_, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
@@ -237,10 +251,7 @@ void FDCANDevice::EnableIT()
     // NVIC_SetVector(IRQn, (uint32_t)&IRQ);
     // __enable_irq();
 }
-void FDCANDevice::TestCB(FDCAN_msg_t& msg)
-{
-    Logger::Instance().Print("Received : %s\r\n", msg.data);
-}
+
 // Interrupts
 extern "C"  void FDCAN1_IT0_IRQHandler(void)
 {
@@ -271,22 +282,6 @@ extern "C"  void FDCAN3_IT1_IRQHandler(void)
 {
   g_ISR_VTABLE[FDCAN3_IT1_IRQn]->ISR();
 }
-
-// extern "C" void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-// {
-//     uint8_t buffer[64];
-//     FDCAN_RxHeaderTypeDef rx_header_;
-//     if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0)
-//     {
-//         /* Retrieve Rx messages from RX FIFO0 */
-//         if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header_, buffer) != HAL_OK)
-//         {
-//             Error_Handler();
-//         }
-//         Logger::Instance().Print("ReceiveHAL!!!\r\n");
-//     }
-    
-// }
 
 // Helpers
 bool FDCANDevice::CalculateTimings()
