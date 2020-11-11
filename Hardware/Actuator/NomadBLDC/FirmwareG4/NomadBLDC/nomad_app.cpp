@@ -53,11 +53,14 @@
 #include <motor_controller_interface.h>
 #include <MotorController.h>
 #include <RegisterInterface.h>
-
+#include <variant>
 UARTDevice *uart;
 FDCANDevice *fdcan;
 
 Cordic cordic2;
+
+std::variant<int, float> test;
+int a = 5;
 void StartCommunicationThreads()
 {
     // Setup some pins
@@ -82,6 +85,26 @@ void StartCommunicationThreads()
     fdcan->Enable();
     fdcan->EnableIT();
     fdcan->Attach(&RegisterInterface::HandleCommand);
+
+    FDCANDevice::FDCAN_msg_t msg;
+
+    msg.data[0] = 0x02;
+    msg.data[1] = 0x03;
+    msg.data[2] = 0x04;
+
+    std::variant<float *, int *> test_p;
+    test_p = &a;
+
+
+    a = 100;
+    
+    int k = *std::get<int *>(test_p);
+    //RegisterInterface reg;
+    //test = 10;
+    //reg.AddRegister(0x0, &test);
+    RegisterInterface::HandleCommand(msg);
+
+    Logger::Instance().Print("A: %d and %d\r\n", a, k);
 }
 
 void StartLEDService()
@@ -151,7 +174,7 @@ extern "C" int app_main() //
 
     uint8_t Tx_Data[10] = {0x5,0x10,0x11,0x12,0x12,0x12,0x12,0x12,0x12,0x12};
 
-    int i =0;
+   // int i =0;
     // Infinite Loop.
     for (;;)
     {

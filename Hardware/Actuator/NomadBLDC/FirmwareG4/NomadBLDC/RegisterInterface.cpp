@@ -29,6 +29,7 @@
 #include <cstring>
 
 // C++ System Files
+#include <bitset>
 
 // Project Includes
 #include <Peripherals/uart.h>
@@ -47,11 +48,21 @@ RegisterInterface::RegisterInterface()
 // }
 void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
 {
-    // register_command_t reg;
-    // reg.rwx = 3;
-    // reg.address = 123;
-    // reg.data_type = 2;
+    register_command_t *cmd;
+    cmd = (register_command_t *)command.data;
 
-    // reg = (register_command_t)command.data;
-    // Logger::Instance().Print("Handling: 0%x \r\n", reg);
+    std::bitset<2> rwx(cmd->rwx);
+    std::bitset<12> address(cmd->address);
+    std::bitset<8> byte1(cmd->data[0]);
+    std::bitset<8> byte2(cmd->data[1]);
+
+    Logger::Instance().Print("Address: %s\r\n", address.to_string().c_str());
+}
+
+void RegisterInterface::AddRegister(uint16_t lookup_address, int *mem_address)
+{
+    Logger::Instance().Print("Adding: %d: %d\r\n",lookup_address, (int)mem_address);
+    register_map_[lookup_address] = (uint32_t)mem_address;
+
+    *mem_address = 10;
 }

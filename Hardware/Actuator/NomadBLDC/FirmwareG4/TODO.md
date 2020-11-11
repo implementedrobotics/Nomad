@@ -20,4 +20,5 @@
 * FD CAN Error Handler Function
 * Peripheral Base Class
 * Move Load/Save Config out of Motor Controller
+* Double check too big ints in functions.  I.E. Motor config has 32-bit ints that could be uint8
 * Profile/Optimize CAN Interrupt Handling Function

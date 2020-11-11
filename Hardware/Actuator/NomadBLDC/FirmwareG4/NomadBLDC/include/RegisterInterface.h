@@ -28,23 +28,89 @@
 // C System Files
 
 // C++ System Files
+#include <variant>
 
 // Project Includes
 #include <Peripherals/uart.h>
 #include <Peripherals/fdcan.h>
 
+class RegisterData
+{
+
+public:
+    template <typename T>
+    void Set(T &value)
+    {
+        if(type_ == DataType::FLOAT)
+        {
+            (float *)data_ = value;
+        }
+    }
+
+    private:
+    // Underlying Data Type
+    typedef enum
+    {
+        UI8,
+        UI16,
+        UI32,
+        I8,
+        I16,
+        I32,
+        FLOAT
+    } DataType;
+
+    DataType type_;
+    void *data_; // Pointer to register memory location
+};
+
+class Register
+{
+public:
+    void Get();
+
+    template <typename T>
+    void Set(uint16_t offset, T &value)
+    {
+        //fields_[offset].
+    }
+
+private:
+    std::vector<RegisterData> fields_;
+};
+
 class RegisterInterface
 {
+    //struct RegisterData {
+    //     // void *data; // Pointer to register memory location
+    //     // void Set(T &value)
+    //     // {
+    //     //     // If Type is float then do -> Check Conversion
+    //     // }
+
+    //     // template <typename T>
+    //     // T Get()
+    //     // {
+
+    //     // }
+    //     // std::variant<uint8_t, uint16_t, uint32_t, float> value;
+    // };
 public:
     static constexpr uint16_t kMaxRegisters = (1<<12);
 
     // TODO: Address field is too large.  But keeping clean alignment math here
     struct register_command_t
     {
-        uint32_t rwx: 2;      // Read/Write/Execute
-        uint32_t address: 12; // 12-bit address (4096 Max Addresses)    
-        uint32_t data_type: 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-        uint8_t  data[62];     // 62 byte data field
+        union
+        {
+            struct
+            {
+                uint32_t rwx : 2;       // Read/Write/Execute
+                uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
+                uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
+            };
+            uint8_t data[64];
+        };
     };
 
     typedef enum
@@ -59,13 +125,14 @@ public:
     RegisterInterface();
 
     // Register Offset Map
+    void AddRegister(uint16_t lookup_address, int *mem_address);
     // Store Base Memory Address
     // Register Will Offset From There
     // Support Float Return Precision Options
 
 private:
 
-    uint32_t register_map_[kMaxRegisters];
+    uint32_t register_map_[10];
 
 };     // namespace RegisterInterface
 #endif // REGISTER_INTERFACE_H_
