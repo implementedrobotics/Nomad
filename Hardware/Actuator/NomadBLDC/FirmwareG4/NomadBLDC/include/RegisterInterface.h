@@ -34,6 +34,80 @@
 #include <Peripherals/uart.h>
 #include <Peripherals/fdcan.h>
 
+
+
+
+// C System Files
+
+// C++ System Files
+#include <variant>
+#include <vector>
+#include <cstdint>
+#include <iostream>
+#include <memory>
+// Project Includes
+/*
+
+class RegisterData
+{
+public:
+
+    template <typename T>
+    RegisterData(T value)
+    {
+        data_ = value;
+        printf("Data: %d\n", *value);
+    }
+
+  // template <typename T>
+   void Set(uint8_t *value)
+   {
+       if (auto data = std::get_if<uint32_t *>(&data_))
+       {
+           **data = *((uint32_t*)value);
+           std::cout << "variant value: " << **data << '\n';
+       }
+   }
+
+private:
+    // Pointer to register memory location
+    std::variant<uint8_t *, uint32_t *> data_;
+};
+
+class Register
+{
+public:
+    void Get();
+
+    template <typename T>
+    void Set(uint16_t offset, T &value)
+    {
+        //fields_[offset].
+    }
+
+private:
+    std::vector<RegisterData> fields_;
+};
+
+
+int main()
+{
+    uint32_t a;
+    a = 10;
+    printf("Pointer: %p\n", &a);
+   // std::cout << "Hello: " << &a << std::endl;
+    RegisterData data(&a);
+
+    uint32_t newBuf = 100005;
+    data.Set((uint8_t *)&newBuf);
+
+    printf("Got: %d\n", a);
+    return 0;
+}
+
+
+
+*/
 class RegisterData
 {
 
@@ -45,23 +119,11 @@ public:
         {
             (float *)data_ = value;
         }
+        std::get_if
     }
 
     private:
-    // Underlying Data Type
-    typedef enum
-    {
-        UI8,
-        UI16,
-        UI32,
-        I8,
-        I16,
-        I32,
-        FLOAT
-    } DataType;
-
-    DataType type_;
-    //void *data_; // Pointer to register memory location
+    // Pointer to register memory location
     std::variant<uint8_t*, uint16_t*, uint32_t*, int8_t*, int16_t*, int32_t*, float*> data_;
 };
 
