@@ -37,6 +37,9 @@
 #include <Logger.h>
 
 //UARTDevice* RegisterInterface::gUART = 0;
+
+Register* RegisterInterface::register_map_[10] = {};
+
 RegisterInterface::RegisterInterface()
 {
     
@@ -51,18 +54,19 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
     register_command_t *cmd;
     cmd = (register_command_t *)command.data;
 
-    std::bitset<2> rwx(cmd->rwx);
-    std::bitset<12> address(cmd->address);
-    std::bitset<8> byte1(cmd->data[0]);
-    std::bitset<8> byte2(cmd->data[1]);
+    // std::bitset<2> rwx(cmd->rwx);
+    // std::bitset<12> address(cmd->address);
+    // std::bitset<8> byte1(cmd->data[0]);
+    // std::bitset<8> byte2(cmd->data[1]);
 
-    Logger::Instance().Print("Address: %s\r\n", address.to_string().c_str());
+    register_map_[cmd->address]->Set(0, (uint8_t *)cmd->data + 2);
+    Logger::Instance().Print("Address: %d : \r\n", cmd->address);
 }
 
-void RegisterInterface::AddRegister(uint16_t lookup_address, int *mem_address)
+void RegisterInterface::AddRegister(uint16_t lookup_address, Register *reg)
 {
-    Logger::Instance().Print("Adding: %d: %d\r\n",lookup_address, (int)mem_address);
-    register_map_[lookup_address] = (uint32_t)mem_address;
+    Logger::Instance().Print("Adding: %d: %d\r\n",lookup_address, reg->Get<uint16_t>(0));
+    register_map_[lookup_address] = reg;//(uint32_t)mem_address;
 
-    *mem_address = 10;
+    //*mem_address = 10;
 }

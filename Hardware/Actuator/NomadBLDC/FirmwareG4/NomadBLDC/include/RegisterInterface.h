@@ -29,135 +29,164 @@
 
 // C++ System Files
 #include <variant>
+#include <vector>
+#include <functional>
 
 // Project Includes
 #include <Peripherals/uart.h>
 #include <Peripherals/fdcan.h>
-
-
-
-
-// C System Files
-
-// C++ System Files
-#include <variant>
-#include <vector>
-#include <cstdint>
-#include <iostream>
-#include <memory>
-// Project Includes
-/*
+#include <Logger.h>
 
 class RegisterData
 {
 public:
-
     template <typename T>
     RegisterData(T value)
     {
         data_ = value;
-        printf("Data: %d\n", *value);
+       // Logger::Instance().Print("Data: %f\r\n", *value);
     }
 
-  // template <typename T>
-   void Set(uint8_t *value)
-   {
-       if (auto data = std::get_if<uint32_t *>(&data_))
-       {
-           **data = *((uint32_t*)value);
-           std::cout << "variant value: " << **data << '\n';
-       }
-   }
-
-private:
-    // Pointer to register memory location
-    std::variant<uint8_t *, uint32_t *> data_;
-};
-
-class Register
-{
-public:
-    void Get();
-
-    template <typename T>
-    void Set(uint16_t offset, T &value)
+    void Set(uint8_t *value)
     {
-        //fields_[offset].
-    }
-
-private:
-    std::vector<RegisterData> fields_;
-};
-
-
-int main()
-{
-    uint32_t a;
-    a = 10;
-    printf("Pointer: %p\n", &a);
-   // std::cout << "Hello: " << &a << std::endl;
-    RegisterData data(&a);
-
-    uint32_t newBuf = 100005;
-    data.Set((uint8_t *)&newBuf);
-
-    printf("Got: %d\n", a);
-    return 0;
-}
-
-
-
-*/
-class RegisterData
-{
-
-public:
-    template <typename T>
-    void Set(T &value)
-    {
-        if(type_ == DataType::FLOAT)
+        if (auto data = std::get_if<uint8_t *>(&data_))
         {
-            (float *)data_ = value;
+            **data = *((uint8_t *)value);
+            Logger::Instance().Print("Variant Value8: %d\r\n", **data);
         }
-        std::get_if
+        else if (auto data = std::get_if<uint16_t *>(&data_))
+        {
+            **data = *((uint16_t *)value);
+            Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+        }
+        else if (auto data = std::get_if<uint32_t *>(&data_))
+        {
+            **data = *((uint32_t *)value);
+            Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+        }
+        else if (auto data = std::get_if<int8_t *>(&data_))
+        {
+            **data = *((uint8_t *)value);
+            Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+        }
+        else if (auto data = std::get_if<int16_t *>(&data_))
+        {
+            **data = *((int16_t *)value);
+            Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+        }
+        else if (auto data = std::get_if<int32_t *>(&data_))
+        {
+            **data = *((int32_t *)value);
+            Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+        }
+        else if (auto data = std::get_if<float *>(&data_))
+        {
+            **data = *((float *)value);
+            Logger::Instance().Print("Float Value32: %d\r\n", **data);
+        }
+    }
+    template <typename T>
+    void Set(T value)
+    {
+        // TODO: Type Ambiguity(int types) Here to resolve from stored type?
+        if (auto data = std::get_if<T *>(&data_))
+        {
+            **data = value;
+            Logger::Instance().Print("Setting Value: %d\r\n", **data);
+        }
+        else
+        {
+            Logger::Instance().Print("UNABLE TO SET TYPE\r\n");
+        }
     }
 
-    private:
+    template <typename T>
+    T Get()
+    {
+        // TODO: Type Ambiguity Here to resolve from stored type?
+        if (auto data = std::get_if<T *>(&data_))
+        {
+            return **data;
+        }
+
+        Logger::Instance().Print("UNABLE TO GET TYPE\r\n");
+        return 0;
+    }
+
+    size_t Size() const
+    {
+        return data_sizes_[data_.index()];
+    }
+
+private:
     // Pointer to register memory location
-    std::variant<uint8_t*, uint16_t*, uint32_t*, int8_t*, int16_t*, int32_t*, float*> data_;
+    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *, std::function<void(void)>> data_;
+
+    // Mirror Type Sizes for Lookups
+    static constexpr size_t data_sizes_[8] = {sizeof(uint8_t),
+                                             sizeof(uint16_t),
+                                             sizeof(uint32_t),
+                                             sizeof(int8_t),
+                                             sizeof(int16_t),
+                                             sizeof(int32_t),
+                                             sizeof(float),
+                                             sizeof(void *)};
 };
 
 class Register
 {
+
 public:
-    void Get();
+
+    Register() : num_fields_(0)
+    {
+
+    }
+    Register(uint16_t num_fields) : num_fields_(num_fields)
+    {
+        fields_.reserve(num_fields_);
+    }
 
     template <typename T>
-    void Set(uint16_t offset, T &value)
+    void AddDataField(uint16_t offset, T value)
     {
-        //fields_[offset].
+        fields_[offset] = RegisterData(value);
+    }
+
+    template <typename T>
+    void Set(uint16_t offset, T value)
+    {
+        fields_[offset].Set(value);
+    }
+
+    void Set(uint16_t offset, uint8_t *data)
+    {
+        fields_[offset].Set(data);
+    }
+
+    // void Set(uint8_t *data, size_t length)
+    // {
+    //     size_t offset = 0;
+    //     for(auto reg : fields_)
+    //     {
+    //         reg.Set(data + offset);
+    //         offset += reg.Size();
+    //     }
+    // }
+
+    template <typename T>
+    T Get(uint16_t offset)
+    {
+        return fields_[offset].Get<T>();
     }
 
 private:
     std::vector<RegisterData> fields_;
+    uint16_t num_fields_;
 };
 
 class RegisterInterface
 {
-    //struct RegisterData {
-    //     // void *data; // Pointer to register memory location
-    //     // void Set(T &value)
-    //     // {
-    //     //     // If Type is float then do -> Check Conversion
-    //     // }
-
-    //     // template <typename T>
-    //     // T Get()
-    //     // {
-
-    //     // }
-    //     // std::variant<uint8_t, uint16_t, uint32_t, float> value;
-    // };
 public:
     static constexpr uint16_t kMaxRegisters = (1<<12);
 
@@ -188,14 +217,15 @@ public:
     RegisterInterface();
 
     // Register Offset Map
-    void AddRegister(uint16_t lookup_address, int *mem_address);
+    void AddRegister(uint16_t lookup_address, Register *reg);
+
     // Store Base Memory Address
     // Register Will Offset From There
     // Support Float Return Precision Options
 
 private:
 
-    uint32_t register_map_[10];
+    static Register* register_map_[10];
 
 };     // namespace RegisterInterface
 #endif // REGISTER_INTERFACE_H_

@@ -88,23 +88,48 @@ void StartCommunicationThreads()
 
     FDCANDevice::FDCAN_msg_t msg;
 
-    msg.data[0] = 0x02;
-    msg.data[1] = 0x03;
+    msg.data[0] = 0x00;
+    msg.data[1] = 0x00;
     msg.data[2] = 0x04;
-
-    std::variant<float *, int *> test_p;
-    test_p = &a;
+    msg.data[3] = 0x04;
 
 
-    a = 100;
+    uint16_t a;
+    a = 10;
+
+    Logger::Instance().Print("Pointer: %p\r\n", &a);
+    Logger::Instance().Print("Hello: %d\r\n", a);
+    RegisterData data(&a);
+
+    Register reg(2);
+    reg.AddDataField(0, &a);
+
+    Logger::Instance().Print("Size: %d\r\n", data.Size());
+
+   // uint32_t newBuf = 1245;
+   // data.Set((uint16_t)15);
+   // data.Set((uint8_t *)&newBuf);
+   Logger::Instance().Print("From Reg: %d\r\n", reg.Get<uint16_t>(0));
+
+    Logger::Instance().Print("Got: %d\r\n", a);
+
+   // std::variant<float *, int *> test_p;
+   // test_p = &a;
+
+
+   // a = 100;
     
-    int k = *std::get<int *>(test_p);
-    //RegisterInterface reg;
+   // int k = *std::get<int *>(test_p);
+    RegisterInterface reg_interface;
+    reg_interface.AddRegister(0x0, &reg);
+    
     //test = 10;
     //reg.AddRegister(0x0, &test);
     RegisterInterface::HandleCommand(msg);
 
-    Logger::Instance().Print("A: %d and %d\r\n", a, k);
+    Logger::Instance().Print("From Reg: %d\r\n", reg.Get<uint16_t>(0));
+
+   // Logger::Instance().Print("A: %d and %d\r\n", a, k);
 }
 
 void StartLEDService()
