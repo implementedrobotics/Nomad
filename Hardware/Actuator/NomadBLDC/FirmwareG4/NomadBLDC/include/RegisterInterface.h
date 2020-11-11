@@ -61,7 +61,8 @@ public:
     } DataType;
 
     DataType type_;
-    void *data_; // Pointer to register memory location
+    //void *data_; // Pointer to register memory location
+    std::variant<uint8_t*, uint16_t*, uint32_t*, int8_t*, int16_t*, int32_t*, float*> data_;
 };
 
 class Register
