@@ -57,10 +57,16 @@
 UARTDevice *uart;
 FDCANDevice *fdcan;
 
-Cordic cordic2;
 
-std::variant<int, float> test;
-int a = 5;
+    // Motor State
+    struct Test_Struct
+    {
+        uint32_t a;
+        uint32_t b;
+        uint32_t c;
+    };
+
+
 void StartCommunicationThreads()
 {
     // Setup some pins
@@ -86,50 +92,56 @@ void StartCommunicationThreads()
     fdcan->EnableIT();
     fdcan->Attach(&RegisterInterface::HandleCommand);
 
+    Test_Struct test_me;
+    test_me.a = 12345;
+    test_me.b = 4321;
+    test_me.c = 1111;
+
+    Test_Struct test_2;
+    test_2.a = 4444;
+    test_2.b = 3333;
+    test_2.c = 2222;
+
+    RegisterInterface::register_command_t test;
+    test.rwx = 2;
+    test.address = 0;
+    test.data_type = 1;
+
+    memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
+
+
     FDCANDevice::FDCAN_msg_t msg;
+    memcpy(msg.data, test.data, 64);
 
-    msg.data[0] = 0x00;
-    msg.data[1] = 0x00;
-    msg.data[2] = 0x04;
-    msg.data[3] = 0x04;
+    uint16_t pole_count = 12;
+    uint16_t encoder_count = 1600;
 
+    Register motor_config_register;
+    motor_config_register.AddDataField(&pole_count);
+    motor_config_register.AddDataField(&encoder_count);
 
-    uint16_t a;
-    a = 10;
+    Register full_reg;
+    full_reg.AddDataField((uint8_t *)&test_me);
+    full_reg.Set(0, (uint8_t*)&test_2, 12);
 
-    Logger::Instance().Print("Pointer: %p\r\n", &a);
-    Logger::Instance().Print("Hello: %d\r\n", a);
-    RegisterData data(&a);
+    // uint32_t newBuf = 1245;
+    // data.Set((uint16_t)15);
+    // data.Set((uint8_t *)&newBuf);
 
-    Register reg(2);
-    reg.AddDataField(0, &a);
+    Logger::Instance().Print("From Reg: %d\r\n", motor_config_register.Get<uint16_t>(0));
 
-    Logger::Instance().Print("Size: %d\r\n", data.Size());
+    Logger::Instance().Print("Got: %d\r\n", pole_count);
 
-   // uint32_t newBuf = 1245;
-   // data.Set((uint16_t)15);
-   // data.Set((uint8_t *)&newBuf);
-   Logger::Instance().Print("From Reg: %d\r\n", reg.Get<uint16_t>(0));
-
-    Logger::Instance().Print("Got: %d\r\n", a);
-
-   // std::variant<float *, int *> test_p;
-   // test_p = &a;
-
-
-   // a = 100;
-    
-   // int k = *std::get<int *>(test_p);
     RegisterInterface reg_interface;
-    reg_interface.AddRegister(0x0, &reg);
-    
+    reg_interface.AddRegister(0x0, &motor_config_register);
+
     //test = 10;
     //reg.AddRegister(0x0, &test);
     RegisterInterface::HandleCommand(msg);
 
-    Logger::Instance().Print("From Reg: %d\r\n", reg.Get<uint16_t>(0));
+    Logger::Instance().Print("From Reg: %d\r\n", motor_config_register.Get<uint16_t>(0));
 
-   // Logger::Instance().Print("A: %d and %d\r\n", a, k);
+    // Logger::Instance().Print("A: %d and %d\r\n", a, k);
 }
 
 void StartLEDService()

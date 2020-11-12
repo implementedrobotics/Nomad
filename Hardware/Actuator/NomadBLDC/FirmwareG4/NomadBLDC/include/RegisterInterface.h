@@ -44,9 +44,17 @@ public:
     RegisterData(T value)
     {
         data_ = value;
-       // Logger::Instance().Print("Data: %f\r\n", *value);
+       // Logger::Instance().Print("Data Now: %d\r\n", *value);
     }
 
+    void Set(uint8_t *value, size_t length)
+    {
+        if (auto data = std::get_if<uint8_t *>(&data_))
+        {
+            Logger::Instance().Print("Byte Array Copy: %d\r\n", length);
+            memcpy(data, value, length);
+        }
+    }
     void Set(uint8_t *value)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
@@ -138,19 +146,15 @@ class Register
 
 public:
 
-    Register() : num_fields_(0)
+    Register()
     {
-
-    }
-    Register(uint16_t num_fields) : num_fields_(num_fields)
-    {
-        fields_.reserve(num_fields_);
     }
 
     template <typename T>
-    void AddDataField(uint16_t offset, T value)
+    void AddDataField(T value)
     {
-        fields_[offset] = RegisterData(value);
+      //  Logger::Instance().Print("IN ADD: %d\r\n", fields_.size());
+        fields_.push_back(RegisterData(value));
     }
 
     template <typename T>
@@ -159,9 +163,11 @@ public:
         fields_[offset].Set(value);
     }
 
-    void Set(uint16_t offset, uint8_t *data)
+    // Set from Byte Array
+    void Set(uint16_t offset, uint8_t *data, size_t length)
     {
-        fields_[offset].Set(data);
+        // TODO: Should just cash the size of the register
+        fields_[offset].Set(data, length);
     }
 
     // void Set(uint8_t *data, size_t length)
@@ -182,13 +188,13 @@ public:
 
 private:
     std::vector<RegisterData> fields_;
-    uint16_t num_fields_;
 };
+
 
 class RegisterInterface
 {
 public:
-    static constexpr uint16_t kMaxRegisters = (1<<12);
+    static constexpr uint16_t kMaxRegisters = (1 << 12); // 12-bit addressing
 
     // TODO: Address field is too large.  But keeping clean alignment math here
     struct register_command_t
@@ -200,19 +206,11 @@ public:
                 uint32_t rwx : 2;       // Read/Write/Execute
                 uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
                 uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
+                uint8_t cmd_data[62];
             };
             uint8_t data[64];
         };
     };
-
-    typedef enum
-    {
-        MotorStatus = 0x00,
-        ControllerStatus = 0x01,
-    } RegisterAddress_e;
-
-
-    static void HandleCommand(FDCANDevice::FDCAN_msg_t &command);
 
     RegisterInterface();
 
@@ -223,9 +221,11 @@ public:
     // Register Will Offset From There
     // Support Float Return Precision Options
 
-private:
 
-    static Register* register_map_[10];
+    static void HandleCommand(FDCANDevice::FDCAN_msg_t &command);
+
+private:
+    static Register *register_map_[10];
 
 };     // namespace RegisterInterface
 #endif // REGISTER_INTERFACE_H_

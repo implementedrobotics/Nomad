@@ -39,7 +39,6 @@
 //UARTDevice* RegisterInterface::gUART = 0;
 
 Register* RegisterInterface::register_map_[10] = {};
-
 RegisterInterface::RegisterInterface()
 {
     
@@ -53,7 +52,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
 {
     register_command_t *cmd;
     cmd = (register_command_t *)command.data;
-
+    Logger::Instance().Print("Command: %d\r\n", cmd->rwx);
     // std::bitset<2> rwx(cmd->rwx);
     // std::bitset<12> address(cmd->address);
     // std::bitset<8> byte1(cmd->data[0]);
@@ -66,7 +65,5 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
 void RegisterInterface::AddRegister(uint16_t lookup_address, Register *reg)
 {
     Logger::Instance().Print("Adding: %d: %d\r\n",lookup_address, reg->Get<uint16_t>(0));
-    register_map_[lookup_address] = reg;//(uint32_t)mem_address;
-
-    //*mem_address = 10;
+    register_map_[lookup_address] = reg;
 }
