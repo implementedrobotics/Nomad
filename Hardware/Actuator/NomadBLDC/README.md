@@ -2,7 +2,7 @@
 
 NOMAD BLDC is a Compact High Bandwidth, High Performance Motor Control For Use in Robotics.
 
-  - Designed for the STM32G747 microcontroller and the Texas Instruments DRV8323 Gate Driver.
+  - Designed for the STM32G474 microcontroller and the Texas Instruments DRV8323 Gate Driver.
   - Uses Field Oriented Control methods to achieve high efficiency/torque.
   - Integrated Absolute Encoder (AMS AS5147) provides rotor position for commutation as well as output shaft position.
   - CAN BUS Interface for sending actuator commands and reading back actuator state to be used by an external robot controller.
