@@ -44,15 +44,24 @@ public:
     RegisterData(T value)
     {
         data_ = value;
+        data_size_ = data_sizes_[data_.index()];
        // Logger::Instance().Print("Data Now: %d\r\n", *value);
     }
 
-    void Set(uint8_t *value, size_t length)
+    template <typename T>
+    RegisterData(T value, size_t size) // For struct/class types
+    {
+        data_ = value;
+        data_size_ = size;
+       // Logger::Instance().Print("Data Now: %d\r\n", *value);
+    }
+
+    void SetFromBytes(uint8_t *value)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
         {
-            Logger::Instance().Print("Byte Array Copy: %d\r\n", length);
-            memcpy(data, value, length);
+            Logger::Instance().Print("Byte Array Copy: %d\r\n", data_size_);
+            memcpy(data, value, data_size_);
         }
     }
     void Set(uint8_t *value)
@@ -123,7 +132,8 @@ public:
 
     size_t Size() const
     {
-        return data_sizes_[data_.index()];
+        //return data_sizes_[data_.index()];
+        return data_size_;
     }
 
 private:
@@ -139,6 +149,8 @@ private:
                                              sizeof(int32_t),
                                              sizeof(float),
                                              sizeof(void *)};
+    
+    size_t data_size_;
 };
 
 class Register
@@ -158,16 +170,24 @@ public:
     }
 
     template <typename T>
+    void AddStructField(T value)
+    {
+      //  Logger::Instance().Print("IN ADD: %d\r\n", fields_.size());
+        fields_.push_back(RegisterData((uint8_t *)value, sizeof(*value)));
+    }
+
+    template <typename T>
     void Set(uint16_t offset, T value)
     {
         fields_[offset].Set(value);
     }
 
     // Set from Byte Array
-    void Set(uint16_t offset, uint8_t *data, size_t length)
+    template <typename T>
+    void SetFromBytes(uint16_t offset, T *data)
     {
-        // TODO: Should just cash the size of the register
-        fields_[offset].Set(data, length);
+        // TODO: Should just cache the size of the register
+        fields_[offset].SetFromBytes((uint8_t *)data);
     }
 
     // void Set(uint8_t *data, size_t length)

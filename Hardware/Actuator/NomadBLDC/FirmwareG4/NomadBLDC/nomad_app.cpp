@@ -121,8 +121,9 @@ void StartCommunicationThreads()
     motor_config_register.AddDataField(&encoder_count);
 
     Register full_reg;
-    full_reg.AddDataField((uint8_t *)&test_me);
-    full_reg.Set(0, (uint8_t*)&test_2, 12);
+    //full_reg.AddDataField((uint8_t *)&test_me);
+    full_reg.AddStructField(&test_me);
+    full_reg.SetFromBytes(0, &test_2);
 
     // uint32_t newBuf = 1245;
     // data.Set((uint16_t)15);
