@@ -1,5 +1,4 @@
 # Firmware TODO:
-* Verify CAN Messaging
 * Keep alive support
 * Speed Controller ***
 * Position limits on output?
@@ -16,4 +15,10 @@
 * Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
 * SPI DMA? ADC DMA?
 * Add Theta Electrical + Speed Feedword in FOC
-* Increase Clock to 170mhz
+* Register Command Interfaace Class
+* FD CAN Peripheral Abort Request
+* FD CAN Error Handler Function
+* Peripheral Base Class
+* Move Load/Save Config out of Motor Controller
+* Double check too big ints in functions.  I.E. Motor config has 32-bit ints that could be uint8
+* Profile/Optimize CAN Interrupt Handling Function

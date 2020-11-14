@@ -86,6 +86,11 @@
         "vec4ub": "cpp",
         "vec4ui": "cpp",
         "vec4us": "cpp",
-        "viewport": "cpp"
+        "viewport": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "typeindex": "cpp",
+        "bitset": "cpp",
+        "variant": "cpp"
     }
 }
