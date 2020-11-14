@@ -75,6 +75,6 @@ void Logger::Print(const char *format ...)
     va_end(vaArgs);
 
     // Log command
-    CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
-    //uart_->SendString(zc.data());
+    //CommandHandler::LogCommand(std::string(zc.data(), zc.size()));
+    uart_->SendString(zc.data());
 } 
