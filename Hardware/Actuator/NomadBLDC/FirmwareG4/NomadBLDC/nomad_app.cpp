@@ -53,19 +53,10 @@
 #include <motor_controller_interface.h>
 #include <MotorController.h>
 #include <RegisterInterface.h>
-#include <variant>
+
+
 UARTDevice *uart;
 FDCANDevice *fdcan;
-
-
-    // Motor State
-    struct Test_Struct
-    {
-        uint32_t a;
-        uint32_t b;
-        uint32_t c;
-    };
-
 
 void StartCommunicationThreads()
 {
@@ -75,7 +66,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::ASCII_MODE);
+    uart->SetMode(UARTDevice::HDLC_MODE);
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
     // TODO: Need to make this a proper class
@@ -90,59 +81,55 @@ void StartCommunicationThreads()
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
-    fdcan->Attach(&RegisterInterface::HandleCommand);
+//     fdcan->Attach(&RegisterInterface::HandleCommand);
 
-    Test_Struct test_me;
-    test_me.a = 12345;
-    test_me.b = 4321;
-    test_me.c = 1111;
+//     Test_Struct test_me;
+//     test_me.a = 12345;
+//     test_me.b = 4321;
+//     test_me.c = 1111;
 
-    Test_Struct test_2;
-    test_2.a = 4444;
-    test_2.b = 3333;
-    test_2.c = 2222;
+//     Test_Struct test_2;
+//     test_2.a = 4444;
+//     test_2.b = 3333;
+//     test_2.c = 2222;
 
-    RegisterInterface::register_command_t test;
-    test.rwx = 2;
-    test.address = 0;
-    test.data_type = 1;
+//     RegisterInterface::register_command_t test;
+//     test.rwx = 1;
+//     test.address = 0;
+//     test.data_type = 1;
 
-    memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
+//     uint16_t new_val=  24;
+
+//     memcpy(&test.cmd_data, (uint8_t *)&new_val, sizeof(uint16_t));
+
+//     //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
 
 
-    FDCANDevice::FDCAN_msg_t msg;
-    memcpy(msg.data, test.data, 64);
+//     FDCANDevice::FDCAN_msg_t msg;
+//     memcpy(msg.data, test.data, 64);
 
-    uint16_t pole_count = 12;
-    uint16_t encoder_count = 1600;
+//     uint16_t pole_count = 12;
+//     uint16_t encoder_count = 1600;
 
-    Register motor_config_register;
-    motor_config_register.AddDataField(&pole_count);
-    motor_config_register.AddDataField(&encoder_count);
+//     Register motor_config_register;
+//     motor_config_register.AddDataField(&pole_count);
+//     motor_config_register.AddDataField(&encoder_count);
 
-    Register full_reg;
-    //full_reg.AddDataField((uint8_t *)&test_me);
-    full_reg.AddStructField(&test_me);
-    full_reg.SetFromBytes(0, &test_2);
+//     Register full_reg;
+//     //full_reg.AddDataField((uint8_t *)&test_me);
+//     full_reg.AddStructField(&test_me);
+//     //full_reg.SetFromBytes(0, &test_2);
 
-    // uint32_t newBuf = 1245;
-    // data.Set((uint16_t)15);
-    // data.Set((uint8_t *)&newBuf);
+//     // uint32_t newBuf = 1245;
+//     // data.Set((uint16_t)15);
+//     // data.Set((uint8_t *)&newBuf);
 
-    Logger::Instance().Print("From Reg: %d\r\n", motor_config_register.Get<uint16_t>(0));
+//    // Logger::Instance().Print("From Reg: %d\r\n", motor_config_register.Get<uint16_t>(0));
 
-    Logger::Instance().Print("Got: %d\r\n", pole_count);
-
-    RegisterInterface reg_interface;
-    reg_interface.AddRegister(0x0, &motor_config_register);
-
-    //test = 10;
-    //reg.AddRegister(0x0, &test);
-    RegisterInterface::HandleCommand(msg);
-
-    Logger::Instance().Print("From Reg: %d\r\n", motor_config_register.Get<uint16_t>(0));
-
-    // Logger::Instance().Print("A: %d and %d\r\n", a, k);
+//     RegisterInterface reg_interface;
+//     reg_interface.AddRegister(0x0, &motor_config_register);
+//     RegisterInterface::HandleCommand(msg);
+//     Logger::Instance().Print("Got New: %d\r\n", pole_count);
 }
 
 void StartLEDService()
@@ -186,17 +173,17 @@ extern "C" int app_main() //
     StartCommunicationThreads();
     osDelay(100);
 
-    // // Init LED Service Task
-    // StartLEDService();
-    // osDelay(50);
+    // Init LED Service Task
+    StartLEDService();
+    osDelay(50);
 
-    // // Start Motor Control Task
-    // StartMotorControlThread();
-    // osDelay(100);
+    // Start Motor Control Task
+    StartMotorControlThread();
+    osDelay(100);
 
-    // // Start Misc Polling Task
-    // StartPollingThread();
-    // osDelay(5);
+    // Start Misc Polling Task
+    StartPollingThread();
+    osDelay(5);
 
     // osDelay(3000);
 
@@ -210,18 +197,18 @@ extern "C" int app_main() //
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
-    uint8_t Tx_Data[10] = {0x5,0x10,0x11,0x12,0x12,0x12,0x12,0x12,0x12,0x12};
+   // uint8_t Tx_Data[10] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12};
 
-   // int i =0;
+    // int i =0;
     // Infinite Loop.
     for (;;)
     {
-            fdcan->Send(0x001, Tx_Data, 10);
-            osDelay(100);
-            //uint16_t length;
-           // fdcan->Receive(Rx_Data, length);
-           // Logger::Instance().Print("Here: %d\r\n", i++);
-            //osDelay(50);
+       // fdcan->Send(0x001, Tx_Data, 10);
+        osDelay(1000);
+        //uint16_t length;
+        // fdcan->Receive(Rx_Data, length);
+        // Logger::Instance().Print("Here: %d\r\n", i++);
+        //osDelay(50);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();
 
@@ -234,8 +221,6 @@ extern "C" int app_main() //
         // elapsed_ticks = start_ticks-stop_ticks;
         //  uint32_t span = DWT->CYCCNT;
     }
-
-
 
     // Should not get here
     return 0;

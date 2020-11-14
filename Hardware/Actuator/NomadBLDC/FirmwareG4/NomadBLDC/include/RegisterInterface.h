@@ -31,6 +31,7 @@
 #include <variant>
 #include <vector>
 #include <functional>
+#include <cstring>
 
 // Project Includes
 #include <Peripherals/uart.h>
@@ -130,6 +131,48 @@ public:
         return 0;
     }
 
+    uint16_t GetBytes(uint8_t *bytes)
+    {
+        if (auto data = std::get_if<uint8_t *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+        else if (auto data = std::get_if<uint16_t *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+        else if (auto data = std::get_if<uint32_t *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+        else if (auto data = std::get_if<int8_t *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+        else if (auto data = std::get_if<int16_t *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+        else if (auto data = std::get_if<int32_t *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+        else if (auto data = std::get_if<float *>(&data_))
+        {
+            std::memcpy(bytes, data, Size());
+            return Size();
+        }
+
+        Logger::Instance().Print("UNABLE TO GET BYTESD\r\n");
+        return 0;
+    }
+
     size_t Size() const
     {
         //return data_sizes_[data_.index()];
@@ -150,7 +193,14 @@ private:
                                              sizeof(float),
                                              sizeof(void *)};
     
+    // Data Size For Register
     size_t data_size_;
+
+    // TODO: Setup max/min ranges for register data
+    // Make for now always a float and convert types for checks
+    // Or we could use a variant here
+    float max_value_;
+    float min_value_;
 };
 
 class Register
@@ -165,15 +215,14 @@ public:
     template <typename T>
     void AddDataField(T value)
     {
-      //  Logger::Instance().Print("IN ADD: %d\r\n", fields_.size());
         fields_.push_back(RegisterData(value));
     }
 
     template <typename T>
-    void AddStructField(T value)
+    void AddStructField(T *value)
     {
-      //  Logger::Instance().Print("IN ADD: %d\r\n", fields_.size());
-        fields_.push_back(RegisterData((uint8_t *)value, sizeof(*value)));
+        fields_.push_back(RegisterData((uint8_t *)value, sizeof(T)));
+        //GOT: %d\r\n", sizeof(T));
     }
 
     template <typename T>
@@ -189,6 +238,14 @@ public:
         // TODO: Should just cache the size of the register
         fields_[offset].SetFromBytes((uint8_t *)data);
     }
+
+    // Get from Byte Array
+    uint16_t GetBytes(uint16_t offset, uint8_t *data)
+    {
+        // TODO: Should just cache the size of the register
+        return fields_[offset].GetBytes(data);
+    }
+
 
     // void Set(uint8_t *data, size_t length)
     // {
@@ -219,20 +276,37 @@ public:
     // TODO: Address field is too large.  But keeping clean alignment math here
     struct register_command_t
     {
-        union
+        union // Union for mapping the full 64-byte data packet
         {
             struct
             {
                 uint32_t rwx : 2;       // Read/Write/Execute
                 uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
                 uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-                uint8_t cmd_data[62];
-            };
-            uint8_t data[64];
+                uint8_t cmd_data[60];   // Data Buffer
+                // 2 reserved Bytes
+            }; 
+            uint8_t data[64];           // Full 64-byte command buffer FDCAN
         };
     };
 
-    RegisterInterface();
+    struct register_reply_t
+    {
+        union // Union for mapping the full 64-byte data packet
+        {
+            struct
+            {
+                uint32_t id : 8;        // Node ID Reply
+                uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
+                uint32_t code : 4;      // Return Code
+                uint8_t cmd_data[60];   // Data Buffer REturn
+            }; 
+            uint8_t data[64];           // Full 64-byte command buffer FDCAN
+        };
+    };
+
+
+    RegisterInterface(); 
 
     // Register Offset Map
     void AddRegister(uint16_t lookup_address, Register *reg);
@@ -240,8 +314,6 @@ public:
     // Store Base Memory Address
     // Register Will Offset From There
     // Support Float Return Precision Options
-
-
     static void HandleCommand(FDCANDevice::FDCAN_msg_t &command);
 
 private:
