@@ -38,6 +38,33 @@
 #include <Peripherals/fdcan.h>
 #include <Logger.h>
 
+typedef enum
+{
+    DeviceStatusRegister1 = 0x00,
+    // Device Status Register1 Offsets
+    DeviceFirmwareMajor = 0x01,
+    DeviceFirmwareMinor = 0x02,
+    DeviceUID1 = 0x03,
+    DeviceUID2 = 0x04,
+    DeviceUID3 = 0x05,
+    DeviceUptime = 0x06,
+    // Reserved = 0x07,
+    // Reserved = 0x08,
+    // Reserved = 0x09,
+    // End Device Status Register
+} DeviceRegisters_e;
+
+// TODO: Where to put this?
+struct DeviceStatusRegister1_t
+{
+    uint8_t fw_major;          // Firmware Version Major
+    uint8_t fw_minor;          // Firmware Version Minor
+    uint32_t uid1;             // Device Unique ID 1
+    uint32_t uid2;             // Device Unique ID 2
+    uint32_t uid3;             // Device Unique ID 3
+    uint32_t uptime;           // Device Uptime
+};
+
 class RegisterData
 {
 public:
@@ -208,8 +235,19 @@ class Register
 
 public:
 
-    Register()
+    // Single Valued Register
+    template <typename T>
+    Register(T value)
     {
+        AddDataField(value);
+    }
+
+    // Struct Valued Register
+    template <typename T>
+    Register(T value, bool is_struct)
+    {
+        if(is_struct)
+            AddStructField(value);
     }
 
     template <typename T>
@@ -219,10 +257,10 @@ public:
     }
 
     template <typename T>
-    void AddStructField(T *value)
+    void AddStructField(T value)
     {
-        fields_.push_back(RegisterData((uint8_t *)value, sizeof(T)));
-        //GOT: %d\r\n", sizeof(T));
+       fields_.push_back(RegisterData((uint8_t *)value, sizeof(T)));
+       Logger::Instance().Print("Got: %d\r\n", sizeof(T));
     }
 
     template <typename T>
@@ -245,7 +283,6 @@ public:
         // TODO: Should just cache the size of the register
         return fields_[offset].GetBytes(data);
     }
-
 
     // void Set(uint8_t *data, size_t length)
     // {
@@ -273,7 +310,7 @@ class RegisterInterface
 public:
     static constexpr uint16_t kMaxRegisters = (1 << 12); // 12-bit addressing
 
-    // TODO: Address field is too large.  But keeping clean alignment math here
+    // TODO: Address field is bit too large.  But keeping clean alignment math here
     struct register_command_t
     {
         union // Union for mapping the full 64-byte data packet
@@ -299,17 +336,19 @@ public:
                 uint32_t id : 8;        // Node ID Reply
                 uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
                 uint32_t code : 4;      // Return Code
-                uint8_t cmd_data[60];   // Data Buffer REturn
+                uint8_t cmd_data[60];   // Data Buffer Return
             }; 
             uint8_t data[64];           // Full 64-byte command buffer FDCAN
         };
     };
 
-
-    RegisterInterface(); 
+   // RegisterInterface(); 
 
     // Register Offset Map
-    void AddRegister(uint16_t lookup_address, Register *reg);
+    static void AddRegister(uint16_t address, Register *reg);
+
+    static Register* GetRegister(uint16_t address);
+
 
     // Store Base Memory Address
     // Register Will Offset From There

@@ -37,9 +37,9 @@
 #include <Logger.h>
 
 Register* RegisterInterface::register_map_[10] = {};
-RegisterInterface::RegisterInterface()
-{    
-}
+// RegisterInterface::RegisterInterface()
+// {    
+// }
 
 void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
 {
@@ -76,8 +76,13 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
     
 }
 
-void RegisterInterface::AddRegister(uint16_t lookup_address, Register *reg)
+void RegisterInterface::AddRegister(uint16_t address, Register *reg)
 {
-   // Logger::Instance().Print("Adding: %d: %d\r\n",lookup_address, reg->Get<uint16_t>(0));
-    register_map_[lookup_address] = reg;
+    //Logger::Instance().Print("Adding: %d: %d\r\n",address, reg->Get<uint16_t>(0));
+    register_map_[address] = reg;
+}
+
+Register* RegisterInterface::GetRegister(uint16_t address)
+{
+    return register_map_[address];
 }

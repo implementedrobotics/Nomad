@@ -73,7 +73,7 @@ struct __attribute__((__aligned__(8))) Save_format_t
     uint8_t position_reserved[128]; // Reserved;
     MotorController::Config_t controller_config;
     uint8_t controller_reserved[128]; // Reserved;
-    //CANHandler::Config_t can_config;
+    //FDCANDevice::Config_t can_config;
     //uint8_t can_reserved[128]; // Reserved;
 };
 

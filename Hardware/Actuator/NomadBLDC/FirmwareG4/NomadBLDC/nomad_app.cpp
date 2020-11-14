@@ -55,8 +55,11 @@
 #include <RegisterInterface.h>
 
 
+
+// TODO: Where to put these globals?
 UARTDevice *uart;
 FDCANDevice *fdcan;
+DeviceStatusRegister1_t device_status_reg_1;
 
 void StartCommunicationThreads()
 {
@@ -81,8 +84,10 @@ void StartCommunicationThreads()
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
-//     fdcan->Attach(&RegisterInterface::HandleCommand);
+    fdcan->Attach(&RegisterInterface::HandleCommand);
 
+
+    Logger::Instance().Print("Device ID: %d\r\n", LL_DBGMCU_GetDeviceID());
 //     Test_Struct test_me;
 //     test_me.a = 12345;
 //     test_me.b = 4321;
@@ -162,6 +167,51 @@ void StartPollingThread()
     osThreadNew(ms_poll_task, NULL, &task_attributes);
 }
 
+void SetupDeviceRegisters()
+{
+
+    // Update Versioning
+    device_status_reg_1.fw_major = VERSION_MAJOR;
+    device_status_reg_1.fw_minor = VERSION_MINOR;
+
+    //Get UID
+    uint32_t *uid = (uint32_t *)UID_BASE;
+    device_status_reg_1.uid1 = uid[0];
+    device_status_reg_1.uid2 = uid[1];
+    device_status_reg_1.uid3 = uid[2];
+
+    // Add Register Addresses
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&device_status_reg_1, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&device_status_reg_1.fw_major));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&device_status_reg_1.fw_minor));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&device_status_reg_1.uid1));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID2, new Register(&device_status_reg_1.uid2));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&device_status_reg_1.uid3));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&device_status_reg_1.uptime));
+
+
+    RegisterInterface::register_command_t test;
+    test.rwx = 1;
+    test.address = DeviceRegisters_e::DeviceFirmwareMinor;
+    test.data_type = 1;
+
+    uint8_t new_val=  24;
+
+    memcpy(&test.cmd_data, (uint8_t *)&new_val, sizeof(uint8_t));
+
+    //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
+
+
+    FDCANDevice::FDCAN_msg_t msg;
+    memcpy(msg.data, test.data, 64);
+
+    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceFirmwareMinor);
+    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint8_t>(0));
+
+     RegisterInterface::HandleCommand(msg);
+     Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint8_t>(0));
+
+}
 void DebugTask()
 {
 }
@@ -185,6 +235,10 @@ extern "C" int app_main() //
     StartPollingThread();
     osDelay(5);
 
+    // Setup Device Registers
+    SetupDeviceRegisters();
+    osDelay(5);
+
     // osDelay(3000);
 
     // Init a temp debug Task
@@ -204,6 +258,9 @@ extern "C" int app_main() //
     for (;;)
     {
        // fdcan->Send(0x001, Tx_Data, 10);
+
+       // Update Device Stats
+       device_status_reg_1.uptime = HAL_GetTick()/1000;
         osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);
