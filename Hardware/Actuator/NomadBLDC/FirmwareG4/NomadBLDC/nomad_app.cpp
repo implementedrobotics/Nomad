@@ -59,7 +59,7 @@
 // TODO: Where to put these globals?
 UARTDevice *uart;
 FDCANDevice *fdcan;
-DeviceStatusRegister1_t device_status_reg_1;
+DeviceStatusRegister1_t DSR1; // Device Status Register
 
 void StartCommunicationThreads()
 {
@@ -85,56 +85,7 @@ void StartCommunicationThreads()
     fdcan->Enable();
     fdcan->EnableIT();
     fdcan->Attach(&RegisterInterface::HandleCommand);
-
-
-    Logger::Instance().Print("Device ID: %d\r\n", LL_DBGMCU_GetDeviceID());
-//     Test_Struct test_me;
-//     test_me.a = 12345;
-//     test_me.b = 4321;
-//     test_me.c = 1111;
-
-//     Test_Struct test_2;
-//     test_2.a = 4444;
-//     test_2.b = 3333;
-//     test_2.c = 2222;
-
-//     RegisterInterface::register_command_t test;
-//     test.rwx = 1;
-//     test.address = 0;
-//     test.data_type = 1;
-
-//     uint16_t new_val=  24;
-
-//     memcpy(&test.cmd_data, (uint8_t *)&new_val, sizeof(uint16_t));
-
-//     //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
-
-
-//     FDCANDevice::FDCAN_msg_t msg;
-//     memcpy(msg.data, test.data, 64);
-
-//     uint16_t pole_count = 12;
-//     uint16_t encoder_count = 1600;
-
-//     Register motor_config_register;
-//     motor_config_register.AddDataField(&pole_count);
-//     motor_config_register.AddDataField(&encoder_count);
-
-//     Register full_reg;
-//     //full_reg.AddDataField((uint8_t *)&test_me);
-//     full_reg.AddStructField(&test_me);
-//     //full_reg.SetFromBytes(0, &test_2);
-
-//     // uint32_t newBuf = 1245;
-//     // data.Set((uint16_t)15);
-//     // data.Set((uint8_t *)&newBuf);
-
-//    // Logger::Instance().Print("From Reg: %d\r\n", motor_config_register.Get<uint16_t>(0));
-
-//     RegisterInterface reg_interface;
-//     reg_interface.AddRegister(0x0, &motor_config_register);
-//     RegisterInterface::HandleCommand(msg);
-//     Logger::Instance().Print("Got New: %d\r\n", pole_count);
+    //Logger::Instance().Print("Device ID: %d\r\n", LL_DBGMCU_GetDeviceID());
 }
 
 void StartLEDService()
@@ -171,44 +122,43 @@ void SetupDeviceRegisters()
 {
 
     // Update Versioning
-    device_status_reg_1.fw_major = VERSION_MAJOR;
-    device_status_reg_1.fw_minor = VERSION_MINOR;
+    DSR1.fw_major = VERSION_MAJOR;
+    DSR1.fw_minor = VERSION_MINOR;
 
     //Get UID
     uint32_t *uid = (uint32_t *)UID_BASE;
-    device_status_reg_1.uid1 = uid[0];
-    device_status_reg_1.uid2 = uid[1];
-    device_status_reg_1.uid3 = uid[2];
+    DSR1.uid1 = uid[0];
+    DSR1.uid2 = uid[1];
+    DSR1.uid3 = uid[2];
 
     // Add Register Addresses
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&device_status_reg_1, true));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&device_status_reg_1.fw_major));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&device_status_reg_1.fw_minor));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&device_status_reg_1.uid1));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID2, new Register(&device_status_reg_1.uid2));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&device_status_reg_1.uid3));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&device_status_reg_1.uptime));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR1.fw_major));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR1.fw_minor));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&DSR1.uid1));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID2, new Register(&DSR1.uid2));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR1.uid3));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR1.uptime));
 
 
     RegisterInterface::register_command_t test;
     test.rwx = 1;
-    test.address = DeviceRegisters_e::DeviceFirmwareMajor;
+    test.address = DeviceRegisters_e::DeviceUID1;
     test.data_type = 1;
-    *test.cmd_data = 24;
-    //uint8_t new_val=  24;
+    uint32_t new_val=  24;
 
-    //memcpy(&test.cmd_data, (uint8_t *)&new_val, sizeof(uint8_t));
+    memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
 
     //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
 
     FDCANDevice::FDCAN_msg_t msg;
     memcpy(msg.data, test.data, 64);
 
-    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceFirmwareMajor);
-    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint8_t>());
+    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
+    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
 
     RegisterInterface::HandleCommand(msg);
-    Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint8_t>());
+    Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
 }
 void DebugTask()
 {
@@ -258,7 +208,7 @@ extern "C" int app_main() //
        // fdcan->Send(0x001, Tx_Data, 10);
 
        // Update Device Stats
-       device_status_reg_1.uptime = HAL_GetTick()/1000;
+       DSR1.uptime = HAL_GetTick()/1000;
         osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);

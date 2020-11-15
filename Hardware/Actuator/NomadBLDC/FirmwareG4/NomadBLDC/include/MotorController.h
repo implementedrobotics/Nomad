@@ -133,30 +133,19 @@ public:
         uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
     };
 
+
     struct State_t
     {
-        // Current Control
+        // Current State
         float I_d;                   // Transformed Current (D Axis)
         float I_q;                   // Transformed Current (Q Axis)
 
-        float I_d_ref;               // Current Reference (D Axis)
-        float I_q_ref;               // Current Reference (Q Axis)
+        // Voltage State
+        float V_d;                   // Voltage (D Axis)
+        float V_q;                   // Voltage (Q Axis)
 
         float d_int;                 // Current Integral Error
         float q_int;                 // Current Integral Error
-
-        float V_d;                   // Voltage (D Axis)
-        float V_q;                   // Voltage (Q Axis)
-        volatile float V_d_ref;      // Voltage Reference (D Axis)
-        volatile float V_q_ref;      // Voltage Reference (Q Axis)
-        volatile float Voltage_bus;  // Bus Voltage
-
-        // Torque Control
-        volatile float Pos_ref;      // Position Setpoint Reference
-        volatile float Vel_ref;      // Velocity Setpoint Reference
-        volatile float K_p;          // Position Gain N*m/rad
-        volatile float K_d;          // Velocity Gain N*m/rad/s
-        volatile float T_ff;         // Feed Forward Torque Value N*m
 
         // Duty Cycles
         float dtc_A;                 // Duty Cycle for A phase
@@ -167,13 +156,29 @@ public:
         float I_rms;                 // Motor RMS Current Value
         float I_max;                 // Maximum Allowable Commanded Current in next Time Step
 
-        float I_bus;                 // Bus Current
-      
-        // Temps
-        float fet_temp;              // FET Temperature
-
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
+
+        // Voltage Control Setpoints
+        volatile float V_d_ref; // Voltage Reference (D Axis)
+        volatile float V_q_ref; // Voltage Reference (Q Axis)
+
+        // Current Control Setpoints
+        float I_d_ref; // Current Reference (D Axis)
+        float I_q_ref; // Current Reference (Q Axis)
+
+        // Torque Control Setpoints
+        volatile float Pos_ref;      // Position Setpoint Reference
+        volatile float Vel_ref;      // Velocity Setpoint Reference
+        volatile float K_p;          // Position Gain N*m/rad
+        volatile float K_d;          // Velocity Gain N*m/rad/s
+        volatile float T_ff;         // Feed Forward Torque Value N*m
+
+
+        // TODO: Remove these when ported fully
+        float Voltage_bus;
+        float I_bus;
+        float fet_temp;
     };
 
     struct Debug_t                    // Debug Struct
@@ -253,8 +258,6 @@ public:
     
 private:
 
-
-    
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 
     bool control_thread_ready_;                 // Controller thread ready/active

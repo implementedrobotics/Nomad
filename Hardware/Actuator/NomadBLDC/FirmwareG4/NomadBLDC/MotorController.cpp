@@ -616,13 +616,13 @@ void MotorController::EnablePWM(bool enable)
 
 void MotorController::UpdateControllerGains()
 {
-    float crossover_freq = config_.current_bandwidth * controller_update_period_ * 2 * PI;
+    float crossover_freq = config_.current_bandwidth * controller_update_period_ * 2 * M_PI;
     float k_i = 1 - exp(-motor_->config_.phase_resistance * controller_update_period_ / motor->config_.phase_inductance_q);
     float k = motor->config_.phase_resistance * ((crossover_freq) / k_i);
 
     config_.k_d = config_.k_q = k;
     config_.k_i_d = config_.k_i_q = k_i;
-    config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * PI);
+    config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
 
     dirty_ = true;
 }

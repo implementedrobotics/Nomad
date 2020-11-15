@@ -37,7 +37,7 @@ class PositionSensorAS5x47
 {
 
 public:
-    // Motor Parameters
+    // Encoder Parameters
     struct Config_t
     {
         float offset_elec;       // Electrical Position Offset (Radians)
