@@ -59,7 +59,7 @@
 // TODO: Where to put these globals?
 UARTDevice *uart;
 FDCANDevice *fdcan;
-DeviceStatusRegister1_t DSR1; // Device Status Register
+DeviceStatusRegister2_t DSR2; // Device Status Register
 
 void StartCommunicationThreads()
 {
@@ -122,24 +122,23 @@ void SetupDeviceRegisters()
 {
 
     // Update Versioning
-    DSR1.fw_major = VERSION_MAJOR;
-    DSR1.fw_minor = VERSION_MINOR;
+    DSR2.fw_major = VERSION_MAJOR;
+    DSR2.fw_minor = VERSION_MINOR;
 
     //Get UID
     uint32_t *uid = (uint32_t *)UID_BASE;
-    DSR1.uid1 = uid[0];
-    DSR1.uid2 = uid[1];
-    DSR1.uid3 = uid[2];
+    DSR2.uid1 = uid[0];
+    DSR2.uid2 = uid[1];
+    DSR2.uid3 = uid[2];
 
     // Add Register Addresses
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR1.fw_major));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR1.fw_minor));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&DSR1.uid1));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID2, new Register(&DSR1.uid2));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR1.uid3));
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR1.uptime));
-
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR2, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR2.fw_major));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR2.fw_minor));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&DSR2.uid1));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID2, new Register(&DSR2.uid2));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR2.uid3));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
     RegisterInterface::register_command_t test;
     test.rwx = 1;
@@ -205,10 +204,10 @@ extern "C" int app_main() //
     // Infinite Loop.
     for (;;)
     {
-       // fdcan->Send(0x001, Tx_Data, 10);
+        // fdcan->Send(0x001, Tx_Data, 10);
 
-       // Update Device Stats
-       DSR1.uptime = HAL_GetTick()/1000;
+        // Update Device Stats
+        DSR2.uptime = HAL_GetTick() / 1000;
         osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);

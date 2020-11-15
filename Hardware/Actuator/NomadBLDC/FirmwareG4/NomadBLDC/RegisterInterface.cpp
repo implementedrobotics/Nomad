@@ -36,7 +36,7 @@
 #include <Peripherals/fdcan.h>   
 #include <Logger.h>
 
-Register* RegisterInterface::register_map_[10] = {};
+Register* RegisterInterface::register_map_[kMaxRegisters] = {};
 // RegisterInterface::RegisterInterface()
 // {    
 // }

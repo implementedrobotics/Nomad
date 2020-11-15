@@ -39,7 +39,7 @@
 #include <Logger.h>
 
 /* Device Registers */
-typedef enum
+typedef enum // Device Status Register
 {
     DeviceStatusRegister1 = 0x00,
     // Device Status Register 1 Offsets
@@ -48,7 +48,7 @@ typedef enum
     DeviceVoltageBus = 0x03,
     DeviceCurrentBus = 0x04,
     DeviceFETTemp = 0x05,
-    DeviceWindingTemp = 0x06,
+    // Reserved = 0x06,
     // Reserved = 0x07,
     // Reserved = 0x08,
     // Reserved = 0x09,
@@ -72,17 +72,17 @@ typedef enum
 
 
 /* Motor Controller Registers */
-typedef enum
+typedef enum // Controller Config Register
 {
     ControllerConfigRegister1 = 0x16,
     // Controller Config Register 1 Offsets
-    K_LOOP_D = 0x17,              // Current Controller Loop Gain (D Axis)
-    K_LOOP_Q = 0x18,              // Current Controller Loop Gain (Q Axis)
+    K_LOOP_D = 0x17,         // Current Controller Loop Gain (D Axis)
+    K_LOOP_Q = 0x18,         // Current Controller Loop Gain (Q Axis)
     K_I_D = 0x19,            // Current Controller Integrator Gain (D Axis)
     K_I_Q = 0x1A,            // Current Controller Integrator Gain (Q Axis)
     CurrentBandwidth = 0x1B, // Current Loop Bandwidth (200 to 2000 hz)
     Overmodulation = 0x1C,   // Overmodulation Amount
-    PWM_Frequency = 0x1D,     // PWM Switching Frequency
+    PWM_Frequency = 0x1D,    // PWM Switching Frequency
     FOC_Divider = 0x1E,      // Divider to use for FOC Current control loop frequency
     // Reserved = 0x1F,
     // Reserved = 0x20,
@@ -107,7 +107,7 @@ typedef enum
     // End Device Status Register 2
 } ControllerConfigRegisters_e;
 
-typedef enum
+typedef enum // Controller State Register
 {
     ControllerStateRegister1 = 0x30,
     // Controller State Register 1 Offsets
@@ -120,9 +120,9 @@ typedef enum
     DutyCycleA = 0x37,        // Duty Cycle for A phase
     DutyCycleB = 0x38,        // Duty Cycle for B phase
     DutyCycleC = 0x39,        // Duty Cycle for C phase
-    CurrentRMS = 0x3A, // Motor RMS Current Value
-    MaxCurrent = 0x3B, // Maximum Allowable Commanded Current in next Time Step
-    Timeout = 0x3C, // Missed Input Control Deadline Count
+    CurrentRMS = 0x3A,        // Motor RMS Current Value
+    MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
+    Timeout = 0x3C,           // Missed Input Control Deadline Count
     // Reserved = 0x3D,
     // Reserved = 0x3E,
     // Reserved = 0x3F,
@@ -130,21 +130,21 @@ typedef enum
 
     ControllerStateRegister2 = 0x40,
     // Controller State Register 2 Offsets
-        VoltageControlModeRegister = 0x41,
-            // Voltage Control Register Offsets
-            V_Setpoint_D = 0x42, // Voltage Reference (D Axis)
-            V_Setpoint_Q = 0x43, // Voltage Reference (Q Axis)
-        // Current Control Register Offsets
-        CurrenteControlModeRegister = 0x44,
-            I_Setpoint_D = 0x45, // Current Reference (D Axis)
-            I_Setpoint_Q = 0x46, // Current Reference (Q Axis)
-        // Torque Control Register Offsets
-        TorqueControlModeRegister = 0x47,
-            PositionSetpoint = 0x48, // Position Setpoint Reference
-            VelocitySetpoint = 0x49, // Velocity Setpoint Reference
-            K_P = 0x4A, // Position Gain N*m/rad
-            K_D = 0x4B, // Velocity Gain N*m/rad/s
-            Torque_FF = 0x4C, // Feed Forward Torque Value N*m
+    VoltageControlModeRegister = 0x41,
+    // Voltage Control Register Offsets
+    V_Setpoint_D = 0x42, // Voltage Reference (D Axis)
+    V_Setpoint_Q = 0x43, // Voltage Reference (Q Axis)
+    // Current Control Register Offsets
+    CurrenteControlModeRegister = 0x44,
+    I_Setpoint_D = 0x45, // Current Reference (D Axis)
+    I_Setpoint_Q = 0x46, // Current Reference (Q Axis)
+    // Torque Control Register Offsets
+    TorqueControlModeRegister = 0x47,
+    PositionSetpoint = 0x48, // Position Setpoint Reference
+    VelocitySetpoint = 0x49, // Velocity Setpoint Reference
+    K_P = 0x4A,              // Position Gain N*m/rad
+    K_D = 0x4B,              // Velocity Gain N*m/rad/s
+    Torque_FF = 0x4C,        // Feed Forward Torque Value N*m
     // Reserved = 0x4D,
     // Reserved = 0x4E,
     // Reserved = 0x4F,
@@ -152,7 +152,7 @@ typedef enum
 } ControllerStateRegisters_e;
 
 /* Motor Registers */
-typedef enum
+typedef enum // Motor Config Register
 {
     MotorConfigRegister1 = 0x50,
     // Motor Config Register 1 Offsets
@@ -193,7 +193,7 @@ typedef enum
     // End Motor Calibration Config Register
 } MotorConfigRegisters_e;
 
-typedef enum
+typedef enum // Motor State Register
 {
     MotorStateRegister1 = 0x6D,
     // Motor State Register 1 Offsets
@@ -216,7 +216,7 @@ typedef enum
 } MotorStateRegisters_e;
 
 /* Encoder Registers */
-typedef enum
+typedef enum // Encoder Config Register
 {
     EncoderConfigRegister1 = 0x80,
     // Encoder Config Register Offsets
@@ -244,6 +244,15 @@ typedef enum
 
 // TODO: Where to put this?
 struct DeviceStatusRegister1_t
+{
+    uint16_t fault_mode;   // Fault Mode
+    uint16_t control_mode; // Controller Mode
+    float V_bus;           // Voltage Bus
+    float I_bus;           // Current Bus
+    float fet_temp;        // FET Temperatures
+};
+
+struct DeviceStatusRegister2_t
 {
     uint8_t fw_major;          // Firmware Version Major
     uint8_t fw_minor;          // Firmware Version Minor
@@ -504,7 +513,7 @@ private:
 class RegisterInterface
 {
 public:
-    static constexpr uint16_t kMaxRegisters = (1 << 12); // 12-bit addressing
+    static constexpr uint16_t kMaxRegisters = (200); // 12-bit addressing
 
     // TODO: Address field is bit too large.  But keeping clean alignment math here
     struct register_command_t
@@ -552,7 +561,7 @@ public:
     static void HandleCommand(FDCANDevice::FDCAN_msg_t &command);
 
 private:
-    static Register *register_map_[10];
+    static Register *register_map_[kMaxRegisters];
 
 };     // namespace RegisterInterface
 #endif // REGISTER_INTERFACE_H_
