@@ -80,7 +80,7 @@ void StartCommunicationThreads()
     Logger::Instance().SetUART(uart);
 
     // Start CAN (1mbps Nominal Rate w/ 5mbps Data Rate)
-    fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 5e6);
+    fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 2e6);
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
@@ -198,13 +198,13 @@ extern "C" int app_main() //
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
-   // uint8_t Tx_Data[10] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12};
+    uint8_t Tx_Data[10] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12};
 
     // int i =0;
     // Infinite Loop.
     for (;;)
     {
-        // fdcan->Send(0x001, Tx_Data, 10);
+        fdcan->Send(0x001, Tx_Data, 10);
 
         // Update Device Stats
         DSR2.uptime = HAL_GetTick() / 1000;
