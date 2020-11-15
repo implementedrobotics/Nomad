@@ -96,37 +96,44 @@ public:
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
         {
-            **data = *((uint8_t *)value);
+            //**data = *((uint8_t *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value8: %d\r\n", **data);
         }
         else if (auto data = std::get_if<uint16_t *>(&data_))
         {
-            **data = *((uint16_t *)value);
+            //**data = *((uint16_t *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value16: %d\r\n", **data);
         }
         else if (auto data = std::get_if<uint32_t *>(&data_))
         {
-            **data = *((uint32_t *)value);
+            //**data = *((uint32_t *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value32: %d\r\n", **data);
         }
         else if (auto data = std::get_if<int8_t *>(&data_))
         {
-            **data = *((uint8_t *)value);
+            //**data = *((uint8_t *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value8: %d\r\n", **data);
         }
         else if (auto data = std::get_if<int16_t *>(&data_))
         {
-            **data = *((int16_t *)value);
+            //**data = *((int16_t *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value16: %d\r\n", **data);
         }
         else if (auto data = std::get_if<int32_t *>(&data_))
         {
-            **data = *((int32_t *)value);
+            //**data = *((int32_t *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value32: %d\r\n", **data);
         }
         else if (auto data = std::get_if<float *>(&data_))
         {
-            **data = *((float *)value);
+            //**data = *((float *)value);
+            memcpy(*data, value, Size());
             Logger::Instance().Print("Float Value32: %d\r\n", **data);
         }
     }
@@ -158,41 +165,41 @@ public:
         return 0;
     }
 
-    uint16_t GetBytes(uint8_t *bytes)
+    uint16_t Get(uint8_t *bytes)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
         else if (auto data = std::get_if<uint16_t *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
         else if (auto data = std::get_if<uint32_t *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
         else if (auto data = std::get_if<int8_t *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
         else if (auto data = std::get_if<int16_t *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
         else if (auto data = std::get_if<int32_t *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
         else if (auto data = std::get_if<float *>(&data_))
         {
-            std::memcpy(bytes, data, Size());
+            std::memcpy(bytes, *data, Size());
             return Size();
         }
 
@@ -200,7 +207,7 @@ public:
         return 0;
     }
 
-    size_t Size() const
+    size_t inline Size() const
     {
         //return data_sizes_[data_.index()];
         return data_size_;
@@ -264,24 +271,24 @@ public:
     }
 
     template <typename T>
-    void Set(uint16_t offset, T value)
+    void Set(T value, uint16_t offset = 0)
     {
         fields_[offset].Set(value);
     }
 
     // Set from Byte Array
     template <typename T>
-    void SetFromBytes(uint16_t offset, T *data)
+    void SetFromBytes(T *data, uint16_t offset = 0)
     {
         // TODO: Should just cache the size of the register
         fields_[offset].SetFromBytes((uint8_t *)data);
     }
 
     // Get from Byte Array
-    uint16_t GetBytes(uint16_t offset, uint8_t *data)
+    uint16_t Get(uint8_t *data, uint16_t offset = 0)
     {
         // TODO: Should just cache the size of the register
-        return fields_[offset].GetBytes(data);
+        return fields_[offset].Get(data);
     }
 
     // void Set(uint8_t *data, size_t length)
@@ -295,7 +302,7 @@ public:
     // }
 
     template <typename T>
-    T Get(uint16_t offset)
+    T Get(uint16_t offset = 0)
     {
         return fields_[offset].Get<T>();
     }

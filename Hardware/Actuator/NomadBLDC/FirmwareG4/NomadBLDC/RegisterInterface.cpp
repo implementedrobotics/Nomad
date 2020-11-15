@@ -53,13 +53,13 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
         register_reply_t reply;
         // Read
         Logger::Instance().Print("Address: %d \r\n", cmd->address);
-        Logger::Instance().Print("READ: %d\r\n", register_map_[cmd->address]->GetBytes(0, reply.cmd_data));
+        Logger::Instance().Print("READ: %d\r\n", register_map_[cmd->address]->Get(reply.cmd_data, 0));
     }
     else if(cmd->rwx == 1)
     {
         // Write
         Logger::Instance().Print("Write: %d : \r\n", cmd->address);
-        register_map_[cmd->address]->Set(0, (uint8_t *)cmd->cmd_data);
+        register_map_[cmd->address]->Set((uint8_t *)cmd->cmd_data, 0);
     }
     else if(cmd->rwx == 2)
     {
@@ -70,10 +70,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
     // std::bitset<2> rwx(cmd->rwx);
     // std::bitset<12> address(cmd->address);
     // std::bitset<8> byte1(cmd->data[0]);
-    // std::bitset<8> byte2(cmd->data[1]);
-
-    
-    
+    // std::bitset<8> byte2(cmd->data[1]);   
 }
 
 void RegisterInterface::AddRegister(uint16_t address, Register *reg)

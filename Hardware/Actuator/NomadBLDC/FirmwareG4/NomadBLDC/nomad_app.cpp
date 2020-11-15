@@ -192,25 +192,23 @@ void SetupDeviceRegisters()
 
     RegisterInterface::register_command_t test;
     test.rwx = 1;
-    test.address = DeviceRegisters_e::DeviceFirmwareMinor;
+    test.address = DeviceRegisters_e::DeviceFirmwareMajor;
     test.data_type = 1;
+    *test.cmd_data = 24;
+    //uint8_t new_val=  24;
 
-    uint8_t new_val=  24;
-
-    memcpy(&test.cmd_data, (uint8_t *)&new_val, sizeof(uint8_t));
+    //memcpy(&test.cmd_data, (uint8_t *)&new_val, sizeof(uint8_t));
 
     //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
-
 
     FDCANDevice::FDCAN_msg_t msg;
     memcpy(msg.data, test.data, 64);
 
-    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceFirmwareMinor);
-    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint8_t>(0));
+    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceFirmwareMajor);
+    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint8_t>());
 
-     RegisterInterface::HandleCommand(msg);
-     Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint8_t>(0));
-
+    RegisterInterface::HandleCommand(msg);
+    Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint8_t>());
 }
 void DebugTask()
 {
