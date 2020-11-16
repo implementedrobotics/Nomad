@@ -40,7 +40,7 @@ FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t 
     config_.id = node_id;          // Lowest Priority Standard ID (2047 max 11-bit)
     config_.bitrate = bitrate;   // 250 kbps
     config_.d_bitrate = dbitrate; // 250 kbps
-    config_.sample_point = 0.8f;           // 80%
+    config_.sample_point = 0.80f;           // 80%
     config_.d_sample_point = 0.625f;    // 62.5%
     config_.mode_fd = 1;         // FD CAN ( Default to FD CAN? It is my preference anyways...)
 

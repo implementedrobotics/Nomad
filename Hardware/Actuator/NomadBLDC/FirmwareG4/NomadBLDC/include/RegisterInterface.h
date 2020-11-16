@@ -235,10 +235,15 @@ typedef enum // Encoder Config Register
 
 } EncoderConfigRegisters_e;
 
+/* CAN Config Registers */
 
+/* UART Config Registers */
+
+/* Misc Config Registers */
 /* Error State Registers */
 
 /* Gate Drive Registers */
+// TODO: CSA Options
 
 
 
