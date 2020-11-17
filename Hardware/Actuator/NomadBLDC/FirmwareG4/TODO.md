@@ -15,10 +15,12 @@
 * Add ADC Start Poll/Read decouple.  Start ADC do other stuff read later
 * SPI DMA? ADC DMA?
 * Add Theta Electrical + Speed Feedword in FOC
-* Register Command Interfaace Class
 * FD CAN Peripheral Abort Request
 * FD CAN Error Handler Function
 * Peripheral Base Class
 * Move Load/Save Config out of Motor Controller
 * Double check too big ints in functions.  I.E. Motor config has 32-bit ints that could be uint8
 * Profile/Optimize CAN Interrupt Handling Function
+* PCAN FD 80mhz bit timings - 
+1mbps = Prescaler = 1, tseg1 = 63(prop 47), tseg2 = 16, SJW = 16, SP = 80%
+5mbps = Prescaler = 1, tseg1 = 9(prop 0),  tseg2 = 6,  SJW = 6,  SP = 62.5%

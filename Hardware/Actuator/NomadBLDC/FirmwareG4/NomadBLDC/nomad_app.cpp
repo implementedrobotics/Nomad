@@ -132,7 +132,7 @@ void SetupDeviceRegisters()
     DSR2.uid3 = uid[2];
 
     // Add Register Addresses
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR2, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister2, new Register(&DSR2, true));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR2.fw_major));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR2.fw_minor));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&DSR2.uid1));

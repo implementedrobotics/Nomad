@@ -37,12 +37,12 @@ static FDCANDevice* g_ISR_VTABLE[FDCANDevice::kMaxInterrupts];
 
 FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t bitrate, uint32_t dbitrate) : FDCAN_(FDCAN), enable_interrupt_(false), timings_valid_(false)
 {
-    config_.id = node_id;          // Lowest Priority Standard ID (2047 max 11-bit)
-    config_.bitrate = bitrate;   // 250 kbps
-    config_.d_bitrate = dbitrate; // 250 kbps
-    config_.sample_point = 0.80f;           // 80%
-    config_.d_sample_point = 0.625f;    // 62.5%
-    config_.mode_fd = 1;         // FD CAN ( Default to FD CAN? It is my preference anyways...)
+    config_.id = node_id;            // Lowest Priority Standard ID (2047 max 11-bit)
+    config_.bitrate = bitrate;       // 250 kbps
+    config_.d_bitrate = dbitrate;    // 250 kbps
+    config_.sample_point = 0.80f;    // 80%
+    config_.d_sample_point = 0.625f; // 62.5%
+    config_.mode_fd = 1;             // FD CAN ( Default to FD CAN? It is my preference anyways...)
 
     // For some reason using the stack is not working and communications is faulty. This should not effect or perf.
     hfdcan_ = new FDCAN_HandleTypeDef();
