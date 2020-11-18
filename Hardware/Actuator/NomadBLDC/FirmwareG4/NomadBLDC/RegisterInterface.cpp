@@ -45,26 +45,26 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
 {
     register_command_t *cmd;
     cmd = (register_command_t *)command.data;
-    Logger::Instance().Print("Command: %d\r\n", cmd->rwx);
+    Logger::Instance().Print("Command: %d\r\n", cmd->header.rwx);
     //Logger::Instance().Print("Address: %d : \r\n", cmd->address);
 
-    if(cmd->rwx == 0)
+    if(cmd->header.rwx == 0)
     {
         register_reply_t reply;
         // Read
-        Logger::Instance().Print("Address: %d \r\n", cmd->address);
-        Logger::Instance().Print("READ: %d\r\n", register_map_[cmd->address]->Get(reply.cmd_data, 0));
+        Logger::Instance().Print("Address: %d \r\n", cmd->header.address);
+        Logger::Instance().Print("READ: %d\r\n", register_map_[cmd->header.address]->Get(reply.cmd_data, 0));
     }
-    else if(cmd->rwx == 1)
+    else if(cmd->header.rwx == 1)
     {
         // Write
-        Logger::Instance().Print("Write: %d : \r\n", cmd->address);
-        register_map_[cmd->address]->Set((uint8_t *)cmd->cmd_data, 0);
+        Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
+        register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
     }
-    else if(cmd->rwx == 2)
+    else if(cmd->header.rwx == 2)
     {
         // Run Function
-        Logger::Instance().Print("Execute: %d : \r\n", cmd->address);
+        Logger::Instance().Print("Execute: %d : \r\n", cmd->header.address);
     }
     
     // std::bitset<2> rwx(cmd->rwx);

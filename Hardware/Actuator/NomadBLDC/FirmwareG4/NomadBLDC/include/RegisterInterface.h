@@ -518,24 +518,29 @@ private:
 class RegisterInterface
 {
 public:
-    static constexpr uint16_t kMaxRegisters = (200); // 12-bit addressing
+    static constexpr uint16_t kMaxRegisters = (200); // 8-bit addressing
 
     // TODO: Address field is bit too large.  But keeping clean alignment math here
+    struct header_t // 3 Bytes
+    {
+        uint32_t sender_id : 6; // Node ID of Sender
+        uint32_t rwx : 2;       // Read/Write/Execute
+        uint32_t address : 8;   // 10-bit address (256 Max Addresses)
+        uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
+        uint32_t length : 6;    // Expected payload length
+        //uint32_t reserved: 8;   // Reserved
+    };
+
     struct register_command_t
     {
-        union // Union for mapping the full 64-byte data packet
+        union
         {
             struct
             {
-                // Payload Length in Header?
-                uint32_t rwx : 2;       // Read/Write/Execute
-                uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
-                uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-                uint8_t cmd_data[60];   // Data Buffer
-                // 2 reserved Bytes
-                //uint8_t reserved[2];  // Reserved
-            }; 
-            uint8_t data[64];           // Full 64-byte command buffer FDCAN
+                header_t header;      // Command Header
+                uint8_t cmd_data[60]; // Command Data Buffer Payload
+            };
+            uint8_t data[64]; // Full 64-byte command buffer FDCAN
         };
     };
 

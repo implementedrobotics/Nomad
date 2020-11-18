@@ -141,9 +141,9 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
     RegisterInterface::register_command_t test;
-    test.rwx = 1;
-    test.address = DeviceRegisters_e::DeviceUID1;
-    test.data_type = 1;
+    test.header.rwx = 1;
+    test.header.address = DeviceRegisters_e::DeviceUID1;
+    test.header.data_type = 1;
     uint32_t new_val=  24;
 
     memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
@@ -151,7 +151,7 @@ void SetupDeviceRegisters()
     //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
 
     FDCANDevice::FDCAN_msg_t msg;
-    memcpy(msg.data, test.data, 64);
+    memcpy(msg.data, &test, 64);
 
     Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
     Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
