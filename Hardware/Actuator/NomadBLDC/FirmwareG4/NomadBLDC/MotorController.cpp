@@ -39,6 +39,7 @@
 #include <Peripherals/cordic.h>
 #include <Peripherals/adc.h>
 #include <Peripherals/thermistor.h>
+#include <RegisterInterface.h>
 
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
@@ -285,6 +286,26 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
+    // Setup Registers
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister1, new Register(&config_, true));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_D, new Register(&config_.k_d));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_Q, new Register(&config_.k_q));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_D, new Register(&config_.k_i_d));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_Q, new Register(&config_.k_i_q));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentBandwidth, new Register(&config_.current_bandwidth));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::Overmodulation, new Register(&config_.overmodulation));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PWM_Frequency, new Register(&config_.pwm_freq));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::FOC_Divider, new Register(&config_.foc_ccl_divider));
+
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register(&config_.K_p_min, true));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Min, new Register(&config_.K_p_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Max, new Register(&config_.K_p_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Min, new Register(&config_.K_d_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Max, new Register(&config_.K_d_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::VelocityLimit, new Register(&config_.velocity_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimit, new Register(&config_.position_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::TorqueLimit, new Register(&config_.torque_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentLimit, new Register(&config_.current_limit));
 }
 void MotorController::Reset()
 {

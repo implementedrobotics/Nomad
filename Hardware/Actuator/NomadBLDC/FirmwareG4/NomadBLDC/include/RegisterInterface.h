@@ -243,7 +243,7 @@ typedef enum // Encoder Config Register
 /* Error State Registers */
 
 /* Gate Drive Registers */
-// TODO: CSA Options
+// TODO: Current Sense Amp Options
 
 
 

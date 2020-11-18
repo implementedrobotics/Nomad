@@ -59,7 +59,9 @@
 // TODO: Where to put these globals?
 UARTDevice *uart;
 FDCANDevice *fdcan;
-DeviceStatusRegister2_t DSR2; // Device Status Register
+
+DeviceStatusRegister1_t DSR1; // Device Status Register 1
+DeviceStatusRegister2_t DSR2; // Device Status Register 2
 
 void StartCommunicationThreads()
 {
@@ -132,6 +134,16 @@ void SetupDeviceRegisters()
     DSR2.uid3 = uid[2];
 
     // Add Register Addresses
+
+    // Device Status Register 1
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFault, new Register(&DSR1.fault_mode));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceControlMode, new Register(&DSR1.control_mode));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceVoltageBus, new Register(&DSR1.V_bus));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceCurrentBus, new Register(&DSR1.I_bus));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFETTemp, new Register(&DSR1.fet_temp));
+
+    // Device Status Register 2
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister2, new Register(&DSR2, true));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR2.fw_major));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR2.fw_minor));
@@ -159,6 +171,7 @@ void SetupDeviceRegisters()
     RegisterInterface::HandleCommand(msg);
     Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
 }
+
 void DebugTask()
 {
 }
