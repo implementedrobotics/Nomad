@@ -160,19 +160,21 @@ public:
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
 
         // Voltage Control Setpoints
-        volatile float V_d_ref; // Voltage Reference (D Axis)
-        volatile float V_q_ref; // Voltage Reference (Q Axis)
+        struct {
+        float V_d_ref; // Voltage Reference (D Axis)
+        float V_q_ref; // Voltage Reference (Q Axis)
+        };
 
         // Current Control Setpoints
         float I_d_ref; // Current Reference (D Axis)
         float I_q_ref; // Current Reference (Q Axis)
 
         // Torque Control Setpoints
-        volatile float Pos_ref;      // Position Setpoint Reference
-        volatile float Vel_ref;      // Velocity Setpoint Reference
-        volatile float K_p;          // Position Gain N*m/rad
-        volatile float K_d;          // Velocity Gain N*m/rad/s
-        volatile float T_ff;         // Feed Forward Torque Value N*m
+        float Pos_ref;      // Position Setpoint Reference
+        float Vel_ref;      // Velocity Setpoint Reference
+        float K_p;          // Position Gain N*m/rad
+        float K_d;          // Velocity Gain N*m/rad/s
+        float T_ff;         // Feed Forward Torque Value N*m
 
 
         // TODO: Remove these when ported fully

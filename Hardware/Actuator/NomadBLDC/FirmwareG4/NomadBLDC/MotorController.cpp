@@ -306,6 +306,37 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimit, new Register(&config_.position_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::TorqueLimit, new Register(&config_.torque_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentLimit, new Register(&config_.current_limit));
+
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister1, new Register(&state_, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_D, new Register(&state_.I_d));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Q, new Register(&state_.I_q));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_D, new Register(&state_.V_d));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Q, new Register(&state_.V_q));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_D, new Register(&state_.d_int));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_Q, new Register(&state_.q_int));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleA, new Register(&state_.dtc_A));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleB, new Register(&state_.dtc_B));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleC, new Register(&state_.dtc_C));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentRMS, new Register(&state_.I_rms));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::MaxCurrent, new Register(&state_.I_max));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::Timeout, new Register(&state_.timeout));
+
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register(&state_.V_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageControlModeRegister, new Register(&state_.V_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_D, new Register(&state_.V_d_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_Q, new Register(&state_.V_q_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrenteControlModeRegister, new Register(&state_.I_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_D, new Register(&state_.I_d_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_Q, new Register(&state_.I_q_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::TorqueControlModeRegister, new Register(&state_.Pos_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::PositionSetpoint, new Register(&state_.Pos_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::K_P, new Register(&state_.K_p));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::K_D, new Register(&state_.K_d));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
+
+
+
 }
 void MotorController::Reset()
 {
