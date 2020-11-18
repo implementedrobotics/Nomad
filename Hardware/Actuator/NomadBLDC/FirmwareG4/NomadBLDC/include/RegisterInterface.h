@@ -70,7 +70,6 @@ typedef enum // Device Status Register
     // End Device Status Register 2
 } DeviceRegisters_e;
 
-
 /* Motor Controller Registers */
 typedef enum // Controller Config Register
 {
@@ -240,6 +239,7 @@ typedef enum // Encoder Config Register
 /* UART Config Registers */
 
 /* Misc Config Registers */
+
 /* Error State Registers */
 
 /* Gate Drive Registers */
@@ -344,6 +344,84 @@ struct TorqueControlModeRegister_t
     float K_p;     // Position Gain N*m/rad
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
+};
+
+struct MotorConfigRegister1_t
+{
+    uint32_t num_pole_pairs;      // Pole Pairs of Motor (PAIRS)
+    float phase_resistance;       // Phase Resistance (Ohms)
+    float phase_inductance_d;     // D Axis Phase Inductance (Henries)
+    float phase_inductance_q;     // Q Axis Phase Inductance (Henries)
+
+    // TODO: Just flux linkage?
+    float K_v;          // Motor KV Rating (RPM/V)
+    float flux_linkage; // Rotor Flux Linkage (Webers)
+    float K_t;          // Torque Constant (N*m/A)
+
+    // TOOD: No need to store this.  K_t * K_t_out
+    float K_t_out; // Torque Constant @ Output (N*m/A)
+    // TODO: Custom override for torques if measured experimentally?
+    float gear_ratio;    // Gear Box Ratio
+    int32_t phase_order; // Winding Phase Order
+};
+
+struct MotorThermalConfigRegister_t
+{
+    float continuous_current_max; // Thermally calibrated Allowable Continuous Current (A)
+    float continuous_current_tau; // Time Constant for Continuous Current (Seconds)
+};
+
+struct MotorCalibrationConfigRegister_t
+{
+    float calib_current; // Calibration Current
+    float calib_voltage; // Calibration Voltage
+    int32_t calibrated; // Calibrated
+};
+
+struct MotorStateRegister1_t
+{
+    float I_a; // Phase A Currents
+    float I_b; // Phase B Currents
+    float I_c; // Phase C Currents
+
+    //float V_a;          // Phase A Voltage
+    //float V_b;          // Phase B Voltage
+    //float V_c;          // Phase C Voltage
+
+    float theta_mech;      // Mechanical Position @ Output (Radians)
+    float theta_mech_dot;  // Mechanical Velocity @ Output (Radians/Sec)
+    float theta_mech_true; // Mechanical Position @ Output w/ Offset (Radians)
+    float theta_elec;      // Electrical Position @ Rotor (Radians)
+    float theta_elec_dot;  // Electrical Velocity @ Rotor (Radians/Sec)
+
+    float windings_temp; // Motor Windings Temperature (Degrees Celcius)
+};
+
+struct EncoderConfigRegister1_t
+{
+    float offset_elec; // Electrical Position Offset (Radians)
+    float offset_mech; // Mechanical Position Offset (Radians)
+    int32_t cpr;       // Sensor Counts Per Revolution
+};
+
+struct EncoderConfigOffsetLUT1_t
+{
+    int8_t offset_lut[32]; // Offset Lookup Table 1
+};
+
+struct EncoderConfigOffsetLUT2_t
+{
+    int8_t offset_lut[32]; // Offset Lookup Table 2
+};
+
+struct EncoderConfigOffsetLUT3_t
+{
+    int8_t offset_lut[32]; // Offset Lookup Table 3
+};
+
+struct EncoderConfigOffsetLUT4_t
+{
+    int8_t offset_lut[32]; // Offset Lookup Table 4
 };
 
 // TODO: A way to make register field read only?

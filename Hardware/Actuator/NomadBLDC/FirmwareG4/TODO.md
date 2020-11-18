@@ -18,8 +18,10 @@
 * FD CAN Peripheral Abort Request
 * FD CAN Error Handler Function
 * Peripheral Base Class
+* Verify Good Location of Address Flash Page
 * Move Load/Save Config out of Motor Controller
 * Remap Load/Save Config For Motor Controller (reordered our struct)
+* Remap Load/Save Config For Motor (reordered our struct) Make sure we match register mapping
 * Double check too big ints in functions.  I.E. Motor config has 32-bit ints that could be uint8
 * Profile/Optimize CAN Interrupt Handling Function
 * PCAN FD 80mhz bit timings - 

@@ -34,6 +34,7 @@
 #include "main.h"
 #include <Peripherals/gpio.h>
 #include <Utilities/math.h>
+#include <RegisterInterface.h>
 #include <Logger.h>
 
 PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),
@@ -64,6 +65,14 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
     spi_dev_->Enable();
 
     velocity_samples_ = new float[filter_size_];
+
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigRegister1, new Register((EncoderConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::ElectricalOffset, new Register(&config_.offset_elec));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::MechanicalOffset, new Register(&config_.offset_mech));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT1, new Register((EncoderConfigOffsetLUT1_t *)&config_.offset_lut, true));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT2, new Register((EncoderConfigOffsetLUT2_t *)&config_.offset_lut+32, true)); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT3, new Register((EncoderConfigOffsetLUT3_t *)&config_.offset_lut+64, true)); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT4, new Register((EncoderConfigOffsetLUT4_t *)&config_.offset_lut+96, true)); // 32-byte strides
 }
 void PositionSensorAS5x47::Reset()
 {

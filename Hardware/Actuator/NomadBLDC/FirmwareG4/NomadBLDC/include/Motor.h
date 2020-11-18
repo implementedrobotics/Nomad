@@ -49,14 +49,14 @@ public:
         //float V_a;          // Phase A Voltage
         //float V_b;          // Phase B Voltage
         //float V_c;          // Phase C Voltage
-
+        float windings_temp;  // Motor Windings Temperature (Degrees Celcius)
         float theta_mech;     // Mechanical Position @ Output (Radians)
-        float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
         float theta_mech_true;// Mechanical Position @ Output w/ Offset (Radians) 
+        float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
         float theta_elec;     // Electrical Position @ Rotor (Radians)
         float theta_elec_dot; // Electrical Velocity @ Rotor (Radians/Sec)
 
-        float windings_temp;  // Motor Windings Temperature (Degrees Celcius)
+
     };
 
     // Motor Parameters
