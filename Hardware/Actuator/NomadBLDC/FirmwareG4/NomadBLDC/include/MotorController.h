@@ -133,7 +133,6 @@ public:
         uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
     };
 
-
     struct State_t
     {
         // Current State
@@ -160,10 +159,8 @@ public:
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
 
         // Voltage Control Setpoints
-        struct {
         float V_d_ref; // Voltage Reference (D Axis)
         float V_q_ref; // Voltage Reference (Q Axis)
-        };
 
         // Current Control Setpoints
         float I_d_ref; // Current Reference (D Axis)
@@ -175,7 +172,6 @@ public:
         float K_p;          // Position Gain N*m/rad
         float K_d;          // Velocity Gain N*m/rad/s
         float T_ff;         // Feed Forward Torque Value N*m
-
 
         // TODO: Remove these when ported fully
         float Voltage_bus;

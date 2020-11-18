@@ -267,6 +267,84 @@ struct DeviceStatusRegister2_t
     uint32_t uptime;           // Device Uptime
 };
 
+struct ControllerConfigRegister1_t
+{
+    float k_d;                // Current Controller Loop Gain (D Axis)
+    float k_q;                // Current Controller Loop Gain (Q Axis)
+    float k_i_d;              // Current Controller Integrator Gain (D Axis)
+    float k_i_q;              // Current Controller Integrator Gain (Q Axis)
+    float current_bandwidth;  // Current Loop Bandwidth (200 to 2000 hz)
+    float overmodulation;     // Overmodulation Amount
+    float pwm_freq;           // PWM Switching Frequency
+    uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
+};
+
+struct ControllerConfigRegister2_t
+{
+    float K_p_min;            // Position Gain Minimum
+    float K_p_max;            // Position Gain Maximum
+    float K_d_min;            // Velocity Gain Minimum
+    float K_d_max;            // Velocity Gain Maximum
+    float velocity_limit;     // Limit on maximum velocity
+    float position_limit;     // Limit on position input
+    float torque_limit;       // Torque Limit
+    float current_limit;      // Max Current Limit
+};
+
+struct ControllerStateRegister1_t
+{
+    float I_d;        // Transformed Current (D Axis)
+    float I_q;        // Transformed Current (Q Axis)
+    float V_d;        // Voltage (D Axis)
+    float V_q;        // Voltage (Q Axis)
+    float d_int;      // Current Integral Error
+    float q_int;      // Current Integral Error
+    float dtc_A;      // Duty Cycle for A phase
+    float dtc_B;      // Duty Cycle for B phase
+    float dtc_C;      // Duty Cycle for C phase
+    float I_rms;      // Motor RMS Current Value
+    float I_max;      // Maximum Allowable Commanded Current in next Time Step
+    uint32_t timeout; // Keep up with number of controller timeouts for missed deadlines
+};
+
+struct ControllerStateRegister2_t
+{
+    // Voltage Control Setpoints
+    float V_d_ref; // Voltage Reference (D Axis)
+    float V_q_ref; // Voltage Reference (Q Axis)
+
+    // Current Control Setpoints
+    float I_d_ref; // Current Reference (D Axis)
+    float I_q_ref; // Current Reference (Q Axis)
+
+    // Torque Control Setpoints
+    float Pos_ref; // Position Setpoint Reference
+    float Vel_ref; // Velocity Setpoint Reference
+    float K_p;     // Position Gain N*m/rad
+    float K_d;     // Velocity Gain N*m/rad/s
+    float T_ff;    // Feed Forward Torque Value N*m
+};
+
+struct VoltageControlModeRegister_t
+{
+    float V_d_ref; // Voltage Reference (D Axis)
+    float V_q_ref; // Voltage Reference (Q Axis)
+};
+
+struct CurrentControlModeRegister_t
+{
+    float I_d_ref; // Current Reference (D Axis)
+    float I_q_ref; // Current Reference (Q Axis)
+};
+
+struct TorqueControlModeRegister_t
+{
+    float Pos_ref; // Position Setpoint Reference
+    float Vel_ref; // Velocity Setpoint Reference
+    float K_p;     // Position Gain N*m/rad
+    float K_d;     // Velocity Gain N*m/rad/s
+    float T_ff;    // Feed Forward Torque Value N*m
+};
 
 // TODO: A way to make register field read only?
 class RegisterData
