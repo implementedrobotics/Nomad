@@ -18,6 +18,9 @@
 * FD CAN Peripheral Abort Request
 * FD CAN Error Handler Function
 * Peripheral Base Class
+* Add register error check handling lambda/callbacks and scaling
+* https://adl1995.github.io/using-variadic-templates-with-lambda-expressions-in-c-for-constrained-optimization.html
+* Variadic Templates?
 * Verify Good Location of Address Flash Page
 * Move Load/Save Config out of Motor Controller
 * Remap Load/Save Config For Motor Controller (reordered our struct)

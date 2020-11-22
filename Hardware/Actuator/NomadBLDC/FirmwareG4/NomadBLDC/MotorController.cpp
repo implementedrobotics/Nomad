@@ -105,14 +105,25 @@ void init_motor_controller()
     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
 
     // Init Motor and Implicitly Position Sensor
-    motor = new Motor(0.000025f, 80, 21);
+    motor = new Motor(0.000025f, 285, 12);
 
     // Init Motor Controller
     motor_controller = new MotorController(motor);
+
+    // Load Config Here...
+    load_configuration();
+
     motor_controller->Init();
 
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
+
+
+    // motor_controller->PrintConfig();
+    // motor->PrintConfig();
+    // motor->PositionSensor()->PrintConfig();
+
+    // //save_configuration();
 }
 
 // Controller Mode Interface
@@ -261,10 +272,11 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     memset(&state_, 0, sizeof(state_));
 
     // Defaults
-    config_.k_d = 0.0f;
-    config_.k_q = 0.0f;
-    config_.k_i_d = 0.0f;
-    config_.k_i_q = 0.0f;
+    config_.k_d = 0.331800f;
+    config_.k_q = 0.331800f;
+    config_.k_i_d = 0.032600f;
+    config_.k_i_q = 0.032600f;
+    //config_.alpha = 0.186350f;
     config_.overmodulation = 1.0f;
     config_.position_limit = 12.5f; // +/-
     config_.velocity_limit = 10.0f; // +/-
@@ -336,6 +348,13 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
 }
 
+void MotorController::PrintConfig()
+{
+     // Print Configs
+    Logger::Instance().Print("Controller Config: K_d: %f, K_q: %f, K_i_d: %f, K_i_q: %f, overmodulation: %f\r\n", config_.k_d, config_.k_q, config_.k_i_d, config_.k_i_q, config_.overmodulation);
+    Logger::Instance().Print("Controller Config: Vel_Limit: %f, Pos_Limit: %f, Tau_Limit: %f, Current_Limit: %f, Current BW: %f\r\n", config_.velocity_limit, config_.position_limit, config_.torque_limit, config_.current_limit, config_.current_bandwidth);
+    Logger::Instance().Print("Controller Config: K_p_min: %f, K_p_max: %f, K_d_min: %f, K_d_max: %f, PWM Freq: %f, FOC Divder: %d\r\n", config_.K_p_min, config_.K_p_max, config_.K_d_min, config_.K_d_max, config_.pwm_freq, config_.foc_ccl_divider);
+}
 void MotorController::Reset()
 {
     SetModulationOutput(0.0f, 0.0f);
@@ -485,7 +504,7 @@ void MotorController::Init()
     
     // TODO: Member Function with Callback for Command Handler
     // Load Configuration
-    load_configuration();
+   // load_configuration();
 
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
@@ -672,7 +691,7 @@ void MotorController::UpdateControllerGains()
 
     config_.k_d = config_.k_q = k;
     config_.k_i_d = config_.k_i_q = k_i;
-    config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
+    //config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
 
     dirty_ = true;
 }

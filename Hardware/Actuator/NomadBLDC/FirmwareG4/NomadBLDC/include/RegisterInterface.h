@@ -452,6 +452,7 @@ public:
             memcpy(data, value, data_size_);
         }
     }
+
     void Set(uint8_t *value)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
@@ -620,13 +621,17 @@ public:
     template <typename T>
     void AddDataField(T value)
     {
-        fields_.push_back(RegisterData(value));
+        RegisterData add_data(value);
+        fields_.push_back(add_data);
+        data_size_ += add_data.Size();
     }
 
     template <typename T>
     void AddStructField(T value)
     {
-       fields_.push_back(RegisterData((uint8_t *)value, sizeof(T)));
+       RegisterData add_struct((uint8_t *)value, sizeof(T));
+       fields_.push_back(add_struct);
+       data_size_ += add_struct.Size();
     }
 
     template <typename T>
@@ -668,23 +673,35 @@ public:
 
 private:
     std::vector<RegisterData> fields_;
+    size_t data_size_;
 };
 
 
 class RegisterInterface
 {
 public:
-    static constexpr uint16_t kMaxRegisters = (200); // 8-bit addressing
+    static constexpr uint16_t kMaxRegisters = (1 << 8); // 8-bit addressing
 
     // TODO: Address field is bit too large.  But keeping clean alignment math here
-    struct header_t // 3 Bytes
+    struct request_header_t // 3 Bytes
     {
         uint32_t sender_id : 6; // Node ID of Sender
         uint32_t rwx : 2;       // Read/Write/Execute
-        uint32_t address : 8;   // 10-bit address (256 Max Addresses)
+        uint32_t address : 8;   // 8-bit address (256 Max Addresses)
         uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-        uint32_t length : 6;    // Expected payload length
+        uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
         //uint32_t reserved: 8;   // Reserved
+        // MSG/ACK IDs?
+    };
+
+    struct response_header_t // 3 Bytes
+    {
+        uint32_t sender_id : 6; // Node ID of Sender
+        uint32_t address : 8;   // 8-bit address (256 Max Addresses)
+        uint32_t code : 4;      // Return Code
+        uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
+        //uint32_t reserved: 8;   // Reserved
+        // MSG/ACK IDs?
     };
 
     struct register_command_t
@@ -693,8 +710,8 @@ public:
         {
             struct
             {
-                header_t header;      // Command Header
-                uint8_t cmd_data[60]; // Command Data Buffer Payload
+                request_header_t header; // Command Header
+                uint8_t cmd_data[60];    // Command Data Buffer Payload
             };
             uint8_t data[64]; // Full 64-byte command buffer FDCAN
         };
@@ -706,12 +723,10 @@ public:
         {
             struct
             {
-                uint32_t id : 8;        // Node ID Reply
-                uint32_t address : 12;  // 12-bit address (4096 Max Addresses)
-                uint32_t code : 4;      // Return Code
-                uint8_t cmd_data[60];   // Data Buffer Return
-            }; 
-            uint8_t data[64];           // Full 64-byte command buffer FDCAN
+                response_header_t header; // Response Reply Header
+                uint8_t cmd_data[60];     // Data Buffer Return
+            };
+            uint8_t data[64]; // Full 64-byte command buffer FDCAN
         };
     };
 

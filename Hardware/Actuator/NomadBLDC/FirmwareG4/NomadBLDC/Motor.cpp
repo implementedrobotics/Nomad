@@ -47,14 +47,14 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.num_pole_pairs = pole_pairs;
     config_.continuous_current_max = 20.0f; 
     config_.continuous_current_tau = 60.0f;
-    config_.phase_resistance = 0.0f;
-    config_.phase_inductance_d = 0.0f;
-    config_.phase_inductance_q = 0.0f;
+    config_.phase_resistance = 0.068850f;
+    config_.phase_inductance_d = 0.000052f;
+    config_.phase_inductance_q = 0.000052f;
     config_.phase_order = 1;
     config_.calib_current = 10.0f;
     config_.calib_voltage = 2.0f;
     config_.gear_ratio = 1.0f; // No Gearbox by default
-    config_.calibrated = 0;
+    config_.calibrated = 1;
 
     // Update KV Calulations
     SetKV(K_v);
@@ -94,6 +94,14 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
 
     // Setup Position Sensor
     rotor_sensor_ = new PositionSensorAS5x47(sample_time_, config_.num_pole_pairs);
+}
+
+void Motor::PrintConfig()
+{
+     // Print Configs
+    Logger::Instance().Print("Motor Config: PP: %d, I_max: %f, I_tau: %f, R: %f, L_d: %f, L_q: %f\r\n", config_.num_pole_pairs, config_.continuous_current_max, config_.continuous_current_tau, config_.phase_resistance, config_.phase_inductance_d, config_.phase_inductance_q);
+    Logger::Instance().Print("Motor Config: K_v: %f, flux_linkage: %f, K_t: %f, K_t_out: %f, Gear: %f\r\n", config_.K_v, config_.flux_linkage, config_.K_t, config_.K_t_out, config_.gear_ratio);
+    Logger::Instance().Print("Motor Config: Phase Order: %d, Calib I: %f, Calib V: %f, Calibrated: %d\r\n", config_.phase_order, config_.calib_current, config_.calib_voltage, config_.calibrated);
 }
 
 void Motor::SetSampleTime(float sample_time)

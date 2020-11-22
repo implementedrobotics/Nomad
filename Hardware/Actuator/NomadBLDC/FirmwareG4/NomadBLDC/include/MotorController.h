@@ -114,23 +114,27 @@ public:
     // Motor Controller Parameters
     struct Config_t
     {
+        // Config Reg 1
         float k_d;               // Current Controller Loop Gain (D Axis)
         float k_q;               // Current Controller Loop Gain (Q Axis)
         float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
-        float alpha;             // Current Reference Filter Coefficient
-        float overmodulation;    // Overmodulation Amount
-        float velocity_limit;    // Limit on maximum velocity
-        float position_limit;    // Limit on position input
-        float torque_limit;      // Torque Limit
-        float current_limit;     // Max Current Limit
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
+        float overmodulation;    // Overmodulation Amount
+        float pwm_freq;          // PWM Switching Frequency
+        uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
+        uint32_t ccr1_reserved[3]; // Reserved
+        
+        // Config Reg 2
         float K_p_min;           // Position Gain Minimum
         float K_p_max;           // Position Gain Maximum
         float K_d_min;           // Velocity Gain Minimum
         float K_d_max;           // Velocity Gain Maximum
-        float pwm_freq;          // PWM Switching Frequency
-        uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
+        float velocity_limit;    // Limit on maximum velocity
+        float position_limit;    // Limit on position input
+        float torque_limit;      // Torque Limit
+        float current_limit;     // Max Current Limit
+        uint32_t ccr2_reserved[5]; // Reserved
     };
 
     struct State_t
@@ -243,6 +247,8 @@ public:
     void CurrentControl(); // Current Control Loop
     void TorqueControl(); // Torque Control Fucntion
 
+    // TODO: Temp will be removed once tools are all finished.
+    void PrintConfig();
     // Public for now...  TODO: Need something better here
     volatile control_mode_type_t control_mode_; // Controller Mode
 
