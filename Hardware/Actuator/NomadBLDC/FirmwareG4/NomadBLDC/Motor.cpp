@@ -47,14 +47,14 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     config_.num_pole_pairs = pole_pairs;
     config_.continuous_current_max = 20.0f; 
     config_.continuous_current_tau = 60.0f;
-    config_.phase_resistance = 0.068850f;
-    config_.phase_inductance_d = 0.000052f;
-    config_.phase_inductance_q = 0.000052f;
+    config_.phase_resistance = 0.0f;
+    config_.phase_inductance_d = 0.0f;
+    config_.phase_inductance_q = 0.0f;
     config_.phase_order = 1;
     config_.calib_current = 10.0f;
     config_.calib_voltage = 2.0f;
     config_.gear_ratio = 1.0f; // No Gearbox by default
-    config_.calibrated = 1;
+    config_.calibrated = 0;
 
     // Update KV Calulations
     SetKV(K_v);

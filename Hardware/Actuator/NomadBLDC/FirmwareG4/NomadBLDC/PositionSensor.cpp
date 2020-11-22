@@ -51,8 +51,8 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
                                                                                                    dirty_(false)
 {
 
-    config_.offset_elec = 2.203610;
-    config_.offset_mech = 5.051783f;
+    config_.offset_elec = 0.0f;
+    config_.offset_mech = 0.0f;
     config_.cpr = cpr;
     // config_.direction = 1;
    // memset(config_.offset_lut, 0, sizeof(config_.offset_lut));

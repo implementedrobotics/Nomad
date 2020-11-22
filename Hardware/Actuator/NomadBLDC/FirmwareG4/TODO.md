@@ -22,10 +22,6 @@
 * https://adl1995.github.io/using-variadic-templates-with-lambda-expressions-in-c-for-constrained-optimization.html
 * Variadic Templates?
 * Verify Good Location of Address Flash Page
-* Move Load/Save Config out of Motor Controller
-* Remap Load/Save Config For Motor Controller (reordered our struct)
-* Remap Load/Save Config For Motor (reordered our struct) Make sure we match register mapping
-* Double check too big ints in functions.  I.E. Motor config has 32-bit ints that could be uint8
 * Profile/Optimize CAN Interrupt Handling Function
 * PCAN FD 80mhz bit timings - 
 1mbps = Prescaler = 1, tseg1 = 63(prop 47), tseg2 = 16, SJW = 16, SP = 80%

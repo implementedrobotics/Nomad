@@ -272,10 +272,10 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     memset(&state_, 0, sizeof(state_));
 
     // Defaults
-    config_.k_d = 0.331800f;
-    config_.k_q = 0.331800f;
-    config_.k_i_d = 0.032600f;
-    config_.k_i_q = 0.032600f;
+    config_.k_d = 0.0f;
+    config_.k_q = 0.0f;
+    config_.k_i_d = 0.0f;
+    config_.k_i_q = 0.0f;
     //config_.alpha = 0.186350f;
     config_.overmodulation = 1.0f;
     config_.position_limit = 12.5f; // +/-
