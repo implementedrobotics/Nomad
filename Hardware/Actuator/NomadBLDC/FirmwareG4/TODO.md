@@ -19,7 +19,6 @@
 * FD CAN Error Handler Function
 * Peripheral Base Class
 * Add register error check handling lambda/callbacks and scaling
-* https://adl1995.github.io/using-variadic-templates-with-lambda-expressions-in-c-for-constrained-optimization.html
 * Variadic Templates?
 * Verify Good Location of Address Flash Page
 * Profile/Optimize CAN Interrupt Handling Function

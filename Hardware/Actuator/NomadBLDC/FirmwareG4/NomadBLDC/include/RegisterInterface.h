@@ -245,8 +245,6 @@ typedef enum // Encoder Config Register
 /* Gate Drive Registers */
 // TODO: Current Sense Amp Options
 
-
-
 // TODO: Where to put this?
 struct DeviceStatusRegister1_t
 {
@@ -444,72 +442,88 @@ public:
        // Logger::Instance().Print("Data Now: %d\r\n", *value);
     }
 
-    void SetFromBytes(uint8_t *value)
+    bool SetFromBytes(uint8_t *value)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
         {
             Logger::Instance().Print("Byte Array Copy: %d\r\n", data_size_);
             memcpy(data, value, data_size_);
+            return true;
         }
+        return false;
     }
 
-    void Set(uint8_t *value)
+    bool Set(uint8_t *value)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
         {
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+            return true;
         }
         else if (auto data = std::get_if<uint16_t *>(&data_))
         {
             //**data = *((uint16_t *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+            return true;
         }
         else if (auto data = std::get_if<uint32_t *>(&data_))
         {
             //**data = *((uint32_t *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+            return true;
         }
         else if (auto data = std::get_if<int8_t *>(&data_))
         {
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+            return true;
         }
         else if (auto data = std::get_if<int16_t *>(&data_))
         {
             //**data = *((int16_t *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+            return true;
         }
         else if (auto data = std::get_if<int32_t *>(&data_))
         {
             //**data = *((int32_t *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+            return true;
         }
         else if (auto data = std::get_if<float *>(&data_))
         {
             //**data = *((float *)value);
             memcpy(*data, value, Size());
             Logger::Instance().Print("Float Value32: %d\r\n", **data);
+            return true;
         }
+        else
+        {
+            return false;
+        }
+        
     }
     template <typename T>
-    void Set(T value)
+    bool Set(T value)
     {
         // TODO: Type Ambiguity(int types) Here to resolve from stored type?
         if (auto data = std::get_if<T *>(&data_))
         {
             **data = value;
             Logger::Instance().Print("Setting Value: %d\r\n", **data);
+            return true;
         }
         else
         {
             Logger::Instance().Print("UNABLE TO SET TYPE\r\n");
+            return false;
         }
     }
 
@@ -637,6 +651,7 @@ public:
     template <typename T>
     void Set(T value, uint16_t offset = 0)
     {
+       // Logger::Instance().Print("Valid: %d\r\n", validator_(value));
         fields_[offset].Set(value);
     }
 
@@ -674,6 +689,7 @@ public:
 private:
     std::vector<RegisterData> fields_;
     size_t data_size_;
+
 };
 
 
