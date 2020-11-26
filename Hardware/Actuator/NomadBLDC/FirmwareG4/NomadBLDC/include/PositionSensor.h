@@ -37,13 +37,17 @@ class PositionSensorAS5x47
 {
 
 public:
-    // Motor Parameters
+    // Encoder Parameters
     struct Config_t
     {
+        // Encoder Config Register
         float offset_elec;       // Electrical Position Offset (Radians)
         float offset_mech;       // Mechanical Position Offset (Radians)
         int32_t cpr;             // Sensor Counts Per Revolution
+        uint32_t reserved[4];
         //int32_t direction;       // Sensor Direction for Positive Rotation
+
+        // Config Offset LUT Registers
         int8_t offset_lut[128]; // Offset Lookup Table
     };
 
@@ -77,6 +81,7 @@ public:
     bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
+    void PrintConfig();
     Config_t config_;     // Position Sensor Configuration Parameters
     
 private:

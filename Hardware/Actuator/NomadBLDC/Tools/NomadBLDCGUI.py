@@ -521,7 +521,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.loopGainQAxisVal.setValue(self.nomad_dev.controller_config.k_q)
             self.integratorGainDAxisVal.setValue(self.nomad_dev.controller_config.k_i_d)
             self.integratorGainQAxisVal.setValue(self.nomad_dev.controller_config.k_i_q)
-            self.refFilterCoefficientVal.setValue(self.nomad_dev.controller_config.alpha)
+            #self.refFilterCoefficientVal.setValue(self.nomad_dev.controller_config.alpha)
             
             self.posGainMinVal.setValue(self.nomad_dev.controller_config.K_p_min)
             self.posGainMaxVal.setValue(self.nomad_dev.controller_config.K_p_max)
@@ -574,7 +574,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.controller_config.k_q = self.loopGainQAxisVal.value()
         self.nomad_dev.controller_config.k_i_d = self.integratorGainDAxisVal.value()
         self.nomad_dev.controller_config.k_i_q = self.integratorGainQAxisVal.value()
-        self.nomad_dev.controller_config.alpha = self.refFilterCoefficientVal.value()
+        #self.nomad_dev.controller_config.alpha = self.refFilterCoefficientVal.value()
         self.nomad_dev.controller_config.overmodulation = self.overmodulationPercentageVal.value() / 100.0
 
         self.nomad_dev.controller_config.velocity_limit = self.velLimitVal.value()
@@ -657,14 +657,14 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
 
         k_d = k_q = k
         k_i_d = k_i_q = k_i
-        alpha = 1.0 - 1.0 / (1.0 - control_loop_period * current_bandwidth * 2.0 * math.pi)
+        #alpha = 1.0 - 1.0 / (1.0 - control_loop_period * current_bandwidth * 2.0 * math.pi)
 
         # Update UI
         self.loopGainDAxisVal.setValue(k_d)
         self.loopGainQAxisVal.setValue(k_q)
         self.integratorGainDAxisVal.setValue(k_i_d)
         self.integratorGainQAxisVal.setValue(k_i_q)
-        self.refFilterCoefficientVal.setValue(alpha)
+        #self.refFilterCoefficientVal.setValue(alpha)
 
 
     def ShowEncoderEccentricity(self):

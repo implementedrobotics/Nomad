@@ -49,43 +49,46 @@ public:
         //float V_a;          // Phase A Voltage
         //float V_b;          // Phase B Voltage
         //float V_c;          // Phase C Voltage
-
+        float windings_temp;  // Motor Windings Temperature (Degrees Celcius)
         float theta_mech;     // Mechanical Position @ Output (Radians)
-        float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
         float theta_mech_true;// Mechanical Position @ Output w/ Offset (Radians) 
+        float theta_mech_dot; // Mechanical Velocity @ Output (Radians/Sec)
         float theta_elec;     // Electrical Position @ Rotor (Radians)
         float theta_elec_dot; // Electrical Velocity @ Rotor (Radians/Sec)
 
-        float windings_temp;  // Motor Windings Temperature (Degrees Celcius)
+
     };
 
     // Motor Parameters
     struct Config_t
     {
+        // Config Reg 1
         uint32_t num_pole_pairs;  // Pole Pairs of Motor (PAIRS)
-        float continuous_current_max; // Thermally calibrated Allowable Continuous Current (A)
-        float continuous_current_tau; // Time Constant for Continuous Current (Seconds)
+        // TODO: Just flux linkage?
+        float K_v;                // Motor KV Rating (RPM/V)
+        float K_t;                // Torque Constant (N*m/A)
+        // TOOD: No need to store this.  K_t * K_t_out
+        float K_t_out;            // Torque Constant @ Output (N*m/A)
+        float flux_linkage;       // Rotor Flux Linkage (Webers)
         float phase_resistance;   // Phase Resistance (Ohms)
         float phase_inductance_d; // D Axis Phase Inductance (Henries)
         float phase_inductance_q; // Q Axis Phase Inductance (Henries)
-
-        // TODO: Just flux linkage?
-        float K_v;                // Motor KV Rating (RPM/V)
-        float flux_linkage;       // Rotor Flux Linkage (Webers)
-        float K_t;                // Torque Constant (N*m/A)
-
-        // TOOD: No need to store this.  K_t * K_t_out
-        float K_t_out;            // Torque Constant @ Output (N*m/A)
         // TODO: Custom override for torques if measured experimentally?
         float gear_ratio;         // Gear Box Ratio
         int32_t phase_order;      // Winding Phase Order
 
+        // Thermal Config Reg
+        float continuous_current_max; // Thermally calibrated Allowable Continuous Current (A)
+        float continuous_current_tau; // Time Constant for Continuous Current (Seconds)
+        uint32_t tcr_reserved[6]; // Reserved
+
+        // Calibration Config Reg
         // TODO: Kill these 2 and pass in per calibration
         float calib_current;      // Calibration Current
         float calib_voltage;      // Calibration Voltage
-
         // TODO: This has to be better
         int32_t calibrated;          // Calibrated
+        uint32_t ccr_reserved[5];   // Reserved
     };
 
     Motor(float sample_time=0.000025f, float K_v = 100, uint32_t pole_pairs = 21);
@@ -98,6 +101,8 @@ public:
     void CCM_ATTRIBUTE Update(); // Update Motor State
 
     inline PositionSensorAS5x47* PositionSensor() { return rotor_sensor_; }
+
+    void PrintConfig();
     //bool WriteConfig(); // Write Configuration to Flash Memory
     //bool ReadConfig();  // Read Configuration from Flash Memory
     

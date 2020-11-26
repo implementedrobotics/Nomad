@@ -34,6 +34,7 @@
 #include "main.h"
 #include <Peripherals/gpio.h>
 #include <Utilities/math.h>
+#include <RegisterInterface.h>
 #include <Logger.h>
 
 PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pairs, uint32_t cpr) : position_electrical_(0),
@@ -50,11 +51,11 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
                                                                                                    dirty_(false)
 {
 
-    config_.offset_elec = 0;
-    config_.offset_mech = 0;
+    config_.offset_elec = 0.0f;
+    config_.offset_mech = 0.0f;
     config_.cpr = cpr;
     // config_.direction = 1;
-    memset(config_.offset_lut, 0, sizeof(config_.offset_lut));
+   // memset(config_.offset_lut, 0, sizeof(config_.offset_lut));
 
     // Init SPI Driver Handle for Encoder Sensor
     GPIO_t mosi = { ENC_MOSI_GPIO_Port, ENC_MOSI_Pin };
@@ -64,6 +65,37 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
     spi_dev_->Enable();
 
     velocity_samples_ = new float[filter_size_];
+
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigRegister1, new Register((EncoderConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::ElectricalOffset, new Register(&config_.offset_elec));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::MechanicalOffset, new Register(&config_.offset_mech));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT1, new Register((EncoderConfigOffsetLUT1_t *)&config_.offset_lut, true));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT2, new Register((EncoderConfigOffsetLUT2_t *)&config_.offset_lut+32, true)); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT3, new Register((EncoderConfigOffsetLUT3_t *)&config_.offset_lut+64, true)); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT4, new Register((EncoderConfigOffsetLUT4_t *)&config_.offset_lut+96, true)); // 32-byte strides
+}
+
+void PositionSensorAS5x47::PrintConfig()
+{
+    // float offset_elec; // Electrical Position Offset (Radians)
+    // float offset_mech; // Mechanical Position Offset (Radians)
+    // int32_t cpr;       // Sensor Counts Per Revolution
+    // //int32_t direction;       // Sensor Direction for Positive Rotation
+    // int8_t offset_lut[128]; // Offset Lookup Table
+    // Print Configs
+    Logger::Instance().Print("Encoder Config: Offset E: %f, Offset M: %f, CPR: %d\r\n", config_.offset_elec, config_.offset_mech, config_.cpr);
+    Logger::Instance().Print("int8_t offset_lut[128] = { \r\n");
+    for(int i = 0; i < 128; i++)
+    {
+
+        Logger::Instance().Print("%d, ", config_.offset_lut[i]);
+                if(i %20 == 0)
+        {
+            Logger::Instance().Print("\r\n");
+        }
+    }
+    Logger::Instance().Print("}\r\n");
+
 }
 void PositionSensorAS5x47::Reset()
 {

@@ -39,6 +39,7 @@
 #include <Peripherals/cordic.h>
 #include <Peripherals/adc.h>
 #include <Peripherals/thermistor.h>
+#include <RegisterInterface.h>
 
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
@@ -73,7 +74,7 @@ struct __attribute__((__aligned__(8))) Save_format_t
     uint8_t position_reserved[128]; // Reserved;
     MotorController::Config_t controller_config;
     uint8_t controller_reserved[128]; // Reserved;
-    //CANHandler::Config_t can_config;
+    //FDCANDevice::Config_t can_config;
     //uint8_t can_reserved[128]; // Reserved;
 };
 
@@ -104,14 +105,25 @@ void init_motor_controller()
     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
 
     // Init Motor and Implicitly Position Sensor
-    motor = new Motor(0.000025f, 80, 21);
+    motor = new Motor(0.000025f, 285, 12);
 
     // Init Motor Controller
     motor_controller = new MotorController(motor);
+
+    // Load Config Here...
+    load_configuration();
+
     motor_controller->Init();
 
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
+
+
+    // motor_controller->PrintConfig();
+    // motor->PrintConfig();
+    // motor->PositionSensor()->PrintConfig();
+
+    // //save_configuration();
 }
 
 // Controller Mode Interface
@@ -264,6 +276,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.k_q = 0.0f;
     config_.k_i_d = 0.0f;
     config_.k_i_q = 0.0f;
+    //config_.alpha = 0.186350f;
     config_.overmodulation = 1.0f;
     config_.position_limit = 12.5f; // +/-
     config_.velocity_limit = 10.0f; // +/-
@@ -285,6 +298,62 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
+    // Setup Registers
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister1, new Register((ControllerConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_D, new Register(&config_.k_d));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_Q, new Register(&config_.k_q));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_D, new Register(&config_.k_i_d));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_Q, new Register(&config_.k_i_q));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentBandwidth, new Register(&config_.current_bandwidth));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::Overmodulation, new Register(&config_.overmodulation));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PWM_Frequency, new Register(&config_.pwm_freq));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::FOC_Divider, new Register(&config_.foc_ccl_divider));
+
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register((ControllerConfigRegister2_t *)&config_.K_p_min, true));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Min, new Register(&config_.K_p_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Max, new Register(&config_.K_p_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Min, new Register(&config_.K_d_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Max, new Register(&config_.K_d_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::VelocityLimit, new Register(&config_.velocity_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimit, new Register(&config_.position_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::TorqueLimit, new Register(&config_.torque_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentLimit, new Register(&config_.current_limit));
+
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister1, new Register((ControllerStateRegister1_t *)&state_, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_D, new Register(&state_.I_d));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Q, new Register(&state_.I_q));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_D, new Register(&state_.V_d));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Q, new Register(&state_.V_q));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_D, new Register(&state_.d_int));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_Q, new Register(&state_.q_int));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleA, new Register(&state_.dtc_A));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleB, new Register(&state_.dtc_B));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleC, new Register(&state_.dtc_C));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentRMS, new Register(&state_.I_rms));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::MaxCurrent, new Register(&state_.I_max));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::Timeout, new Register(&state_.timeout));
+
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register((ControllerStateRegister2_t *)&state_.V_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageControlModeRegister, new Register((VoltageControlModeRegister_t *)&state_.V_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_D, new Register(&state_.V_d_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_Q, new Register(&state_.V_q_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrenteControlModeRegister, new Register((CurrentControlModeRegister_t *)&state_.I_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_D, new Register(&state_.I_d_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_Q, new Register(&state_.I_q_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::TorqueControlModeRegister, new Register((TorqueControlModeRegister_t *)&state_.Pos_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::PositionSetpoint, new Register(&state_.Pos_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::K_P, new Register(&state_.K_p));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::K_D, new Register(&state_.K_d));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
+}
+
+void MotorController::PrintConfig()
+{
+     // Print Configs
+    Logger::Instance().Print("Controller Config: K_d: %f, K_q: %f, K_i_d: %f, K_i_q: %f, overmodulation: %f\r\n", config_.k_d, config_.k_q, config_.k_i_d, config_.k_i_q, config_.overmodulation);
+    Logger::Instance().Print("Controller Config: Vel_Limit: %f, Pos_Limit: %f, Tau_Limit: %f, Current_Limit: %f, Current BW: %f\r\n", config_.velocity_limit, config_.position_limit, config_.torque_limit, config_.current_limit, config_.current_bandwidth);
+    Logger::Instance().Print("Controller Config: K_p_min: %f, K_p_max: %f, K_d_min: %f, K_d_max: %f, PWM Freq: %f, FOC Divder: %d\r\n", config_.K_p_min, config_.K_p_max, config_.K_d_min, config_.K_d_max, config_.pwm_freq, config_.foc_ccl_divider);
 }
 void MotorController::Reset()
 {
@@ -435,7 +504,7 @@ void MotorController::Init()
     
     // TODO: Member Function with Callback for Command Handler
     // Load Configuration
-    load_configuration();
+   // load_configuration();
 
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
@@ -616,13 +685,13 @@ void MotorController::EnablePWM(bool enable)
 
 void MotorController::UpdateControllerGains()
 {
-    float crossover_freq = config_.current_bandwidth * controller_update_period_ * 2 * PI;
+    float crossover_freq = config_.current_bandwidth * controller_update_period_ * 2 * M_PI;
     float k_i = 1 - exp(-motor_->config_.phase_resistance * controller_update_period_ / motor->config_.phase_inductance_q);
     float k = motor->config_.phase_resistance * ((crossover_freq) / k_i);
 
     config_.k_d = config_.k_q = k;
     config_.k_i_d = config_.k_i_q = k_i;
-    config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * PI);
+    //config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
 
     dirty_ = true;
 }

@@ -114,49 +114,41 @@ public:
     // Motor Controller Parameters
     struct Config_t
     {
+        // Config Reg 1
         float k_d;               // Current Controller Loop Gain (D Axis)
         float k_q;               // Current Controller Loop Gain (Q Axis)
         float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
-        float alpha;             // Current Reference Filter Coefficient
-        float overmodulation;    // Overmodulation Amount
-        float velocity_limit;    // Limit on maximum velocity
-        float position_limit;    // Limit on position input
-        float torque_limit;      // Torque Limit
-        float current_limit;     // Max Current Limit
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
+        float overmodulation;    // Overmodulation Amount
+        float pwm_freq;          // PWM Switching Frequency
+        uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
+        uint32_t ccr1_reserved[3]; // Reserved
+        
+        // Config Reg 2
         float K_p_min;           // Position Gain Minimum
         float K_p_max;           // Position Gain Maximum
         float K_d_min;           // Velocity Gain Minimum
         float K_d_max;           // Velocity Gain Maximum
-        float pwm_freq;          // PWM Switching Frequency
-        uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
+        float velocity_limit;    // Limit on maximum velocity
+        float position_limit;    // Limit on position input
+        float torque_limit;      // Torque Limit
+        float current_limit;     // Max Current Limit
+        uint32_t ccr2_reserved[5]; // Reserved
     };
 
     struct State_t
     {
-        // Current Control
+        // Current State
         float I_d;                   // Transformed Current (D Axis)
         float I_q;                   // Transformed Current (Q Axis)
 
-        float I_d_ref;               // Current Reference (D Axis)
-        float I_q_ref;               // Current Reference (Q Axis)
+        // Voltage State
+        float V_d;                   // Voltage (D Axis)
+        float V_q;                   // Voltage (Q Axis)
 
         float d_int;                 // Current Integral Error
         float q_int;                 // Current Integral Error
-
-        float V_d;                   // Voltage (D Axis)
-        float V_q;                   // Voltage (Q Axis)
-        volatile float V_d_ref;      // Voltage Reference (D Axis)
-        volatile float V_q_ref;      // Voltage Reference (Q Axis)
-        volatile float Voltage_bus;  // Bus Voltage
-
-        // Torque Control
-        volatile float Pos_ref;      // Position Setpoint Reference
-        volatile float Vel_ref;      // Velocity Setpoint Reference
-        volatile float K_p;          // Position Gain N*m/rad
-        volatile float K_d;          // Velocity Gain N*m/rad/s
-        volatile float T_ff;         // Feed Forward Torque Value N*m
 
         // Duty Cycles
         float dtc_A;                 // Duty Cycle for A phase
@@ -167,13 +159,28 @@ public:
         float I_rms;                 // Motor RMS Current Value
         float I_max;                 // Maximum Allowable Commanded Current in next Time Step
 
-        float I_bus;                 // Bus Current
-      
-        // Temps
-        float fet_temp;              // FET Temperature
-
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
+
+        // Voltage Control Setpoints
+        float V_d_ref; // Voltage Reference (D Axis)
+        float V_q_ref; // Voltage Reference (Q Axis)
+
+        // Current Control Setpoints
+        float I_d_ref; // Current Reference (D Axis)
+        float I_q_ref; // Current Reference (Q Axis)
+
+        // Torque Control Setpoints
+        float Pos_ref;      // Position Setpoint Reference
+        float Vel_ref;      // Velocity Setpoint Reference
+        float K_p;          // Position Gain N*m/rad
+        float K_d;          // Velocity Gain N*m/rad/s
+        float T_ff;         // Feed Forward Torque Value N*m
+
+        // TODO: Remove these when ported fully
+        float Voltage_bus;
+        float I_bus;
+        float fet_temp;
     };
 
     struct Debug_t                    // Debug Struct
@@ -240,6 +247,8 @@ public:
     void CurrentControl(); // Current Control Loop
     void TorqueControl(); // Torque Control Fucntion
 
+    // TODO: Temp will be removed once tools are all finished.
+    void PrintConfig();
     // Public for now...  TODO: Need something better here
     volatile control_mode_type_t control_mode_; // Controller Mode
 
@@ -253,8 +262,6 @@ public:
     
 private:
 
-
-    
     float current_max_;                         // Maximum allowed current before clamped by sense resistor
 
     bool control_thread_ready_;                 // Controller thread ready/active

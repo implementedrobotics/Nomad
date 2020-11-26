@@ -33,6 +33,7 @@
 #include "MotorController.h"
 #include "motor_controller_interface.h"
 #include "Logger.h"
+#include <RegisterInterface.h>
 #include <Utilities/math.h>
 #include <Utilities/utils.h>
 
@@ -58,8 +59,49 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     // Update KV Calulations
     SetKV(K_v);
 
+
+    // Setup Registers
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorConfigRegister1, new Register((MotorConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::PolePairs, new Register(&config_.num_pole_pairs));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::K_v, new Register(&config_.K_v));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::K_t, new Register(&config_.K_t));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::K_t_out, new Register(&config_.K_t_out));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::FluxLinkage, new Register(&config_.flux_linkage));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::PhaseResistance, new Register(&config_.phase_resistance));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::PhaseInductanceD, new Register(&config_.phase_inductance_d));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::PhaseInductanceQ, new Register(&config_.phase_inductance_q));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::GearRatio, new Register(&config_.gear_ratio));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::PhaseOrder, new Register(&config_.phase_order));
+
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorThermalConfigRegister, new Register((MotorThermalConfigRegister_t *)&config_.continuous_current_max, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::ContinuousCurrentLimit, new Register(&config_.continuous_current_max));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::ContinuousCurrentTau, new Register(&config_.continuous_current_tau));
+    
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorCalibrationConfigRegister, new Register((MotorCalibrationConfigRegister_t *)&config_.calib_current, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationCurrent, new Register(&config_.calib_current));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationVoltage, new Register(&config_.calib_voltage));
+
+    RegisterInterface::AddRegister(MotorStateRegisters_e::MotorStateRegister1, new Register((MotorStateRegister1_t *)&state_, true));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::I_A, new Register(&state_.I_a));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::I_B, new Register(&state_.I_b));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::I_C, new Register(&state_.I_c));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::WindingsTemp, new Register(&state_.windings_temp));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::OutputPosition, new Register(&state_.theta_mech));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::OutputPositionTrue, new Register(&state_.theta_mech_true));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::OutputVelocity, new Register(&state_.theta_mech_dot));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::ElectricalPosition, new Register(&state_.theta_elec));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::ElectricalVelocity, new Register(&state_.theta_elec_dot));
+
     // Setup Position Sensor
     rotor_sensor_ = new PositionSensorAS5x47(sample_time_, config_.num_pole_pairs);
+}
+
+void Motor::PrintConfig()
+{
+     // Print Configs
+    Logger::Instance().Print("Motor Config: PP: %d, I_max: %f, I_tau: %f, R: %f, L_d: %f, L_q: %f\r\n", config_.num_pole_pairs, config_.continuous_current_max, config_.continuous_current_tau, config_.phase_resistance, config_.phase_inductance_d, config_.phase_inductance_q);
+    Logger::Instance().Print("Motor Config: K_v: %f, flux_linkage: %f, K_t: %f, K_t_out: %f, Gear: %f\r\n", config_.K_v, config_.flux_linkage, config_.K_t, config_.K_t_out, config_.gear_ratio);
+    Logger::Instance().Print("Motor Config: Phase Order: %d, Calib I: %f, Calib V: %f, Calibrated: %d\r\n", config_.phase_order, config_.calib_current, config_.calib_voltage, config_.calibrated);
 }
 
 void Motor::SetSampleTime(float sample_time)
@@ -97,8 +139,8 @@ void Motor::SetPolePairs(uint32_t pole_pairs)
     config_.num_pole_pairs = pole_pairs;
     
     // Compute other parameters
-    config_.flux_linkage = 60.0f / (Core::Math::kSqrt3 * config_.K_v * PI * config_.num_pole_pairs * 2);
-    config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f; // rotor_flux_*Pole_Pairs*3/2
+    config_.flux_linkage = 60.0f / (Core::Math::kSqrt3 * config_.K_v * M_PI * config_.num_pole_pairs * 2);
+    config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f;
     config_.K_t_out = config_.K_t * config_.gear_ratio;
     // Update Rotor
     rotor_sensor_->SetPolePairs(pole_pairs);
@@ -110,8 +152,8 @@ void Motor::SetKV(float K_v)
     config_.K_v = K_v;
 
     // Compute other parameters
-    config_.flux_linkage = 60.0f / (Core::Math::kSqrt3 * config_.K_v * PI * config_.num_pole_pairs * 2);
-    config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f; // rotor_flux_*Pole_Pairs*3/2
+    config_.flux_linkage = 60.0f / (Core::Math::kSqrt3 * config_.K_v * M_PI * config_.num_pole_pairs * 2);
+    config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f;
     config_.K_t_out = config_.K_t * config_.gear_ratio;
 
     dirty_ = true;
