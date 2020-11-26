@@ -71,7 +71,7 @@ void StartCommunicationThreads()
 
     uart = new UARTDevice(USART2, rx, tx);
     uart->Init();
-    uart->SetMode(UARTDevice::ASCII_MODE);
+    uart->SetMode(UARTDevice::HDLC_MODE);
     uart->RegisterHDLCCommandCB(&CommandHandler::ProcessPacket);
     
     // TODO: Need to make this a proper class
@@ -152,24 +152,24 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR2.uid3));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
-    RegisterInterface::register_command_t test;
-    test.header.rwx = 1;
-    test.header.address = DeviceRegisters_e::DeviceUID1;
-    test.header.data_type = 1;
-    uint32_t new_val=  24;
+  //  RegisterInterface::register_command_t test;
+  //  test.header.rwx = 1;
+  ////  test.header.address = DeviceRegisters_e::DeviceUID1;
+  //  test.header.data_type = 1;
+  //  uint32_t new_val=  24;
 
-    memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
+  //  memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
 
     //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
 
-    FDCANDevice::FDCAN_msg_t msg;
-    memcpy(msg.data, &test, 64);
+   // FDCANDevice::FDCAN_msg_t msg;
+   // memcpy(msg.data, &test, 64);
 
-    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
-    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
+   // Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
+   // Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
 
-    RegisterInterface::HandleCommand(msg);
-    Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
+   // RegisterInterface::HandleCommand(msg);
+    //Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
 }
 
 void DebugTask()
@@ -217,11 +217,11 @@ extern "C" int app_main() //
     // Infinite Loop.
     for (;;)
     {
-        fdcan->Send(0x001, Tx_Data, 10);
+       // fdcan->Send(0x001, Tx_Data, 10);
 
         // Update Device Stats
-        DSR2.uptime = HAL_GetTick() / 1000;
-        osDelay(1000);
+        //DSR2.uptime = HAL_GetTick() / 1000;
+       // osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);
         // Logger::Instance().Print("Here: %d\r\n", i++);
