@@ -90,7 +90,7 @@ public:
         uint32_t id;         // CAN ID 11-bit max is 0x7ff
         uint32_t bitrate;    // Nominal Bitrate
         uint32_t d_bitrate;   // Data Bitrate
-        uint8_t mode_fd;     // FD mode or classic
+        uint32_t mode_fd;     // FD mode or classic
         float sample_point;  // Nominal Bitrate Sample Point Target
         float d_sample_point;  // Data Sample Point Target
     };
