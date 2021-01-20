@@ -200,8 +200,8 @@ private:
     int8_t *LUT_;
 
     // Raw Positions (Counts)
-    int32_t *raw_forward_;
-    int32_t *raw_backward_;
+    int16_t *raw_forward_;
+    int16_t *raw_backward_;
 
     float *error_;
     float *error_filtered_;

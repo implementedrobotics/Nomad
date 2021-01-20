@@ -279,13 +279,12 @@ void MeasurePhaseOrderState::Run_(float dt)
             // Compute Pole Pairs
             float total_theta_mech = std::abs(theta_end_ - theta_start_);
             uint16_t pole_pairs = static_cast<uint16_t>(scan_range/total_theta_mech);
-
-            // Pole pairs should be evenly divisible by 3(3 phases)
-            if(pole_pairs % 3 != 0)
-            {
-                // If not.  We have some error but should be close enough to tick +/- to find it
-                pole_pairs = (pole_pairs+1) % 3 == 0 ? pole_pairs + 1 : pole_pairs - 1;
-            }
+            // Pole pairs should be evenly divisible by 3(3 phases) // ERROR THIS IS INCORRECT!
+            // if(pole_pairs % 3 != 0)
+            // {
+            //     // If not.  We have some error but should be close enough to tick +/- to find it
+            //     pole_pairs = (pole_pairs+1) % 3 == 0 ? pole_pairs + 1 : pole_pairs - 1;
+            // }
 
             // Update Config
             motor->config_.num_pole_pairs = pole_pairs;
@@ -358,31 +357,6 @@ void MeasureEncoderOffsetState::Setup()
 
     // Sub sampling for smoothing         
     num_sub_samples_ = 160;                                             
-
-    error_forward_ = new float[num_samples_];
-    error_backward_ = new float[num_samples_];
-
-    error_ = new float[num_samples_];
-    error_filtered_ = new float[num_samples_];
-
-    // Zero Array.  Do this explicitly in case compilers vary
-    memset(error_forward_, 0, sizeof(float)*num_samples_);
-    memset(error_backward_, 0, sizeof(float)*num_samples_);
-    memset(error_, 0, sizeof(float)*num_samples_);
-    memset(error_filtered_, 0, sizeof(float)*num_samples_);
-
-    LUT_ = new int8_t[kLUTSize]; // Clear the previous lookup table.
-
-    // Zero Array.  Do this explicitly in case compilers vary
-    memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
-    
-    raw_forward_ = new int32_t[num_samples_];
-    raw_backward_ = new int32_t[num_samples_];
-
-    // Zero Array.  Do this explicitly in case compilers vary
-    memset(raw_forward_, 0, sizeof(int32_t)*num_samples_);
-    memset(raw_backward_, 0, sizeof(int32_t)*num_samples_);
-    
 }
 void MeasureEncoderOffsetState::Run_(float dt)
 {
@@ -407,6 +381,9 @@ void MeasureEncoderOffsetState::Run_(float dt)
 
             // Sample new rotor positipm
             motor_->Update(); 
+
+            // Reset
+            motor_->PositionSensor()->Reset();
 
             // Set Next State
             state_ = state_t::CALIBRATE_FORWARD;
@@ -536,6 +513,32 @@ void MeasureEncoderOffsetState::Enter_(uint32_t current_time)
     // Reset Encoder Calibration
     motor_->PositionSensor()->Reset();
 
+    // Allocate
+    error_forward_ = new float[num_samples_];
+    error_backward_ = new float[num_samples_];
+
+    error_ = new float[num_samples_];
+    error_filtered_ = new float[num_samples_];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(error_forward_, 0, sizeof(float)*num_samples_);
+    memset(error_backward_, 0, sizeof(float)*num_samples_);
+    memset(error_, 0, sizeof(float)*num_samples_);
+    memset(error_filtered_, 0, sizeof(float)*num_samples_);
+
+    LUT_ = new int8_t[kLUTSize]; // Clear the previous lookup table.
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
+    
+    raw_forward_ = new int16_t[num_samples_];
+    raw_backward_ = new int16_t[num_samples_];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(raw_forward_, 0, sizeof(int16_t)*num_samples_);
+    memset(raw_backward_, 0, sizeof(int16_t)*num_samples_);
+
+
     // Initial State
     state_ = state_t::LOCK_ROTOR; 
 }
@@ -567,7 +570,7 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
     float offset = 0;
     for (int32_t i = 0; i < num_samples_; i++)
     {
-        offset += (error_forward_[i] + error_backward_[num_samples_ - 1 - i]) / (2.0f * num_samples_); // calclate average position sensor offset
+        offset += (error_forward_[i] + error_backward_[num_samples_ - 1 - i]) / (2.0f * num_samples_); // calculate average position sensor offset
     }
     offset = fmod(offset * motor_->config_.num_pole_pairs, Core::Math::k2PI); // convert mechanical angle to electrical angle
     
@@ -603,7 +606,6 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
                 index -= num_samples_;
             }
             error_filtered_[i] += error_[index] / static_cast<float>(window_size_);
-            
         }
         mean += error_filtered_[i] / num_samples_;
     }

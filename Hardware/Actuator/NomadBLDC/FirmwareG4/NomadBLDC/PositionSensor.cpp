@@ -104,6 +104,7 @@ void PositionSensorAS5x47::Reset()
 
     config_.offset_elec = 0;
     config_.offset_mech = 0;
+    num_rotations_ = 0;
     dirty_ = true;
 }
 /* Setters */

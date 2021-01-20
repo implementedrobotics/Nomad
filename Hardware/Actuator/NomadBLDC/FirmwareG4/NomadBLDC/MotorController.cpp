@@ -105,7 +105,7 @@ void init_motor_controller()
     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
 
     // Init Motor and Implicitly Position Sensor
-    motor = new Motor(0.000025f, 285, 12);
+    motor = new Motor(0.000025f, 80, 20);
 
     // Init Motor Controller
     motor_controller = new MotorController(motor);
