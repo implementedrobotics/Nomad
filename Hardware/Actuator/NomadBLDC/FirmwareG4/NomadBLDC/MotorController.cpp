@@ -402,9 +402,9 @@ void MotorController::CurrentMeasurementCB()
     }
     else
     {
-        motor_->state_.I_a = current_scale * static_cast<float>(adc_1_->Read());
-        motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
-        motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
+        motor_->state_.I_a = current_scale * static_cast<float>(adc_2_->Read());
+        motor_->state_.I_b = current_scale * static_cast<float>(adc_1_->Read());
+        motor_->state_.I_c = current_scale * static_cast<float>(adc_3_->Read());
     }
     // We have some time to do things here.  We should squeeze in RMS current here
     
