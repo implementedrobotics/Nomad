@@ -130,7 +130,7 @@ class MotorConfig:
 @dataclass
 class ControllerConfig:
     #__fmt = "<16fI"
-    __packet : ClassVar[struct.Struct] = struct.Struct('<7fI3I8f5I')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<7fI3I10f2I')
     # Config Reg 1
     k_d: float = None
     k_q: float = None
@@ -145,19 +145,20 @@ class ControllerConfig:
     ccr1_reserver_3: int = None
     
     # Config Reg 2
-    K_p_min: float = None
+    #K_p_min: float = None
     K_p_max: float = None
-    K_d_min: float = None
+    #K_d_min: float = None
     K_d_max: float = None
+    K_p_limit: float = None
+    K_i_limit: float = None
+    K_d_limit: float = None
+    pos_limit_min: float = None
+    pos_limit_max: float = None
     velocity_limit: float = None
-    position_limit: float = None
     torque_limit: float = None
     current_limit: float = None
     ccr2_reserved_1: int = None
     ccr2_reserver_2: int = None
-    ccr2_reserver_3: int = None
-    ccr2_reserver_4: int = None
-    ccr2_reserver_5: int = None
 
 
 
@@ -173,23 +174,23 @@ class ControllerConfig:
         0,
         0,
         0,
-        self.K_p_min,
         self.K_p_max,
-        self.K_d_min,
         self.K_d_max,
+        self.K_p_limit,
+        self.K_i_limit,
+        self.K_d_limit,
+        self.pos_limit_min,
+        self.pos_limit_max,
         self.velocity_limit,
-        self.position_limit,
         self.torque_limit,
         self.current_limit,
-        0,
-        0,
-        0,
         0,
         0)
 
     @classmethod
     def unpack(cls, data):
         unpacked = cls.__packet.unpack(data)
+
         return ControllerConfig(*unpacked)
 
 @dataclass
@@ -233,8 +234,9 @@ class MotorState:
     #V_c: float = None
     windings_temp: float = None
     theta_mech: float = None
-    theta_mech_dot: float = None
     theta_mech_true: float = None
+    theta_mech_dot: float = None
+
     theta_elec: float = None
     theta_elec_dot: float = None
     
@@ -249,8 +251,8 @@ class MotorState:
         #self.V_c,
         self.windings_temp,
         self.theta_mech,
-        self.theta_mech_dot,
         self.theta_mech_true,
+        self.theta_mech_dot,
         self.theta_elec,
         self.theta_elec_dot)
 

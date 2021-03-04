@@ -90,17 +90,18 @@ typedef enum // Controller Config Register
 
     ControllerConfigRegister2 = 0x22,
     // Controller Config Register 2 Offsets
-    K_P_Min = 0x23,
-    K_P_Max = 0x24,
-    K_D_Min = 0x25,
-    K_D_Max = 0x26,
-    VelocityLimit = 0x27, // Limit on maximum velocity
-    PositionLimit = 0x28, // Limit on maximum position
-    TorqueLimit = 0x29,   // Limit on maximum torque
-    CurrentLimit = 0x2A,  // Limit on maximum current
-    // Reserved = 0x2B,
-    // Reserved = 0x2C,
-    // Reserved = 0x2D,
+    K_P_Max = 0x23,
+    K_D_Max = 0x24,
+    K_P_LIMIT = 0x25,         // Position Limiting Mode Proportional Gain
+    K_I_LIMIT = 0x26,         // Position Limiting Mode Integral Gain
+    K_D_LIMIT = 0x27,         // Position Limiting Mode Derivative Gain
+    PositionLimitMin = 0x28,     // Limit on position input max
+    PositionLimitMax = 0x29,     // Limit on position input min
+
+    VelocityLimit = 0x2A, // Limit on maximum velocity
+    PositionLimit = 0x2B, // Limit on maximum position
+    TorqueLimit = 0x2C,   // Limit on maximum torque
+    CurrentLimit = 0x2D,  // Limit on maximum current
     // Reserved = 0x2E,
     // Reserved = 0x2F,
     // End Device Status Register 2
@@ -260,7 +261,7 @@ struct DeviceStatusRegister2_t
     uint8_t fw_major;          // Firmware Version Major
     uint8_t fw_minor;          // Firmware Version Minor
     uint32_t uid1;             // Device Unique ID 1
-    uint32_t uid2;             // Device Unique ID 2
+    uint32_t uid2;           ;         // Position Limiting Mode Derivative Gain  // Device Unique ID 2
     uint32_t uid3;             // Device Unique ID 3
     uint32_t uptime;           // Device Uptime
 };

@@ -126,19 +126,24 @@ public:
         uint32_t ccr1_reserved[3]; // Reserved
         
         // Config Reg 2
-        float K_p_min;           // Position Gain Minimum
+        //float K_p_min;         // Position Gain Minimum
         float K_p_max;           // Position Gain Maximum
-        float K_d_min;           // Velocity Gain Minimum
+        //float K_d_min;         // Velocity Gain Minimum
         float K_d_max;           // Velocity Gain Maximum
-        float velocity_limit;    // Limit on maximum velocity
-        float position_limit;    // Limit on position input
+        float K_p_limit;         // Position Limiting Mode Proportional Gain
+        float K_i_limit;         // Position Limiting Mode Integral Gain
+        float K_d_limit;         // Position Limiting Mode Derivative Gain
+        float pos_limit_min;     // Limit on position input max
+        float pos_limit_max;     // Limit on position input min
+        float velocity_limit;    // Velocity Limit
         float torque_limit;      // Torque Limit
         float current_limit;     // Max Current Limit
-        uint32_t ccr2_reserved[5]; // Reserved
+        uint32_t ccr2_reserved[2]; // Reserved
     };
 
     struct State_t
     {
+        // TODO: Extra Status States?  In PositionLimit, VelocityLimit, TorqueLimit etc.
         // Current State
         float I_d;                   // Transformed Current (D Axis)
         float I_q;                   // Transformed Current (Q Axis)

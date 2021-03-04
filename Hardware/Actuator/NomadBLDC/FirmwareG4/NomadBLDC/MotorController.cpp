@@ -278,16 +278,22 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.k_i_q = 0.0f;
     //config_.alpha = 0.186350f;
     config_.overmodulation = 1.0f;
-    config_.position_limit = 12.5f; // +/-
+    config_.pos_limit_min = -12.5f;
+    config_.pos_limit_max = 12.5f;
     config_.velocity_limit = 10.0f; // +/-
     config_.torque_limit = 10.0f; // +/-
     config_.current_limit = 20.0f;  // +/-
     config_.current_bandwidth = 1000.0f;
 
-    config_.K_p_min = 0.0f;
+    //config_.K_p_min = 0.0f;
     config_.K_p_max = 500.0f;
-    config_.K_d_min = 0.0f;
+    //config_.K_d_min = 0.0f;
     config_.K_d_max = 5.0f; 
+
+    config_.K_p_limit = 1.0f;
+    config_.K_i_limit = 0.0f;
+    config_.K_d_limit = 0.0f;
+
 
     config_.pwm_freq = 40000.0f; // 40 khz
     config_.foc_ccl_divider = 1; // Default to not divide.  Current loops runs at same freq as PWM
@@ -309,13 +315,12 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::PWM_Frequency, new Register(&config_.pwm_freq));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::FOC_Divider, new Register(&config_.foc_ccl_divider));
 
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register((ControllerConfigRegister2_t *)&config_.K_p_min, true));
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Min, new Register(&config_.K_p_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register((ControllerConfigRegister2_t *)&config_.K_p_max, true));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Max, new Register(&config_.K_p_max));
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Min, new Register(&config_.K_d_min));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Max, new Register(&config_.K_d_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimitMin, new Register(&config_.pos_limit_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimitMax, new Register(&config_.pos_limit_max));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::VelocityLimit, new Register(&config_.velocity_limit));
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimit, new Register(&config_.position_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::TorqueLimit, new Register(&config_.torque_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentLimit, new Register(&config_.current_limit));
 
@@ -352,8 +357,8 @@ void MotorController::PrintConfig()
 {
      // Print Configs
     Logger::Instance().Print("Controller Config: K_d: %f, K_q: %f, K_i_d: %f, K_i_q: %f, overmodulation: %f\r\n", config_.k_d, config_.k_q, config_.k_i_d, config_.k_i_q, config_.overmodulation);
-    Logger::Instance().Print("Controller Config: Vel_Limit: %f, Pos_Limit: %f, Tau_Limit: %f, Current_Limit: %f, Current BW: %f\r\n", config_.velocity_limit, config_.position_limit, config_.torque_limit, config_.current_limit, config_.current_bandwidth);
-    Logger::Instance().Print("Controller Config: K_p_min: %f, K_p_max: %f, K_d_min: %f, K_d_max: %f, PWM Freq: %f, FOC Divder: %d\r\n", config_.K_p_min, config_.K_p_max, config_.K_d_min, config_.K_d_max, config_.pwm_freq, config_.foc_ccl_divider);
+    Logger::Instance().Print("Controller Config: Vel_Limit: %f, Pos_Limit: %f, Tau_Limit: %f, Current_Limit: %f, Current BW: %f\r\n", config_.velocity_limit, config_.pos_limit_min, config_.torque_limit, config_.current_limit, config_.current_bandwidth);
+    Logger::Instance().Print("Controller Config: K_p_max: %f, K_d_max: %f, PWM Freq: %f, FOC Divder: %d\r\n", config_.K_p_max, config_.K_d_max, config_.pwm_freq, config_.foc_ccl_divider);
 }
 void MotorController::Reset()
 {
@@ -797,7 +802,25 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 
 void MotorController::TorqueControl()
 {
-    float torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+    float torque_ref = 0.0f;
+    bool bInLimit = false;
+    // Check Position Limits
+    if(motor->state_.theta_mech < config_.pos_limit_min)
+    {
+        torque_ref = config_.K_p_limit * (config_.pos_limit_min - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
+        bInLimit = true;
+    }
+    else if(motor->state_.theta_mech > config_.pos_limit_max)
+    {
+        torque_ref = config_.K_p_limit * (config_.pos_limit_max - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
+        bInLimit = true;
+    }
+    // TODO: Also check velocity
+    if(!bInLimit) // Not Limiting
+    {
+        torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+    }
+    
     state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
     state_.I_d_ref = 0.0f;
     CurrentControl(); // Do Current Controller
