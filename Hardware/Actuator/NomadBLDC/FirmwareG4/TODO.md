@@ -1,7 +1,7 @@
 # Firmware TODO:
 * Keep alive support
 * Speed Controller ***
-* Position limits on output?
+* Arm Controller Function
 * Gate driver fault checking and reporting ****
 * Verify optimization flags -O3 breaks something.  Looks like PWM timers don't start?
 * Remove all HAL timers

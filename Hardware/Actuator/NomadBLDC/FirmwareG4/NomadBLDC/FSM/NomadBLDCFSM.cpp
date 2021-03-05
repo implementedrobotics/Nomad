@@ -92,9 +92,9 @@ void NomadBLDCFSM::_CreateFSM()
     // Motor Drive States
     
     // Field Oriented Control - Voltage
-    FOCState *foc_voltage = new FOCState();
-    foc_voltage->SetControllerData(data_);
-    foc_voltage->SetParentFSM(this);
+    FOCState *foc_mode = new FOCState();
+    foc_mode->SetControllerData(data_);
+    foc_mode->SetParentFSM(this);
 
     // Idle
     IdleState *idle = new IdleState();
@@ -122,7 +122,7 @@ void NomadBLDCFSM::_CreateFSM()
     measure_inductance->AddTransitionEvent(transition_idle, idle);
     measure_phase_order->AddTransitionEvent(transition_idle, idle);
     measure_encoder_offset->AddTransitionEvent(transition_idle, idle);
-    foc_voltage->AddTransitionEvent(transition_idle, idle);
+    foc_mode->AddTransitionEvent(transition_idle, idle);
 
     // Enter Measure Resistance Transition
     idle->AddTransitionEvent(transition_measure_resistance, measure_resistance);
@@ -130,20 +130,20 @@ void NomadBLDCFSM::_CreateFSM()
     // Enter Measure Inductance Transition
     idle->AddTransitionEvent(transition_measure_inductance, measure_inductance);
 
-    // Enter Measure Inductance Transition
+    // Enter Measure Phase Order Transition
     idle->AddTransitionEvent(transition_measure_phase_order, measure_phase_order);
 
-    // Enter Measure Inductance Transition
+    // Enter Measure Encoder Offset Transition
     idle->AddTransitionEvent(transition_measure_encoder_offset, measure_encoder_offset);
 
     // Enter FOC Voltage Drive Transition
-    idle->AddTransitionEvent(transition_foc_voltage, foc_voltage);
+    idle->AddTransitionEvent(transition_foc_voltage, foc_mode);
 
     // Enter FOC Current Drive Transition
-    idle->AddTransitionEvent(transition_foc_current, foc_voltage);
+    idle->AddTransitionEvent(transition_foc_current, foc_mode);
 
     // Enter FOC Torque Drive Transition
-    idle->AddTransitionEvent(transition_foc_torque, foc_voltage);
+    idle->AddTransitionEvent(transition_foc_torque, foc_mode);
 
     // Add the states to the FSM
     AddState(startup);
@@ -152,7 +152,7 @@ void NomadBLDCFSM::_CreateFSM()
     AddState(measure_inductance);
     AddState(measure_phase_order);
     AddState(measure_encoder_offset);
-    AddState(foc_voltage);
+    AddState(foc_mode);
     
     // Set Initials State
     SetInitialState(startup);

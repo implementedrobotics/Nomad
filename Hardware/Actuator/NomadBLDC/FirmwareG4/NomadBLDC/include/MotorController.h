@@ -279,6 +279,10 @@ private:
     Motor *motor_; // Motor Object
     bool dirty_;   // Have unsaved changed to config
 
+    bool in_limit_min_; // TODO: Move this to a register
+    bool in_limit_max_; // TODO: Move this to a register
+
+
     RMSCurrentLimiter *current_limiter_;
     float rms_current_sample_period_;
 

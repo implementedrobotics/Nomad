@@ -299,6 +299,10 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.foc_ccl_divider = 1; // Default to not divide.  Current loops runs at same freq as PWM
 
     state_.Voltage_bus = 24.0f;
+
+    // TOOD: In Register
+    in_limit_max_ = false;
+    in_limit_min_ = false;
     // TODO: Parameter
     rms_current_sample_period_ = 1.0f/10.0f;
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
@@ -384,6 +388,9 @@ void MotorController::Reset()
     state_.K_p = 0.0f;
     state_.K_d = 0.0f;
     state_.T_ff = 0.0f;
+
+    in_limit_min_ = false;
+    in_limit_max_ = false;
 }
 
 void MotorController::CurrentMeasurementCB()
@@ -802,21 +809,34 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 
 void MotorController::TorqueControl()
 {
+    float deadband = 0.1f;
     float torque_ref = 0.0f;
-    bool bInLimit = false;
     // Check Position Limits
-    if(motor->state_.theta_mech < config_.pos_limit_min)
+    if(motor->state_.theta_mech <= config_.pos_limit_min)
     {
         torque_ref = config_.K_p_limit * (config_.pos_limit_min - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
-        bInLimit = true;
+        in_limit_min_ = true;
     }
-    else if(motor->state_.theta_mech > config_.pos_limit_max)
+    else if(motor->state_.theta_mech >= config_.pos_limit_max)
     {
         torque_ref = config_.K_p_limit * (config_.pos_limit_max - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
-        bInLimit = true;
+        in_limit_max_ = true;
     }
-    // TODO: Also check velocity
-    if(!bInLimit) // Not Limiting
+
+    if(in_limit_max_) // Check Hysteresis
+    {
+        if(motor->state_.theta_mech < config_.pos_limit_max-deadband)
+            in_limit_max_ = false;
+    }
+    else if(in_limit_min_) // Check Hysteresis
+    {
+        if(motor->state_.theta_mech > config_.pos_limit_min+deadband)
+            in_limit_min_ = false;
+    }
+
+    
+    // TODO: Also check velocity limits
+    if(!in_limit_min_ && !in_limit_max_) // Not Limiting
     {
         torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     }
