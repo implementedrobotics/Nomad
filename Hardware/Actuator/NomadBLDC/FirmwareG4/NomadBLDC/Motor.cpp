@@ -116,9 +116,9 @@ void Motor::Update()
     rotor_sensor_->Update(sample_time_);
     
     // Update State
-    state_.theta_mech = rotor_sensor_->GetMechanicalPosition();
-    state_.theta_mech_true = rotor_sensor_->GetMechanicalPositionTrue();
-    state_.theta_mech_dot = rotor_sensor_->GetMechanicalVelocity();
+    state_.theta_mech = rotor_sensor_->GetMechanicalPosition() / config_.gear_ratio;
+    state_.theta_mech_true = rotor_sensor_->GetMechanicalPositionTrue() / config_.gear_ratio;
+    state_.theta_mech_dot = rotor_sensor_->GetMechanicalVelocity() / config_.gear_ratio;
     state_.theta_elec = rotor_sensor_->GetElectricalPosition();
     state_.theta_elec_dot = rotor_sensor_->GetElectricalVelocity();
 

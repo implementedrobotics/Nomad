@@ -810,6 +810,7 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 void MotorController::TorqueControl()
 {
     float deadband = 0.1f;
+    float torque_ref_in = state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     float torque_ref = 0.0f;
     // Check Position Limits
     if(motor->state_.theta_mech <= config_.pos_limit_min)
@@ -825,12 +826,12 @@ void MotorController::TorqueControl()
 
     if(in_limit_max_) // Check Hysteresis
     {
-        if(motor->state_.theta_mech < config_.pos_limit_max-deadband)
+        if(motor->state_.theta_mech < config_.pos_limit_max-deadband || torque_ref_in < 0)
             in_limit_max_ = false;
     }
     else if(in_limit_min_) // Check Hysteresis
     {
-        if(motor->state_.theta_mech > config_.pos_limit_min+deadband)
+        if(motor->state_.theta_mech > config_.pos_limit_min+deadband || torque_ref_in > 0)
             in_limit_min_ = false;
     }
 
