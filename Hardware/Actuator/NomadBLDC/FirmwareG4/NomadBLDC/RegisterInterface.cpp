@@ -41,27 +41,37 @@ Register* RegisterInterface::register_map_[kMaxRegisters] = {};
 // {    
 // }
 
-void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command)
+void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev)
 {
     register_command_t *cmd;
     cmd = (register_command_t *)command.data;
     Logger::Instance().Print("Command: %d\r\n", cmd->header.rwx);
+    Logger::Instance().Print("Device PTR: %x\r\n", dev);
     //Logger::Instance().Print("Address: %d : \r\n", cmd->address);
 
-    if(cmd->header.rwx == 0)
+    if(cmd->header.rwx == 0) // Read
     {
         register_reply_t reply;
         // Read
         Logger::Instance().Print("Address: %d \r\n", cmd->header.address);
         Logger::Instance().Print("READ: %d\r\n", register_map_[cmd->header.address]->Get(reply.cmd_data, 0));
+        Logger::Instance().Print("RETURNING: %d\r\n", *(uint32_t *)reply.cmd_data);
+        reply.header.sender_id = 2;
+        reply.header.code = 0;
+        reply.header.address = cmd->header.address;
+
+        // Send it back
+        dev->Send(0x001, reply.data, 12);
+
     }
-    else if(cmd->header.rwx == 1)
+    else if(cmd->header.rwx == 1) // Write
     {
         // Write
         Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
+        
     }
-    else if(cmd->header.rwx == 2)
+    else if(cmd->header.rwx == 2) // Execture
     {
         // Run Function
         Logger::Instance().Print("Execute: %d : \r\n", cmd->header.address);

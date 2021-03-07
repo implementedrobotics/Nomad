@@ -121,7 +121,7 @@ public:
 
     // Set Complete Callback
     // TODO: We have 2 interrupt lines.  For now attach only to 0
-    void Attach(const std::function<void(FDCAN_msg_t&)> &recv_cb)
+    void Attach(const std::function<void(FDCAN_msg_t&, FDCANDevice*)> &recv_cb)
     {
         recv_callback_ = recv_cb;
     }
@@ -147,7 +147,7 @@ public:
             Receive(fdcan_msg_.data, fdcan_msg_.length);
 
             // Execute Callback ( Forward Message to Handler )
-            recv_callback_(fdcan_msg_);
+            recv_callback_(fdcan_msg_, this);
         }
 
         // Handle clearing registers etc
@@ -200,7 +200,7 @@ private:
     //static FDCANDevice* ISR_VTABLE[kMaxInterrupts];
 
     // Interrupt Callback
-    std::function<void(FDCAN_msg_t&)> recv_callback_ = [=](FDCAN_msg_t&) {};
+    std::function<void(FDCAN_msg_t&, FDCANDevice *dev)> recv_callback_ = [=](FDCAN_msg_t&, FDCANDevice*) {};
 };
 
 #endif // CORE_PERIPHERAL_FDCAN_H_

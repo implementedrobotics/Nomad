@@ -81,7 +81,7 @@ void StartCommunicationThreads()
     Logger::Instance().Enable(true);
     Logger::Instance().SetUART(uart);
 
-    // Start CAN (1mbps Nominal Rate w/ 5mbps Data Rate)
+    // Start CAN (1mbps Nominal Rate w/ 2mbps Data Rate)
     fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 2e6);
     fdcan->Init();
     fdcan->Enable();
@@ -152,24 +152,28 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR2.uid3));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
-  //  RegisterInterface::register_command_t test;
-  //  test.header.rwx = 1;
-  ////  test.header.address = DeviceRegisters_e::DeviceUID1;
-  //  test.header.data_type = 1;
-  //  uint32_t new_val=  24;
+    RegisterInterface::register_command_t test;
+    test.header.rwx = 0;
+    test.header.address = DeviceRegisters_e::DeviceUID1;
+    test.header.data_type = 1;
+    //test.header.reserved = 1;
+    uint32_t new_val = 64001;
 
-  //  memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
 
-    //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
+    memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
 
-   // FDCANDevice::FDCAN_msg_t msg;
-   // memcpy(msg.data, &test, 64);
+   // memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
 
-   // Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
-   // Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
+   FDCANDevice::FDCAN_msg_t msg;
+   memcpy(msg.data, &test, 64);
 
-   // RegisterInterface::HandleCommand(msg);
-    //Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
+   Logger::Instance().Print("Message New: %x\r\n", test);
+
+   Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
+   Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
+
+   RegisterInterface::HandleCommand(msg, fdcan);
+   Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
 }
 
 void DebugTask()
@@ -204,34 +208,34 @@ extern "C" int app_main() //
     // Init a temp debug Task
     //DebugTask();
 
-    //  float theta = PI;
+    // float theta = PI;
     // int i = 0;
 
     // uint32_t start_ticks;
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
-    uint8_t Tx_Data[10] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12};
+    uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
 
-    // int i =0;
+    int i =0;
     // Infinite Loop.
     for (;;)
     {
-       // fdcan->Send(0x001, Tx_Data, 10);
+      //  fdcan->Send(0x001, Tx_Data, 15);
 
         // Update Device Stats
         //DSR2.uptime = HAL_GetTick() / 1000;
-       // osDelay(1000);
+        //osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);
-        // Logger::Instance().Print("Here: %d\r\n", i++);
-        //osDelay(50);
+       // Logger::Instance().Print("Here: %d\r\n", i++);
+        //osDelay(500);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();
 
         // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-        // Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
+       //  Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
 
         // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
         // stop_ticks = SysTick->VAL;

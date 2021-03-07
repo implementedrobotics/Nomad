@@ -579,7 +579,7 @@ public:
             return Size();
         }
 
-        Logger::Instance().Print("UNABLE TO GET BYTESD\r\n");
+        Logger::Instance().Print("UNABLE TO GET BYTES!\r\n");
         return 0;
     }
 
@@ -700,14 +700,14 @@ public:
     static constexpr uint16_t kMaxRegisters = (1 << 8); // 8-bit addressing
 
     // TODO: Address field is bit too large.  But keeping clean alignment math here
-    struct request_header_t // 3 Bytes
+    struct request_header_t // 4 Bytes
     {
         uint32_t sender_id : 6; // Node ID of Sender
         uint32_t rwx : 2;       // Read/Write/Execute
         uint32_t address : 8;   // 8-bit address (256 Max Addresses)
         uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
         uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
-        //uint32_t reserved: 8;   // Reserved
+        uint32_t reserved: 8;   // Reserved
         // MSG/ACK IDs?
     };
 
@@ -758,7 +758,7 @@ public:
     // Store Base Memory Address
     // Register Will Offset From There
     // Support Float Return Precision Options
-    static void HandleCommand(FDCANDevice::FDCAN_msg_t &command);
+    static void HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev_);
 
 private:
     static Register *register_map_[kMaxRegisters];
