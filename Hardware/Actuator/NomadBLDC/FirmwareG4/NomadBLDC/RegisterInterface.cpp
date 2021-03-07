@@ -46,7 +46,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
     register_command_t *cmd;
     cmd = (register_command_t *)command.data;
     Logger::Instance().Print("Command: %d\r\n", cmd->header.rwx);
-    Logger::Instance().Print("Device PTR: %x\r\n", dev);
+    //Logger::Instance().Print("Device PTR: %x\r\n", dev);
     //Logger::Instance().Print("Address: %d : \r\n", cmd->address);
 
     if(cmd->header.rwx == 0) // Read
