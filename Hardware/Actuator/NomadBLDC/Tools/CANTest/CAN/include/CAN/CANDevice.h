@@ -1,7 +1,7 @@
 /*
  * CANDevice.h
  *
- *  Created on: November 3, 2021
+ *  Created on: March 3, 2021
  *      Author: Quincy Jones
  *
  * Copyright (c) <2021> <Quincy Jones - quincy@implementedrobotics.com/>
@@ -158,4 +158,4 @@ private:
 
 };
 
-#endif // CORE_PERIPHERAL_FDCAN_H_
+#endif // CAN_CANDEVICE_H_

@@ -160,6 +160,7 @@ void SetupDeviceRegisters()
     uint32_t new_val = 64001;
 
 
+    DSR1.fet_temp = 54.556f;
     memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
 
    // memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
@@ -168,8 +169,9 @@ void SetupDeviceRegisters()
    memcpy(msg.data, &test, 64);
 
    //Register  *test_reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1);
-   DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetStruct<uint8_t *>();
+   DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetDataPtr<uint8_t *>();
    
+   Logger::Instance().Print("TEMP: %f\r\n", d_reg1->fet_temp);
    Logger::Instance().Print("Message New: %x | %x!!\r\n", d_reg1, &DSR1);
 
    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
@@ -218,9 +220,9 @@ extern "C" int app_main() //
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
-    uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
+    //uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
 
-    int i =0;
+    int i = 0;
     // Infinite Loop.
     for (;;)
     {
@@ -231,7 +233,7 @@ extern "C" int app_main() //
         //osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);
-       // Logger::Instance().Print("Here: %d\r\n", i++);
+        //Logger::Instance().Print("Here: %d\r\n", i++);
         //osDelay(500);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();

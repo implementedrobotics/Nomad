@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <iostream>
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -91,7 +92,6 @@ bool CANDevice::Open(const std::string &canid, int32_t timeout)
 bool CANDevice::Send(CAN_msg_t &msg)
 {
     // TODO: Make sure socket is open and can device is valid, etc
-
     struct canfd_frame frame;
     memset(&frame, 0, sizeof(frame)); /* init CAN FD frame, e.g. LEN = 0 */
 
@@ -113,6 +113,26 @@ bool CANDevice::Send(CAN_msg_t &msg)
     return true;
 }
 
+bool CANDevice::Receive(CAN_msg_t &msg)
+{
+    // TODO: Make sure socket is open and can device is valid, etc
+    struct canfd_frame frame;
+
+    // Read in a CAN frame
+    auto num_bytes = read(socket_, &frame, CANFD_MTU);
+    std::cout << "READ: " << num_bytes << std::endl;
+    if (num_bytes != CAN_MTU && num_bytes != CANFD_MTU)
+    {
+        //perror("READ ERROR");
+        return false;
+    }
+
+    msg.id = frame.can_id;
+    msg.length = frame.len;
+    memcpy(msg.data, frame.data, frame.len);
+    return true;
+}
+
 bool CANDevice::Close()
 {
     if (socket_ != -1)
@@ -129,18 +149,5 @@ bool CANDevice::Close()
     return true;
 }
 
-// 	frame.can_id = 0x123;
-// 	frame.can_dlc = 5;
-// 	//sprintf(frame.data, (unsigned char *)"HELLO");
-// 	frame.data[0] = 'H';
-// 	frame.data[1] = 'E';
-// 	frame.data[2] = 'L';
-// 	frame.data[3] = 'L';
-// 	frame.data[4] = 'O';
-
-// 	if(write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
-// 		perror("WRITE ERROR");
-// 		return 1;
-// 	}
 
 

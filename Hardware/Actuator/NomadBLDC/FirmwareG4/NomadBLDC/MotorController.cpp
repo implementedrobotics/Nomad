@@ -294,7 +294,6 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.K_i_limit = 0.0f;
     config_.K_d_limit = 0.0f;
 
-
     config_.pwm_freq = 40000.0f; // 40 khz
     config_.foc_ccl_divider = 1; // Default to not divide.  Current loops runs at same freq as PWM
 
@@ -355,6 +354,9 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_P, new Register(&state_.K_p));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_D, new Register(&state_.K_d));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageBus, new Register(&state_.Voltage_bus));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentBus, new Register(&state_.I_bus));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::FETTemp, new Register(&state_.fet_temp));
 }
 
 void MotorController::PrintConfig()

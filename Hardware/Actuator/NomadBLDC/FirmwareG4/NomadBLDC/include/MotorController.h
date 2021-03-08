@@ -250,7 +250,7 @@ public:
     bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
 
     void CurrentControl(); // Current Control Loop
-    void TorqueControl(); // Torque Control Fucntion
+    void TorqueControl(); // Torque Control Function
 
     // TODO: Temp will be removed once tools are all finished.
     void PrintConfig();
