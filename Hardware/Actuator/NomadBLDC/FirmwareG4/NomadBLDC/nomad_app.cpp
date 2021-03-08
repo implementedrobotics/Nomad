@@ -167,7 +167,10 @@ void SetupDeviceRegisters()
    FDCANDevice::FDCAN_msg_t msg;
    memcpy(msg.data, &test, 64);
 
-   Logger::Instance().Print("Message New: %x\r\n", test);
+   //Register  *test_reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1);
+   DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetStruct<uint8_t *>();
+   
+   Logger::Instance().Print("Message New: %x | %x!!\r\n", d_reg1, &DSR1);
 
    Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
    Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());

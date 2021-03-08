@@ -541,6 +541,18 @@ public:
         return 0;
     }
 
+    //TODO: Get Struct
+    template <typename T>
+    T GetStruct()
+    {
+        if (auto data = std::get_if<T>(&data_))
+        {
+            return *data;
+        }
+
+        return 0;
+    }
+
     uint16_t Get(uint8_t *bytes)
     {
         if (auto data = std::get_if<uint8_t *>(&data_))
@@ -685,6 +697,12 @@ public:
     T Get(uint16_t offset = 0)
     {
         return fields_[offset].Get<T>();
+    }
+
+    template <typename T>
+    T GetStruct(uint16_t offset = 0)
+    {
+        return fields_[offset].GetStruct<T>();
     }
 
 private:
