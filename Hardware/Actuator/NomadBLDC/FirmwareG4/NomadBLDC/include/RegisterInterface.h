@@ -123,6 +123,7 @@ typedef enum // Controller State Register
     CurrentRMS = 0x3A,        // Motor RMS Current Value
     MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
     Timeout = 0x3C,           // Missed Input Control Deadline Count
+    ControlMode = 0x3D,       // Set Control Mode.  TODO: Should be a function instead and in new register
     // Reserved = 0x3D,
     // Reserved = 0x3E,
     // Reserved = 0x3F,
@@ -465,49 +466,51 @@ public:
         {
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+            //Logger::Instance().Print("Variant Value8: %d | %d\r\n", **data, Size());
+            TorqueControlModeRegister_t *test = (TorqueControlModeRegister_t*)*data;
+           // Logger::Instance().Print("TEST: %f\r\n", test->K_p);
             return true;
         }
         else if (auto data = std::get_if<uint16_t *>(&data_))
         {
             //**data = *((uint16_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+            //Logger::Instance().Print("Variant Value16: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<uint32_t *>(&data_))
         {
             //**data = *((uint32_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+           // Logger::Instance().Print("Variant Value32: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<int8_t *>(&data_))
         {
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+            //Logger::Instance().Print("Variant Value8: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<int16_t *>(&data_))
         {
             //**data = *((int16_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+          //  Logger::Instance().Print("Variant Value16: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<int32_t *>(&data_))
         {
             //**data = *((int32_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+          //  Logger::Instance().Print("Variant Value32: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<float *>(&data_))
         {
             //**data = *((float *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Float Value32: %d\r\n", **data);
+          //  Logger::Instance().Print("Float Value32: %d\r\n", **data);
             return true;
         }
         else
@@ -523,7 +526,7 @@ public:
         if (auto data = std::get_if<T *>(&data_))
         {
             **data = value;
-            Logger::Instance().Print("Setting Value: %d\r\n", **data);
+            //Logger::Instance().Print("Setting Value: %d\r\n", **data);
             return true;
         }
         else
@@ -644,10 +647,10 @@ public:
 
     // Struct Valued Register
     template <typename T>
-    Register(T value, bool is_struct)
+    Register(T value, bool is_struct, size_t size = 0)
     {
         if(is_struct)
-            AddStructField(value);
+            AddStructField(value, size);
     }
 
     template <typename T>
@@ -659,9 +662,9 @@ public:
     }
 
     template <typename T>
-    void AddStructField(T value)
+    void AddStructField(T value, size_t size)
     {
-       RegisterData add_struct((uint8_t *)value, sizeof(T));
+       RegisterData add_struct((uint8_t *)value, size);
        fields_.push_back(add_struct);
        data_size_ += add_struct.Size();
     }

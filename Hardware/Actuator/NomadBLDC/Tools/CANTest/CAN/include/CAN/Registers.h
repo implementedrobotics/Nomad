@@ -160,6 +160,7 @@ typedef enum // Controller State Register
     CurrentRMS = 0x3A,        // Motor RMS Current Value
     MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
     Timeout = 0x3C,           // Missed Input Control Deadline Count
+    ControlMode = 0x3D,       // Set Control Mode.  TODO: Should be a function instead and in new register
     // Reserved = 0x3D,
     // Reserved = 0x3E,
     // Reserved = 0x3F,

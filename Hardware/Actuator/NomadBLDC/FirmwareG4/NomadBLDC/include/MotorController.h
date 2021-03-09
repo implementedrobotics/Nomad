@@ -77,7 +77,7 @@ typedef enum
     MEASURE_ENCODER_OFFSET_COMPLETE = 3
 } command_feedback_t;
 
-typedef enum
+typedef enum: uint8_t
 {
     STARTUP_MODE = 0,
     IDLE_MODE = 1,
@@ -233,8 +233,8 @@ public:
     inline bool IsInitialized() { return control_initialized_; }
 
     // TODO: Move this and set FSM
-    inline void SetControlMode(control_mode_type_t mode) {control_mode_ = mode;}
-    inline control_mode_type_t GetControlMode() {return control_mode_;}
+    inline void SetControlMode(uint8_t mode) {control_mode_ = mode;}
+    inline uint8_t GetControlMode() {return control_mode_;}
 
     bool CheckErrors();                 // Check for Controller Errors
 
@@ -255,7 +255,7 @@ public:
     // TODO: Temp will be removed once tools are all finished.
     void PrintConfig();
     // Public for now...  TODO: Need something better here
-    volatile control_mode_type_t control_mode_; // Controller Mode
+    uint32_t control_mode_; // Controller Mode
 
     Config_t config_; // Controller Configuration Parameters
     State_t state_;   // Controller State Struct
