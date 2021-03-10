@@ -3,6 +3,7 @@
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
+#include <math.h>
 
 int main()
 {
@@ -34,7 +35,7 @@ int main()
     TorqueControlModeRegister_t tcmr;
 
     tcmr.K_d = 0.05f;
-    tcmr.K_p = 20.0f;
+    tcmr.K_p = 10.0f;
     tcmr.Pos_ref = 0.0f;
     tcmr.Vel_ref = 0.0f;
     tcmr.T_ff = 0.0f;
@@ -59,16 +60,19 @@ int main()
 
 usleep(1000000);
 
+float pos = 0.0f;
+
 for (int j = 0; j < 2500; j++)
 {
-    tcmr.Pos_ref += 0.05f;
+    pos = sin(2*3.14*.0025*j);
+    tcmr.Pos_ref = pos;
     memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
     msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
     memcpy(msg.data, &test, msg.length);
 
     can.Send(msg);
 
-    usleep(100000);
+    usleep(1000);
 }
 
         // int i = 0;
