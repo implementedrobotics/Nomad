@@ -62,9 +62,9 @@ usleep(1000000);
 
 float pos = 0.0f;
 
-for (int j = 0; j < 2500; j++)
+for (int j = 0; j < 10000; j++)
 {
-    pos = sin(2*3.14*.0025*j);
+    pos = sin(2*3.14*.001*j);
     tcmr.Pos_ref = pos;
     memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
     msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
