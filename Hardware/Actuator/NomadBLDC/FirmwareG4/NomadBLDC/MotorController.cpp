@@ -104,6 +104,9 @@ void init_motor_controller(Save_format_t *load_data)
         motor_controller->config_ = load_data->controller_config;
     }
 
+    motor_controller->PrintConfig();
+    motor->PrintConfig();
+    motor->PositionSensor()->PrintConfig();
     motor_controller->Init();
 
     //Update Sample Time For Motor

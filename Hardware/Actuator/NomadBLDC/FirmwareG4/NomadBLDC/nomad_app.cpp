@@ -135,8 +135,6 @@ void StartMotorControlThread()
     // Open it.
     if(NomadFlash::Open())
     {
-        Logger::Instance().Print("No Valid Load Data Found.  Please configure and save!\r\n");
-        
         // Load All
         Save_format_t load_data;
         NomadFlash::LoadAll(load_data);
@@ -146,6 +144,7 @@ void StartMotorControlThread()
     }
     else
     {
+        Logger::Instance().Print("No Valid Load Data Found.  Please configure and save!\r\n");
         // Start Motor Control Thread
         init_motor_controller(NULL);
     }
@@ -316,13 +315,13 @@ bool save_configuration()
         // TODO: Do something better so we don't have to make this assumption
         motor->config_.calibrated = 1;
         status = NomadFlash::SaveMotorConfig(motor->config_);
-        Logger::Instance().Print("Unable to Save Motor Config: %d\r\n", status);
+        Logger::Instance().Print("Save Motor Config: %d\r\n", status);
         status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
-        Logger::Instance().Print("Unable to Save Position Config: %d\r\n", status);
+        Logger::Instance().Print("Save Position Config: %d\r\n", status);
         status = NomadFlash::SaveControllerConfig(motor_controller->config_);
-        Logger::Instance().Print("Unable to Save Controller Config: %d\r\n", status);
+        Logger::Instance().Print("Save Controller Config: %d\r\n", status);
         status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
-        Logger::Instance().Print("Unable to Save CAN Config: %d\r\n", status);
+        Logger::Instance().Print("Save CAN Config: %d\r\n", status);
     }
     else
     {

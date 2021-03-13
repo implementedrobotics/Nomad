@@ -431,7 +431,6 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.comm_id = COMM_READ_CONTROLLER_CONFIG;
         packet.packet_length = sizeof(MotorController::Config_t);
         packet.config = motor_controller->config_;
-
         // Send it
         gUART->SendBytes((uint8_t *)&packet, sizeof(Controller_config_packet_t));
         break;

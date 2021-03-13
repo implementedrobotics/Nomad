@@ -723,10 +723,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             controller_state = self.nomad_dev.controller_state
             encoder_state = self.nomad_dev.encoder_state
             controller_config = self.nomad_dev.controller_config
-            #print(controller_state)
+            #print(controller_config)
             max_current = self.nomad_dev.controller_config.current_limit
             I_d, I_q = self.nomad_dev.dq0(motor_state.theta_elec, motor_state.I_a, motor_state.I_b, motor_state.I_c)
             #print(I_q)
+            #print(I_d)
            # print(state)
             self.idProgressVal.setFormat("I_d: {:0.2f} A".format(I_d))
             self.idProgressVal.setValue(int(abs(I_d/max_current)*100))

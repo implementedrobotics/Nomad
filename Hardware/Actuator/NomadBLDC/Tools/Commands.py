@@ -89,6 +89,7 @@ class CommandHandler:
         self.motor_config_received = threading.Event()
         self.controller_config_received = threading.Event()
         self.encoder_config_received = threading.Event()
+        self.can_config_received = threading.Event()
         
         self.motor_state_received = threading.Event()
         self.controller_state_received = threading.Event()
@@ -223,6 +224,7 @@ class CommandHandler:
         self.motor_config = None
         self.controller_config = None
         self.encoder_config = None
+        self.can_config = None
 
         # Wait for device response
         self.motor_config_received.wait(5)
@@ -238,6 +240,8 @@ class CommandHandler:
         self.controller_config_received.wait(5)
         if(self.controller_config_received.is_set()):
             self.controller_config_received.clear() # Clear Flag
+        else:
+            print("NOT SET")
         ###################
 
         ################ Load Position Encoder Config
@@ -255,9 +259,9 @@ class CommandHandler:
         transport.send_packet(command_packet)
 
         # Wait for device response
-        self.can_config.wait(5)
-        if(self.can_config.is_set()):
-            self.can_config.clear() # Clear Flag
+        self.can_config_received.wait(5)
+        if(self.can_config_received.is_set()):
+            self.can_config_received.clear() # Clear Flag
         ###################
 
         return (self.motor_config, self.controller_config, self.encoder_config, self.can_config)
@@ -410,7 +414,11 @@ class CommandHandler:
         elif(comm_id == CommandID.READ_CONTROLLER_CONFIG):
             self.controller_config = ControllerConfig.unpack(packet[2:])
             self.controller_config_received.set()
-            
+
+        elif(comm_id == CommandID.READ_CAN_CONFIG):
+            self.can_config = CANConfig.unpack(packet[2:])
+            self.can_config_received.set()
+
         elif(comm_id == CommandID.READ_MOTOR_STATE):
             self.motor_state = MotorState.unpack(packet[2:])
             self.motor_state_received.set()
