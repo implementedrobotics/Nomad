@@ -41,6 +41,8 @@
 #define FLASH_SAVE_SIGNATURE 0x78D5FC00
 #define FLASH_BASE_ADDRESS ADDR_FLASH_PAGE_60
 
+
+// Must be 8-byte aligned for easy flash read/write
 struct Save_format_t
 {
     uint32_t signature;
@@ -63,11 +65,10 @@ public:
     {
         Save_format_t flash;
         bool status;
-        if (write)
+        if (write) // Writing
         {
             FlashDevice::Instance().Open(FLASH_BASE_ADDRESS, sizeof(flash), FlashDevice::WRITE);
 
-           // Logger::Instance().Print("Opening For Write: %d to %d!\r\n", good, sizeof(flash));
             // Update Signatures
             flash.signature = FLASH_SAVE_SIGNATURE;
             flash.version = FLASH_VERSION; // Set Version
@@ -75,27 +76,23 @@ public:
             // Write Flash
             status = FlashDevice::Instance().Write(0, (uint8_t *)&flash, 8);
         }
-        else
+        else // Reading
         {
             FlashDevice::Instance().Open(FLASH_BASE_ADDRESS, sizeof(flash), FlashDevice::READ);
 
             // Read signature
             status = FlashDevice::Instance().Read(0, (uint8_t *)&flash, sizeof(Save_format_t));
 
-          //  Logger::Instance().Print("ERROR: Loading/Opening!\r\n");
             if (!status)
             {
-                //Logger::Instance().Print("ERROR: Unable to read Flash Memory\r\n");
                 return false;
             }
 
             bool loaded = (flash.signature == FLASH_SAVE_SIGNATURE && flash.version == FLASH_VERSION);
             if (!loaded)
             {
-                //Logger::Instance().Print("ERROR: No Valid Configuration Found!  Please run setup before enabling drive.\r\n");
                 return false;
             }
-            //Logger::Instance().Print("TEST: %d | %x and %d\r\n", flash.version, flash.signature, flash.signature == FLASH_SAVE_SIGNATURE );
         }
         return status;
     }
@@ -107,7 +104,6 @@ public:
 
     static bool SaveMotorConfig(Motor::Config_t &config)
     {
-        //Logger::Instance().Print("Offset: %d:\r\n", offsetof(struct Save_format_t, motor_config));
         bool status = FlashDevice::Instance().Write(offsetof(struct Save_format_t, motor_config), (uint8_t *)&config, sizeof(Motor::Config_t));
         return status;
     }
@@ -119,7 +115,6 @@ public:
     }
     static bool SaveControllerConfig(MotorController::Config_t &config)
     {
-        //Logger::Instance().Print("Offset: %d: %d + %d\r\n", offsetof(struct Save_format_t, controller_config), sizeof(Motor::Config_t), sizeof(PositionSensorAS5x47::Config_t));
         bool status = FlashDevice::Instance().Write(offsetof(struct Save_format_t, controller_config), (uint8_t *)&config, sizeof(MotorController::Config_t));
         return status;
     }
@@ -132,7 +127,6 @@ public:
 
     static bool SavePositionSensorConfig(PositionSensorAS5x47::Config_t &config)
     {
-        //Logger::Instance().Print("Offset: %d:\r\n", offsetof(struct Save_format_t, position_sensor_config));
         bool status = FlashDevice::Instance().Write(offsetof(struct Save_format_t, position_sensor_config), (uint8_t *)&config, sizeof(PositionSensorAS5x47::Config_t));
         return status;
     }
@@ -148,6 +142,12 @@ public:
         return status;
     }
 
+    static bool LoadAll(Save_format_t &load_data)
+    {        
+        bool status = FlashDevice::Instance().Read(0, (uint8_t *)&load_data, sizeof(Save_format_t));
+        return status;
+    }
+    
     static bool Close()
     {
         return FlashDevice::Instance().Close();

@@ -76,7 +76,7 @@ void ms_poll_task(void *arg)
     }
 }
 
-void init_motor_controller()
+void init_motor_controller(Save_format_t *load_data)
 {
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
@@ -92,20 +92,26 @@ void init_motor_controller()
     // Init Motor Controller
     motor_controller = new MotorController(motor);
 
-    // Load Config Here...
-    load_configuration();
+    // Valid Configuration?
+    if(load_data != nullptr)
+    {
+        Logger::Instance().Print("Found Valid Configuration.  Loading.\r\n");
+
+        // Update Config
+        motor->config_ = load_data->motor_config;
+        motor->PositionSensor()->config_ = load_data->position_sensor_config;
+        motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
+        motor_controller->config_ = load_data->controller_config;
+    }
 
     motor_controller->Init();
 
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
 
+    // Is this best spot?
+    motor->ZeroOutputPosition();
 
-    // motor_controller->PrintConfig();
-    // motor->PrintConfig();
-    // motor->PositionSensor()->PrintConfig();
-
-    // //save_configuration();
 }
 
 // Controller Mode Interface
@@ -159,75 +165,60 @@ bool measure_encoder_offset()
     set_control_mode(MEASURE_ENCODER_OFFSET_MODE);
     return true;
 }
-bool save_configuration()
-{
-    Logger::Instance().Print("\r\nSaving Configuration...\r\n");
+// bool save_configuration()
+// {
+//     Logger::Instance().Print("\r\nSaving Configuration...\r\n");
 
-    bool status = false;
+//     bool status = false;
 
-    if (NomadFlash::Open(true))
-    {
-        // If we are writing a config assume for now we are calibrated
-        // TODO: Do something better so we don't have to make this assumption
-        motor->config_.calibrated = 1;
+//     if (NomadFlash::Open(true))
+//     {
+//         // If we are writing a config assume for now we are calibrated
+//         // TODO: Do something better so we don't have to make this assumption
+//         motor->config_.calibrated = 1;
 
-        status = NomadFlash::SaveMotorConfig(motor->config_);
-        Logger::Instance().Print("SAVED1: %d\r\n", status);
-        status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
-        Logger::Instance().Print("SAVED2: %d\r\n", status);
-        status = NomadFlash::SaveControllerConfig(motor_controller->config_);
-        Logger::Instance().Print("SAVED3: %d\r\n", status);
-        NomadFlash::Close();
-    }
+//         status = NomadFlash::SaveMotorConfig(motor->config_);
+//         Logger::Instance().Print("SAVED1: %d\r\n", status);
+//         status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
+//         Logger::Instance().Print("SAVED2: %d\r\n", status);
+//         status = NomadFlash::SaveControllerConfig(motor_controller->config_);
+//         Logger::Instance().Print("SAVED3: %d\r\n", status);
+//         NomadFlash::Close();
+//     }
 
-    //Logger::Instance().Print("\r\n LEaving SAVE Configuration...\r\n");
+//     return status;
+// }
+// void load_configuration()
+// {
+//     // Open it.
+//     if(!NomadFlash::Open())
+//     {
+//         Logger::Instance().Print("Unable to load controller configuration!\r\n");
+//         NomadFlash::Close();
+//         return;
+//     }
 
+//     //Logger::Instance().Print("Load Configuration HERE!\r\n");
 
+//     // Load Motor Config
+//     NomadFlash::LoadMotorConfig(motor->config_);
+//     motor->PrintConfig();
+//     Logger::Instance().Print("CONFIG: %d\r\n", motor->config_.num_pole_pairs);
+//     // Load Position Sensor Config
+//     NomadFlash::LoadPositionSensorConfig(motor->PositionSensor()->config_);
+//     motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
+//     motor->PositionSensor()->PrintConfig();
+//     // Load Controller Config
+//     NomadFlash::LoadControllerConfig(motor_controller->config_);
+//     motor_controller->PrintConfig();
+//     //Logger::Instance().Print("CONFIG: %f\r\n", motor->config_.phase_resistance);
 
-    //save.motor_config = motor->config_;
-    //save.position_sensor_config = motor->PositionSensor()->config_;
-    //save.controller_config = motor_controller->config_;
+//     // Close it.
+//     NomadFlash::Close();
 
-    // // Write Flash
-    // FlashDevice::Instance().Open(ADDR_FLASH_PAGE_60, sizeof(save), FlashDevice::WRITE);
-    // status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
-    // FlashDevice::Instance().Close();
-
-    // Logger::Instance().Print("\r\nSaved Configuration: %d\r\n",status);
-
-    return status;
-}
-void load_configuration()
-{
-    // Open it.
-    if(!NomadFlash::Open())
-    {
-        Logger::Instance().Print("Unable to load controller configuration!\r\n");
-        NomadFlash::Close();
-        return;
-    }
-
-    //Logger::Instance().Print("Load Configuration HERE!\r\n");
-
-    // Load Motor Config
-    NomadFlash::LoadMotorConfig(motor->config_);
-    motor->PrintConfig();
-    Logger::Instance().Print("CONFIG: %d\r\n", motor->config_.num_pole_pairs);
-    // Load Position Sensor Config
-    NomadFlash::LoadPositionSensorConfig(motor->PositionSensor()->config_);
-    motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
-    motor->PositionSensor()->PrintConfig();
-    // Load Controller Config
-    NomadFlash::LoadControllerConfig(motor_controller->config_);
-    motor_controller->PrintConfig();
-    //Logger::Instance().Print("CONFIG: %f\r\n", motor->config_.phase_resistance);
-
-    // Close it.
-    NomadFlash::Close();
-
-    // TODO: Is this the best thing to do?
-    motor->ZeroOutputPosition();
-}
+//     // TODO: Is this the best thing to do?
+//     motor->ZeroOutputPosition();
+// }
 void reboot_system()
 {
     NVIC_SystemReset();

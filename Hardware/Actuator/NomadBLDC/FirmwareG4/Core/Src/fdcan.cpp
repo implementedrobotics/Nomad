@@ -32,11 +32,16 @@
 
 // Project Includes
 #include <Logger.h>
+#include <RegisterInterface.h>
 
 static FDCANDevice* g_ISR_VTABLE[FDCANDevice::kMaxInterrupts];
 
 FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t bitrate, uint32_t dbitrate) : FDCAN_(FDCAN), enable_interrupt_(false), timings_valid_(false)
 {
+
+    // Setup Registers
+    SetupRegisters();
+
     config_.id = node_id;            // Lowest Priority Standard ID (2047 max 11-bit)
     config_.bitrate = bitrate;       // 250 kbps
     config_.d_bitrate = dbitrate;    // 250 kbps
@@ -44,18 +49,27 @@ FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t 
     config_.d_sample_point = 0.625f; // 62.5%
     config_.mode_fd = 1;             // FD CAN ( Default to FD CAN? It is my preference anyways...)
 
+
     // For some reason using the stack is not working and communications is faulty. This should not effect or perf.
     hfdcan_ = new FDCAN_HandleTypeDef();
     hfdcan_->Instance = FDCAN;
     CalculateTimings();
+
+
 }
 
 FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config) : FDCAN_(FDCAN), config_(config), enable_interrupt_(false), timings_valid_(false)
 {
+
+    // Setup Registers
+    SetupRegisters();
+
     // For some reason using the stack is not working and communications is faulty.  This should not effect or perf.
     hfdcan_ = new FDCAN_HandleTypeDef();
     hfdcan_->Instance = FDCAN;
     CalculateTimings();
+
+
 }
 
 // Init FDCAN
@@ -284,6 +298,17 @@ extern "C"  void FDCAN3_IT1_IRQHandler(void)
 }
 
 // Helpers
+void FDCANDevice::SetupRegisters()
+{
+    // Setup Registers
+    RegisterInterface::AddRegister(CANConfigRegisters_e::CANConfigRegister1, new Register((CANConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(CANConfigRegisters_e::Bitrate, new Register(&config_.bitrate));
+    RegisterInterface::AddRegister(CANConfigRegisters_e::DataBitrate, new Register(&config_.d_bitrate));
+    RegisterInterface::AddRegister(CANConfigRegisters_e::FD_MODE, new Register(&config_.mode_fd));
+    RegisterInterface::AddRegister(CANConfigRegisters_e::SamplePoint, new Register(&config_.sample_point));
+    RegisterInterface::AddRegister(CANConfigRegisters_e::DataSamplePoint, new Register(&config_.d_sample_point));
+}
+
 bool FDCANDevice::CalculateTimings()
 {
     // Get CAN Clock

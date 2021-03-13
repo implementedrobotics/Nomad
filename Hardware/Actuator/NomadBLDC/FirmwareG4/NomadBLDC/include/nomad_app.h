@@ -26,11 +26,22 @@
 #ifndef NOMAD_APP_H
 #define NOMAD_APP_H
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 int app_main();
+
+// Move Save/Load Here
+
+bool save_configuration();
+bool load_configuration();
+
+
 
 #ifdef __cplusplus
 }
@@ -38,7 +49,8 @@ int app_main();
 
 #ifdef __cplusplus
 
-//#include <Peripherals/uart.h>
+#include <Peripherals/fdcan.h>
+FDCANDevice *get_can_device();
 
 #endif
 

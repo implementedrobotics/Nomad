@@ -57,19 +57,23 @@ class CommandID(IntEnum):
     READ_MOTOR_CONFIG = 17
     READ_CONTROLLER_CONFIG = 18
     READ_ENCODER_CONFIG = 19
-    WRITE_MOTOR_CONFIG = 20
-    WRITE_CONTROLLER_CONFIG = 21
-    WRITE_ENCODER_CONFIG = 22
-    WRITE_FLASH = 23
+    READ_CAN_CONFIG = 20
+    READ_UART_CONFIG = 21
+    WRITE_MOTOR_CONFIG = 22
+    WRITE_CONTROLLER_CONFIG = 23
+    WRITE_ENCODER_CONFIG = 24
+    WRITE_CAN_CONFIG = 25
+    WRITE_UART_CONFIG = 26
+    WRITE_FLASH = 27
 
     # Device Control Commands
-    DEVICE_RESTART = 24
-    DEVICE_ABORT   = 25
+    DEVICE_RESTART = 28
+    DEVICE_ABORT   = 29
     
     # Set Points
-    SEND_VOLTAGE_SETPOINT = 26
-    SEND_CURRENT_SETPOINT = 27
-    SEND_TORQUE_SETPOINT = 28
+    SEND_VOLTAGE_SETPOINT = 30
+    SEND_CURRENT_SETPOINT = 31
+    SEND_TORQUE_SETPOINT = 32
 
     # Status
     LOGGING_OUTPUT = 100
@@ -101,6 +105,7 @@ class CommandHandler:
         self.motor_config = None
         self.encoder_config = None
         self.controller_config = None
+        self.can_config = None
         
         self.motor_state = None
         self.encoder_state = None
@@ -167,26 +172,35 @@ class CommandHandler:
         return None
 
     # Save Configuration
-    def save_configuration(self, transport, motor_config, controller_config, encoder_config):
+    def save_configuration(self, transport, motor_config, controller_config, encoder_config, can_config):
 
         # Send Motor Config
         send_data = motor_config.pack()
         command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_MOTOR_CONFIG, len(send_data)) + send_data)
         transport.send_packet(command_packet)
         
-        time.sleep(0.25) # Delay a bit
+        time.sleep(0.5) # Delay a bit
 
         # Send Controller Config
         send_data = controller_config.pack()
         command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_CONTROLLER_CONFIG, len(send_data)) + send_data)
         transport.send_packet(command_packet)
 
-        time.sleep(0.25) # Delay a bit
+        time.sleep(0.5) # Delay a bit
 
         # Send Encoder Config
         send_data = encoder_config.pack()
         command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_ENCODER_CONFIG, len(send_data)) + send_data)
         transport.send_packet(command_packet)
+
+        time.sleep(0.5) # Delay a bit
+
+        # Send CAN Config
+        send_data = can_config.pack()
+        command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_CAN_CONFIG, len(send_data)) + send_data)
+        transport.send_packet(command_packet)
+
+        time.sleep(0.5) # Delay a bit
 
         # Tell controller to save the values to flash
         command_packet = bytearray(struct.pack("<BB", CommandID.WRITE_FLASH, 0))
@@ -236,8 +250,17 @@ class CommandHandler:
             self.encoder_config_received.clear() # Clear Flag
         ###################
 
+        ################ Load CAN Config
+        command_packet = bytearray(struct.pack("<BB", CommandID.READ_CAN_CONFIG, 0))
+        transport.send_packet(command_packet)
 
-        return (self.motor_config, self.controller_config, self.encoder_config)
+        # Wait for device response
+        self.can_config.wait(5)
+        if(self.can_config.is_set()):
+            self.can_config.clear() # Clear Flag
+        ###################
+
+        return (self.motor_config, self.controller_config, self.encoder_config, self.can_config)
 
     # Load Configuration
     def read_state(self, transport):

@@ -108,27 +108,13 @@ void StartCommunicationThreads()
     // Close it.
     NomadFlash::Close();
 
-    // TODO: Move to Save Function
-    // if(NomadFlash::Open(true)) {
-    //     config.bitrate = 1e6;
-    //     config.d_bitrate = 2e6;
-    //     config.id = 123;
-    //     config.mode_fd = 1;
-    //     config.sample_point = 0.80f;    // 80%
-    //     config.d_sample_point = 0.625f; // 62.5%
-    //     bool bSave= NomadFlash::SaveCANConfig(config);
-
-    //     Logger::Instance().Print("Saving: %d\r\n", bSave);
-    // }
-
-    //NomadFlash.Close();
-
+    // TODO: Make Instance...
     fdcan = new FDCANDevice(FDCAN3, config);
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
     fdcan->Attach(&RegisterInterface::HandleCommand);
-    //Logger::Instance().Print("Device ID: %d\r\n", LL_DBGMCU_GetDeviceID());
+
 }
 
 void StartLEDService()
@@ -145,8 +131,26 @@ void StartLEDService()
 
 void StartMotorControlThread()
 {
-    // Start Motor Control Thread
-    init_motor_controller();
+    // Load from Flash
+    // Open it.
+    if(NomadFlash::Open())
+    {
+        Logger::Instance().Print("No Valid Load Data Found.  Please configure and save!\r\n");
+        
+        // Load All
+        Save_format_t load_data;
+        NomadFlash::LoadAll(load_data);
+        
+        // Start Motor Control Thread
+        init_motor_controller(&load_data);
+    }
+    else
+    {
+        // Start Motor Control Thread
+        init_motor_controller(NULL);
+    }
+    
+    NomadFlash::Close();
 }
 
 void StartPollingThread()
@@ -263,7 +267,7 @@ extern "C" int app_main() //
 
     //uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
 
-    save_configuration();
+    //save_configuration();
     //int i = 0;
     // Infinite Loop.
     for (;;)
@@ -292,4 +296,72 @@ extern "C" int app_main() //
 
     // Should not get here
     return 0;
+}
+
+
+FDCANDevice *get_can_device()
+{
+    return fdcan;
+}
+
+bool save_configuration()
+{
+    Logger::Instance().Print("\r\nSaving Configuration...\r\n");
+
+    bool status = false;
+
+    if (NomadFlash::Open(true))
+    {
+        // If we are writing a config assume for now we are calibrated
+        // TODO: Do something better so we don't have to make this assumption
+        motor->config_.calibrated = 1;
+        status = NomadFlash::SaveMotorConfig(motor->config_);
+        Logger::Instance().Print("Unable to Save Motor Config: %d\r\n", status);
+        status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
+        Logger::Instance().Print("Unable to Save Position Config: %d\r\n", status);
+        status = NomadFlash::SaveControllerConfig(motor_controller->config_);
+        Logger::Instance().Print("Unable to Save Controller Config: %d\r\n", status);
+        status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
+        Logger::Instance().Print("Unable to Save CAN Config: %d\r\n", status);
+    }
+    else
+    {
+        Logger::Instance().Print("Unable to Open Flash!\r\n", status);
+    }
+    
+    NomadFlash::Close();
+    return status;
+}
+
+bool load_configuration()
+{
+    // // Open it.
+    // if(!NomadFlash::Open())
+    // {
+    //     Logger::Instance().Print("No Valid Load Data Found.  Please configure and save!\r\n");
+    //     NomadFlash::Close();
+    //     return false;
+    // }
+
+    // // Load All
+    // Save_format_t load_data;
+    // NomadFlash::LoadAll(load_data);
+
+    // // Load Motor Config
+    // NomadFlash::LoadMotorConfig(motor->config_);
+    // motor->PrintConfig();
+
+    // // Load Position Sensor Config
+    // NomadFlash::LoadPositionSensorConfig(motor->PositionSensor()->config_);
+    // motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
+    // motor->PositionSensor()->PrintConfig();
+
+    // // Load Controller Config
+    // NomadFlash::LoadControllerConfig(motor_controller->config_);
+    // motor_controller->PrintConfig();
+
+    // // Close it.
+    // NomadFlash::Close();
+
+    return true;
 }

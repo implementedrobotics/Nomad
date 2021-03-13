@@ -194,6 +194,33 @@ class ControllerConfig:
         return ControllerConfig(*unpacked)
 
 @dataclass
+class CANConfig:
+    __packet : ClassVar[struct.Struct] = struct.Struct('<4I2f')
+
+    # Config Reg 1
+    id: int = None
+    bitrate: int = None
+    d_bitrate: int = None
+    mode_fd: int = None
+    sample_point: float = None
+    d_sample_point: float = None
+
+    def pack(self):
+        return self.__packet.pack(self.id,
+        self.bitrate,
+        self.d_bitrate,
+        self.mode_fd,
+        self.sample_point,
+        self.d_sample_point)
+
+    @classmethod
+    def unpack(cls, data):
+        unpacked = cls.__packet.unpack(data)
+
+        return CANConfig(*unpacked)
+
+
+@dataclass
 class EncoderConfig:
     #__fmt = "<ffi128b"
     __packet : ClassVar[struct.Struct] = struct.Struct('<ffi4I128b')

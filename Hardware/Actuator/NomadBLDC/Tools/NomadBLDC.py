@@ -43,6 +43,7 @@ class NomadBLDC:
         self.motor_config = MotorConfig()
         self.encoder_config = EncoderConfig()
         self.controller_config = ControllerConfig()
+        self.can_config = CANConfig()
 
         self.motor_state = MotorState()
         self.controller_state = ControllerState()
@@ -82,7 +83,7 @@ class NomadBLDC:
         if(not self.connected):
             return False
 
-        return self.commands.save_configuration(self.transport, self.motor_config, self.controller_config, self.encoder_config)
+        return self.commands.save_configuration(self.transport, self.motor_config, self.controller_config, self.encoder_config, self.can_config)
         # TODO: Error check here?
 
     def load_configuration(self):
@@ -93,8 +94,9 @@ class NomadBLDC:
         self.motor_config = load_config[0]
         self.controller_config = load_config[1]
         self.encoder_config = load_config[2]
+        self.can_config = load_config[3]
 
-        if(self.motor_config is None or self.encoder_config is None or self.controller_config is None):
+        if(self.motor_config is None or self.encoder_config is None or self.controller_config is None or self.can_config is None):
             return False
         return True
     

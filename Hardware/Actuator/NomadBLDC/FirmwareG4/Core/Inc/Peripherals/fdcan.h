@@ -165,10 +165,15 @@ public:
     // Return Handle to FDCAN TypeDef
     inline FDCAN_HandleTypeDef* Handle() { return hfdcan_; };
 
+    void WriteConfig(Config_t &config) {config_ = config;}
+    Config_t& ReadConfig() {return config_;}
 private:
 
     // Calc Bit Timing Helper Function
     bool CalculateTimings();
+
+    // Create Registers
+    void SetupRegisters();
 
     // STM32 FDCAN Types
     FDCAN_GlobalTypeDef *FDCAN_;

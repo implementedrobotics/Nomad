@@ -25,13 +25,14 @@
 #ifndef CORE_MOTOR_CONTROLLER_INTERFACE_H_
 #define CORE_MOTOR_CONTROLLER_INTERFACE_H_
 
+#include <NomadFlash.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Entry point to facilitate transition to C++ for RTOS Task
-void init_motor_controller();
+void init_motor_controller(Save_format_t *load_data);
 void ms_poll_task(void *arg);
 
 // void debug_thread_entry();
@@ -46,8 +47,8 @@ bool measure_motor_phase_order();
 bool measure_encoder_offset();
 
 bool measure_motor_parameters();
-bool save_configuration();
-void load_configuration();
+//bool save_configuration();
+//void load_configuration();
 void restore_configuration();
 void reboot_system();
 void start_torque_control();

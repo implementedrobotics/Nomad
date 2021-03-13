@@ -237,6 +237,18 @@ typedef enum // Encoder Config Register
 } EncoderConfigRegisters_e;
 
 /* CAN Config Registers */
+typedef enum // CAN Config Register
+{
+    CANConfigRegister1 = 0x8C,
+    // CAN Config Register Offsets
+    ID = 0x8D,             // CAN ID 11-bit max is 0x7ff
+    Bitrate = 0x8E,        // Nominal Bitrate
+    DataBitrate = 0x8F,    // Data Bitrate
+    FD_MODE = 0x90,        // FD mode or classic
+    SamplePoint = 0x91,   // Nominal Bitrate Sample Point Target
+    DataSamplePoint = 0x92, // Data Sample Point Target
+
+} CANConfigRegisters_e;
 
 /* UART Config Registers */
 
@@ -427,6 +439,16 @@ struct EncoderConfigOffsetLUT3_t
 struct EncoderConfigOffsetLUT4_t
 {
     int8_t offset_lut[32]; // Offset Lookup Table 4
+};
+
+struct CANConfigRegister1_t
+{
+    uint32_t id;          // CAN ID 11-bit max is 0x7ff
+    uint32_t bitrate;     // Nominal Bitrate
+    uint32_t d_bitrate;   // Data Bitrate
+    uint32_t mode_fd;     // FD mode or classic
+    float sample_point;   // Nominal Bitrate Sample Point Target
+    float d_sample_point; // Data Sample Point Target
 };
 
 // TODO: A way to make register field read only?

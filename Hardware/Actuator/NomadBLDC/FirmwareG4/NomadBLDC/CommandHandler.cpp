@@ -32,11 +32,13 @@
 
 // Project Includes
 #include <Peripherals/uart.h>
+#include <Peripherals/fdcan.h>
 
 #include "MotorController.h"
 #include "Motor.h"
 #include "motor_controller_interface.h"
 #include "nomad_hw.h"
+#include "nomad_app.h"
 #include <Logger.h>
 
 #define PACKET_DATA_OFFSET 2
@@ -98,6 +100,14 @@ struct __attribute__((__packed__)) Controller_config_packet_t
     uint8_t comm_id;                     // Command ID
     uint8_t packet_length;               // Packet Length
     MotorController::Config_t config;    // Controller config
+};
+
+
+struct __attribute__((__packed__)) CAN_config_packet_t
+{
+    uint8_t comm_id;                     // Command ID
+    uint8_t packet_length;               // Packet Length
+    FDCANDevice::Config_t config;    // Controller config
 };
 
 struct __attribute__((__packed__)) Controller_state_packet_t
@@ -392,6 +402,17 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
     }
 
+    case COMM_WRITE_CAN_CONFIG:
+    {
+        FDCANDevice *fdcan = get_can_device();
+        FDCANDevice::Config_t *config = (FDCANDevice::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        fdcan->WriteConfig(*config);
+        //memcpy(&fdcan->config_, config, sizeof(FDCANDevice::Config_t));
+
+        break;
+        // TODO: Return status
+    }
+
     // Read Configs
     case COMM_READ_MOTOR_CONFIG:
     {
@@ -424,6 +445,19 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     
         // Send it
         gUART->SendBytes((uint8_t *)&packet, sizeof(Position_config_packet_t));
+        break;
+    }
+
+    case COMM_READ_CAN_CONFIG:
+    {
+        FDCANDevice *fdcan = get_can_device();
+        CAN_config_packet_t packet;
+        packet.comm_id = COMM_READ_CAN_CONFIG;
+        packet.packet_length = sizeof(FDCANDevice::Config_t);
+        packet.config = fdcan->ReadConfig();
+    
+        // Send it
+        gUART->SendBytes((uint8_t *)&packet, sizeof(CAN_config_packet_t));
         break;
     }
 
