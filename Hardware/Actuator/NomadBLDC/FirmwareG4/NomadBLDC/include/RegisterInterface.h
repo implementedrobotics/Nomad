@@ -467,7 +467,7 @@ public:
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
             //Logger::Instance().Print("Variant Value8: %d | %d\r\n", **data, Size());
-            TorqueControlModeRegister_t *test = (TorqueControlModeRegister_t*)*data;
+            //TorqueControlModeRegister_t *test = (TorqueControlModeRegister_t*)*data;
            // Logger::Instance().Print("TEST: %f\r\n", test->K_p);
             return true;
         }

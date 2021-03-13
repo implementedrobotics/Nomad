@@ -50,6 +50,7 @@
 #include <DRV8323.h>
 #include <LEDService.h>
 #include <Logger.h>
+#include <NomadFlash.h>
 #include <motor_controller_interface.h>
 #include <MotorController.h>
 #include <RegisterInterface.h>
@@ -81,8 +82,48 @@ void StartCommunicationThreads()
     Logger::Instance().Enable(true);
     Logger::Instance().SetUART(uart);
 
-    // Start CAN (1mbps Nominal Rate w/ 2mbps Data Rate)
-    fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 2e6);
+    // Load CAN Config
+    FDCANDevice::Config_t config;
+
+    // Open it.
+    if(!NomadFlash::Open())
+    {
+        Logger::Instance().Print("Unable to load CAN Configuration!\r\n");
+        // Load some defaults
+
+        //Start CAN (1mbps Nominal Rate w/ 2mbps Data Rate)
+        config.bitrate = 1e6;
+        config.d_bitrate = 2e6;
+        config.id = 0x123;
+        config.mode_fd = 1;
+        config.sample_point = 0.80f;    // 80%
+        config.d_sample_point = 0.625f; // 62.5%
+    }
+    else
+    {
+        NomadFlash::LoadCANConfig(config);
+        Logger::Instance().Print("Loaded CAN: %d\r\n", config.id);
+    }
+
+    // Close it.
+    NomadFlash::Close();
+
+    // TODO: Move to Save Function
+    // if(NomadFlash::Open(true)) {
+    //     config.bitrate = 1e6;
+    //     config.d_bitrate = 2e6;
+    //     config.id = 123;
+    //     config.mode_fd = 1;
+    //     config.sample_point = 0.80f;    // 80%
+    //     config.d_sample_point = 0.625f; // 62.5%
+    //     bool bSave= NomadFlash::SaveCANConfig(config);
+
+    //     Logger::Instance().Print("Saving: %d\r\n", bSave);
+    // }
+
+    //NomadFlash.Close();
+
+    fdcan = new FDCANDevice(FDCAN3, config);
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
@@ -152,33 +193,33 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR2.uid3));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
-    RegisterInterface::register_command_t test;
-    test.header.rwx = 0;
-    test.header.address = DeviceRegisters_e::DeviceUID1;
-    test.header.data_type = 1;
+  //  RegisterInterface::register_command_t test;
+  //  test.header.rwx = 0;
+  //  test.header.address = DeviceRegisters_e::DeviceUID1;
+   // test.header.data_type = 1;
     //test.header.reserved = 1;
-    uint32_t new_val = 64001;
+  //  uint32_t new_val = 64001;
 
 
-    DSR1.fet_temp = 54.556f;
-    memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
+ //   DSR1.fet_temp = 54.556f;
+  //  memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
 
    // memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
 
-   FDCANDevice::FDCAN_msg_t msg;
-   memcpy(msg.data, &test, 64);
+  // FDCANDevice::FDCAN_msg_t msg;
+  // memcpy(msg.data, &test, 64);
 
    //Register  *test_reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1);
-   DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetDataPtr<uint8_t *>();
+  // DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetDataPtr<uint8_t *>();
    
-   Logger::Instance().Print("TEMP: %f\r\n", d_reg1->fet_temp);
-   Logger::Instance().Print("Message New: %x | %x!!\r\n", d_reg1, &DSR1);
+ //  Logger::Instance().Print("TEMP: %f\r\n", d_reg1->fet_temp);
+  // Logger::Instance().Print("Message New: %x | %x!!\r\n", d_reg1, &DSR1);
 
-   Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
-   Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
+ //  Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
+ //  Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
 
-   RegisterInterface::HandleCommand(msg, fdcan);
-   Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
+  // RegisterInterface::HandleCommand(msg, fdcan);
+  // Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
 }
 
 void DebugTask()
@@ -222,7 +263,8 @@ extern "C" int app_main() //
 
     //uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
 
-    int i = 0;
+    save_configuration();
+    //int i = 0;
     // Infinite Loop.
     for (;;)
     {
