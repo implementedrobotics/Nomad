@@ -307,29 +307,50 @@ bool save_configuration()
 {
     Logger::Instance().Print("\r\nSaving Configuration...\r\n");
 
-    bool status = false;
+    //bool status = false;
 
     if (NomadFlash::Open(true))
     {
         // If we are writing a config assume for now we are calibrated
         // TODO: Do something better so we don't have to make this assumption
         motor->config_.calibrated = 1;
-        status = NomadFlash::SaveMotorConfig(motor->config_);
-        Logger::Instance().Print("Save Motor Config: %d\r\n", status);
-        status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
-        Logger::Instance().Print("Save Position Config: %d\r\n", status);
-        status = NomadFlash::SaveControllerConfig(motor_controller->config_);
-        Logger::Instance().Print("Save Controller Config: %d\r\n", status);
-        status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
-        Logger::Instance().Print("Save CAN Config: %d\r\n", status);
+        //status = NomadFlash::SaveMotorConfig(motor->config_);
+        if (!NomadFlash::SaveMotorConfig(motor->config_))
+        {
+            NomadFlash::Close();
+            return false;
+        }
+        Logger::Instance().Print("Saved Motor Config.\r\n");
+       // status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
+        if (!NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_))
+        {
+            NomadFlash::Close();
+            return false;
+        }
+        Logger::Instance().Print("Saved Position Config.\r\n");
+      //  status = NomadFlash::SaveControllerConfig(motor_controller->config_);
+        if (!NomadFlash::SaveControllerConfig(motor_controller->config_))
+        {
+            NomadFlash::Close();
+            return false;
+        }
+        Logger::Instance().Print("Saved Controller Config.\r\n");
+      //  status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
+        if (!NomadFlash::SaveCANConfig(fdcan->ReadConfig()))
+        {
+            NomadFlash::Close();
+            return false;
+        }
+        Logger::Instance().Print("Saved CAN Config.\r\n");
     }
     else
     {
-        Logger::Instance().Print("Unable to Open Flash!\r\n", status);
+        Logger::Instance().Print("Unable to Open Flash!\r\n");
+        return false;
     }
-    
+
     NomadFlash::Close();
-    return status;
+    return true;
 }
 
 bool load_configuration()

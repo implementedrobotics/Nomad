@@ -218,7 +218,7 @@ bool FDCANDevice::Receive(FDCAN_msg_t &msg)
 
     // Convert Data Length Code
     msg.length = LEN_LUT[rx_header_.DataLength >> 16];
-    Logger::Instance().Print("Length 2: %d\r\n", msg.length);
+    //Logger::Instance().Print("Length 2: %d\r\n", msg.length);
     return true;
 }
 

@@ -543,6 +543,19 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.currentLimitVal.setValue(self.nomad_dev.controller_config.current_limit)
             self.torqueLimitVal.setValue(self.nomad_dev.controller_config.torque_limit)
 
+
+            self.canIDVal.setValue(self.nomad_dev.can_config.id)
+            self.nominalBitrateVal.setValue((self.nomad_dev.can_config.bitrate)//1000)
+            self.dataBitrateVal.setValue((self.nomad_dev.can_config.d_bitrate)//1000)
+            self.nominalSamplePointVal.setValue(self.nomad_dev.can_config.sample_point * 100)
+            self.dataSamplePointVal.setValue(self.nomad_dev.can_config.d_sample_point * 100)
+
+            if(self.nomad_dev.can_config.mode_fd == 0):
+                self.canFDModeVal.setChecked(False)
+            else:
+                self.canFDModeVal.setChecked(True)
+
+
             if(show_confirm):
                 msgBox = QtWidgets.QMessageBox()
                 msgBox.setIcon(QtWidgets.QMessageBox.Information)
@@ -608,6 +621,18 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.encoder_config.offset_elec = self.electricalOffsetVal.value()
         self.nomad_dev.encoder_config.offset_mech = self.mechanicalOffsetVal.value()
 
+        # Update CAN Parameters
+        self.nomad_dev.can_config.id = self.canIDVal.value()
+        self.nomad_dev.can_config.bitrate = int(self.nominalBitrateVal.value() * 1000) # Convert back to bps
+        self.nomad_dev.can_config.d_bitrate = int(self.dataBitrateVal.value() * 1000)  # Convert back to bps
+        self.nomad_dev.can_config.sample_point = self.nominalSamplePointVal.value() / 100
+        self.nomad_dev.can_config.d_sample_point = self.dataSamplePointVal.value() / 100
+
+        if(self.canFDModeVal.isChecked() == True):
+            self.nomad_dev.can_config.mode_fd = 1
+        else:
+            self.nomad_dev.can_config.mode_fd = 0
+
         if(self.nomad_dev.save_configuration() != True):
             msgBox = QtWidgets.QMessageBox()
             msgBox.setIcon(QtWidgets.QMessageBox.Critical)
@@ -644,6 +669,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.enter_idle_mode()
 
     def SetVoltageSetPoint(self):
+
+        # TODO: Should be from bus voltage?  Or send 0->1 and let controller sort it
         max_voltage = 10.0
         v_q = max_voltage * self.voltageControlSlider.value()/1000.0
         self.nomad_dev.set_voltage_setpoint(0, v_q) 
@@ -724,10 +751,11 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             encoder_state = self.nomad_dev.encoder_state
             controller_config = self.nomad_dev.controller_config
             #print(controller_config)
-            max_current = self.nomad_dev.controller_config.current_limit
+            max_current = controller_config.current_limit
             I_d, I_q = self.nomad_dev.dq0(motor_state.theta_elec, motor_state.I_a, motor_state.I_b, motor_state.I_c)
             #print(I_q)
             #print(I_d)
+           # print(controller_state.V_d)
            # print(state)
             self.idProgressVal.setFormat("I_d: {:0.2f} A".format(I_d))
             self.idProgressVal.setValue(int(abs(I_d/max_current)*100))

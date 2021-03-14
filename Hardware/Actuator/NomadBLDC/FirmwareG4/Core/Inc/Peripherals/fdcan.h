@@ -167,6 +167,7 @@ public:
 
     void WriteConfig(Config_t &config) {config_ = config;}
     Config_t& ReadConfig() {return config_;}
+    
 private:
 
     // Calc Bit Timing Helper Function

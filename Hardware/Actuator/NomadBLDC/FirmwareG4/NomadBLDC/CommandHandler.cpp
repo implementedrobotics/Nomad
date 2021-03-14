@@ -405,9 +405,10 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_WRITE_CAN_CONFIG:
     {
         FDCANDevice *fdcan = get_can_device();
-        FDCANDevice::Config_t *config = (FDCANDevice::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
-        fdcan->WriteConfig(*config);
-        //memcpy(&fdcan->config_, config, sizeof(FDCANDevice::Config_t));
+        FDCANDevice::Config_t *data = (FDCANDevice::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        FDCANDevice::Config_t config;
+        memcpy(&config, data, sizeof(FDCANDevice::Config_t));
+        fdcan->WriteConfig(config);
 
         break;
         // TODO: Return status
@@ -521,7 +522,7 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         // Send it
         gUART->SendBytes((uint8_t *)&buffer, 3);
 
-        //Logger::Instance().Print("Write to Flash: %d", status);
+       // Logger::Instance().Print("Write to Flash: %d", status);
         break;
     }
 
