@@ -104,9 +104,9 @@ void init_motor_controller(Save_format_t *load_data)
         motor_controller->config_ = load_data->controller_config;
     }
 
-    motor_controller->PrintConfig();
-    motor->PrintConfig();
-    motor->PositionSensor()->PrintConfig();
+    //motor_controller->PrintConfig();
+    //motor->PrintConfig();
+    //motor->PositionSensor()->PrintConfig();
     motor_controller->Init();
 
     //Update Sample Time For Motor
@@ -829,12 +829,12 @@ void MotorController::TorqueControl()
 
     if(in_limit_max_) // Check Hysteresis
     {
-        if(motor->state_.theta_mech < config_.pos_limit_max-deadband || torque_ref_in < 0)
+        if(motor->state_.theta_mech < config_.pos_limit_max-deadband)// || torque_ref_in < 0)
             in_limit_max_ = false;
     }
     else if(in_limit_min_) // Check Hysteresis
     {
-        if(motor->state_.theta_mech > config_.pos_limit_min+deadband || torque_ref_in > 0)
+        if(motor->state_.theta_mech > config_.pos_limit_min+deadband)// || torque_ref_in > 0)
             in_limit_min_ = false;
     }
 
