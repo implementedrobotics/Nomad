@@ -73,6 +73,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         // Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
 
+        // Check for callback
         register_reply_t reply;
 
         uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);

@@ -54,7 +54,7 @@ void CANTestNode::Run()
     TorqueControlModeRegister_t tcmr;
 
     tcmr.K_d = 0.05f;
-    tcmr.K_p = 5.0f;
+    tcmr.K_p = 0.0f;
     tcmr.Pos_ref = 0.0f;
     tcmr.Vel_ref = 0.0f;
     tcmr.T_ff = 0.0f;
@@ -62,10 +62,10 @@ void CANTestNode::Run()
     memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
 
     float pos = 0.0f;
-    float freq = 1.0f;
+    float freq = 3.0f;
 
-    pos = 1.0 * sin(2 * M_PI * freq * time_);
-    tcmr.Pos_ref = pos;
+    pos = 13.0 * sin(2 * M_PI * freq * time_);
+    tcmr.T_ff = pos;
     memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
     
     CANDevice::CAN_msg_t msg;

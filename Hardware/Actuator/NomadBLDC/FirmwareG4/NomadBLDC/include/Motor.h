@@ -112,7 +112,6 @@ public:
 private:
     
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
-    bool dirty_; // Has unsaved changes to config
 
     PositionSensorAS5x47 *rotor_sensor_; // Rotor Position Sensor
 };

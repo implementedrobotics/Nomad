@@ -739,6 +739,8 @@ private:
     std::vector<RegisterData> fields_;
     size_t data_size_;
 
+    //std::function<void(FDCAN_msg_t&, FDCANDevice *dev)> recv_callback_ = [=](FDCAN_msg_t&, FDCANDevice*) {};
+
 };
 
 

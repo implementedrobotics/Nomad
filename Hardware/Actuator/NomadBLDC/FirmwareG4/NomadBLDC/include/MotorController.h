@@ -246,9 +246,6 @@ public:
 
     DRV8323* GetGateDriver() const { return gate_driver_; }
 
-    bool WriteConfig(Config_t config); // Write Configuration to Flash Memory
-    bool ReadConfig(Config_t config);  // Read Configuration from Flash Memory
-
     void CurrentControl(); // Current Control Loop
     void TorqueControl(); // Torque Control Function
 
@@ -277,7 +274,6 @@ private:
     SPIDevice *spi_handle_;         // SPI Handle for Communication to Gate Driver
 
     Motor *motor_; // Motor Object
-    bool dirty_;   // Have unsaved changed to config
 
     bool in_limit_min_; // TODO: Move this to a register
     bool in_limit_max_; // TODO: Move this to a register

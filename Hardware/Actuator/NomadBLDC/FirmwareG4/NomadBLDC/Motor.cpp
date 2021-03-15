@@ -37,8 +37,7 @@
 #include <Utilities/math.h>
 #include <Utilities/utils.h>
 
-Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time),
-                                                                  dirty_(false)
+Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time)
 {
     // Zero State
     memset(&state_, 0, sizeof(state_));
@@ -144,7 +143,6 @@ void Motor::SetPolePairs(uint32_t pole_pairs)
     config_.K_t_out = config_.K_t * config_.gear_ratio;
     // Update Rotor
     rotor_sensor_->SetPolePairs(pole_pairs);
-    dirty_ = true;
 }
 
 void Motor::SetKV(float K_v)
@@ -155,6 +153,4 @@ void Motor::SetKV(float K_v)
     config_.flux_linkage = 60.0f / (Core::Math::kSqrt3 * config_.K_v * M_PI * config_.num_pole_pairs * 2);
     config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f;
     config_.K_t_out = config_.K_t * config_.gear_ratio;
-
-    dirty_ = true;
 }

@@ -707,8 +707,6 @@ void MotorController::UpdateControllerGains()
     config_.k_d = config_.k_q = k;
     config_.k_i_d = config_.k_i_q = k_i;
     //config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
-
-    dirty_ = true;
 }
 void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
