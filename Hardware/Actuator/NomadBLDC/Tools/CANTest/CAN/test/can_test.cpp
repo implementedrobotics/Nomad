@@ -54,7 +54,7 @@ void CANTestNode::Run()
     TorqueControlModeRegister_t tcmr;
 
     tcmr.K_d = 0.05f;
-    tcmr.K_p = 0.0f;
+    tcmr.K_p = 5.0f;
     tcmr.Pos_ref = 0.0f;
     tcmr.Vel_ref = 0.0f;
     tcmr.T_ff = 0.0f;
@@ -81,11 +81,11 @@ void CANTestNode::Run()
         if (i++ > 10000)
             break;
 
-        std::cout << "WAITING: " << std::endl;
+       // std::cout << "WAITING: " << std::endl;
     }
 
     register_reply_t *reponse = (register_reply_t *)msg.data;
-    std::cout << "Receive Message: " << reponse->header.address << std::endl;
+    //std::cout << "Receive Message: " << reponse->header.address << std::endl;
 }
 void CANTestNode::Setup()
 {
