@@ -120,7 +120,7 @@ bool CANDevice::Receive(CAN_msg_t &msg)
 
     // Read in a CAN frame
     auto num_bytes = read(socket_, &frame, CANFD_MTU);
-    std::cout << "READ: " << num_bytes << std::endl;
+    //std::cout << "READ: " << num_bytes << std::endl;
     if (num_bytes != CAN_MTU && num_bytes != CANFD_MTU)
     {
         //perror("READ ERROR");

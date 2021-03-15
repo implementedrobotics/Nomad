@@ -68,9 +68,20 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
     }
     else if(cmd->header.rwx == 1) // Write
     {
+        // TODO: Address Return Callback
         // Write
-       // Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
+        // Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
+
+        register_reply_t reply;
+
+        uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
+        reply.header.sender_id = 2; // TODO: Need our CAN/Controller ID Here
+        reply.header.code = 0; // Error Codes Here
+        reply.header.address = cmd->header.address; // Address from Requested Register
+
+        // Send it back
+        dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
         
     }
     else if(cmd->header.rwx == 2) // Execture

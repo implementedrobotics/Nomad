@@ -1,5 +1,6 @@
 # Firmware TODO:
 * Keep alive support
+* Fix slight delay into current control before idle on bootup
 * Speed Controller ***
 * Arm Controller Function
 * Gate driver fault checking and reporting ****
