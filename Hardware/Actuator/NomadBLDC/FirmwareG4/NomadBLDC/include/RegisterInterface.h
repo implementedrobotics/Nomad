@@ -124,7 +124,6 @@ typedef enum // Controller State Register
     MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
     Timeout = 0x3C,           // Missed Input Control Deadline Count
     ControlMode = 0x3D,       // Set Control Mode.  TODO: Should be a function instead and in new register
-    // Reserved = 0x3D,
     // Reserved = 0x3E,
     // Reserved = 0x3F,
     // End Controller State Register 1
@@ -186,7 +185,7 @@ typedef enum // Motor Config Register
     CalibrationCurrent = 0x65,
     CalibrationVoltage = 0x66,
     Calibrated = 0x67,
-    //Reserved = 0x68,
+    ZeroOutputOffset = 0x68,
     //Reserved = 0x69,
     //Reserved = 0x6A,
     //Reserved = 0x6B,
@@ -257,6 +256,14 @@ typedef enum // CAN Config Register
 /* Error State Registers */
 
 /* Gate Drive Registers */
+
+/* Motor Controller Registers */
+typedef enum // Controller Config Register
+{
+    ClosedLoopTorqueCommand = 0xC8, // Optimized Closed Loop Torque Command Function
+
+} ControllerCommandRegisters_e;
+
 // TODO: Current Sense Amp Options
 
 // TODO: Where to put this?
@@ -361,6 +368,13 @@ struct TorqueControlModeRegister_t
     float K_p;     // Position Gain N*m/rad
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
+};
+
+struct JointState_t
+{
+    float Pos;   // Position Estimate
+    float Vel;  // Velocity Estimate
+    float T_est; // Torque Estimate
 };
 
 struct MotorConfigRegister1_t
@@ -633,7 +647,7 @@ public:
 
 private:
     // Pointer to register memory location
-    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *, std::function<void((void*))>> data_;
+    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *,  std::function<void(void*, FDCANDevice *device)>> data_;
 
     // Mirror Type Sizes for Lookups
     static constexpr size_t data_sizes_[8] = {sizeof(uint8_t),

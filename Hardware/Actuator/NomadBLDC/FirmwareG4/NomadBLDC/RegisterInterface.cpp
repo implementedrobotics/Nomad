@@ -52,14 +52,11 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
     if(cmd->header.rwx == 0) // Read
     {
         register_reply_t reply;
-        // Read
-        //Logger::Instance().Print("Address: %d from %x\r\n", cmd->header.address, cmd->header.sender_id);
-        uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
-      //  Logger::Instance().Print("READ: %d\r\n", size);
 
-      //  Logger::Instance().Print("RETURNING: %d\r\n", *(uint32_t *)reply.cmd_data);
-        reply.header.sender_id = 2; // TODO: Need our CAN/Controller ID Here
-        reply.header.code = 0; // Error Codes Here
+        // Read
+        uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
+        reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
+        reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
 
         // Send it back
@@ -73,22 +70,30 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         // Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
 
-        // Check for callback
-        register_reply_t reply;
+        // // Check for callback
+        // register_reply_t reply;
 
-        uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
-        reply.header.sender_id = 2; // TODO: Need our CAN/Controller ID Here
-        reply.header.code = 0; // Error Codes Here
-        reply.header.address = cmd->header.address; // Address from Requested Register
+        // uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
+        // reply.header.sender_id = 2; // TODO: Need our CAN/Controller ID Here
+        // reply.header.code = 0; // Error Codes Here
+        // reply.header.address = cmd->header.address; // Address from Requested Register
 
-        // Send it back
-        dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
+        // // Send it back
+        // dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
         
     }
     else if(cmd->header.rwx == 2) // Execture
     {
+        // TODO: Error Checking
         // Run Function
         Logger::Instance().Print("Execute: %d : \r\n", cmd->header.address);
+
+TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
+    Logger::Instance().Print("PREF: %f\r\n", tcmr->Pos_ref);
+        auto func = register_map_[cmd->header.address]->GetDataPtr<std::function<void((void*, FDCANDevice *))>>();
+
+        
+        func((uint8_t *)cmd->cmd_data, dev);
     }
     
     // std::bitset<2> rwx(cmd->rwx);

@@ -223,7 +223,7 @@ typedef enum // Motor Config Register
     CalibrationCurrent = 0x65,
     CalibrationVoltage = 0x66,
     Calibrated = 0x67,
-    //Reserved = 0x68,
+    ZeroOutputOffset = 0x68,
     //Reserved = 0x69,
     //Reserved = 0x6A,
     //Reserved = 0x6B,
@@ -282,6 +282,20 @@ typedef enum // Encoder Config Register
 /* Error State Registers */
 
 /* Gate Drive Registers */
+
+typedef enum // Controller Config Register
+{
+    ClosedLoopTorqueCommand = 0xC8, // Optimized Closed Loop Torque Command Function
+
+} ControllerCommandRegisters_e;
+
+struct JointState_t
+{
+    float Pos;   // Position Estimate
+    float Vel;  // Velocity Estimate
+    float T_est; // Torque Estimate
+};
+
 // TODO: Current Sense Amp Options
 
 // TODO: Where to put this?
@@ -466,4 +480,4 @@ struct EncoderConfigOffsetLUT4_t
     int8_t offset_lut[32]; // Offset Lookup Table 4
 };
 
-#endif // CAN_REGISTERS_H_
+#endif // CAN_REGISTERS_H_ControllerStateRegisters_e

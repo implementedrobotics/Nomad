@@ -79,6 +79,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorCalibrationConfigRegister, new Register((MotorCalibrationConfigRegister_t *)&config_.calib_current, true));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationCurrent, new Register(&config_.calib_current));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationVoltage, new Register(&config_.calib_voltage));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::ZeroOutputOffset, new Register(std::bind(&Motor::ZeroOutputPosition, this)));
 
     RegisterInterface::AddRegister(MotorStateRegisters_e::MotorStateRegister1, new Register((MotorStateRegister1_t *)&state_, true));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_A, new Register(&state_.I_a));
@@ -129,9 +130,9 @@ void Motor::ZeroOutputPosition()
     Update(); // Make sure we are updated
     rotor_sensor_->ZeroPosition();
     Update(); // Post update
+
+    Logger::Instance().Print("HOLA\r\n");
 }
-
-
 
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {

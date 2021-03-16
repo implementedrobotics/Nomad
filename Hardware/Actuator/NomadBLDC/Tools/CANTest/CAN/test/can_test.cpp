@@ -45,8 +45,8 @@ void CANTestNode::Run()
 
 
     register_command_t test;
-    test.header.rwx = 1;
-    test.header.address = ControllerStateRegisters_e::TorqueControlModeRegister;
+    test.header.rwx = 2;
+    test.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand;
     test.header.data_type = 1;
     test.header.sender_id = 0x001;
     test.header.length = 4;
@@ -55,17 +55,17 @@ void CANTestNode::Run()
 
     tcmr.K_d = 0.05f;
     tcmr.K_p = 0.0f;
-    tcmr.Pos_ref = 0.0f;
+    tcmr.Pos_ref = 2.0f;
     tcmr.Vel_ref = 0.0f;
     tcmr.T_ff = 0.0f;
 
-    memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
+    //memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
 
     float pos = 0.0f;
     float freq = 3.0f;
 
-    pos = 13.0 * sin(2 * M_PI * freq * time_);
-    tcmr.T_ff = pos;
+    //pos = 2.0 * sin(2 * M_PI * freq * time_);
+    //tcmr.T_ff = pos;
     memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
     
     CANDevice::CAN_msg_t msg;
@@ -75,17 +75,21 @@ void CANTestNode::Run()
 
     can.Send(msg);
 
+    std::cout << "SENT" << std::endl;
+
     int i = 0;
     while (!can.Receive(msg))
     {
         if (i++ > 10000)
             break;
 
-       // std::cout << "WAITING: " << std::endl;
+        // std::cout << "WAITING: " << std::endl;
     }
 
     register_reply_t *reponse = (register_reply_t *)msg.data;
-    //std::cout << "Receive Message: " << reponse->header.address << std::endl;
+
+    JointState_t *joint_state = (JointState_t *)reponse->cmd_data;
+    std::cout << "Receive Message: " << reponse->header.address << " : " << joint_state->Pos <<  std::endl;
 }
 void CANTestNode::Setup()
 {
@@ -100,23 +104,32 @@ void CANTestNode::Setup()
 
     std::cout << "Enabling BLDC." << std::endl;
 
+    // register_command_t enable;
+    // enable.header.rwx = 1;
+    // enable.header.address = ControllerStateRegisters_e::ControlMode;
+    // enable.header.data_type = 1;
+    // enable.header.sender_id = 0x001;
+    // enable.header.length = 4;
+
+
     register_command_t enable;
-    enable.header.rwx = 1;
-    enable.header.address = ControllerStateRegisters_e::ControlMode;
+    enable.header.rwx = 2;
+    enable.header.address = MotorConfigRegisters_e::ZeroOutputOffset;
     enable.header.data_type = 1;
     enable.header.sender_id = 0x001;
     enable.header.length = 4;
 
-    uint32_t new_mode = 10;
-    memcpy(&enable.cmd_data, &new_mode, sizeof(uint32_t));
+
+    //uint32_t new_mode = 10;
+    //memcpy(&enable.cmd_data, &new_mode, sizeof(uint32_t));
 
     CANDevice::CAN_msg_t msg;
     msg.id = 0x10;
 
-    msg.length = sizeof(request_header_t) + sizeof(uint32_t);
+    msg.length = sizeof(request_header_t);// + sizeof(uint32_t);
     memcpy(msg.data, &enable, msg.length);
 
-    can.Send(msg);
+  //  can.Send(msg);
 
     usleep(1000000);
 }
@@ -159,7 +172,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    CANTestNode nomad_can("Test", 2e-3); //10hz
+    CANTestNode nomad_can("Test", 1); //10hz
     nomad_can.SetStackSize(1024 * 1024);
     nomad_can.SetTaskPriority(Realtime::Priority::HIGHEST);
     nomad_can.SetCoreAffinity(2);

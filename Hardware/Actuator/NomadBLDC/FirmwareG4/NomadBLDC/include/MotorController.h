@@ -60,6 +60,8 @@ extern MotorController *motor_controller;
 class ADCDevice;
 class Thermistor;
 class NomadBLDCFSM;
+class TorqueControlModeRegister_t;
+class FDCANDevice;
 
 // Measurement Struct
 typedef union 
@@ -251,6 +253,7 @@ public:
 
     // TODO: Temp will be removed once tools are all finished.
     void PrintConfig();
+
     // Public for now...  TODO: Need something better here
     uint32_t control_mode_; // Controller Mode
 
@@ -296,6 +299,10 @@ private:
 
     //float control_loop_period_;
     static MotorController *singleton_; // Singleton
+
+    // TODO: Should switch this to a abstract com device, uart, can, etc.
+    void ClosedLoopTorqueCmd(void *data, FDCANDevice *dev);
+
 };
 
 #endif // CORE_MOTOR_CONTROLLER_H_

@@ -135,6 +135,9 @@ public:
     // Receive CAN Message Function
     bool Receive(FDCAN_msg_t &msg) CCM_ATTRIBUTE;
 
+    // Get ID
+    uint32_t ID() { return config_.id; }
+
     // TODO: This should be up in a base "Peripheral Class"
     // TODO: Also for FDCAN this is ONLY a receive interrupt supporting function.
     // TODO: Eventually make this handle all things interrupt...
