@@ -345,7 +345,7 @@ void MotorController::ClosedLoopTorqueCmd(void *data, FDCANDevice *dev)
 
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
 
-    Logger::Instance().Print("State: %f\r\n", state_hat.Pos);
+    //Logger::Instance().Print("State: %d\r\n", control_mode_);
     // Send it back
     dev->Send(0x01, (uint8_t *)&reply, sizeof(RegisterInterface::response_header_t)+sizeof(JointState_t));
 }

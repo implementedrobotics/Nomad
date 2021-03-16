@@ -130,8 +130,6 @@ void Motor::ZeroOutputPosition()
     Update(); // Make sure we are updated
     rotor_sensor_->ZeroPosition();
     Update(); // Post update
-
-    Logger::Instance().Print("HOLA\r\n");
 }
 
 void Motor::SetPolePairs(uint32_t pole_pairs)
