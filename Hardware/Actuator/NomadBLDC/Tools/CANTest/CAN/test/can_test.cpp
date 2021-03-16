@@ -11,6 +11,11 @@
 CANDevice can;
 uint32_t can_tx_id = 0x123;// 0x10;
 
+float pos1 = 0.0f;
+float pos2 = 0.0f;
+float vel1 = 0.0f;
+float vel2 = 0.0f;
+
 class CANTestNode : public Realtime::RealTimeTaskNode
 {
 
@@ -41,12 +46,18 @@ void CANTestNode::Run()
 {
     auto start_time = std::chrono::high_resolution_clock::now();
 
+    float kp = .050f;
+    float kd = .010f;
 
+    float tau1 = kp*3.5*(pos2 - pos1) + kd*1*(vel2-vel1);
+    float tau2 = (kp*45*(pos1 - pos2) + kd*4*(vel1-vel2));
+
+   // tau1 = 0;
+    //tau2 = 0;
     time_ += dt_actual_;
     //std::cout << "DT: " << time_ << std::endl;
     //std::cout << "Run Diagram: " << task_name_ << std::endl;
     //TODO: Do CAN Things HEre...
-
 
     register_command_t test;
     test.header.rwx = 2;
@@ -57,19 +68,19 @@ void CANTestNode::Run()
 
     TorqueControlModeRegister_t tcmr;
 
-    tcmr.K_d = 0.05f;
+    tcmr.K_d = 0.0f;
     tcmr.K_p = 0.0f;
-    tcmr.Pos_ref = 2.0f;
+    tcmr.Pos_ref = 0.0f;
     tcmr.Vel_ref = 0.0f;
     tcmr.T_ff = 0.0f;
 
     //memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
 
-    float pos = 0.0f;
-    float freq = 3.0f;
+    //float pos = 0.0f;
+    //float freq = 3.0f;
 
-    pos = 2.0 * sin(2 * M_PI * freq * time_);
-    tcmr.T_ff = pos;
+    //pos = 2.0 * sin(2 * M_PI * freq * time_);
+    tcmr.T_ff = tau1;
     memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
     
     CANDevice::CAN_msg_t msg;
@@ -91,8 +102,17 @@ void CANTestNode::Run()
      //   std::cout << "WAITING2: " << std::endl;
     }
 
+    register_reply_t *reponse = (register_reply_t *)msg.data;
+
+    JointState_t *joint_state = (JointState_t *)reponse->cmd_data;
+    pos1 = joint_state->Pos;
+    vel1 = joint_state->Vel;
+
+    tcmr.T_ff = tau2;
+    memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
+
     msg.id = 0x10;
-        msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
+    msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
     memcpy(msg.data, &test, msg.length);
     can.Send(msg);
 
@@ -105,16 +125,20 @@ void CANTestNode::Run()
        //  std::cout << "WAITING2: " << std::endl;
     }
 
+    reponse = (register_reply_t *)msg.data;
 
-    register_reply_t *reponse = (register_reply_t *)msg.data;
+    joint_state = (JointState_t *)reponse->cmd_data;
+    pos2 = joint_state->Pos;
+    vel2 = joint_state->Vel;
 
-    JointState_t *joint_state = (JointState_t *)reponse->cmd_data;
+
+  //  std::cout << "Tau 2: " << tau2 << " : " << tau1 <<  std::endl;
 
     auto time_now = std::chrono::high_resolution_clock::now();
     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
    // std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
-   // std::cout << "Receive Message: " << reponse->header.address << " : " << joint_state->Pos <<  std::endl;
+    //std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
 }
 void CANTestNode::Setup()
 {
