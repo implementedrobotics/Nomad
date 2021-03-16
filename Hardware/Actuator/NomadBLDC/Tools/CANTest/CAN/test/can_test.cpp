@@ -16,6 +16,12 @@ float pos2 = 0.0f;
 float vel1 = 0.0f;
 float vel2 = 0.0f;
 
+
+    float kp = .050f;
+    float kd = .010f;
+    float tau1 = 0.0f;
+    float tau2 = 0.0f;
+
 class CANTestNode : public Realtime::RealTimeTaskNode
 {
 
@@ -44,13 +50,11 @@ CANTestNode::CANTestNode(const std::string &name, const double T_s) : Realtime::
 }
 void CANTestNode::Run()
 {
-    auto start_time = std::chrono::high_resolution_clock::now();
+   // auto start_time = std::chrono::high_resolution_clock::now();
 
-    float kp = .050f;
-    float kd = .010f;
 
-    float tau1 = kp*3.5*(pos2 - pos1) + kd*1*(vel2-vel1);
-    float tau2 = (kp*45*(pos1 - pos2) + kd*4*(vel1-vel2));
+    tau1 = kp*3.5*(pos2 - pos1) + kd*1*(vel2-vel1);
+    tau2 = (kp*45*(pos1 - pos2) + kd*4*(vel1-vel2));
 
    // tau1 = 0;
     //tau2 = 0;
@@ -99,7 +103,7 @@ void CANTestNode::Run()
         if (i++ > 10000)
             break;
 
-     //   std::cout << "WAITING2: " << std::endl;
+        std::cout << "WAITING2: " << std::endl;
     }
 
     register_reply_t *reponse = (register_reply_t *)msg.data;
@@ -122,7 +126,7 @@ void CANTestNode::Run()
         if (i++ > 10000)
             break;
 
-       //  std::cout << "WAITING2: " << std::endl;
+         std::cout << "WAITING2: " << std::endl;
     }
 
     reponse = (register_reply_t *)msg.data;
@@ -134,8 +138,8 @@ void CANTestNode::Run()
 
   //  std::cout << "Tau 2: " << tau2 << " : " << tau1 <<  std::endl;
 
-    auto time_now = std::chrono::high_resolution_clock::now();
-    auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    //auto time_now = std::chrono::high_resolution_clock::now();
+   // auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
    // std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
     //std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
@@ -227,7 +231,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    CANTestNode nomad_can("Test", 2e-3); //10hz
+    CANTestNode nomad_can("Test", 1e-3); //10hz
     nomad_can.SetStackSize(1024 * 1024);
     nomad_can.SetTaskPriority(Realtime::Priority::HIGHEST);
     nomad_can.SetCoreAffinity(2);
