@@ -32,14 +32,16 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
+#include <stdint.h>
 
 int app_main();
 
 // Move Save/Load Here
 
-bool save_configuration();
-bool load_configuration();
+int8_t save_configuration();
+int8_t load_configuration();
+
+int8_t reboot_system();
 
 
 

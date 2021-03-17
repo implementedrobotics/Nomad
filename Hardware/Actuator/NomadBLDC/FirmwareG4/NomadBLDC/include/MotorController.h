@@ -301,7 +301,7 @@ private:
     static MotorController *singleton_; // Singleton
 
     // TODO: Should switch this to a abstract com device, uart, can, etc.
-    void ClosedLoopTorqueCmd(void *data, FDCANDevice *dev);
+    int8_t ClosedLoopTorqueCmd(void *data, FDCANDevice *dev);
 
 };
 

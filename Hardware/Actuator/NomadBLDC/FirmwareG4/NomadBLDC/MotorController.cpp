@@ -104,9 +104,7 @@ void init_motor_controller(Save_format_t *load_data)
         motor_controller->config_ = load_data->controller_config;
     }
 
-    //motor_controller->PrintConfig();
-    //motor->PrintConfig();
-    //motor->PositionSensor()->PrintConfig();
+    // Init Controller
     motor_controller->Init();
 
     //Update Sample Time For Motor
@@ -167,11 +165,6 @@ bool measure_encoder_offset()
 {
     set_control_mode(MEASURE_ENCODER_OFFSET_MODE);
     return true;
-}
-
-void reboot_system()
-{
-    NVIC_SystemReset();
 }
 
 void start_torque_control()
@@ -313,15 +306,13 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::FETTemp, new Register(&state_.fet_temp));
 
 
-    // Add some optimized commands
- //   RegisterInterface::AddRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, new Register(std::bind(&closed_loop_torque_cmd, _1)));
-
+    // Add some optimized commands ( Automatic reply with appropriate state information thus not requiring another request/rep )
     RegisterInterface::AddRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, new Register(std::bind(&MotorController::ClosedLoopTorqueCmd, this, _1, _2)));
     
     
 }
 
-void MotorController::ClosedLoopTorqueCmd(void *data, FDCANDevice *dev)
+int8_t MotorController::ClosedLoopTorqueCmd(void *data, FDCANDevice *dev)
 {
     // TODO: Error check this range?
     TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)data;
@@ -331,23 +322,23 @@ void MotorController::ClosedLoopTorqueCmd(void *data, FDCANDevice *dev)
     state_.K_d = tcmr->K_d;
     state_.T_ff = tcmr->T_ff;
 
-
     JointState_t state_hat;
     state_hat.Pos = motor->state_.theta_mech;
     state_hat.Vel = motor->state_.theta_mech_dot;
     state_hat.T_est = state_.I_q * motor->config_.K_t * motor_->config_.gear_ratio;
 
     RegisterInterface::register_reply_t reply;
-    reply.header.sender_id = dev->ID();                 // TODO: Need our CAN/Controller ID Here
+    reply.header.sender_id = dev->ID();          // TODO: Need our CAN/Controller ID Here
     reply.header.code = 0;                      // Error Codes Here
     reply.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand; // Address from Requested Register
     reply.header.length = 4;
 
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
 
-    //Logger::Instance().Print("State: %d\r\n", control_mode_);
     // Send it back
     dev->Send(0x01, (uint8_t *)&reply, sizeof(RegisterInterface::response_header_t)+sizeof(JointState_t));
+
+    return 0;
 }
 void MotorController::PrintConfig()
 {

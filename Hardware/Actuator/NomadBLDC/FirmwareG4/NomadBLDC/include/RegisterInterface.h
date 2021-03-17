@@ -48,6 +48,9 @@ typedef enum // Device Status Register
     DeviceVoltageBus = 0x03,
     DeviceCurrentBus = 0x04,
     DeviceFETTemp = 0x05,
+    DeviceSaveConfig = 0x06,
+    DeviceLoadConfig = 0x07,
+    DeviceRestart = 0x08,
     // Reserved = 0x06,
     // Reserved = 0x07,
     // Reserved = 0x08,
@@ -647,7 +650,7 @@ public:
 
 private:
     // Pointer to register memory location
-    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *,  std::function<void(void*, FDCANDevice *device)>> data_;
+    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *,  std::function<int8_t(void*, FDCANDevice *device)>> data_;
 
     // Mirror Type Sizes for Lookups
     static constexpr size_t data_sizes_[8] = {sizeof(uint8_t),

@@ -125,11 +125,13 @@ void Motor::Update()
     // Update Temparature Observer
 }
 
-void Motor::ZeroOutputPosition()
+int8_t Motor::ZeroOutputPosition()
 {
     Update(); // Make sure we are updated
     rotor_sensor_->ZeroPosition();
     Update(); // Post update
+
+    return 0;
 }
 
 void Motor::SetPolePairs(uint32_t pole_pairs)

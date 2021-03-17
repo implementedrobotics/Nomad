@@ -196,6 +196,13 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR2.uid3));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
+    // System Management Registers
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceSaveConfig, new Register(std::bind(&save_configuration)));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceLoadConfig, new Register(std::bind(&load_configuration)));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceRestart, new Register(std::bind(&reboot_system)));
+
+
+
   //  RegisterInterface::register_command_t test;
   //  test.header.rwx = 0;
   //  test.header.address = DeviceRegisters_e::DeviceUID1;
@@ -303,7 +310,7 @@ FDCANDevice *get_can_device()
     return fdcan;
 }
 
-bool save_configuration()
+int8_t save_configuration()
 {
     Logger::Instance().Print("\r\nSaving Configuration...\r\n");
 
@@ -318,42 +325,42 @@ bool save_configuration()
         if (!NomadFlash::SaveMotorConfig(motor->config_))
         {
             NomadFlash::Close();
-            return false;
+            return -1;
         }
         Logger::Instance().Print("Saved Motor Config.\r\n");
        // status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
         if (!NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_))
         {
             NomadFlash::Close();
-            return false;
+            return -1;
         }
         Logger::Instance().Print("Saved Position Config.\r\n");
       //  status = NomadFlash::SaveControllerConfig(motor_controller->config_);
         if (!NomadFlash::SaveControllerConfig(motor_controller->config_))
         {
             NomadFlash::Close();
-            return false;
+            return -1;
         }
         Logger::Instance().Print("Saved Controller Config.\r\n");
       //  status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
         if (!NomadFlash::SaveCANConfig(fdcan->ReadConfig()))
         {
             NomadFlash::Close();
-            return false;
+            return -1;
         }
         Logger::Instance().Print("Saved CAN Config.\r\n");
     }
     else
     {
         Logger::Instance().Print("Unable to Open Flash!\r\n");
-        return false;
+        return -1;
     }
 
     NomadFlash::Close();
-    return true;
+    return 0;
 }
 
-bool load_configuration()
+int8_t load_configuration()
 {
     // // Open it.
     // if(!NomadFlash::Open())
@@ -384,4 +391,11 @@ bool load_configuration()
     // NomadFlash::Close();
 
     return true;
+}
+
+
+int8_t reboot_system()
+{
+    NVIC_SystemReset();
+    return 0;
 }
