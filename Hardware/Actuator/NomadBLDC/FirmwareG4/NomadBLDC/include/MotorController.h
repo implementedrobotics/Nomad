@@ -49,6 +49,7 @@
 #include "DRV8323.h"
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
+#include <Peripherals/fdcan.h>
 #include <nomad_hw.h>
 
 static const float voltage_scale = 3.3f * VBUS_DIVIDER / (float)(1 << ADC_RES);
@@ -61,7 +62,7 @@ class ADCDevice;
 class Thermistor;
 class NomadBLDCFSM;
 class TorqueControlModeRegister_t;
-class FDCANDevice;
+//class FDCANDevice;
 
 // Measurement Struct
 typedef union 
@@ -301,7 +302,7 @@ private:
     static MotorController *singleton_; // Singleton
 
     // TODO: Should switch this to a abstract com device, uart, can, etc.
-    int8_t ClosedLoopTorqueCmd(void *data, FDCANDevice *dev);
+    int8_t ClosedLoopTorqueCmd(FDCANDevice::FDCAN_msg_t &cmd, FDCANDevice *dev);
 
 };
 

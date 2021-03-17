@@ -90,10 +90,10 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
 
 //TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
    // Logger::Instance().Print("PREF: %f\r\n", tcmr->Pos_ref);
-        auto func = register_map_[cmd->header.address]->GetDataPtr<std::function<int8_t((void*, FDCANDevice *))>>();
+        auto func = register_map_[cmd->header.address]->GetDataPtr<std::function<int8_t((FDCANDevice::FDCAN_msg_t &, FDCANDevice *))>>();
 
         
-        int8_t ret_code = func((uint8_t *)cmd->cmd_data, dev);
+        int8_t ret_code = func(command, dev);
     }
     
     // std::bitset<2> rwx(cmd->rwx);

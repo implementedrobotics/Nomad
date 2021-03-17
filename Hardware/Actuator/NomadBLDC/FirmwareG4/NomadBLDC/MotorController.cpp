@@ -312,10 +312,13 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     
 }
 
-int8_t MotorController::ClosedLoopTorqueCmd(void *data, FDCANDevice *dev)
+int8_t MotorController::ClosedLoopTorqueCmd(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev)
 {
+    RegisterInterface::register_command_t *cmd;
+    cmd = (RegisterInterface::register_command_t *)command.data;
+
     // TODO: Error check this range?
-    TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)data;
+    TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
     state_.Pos_ref = tcmr->Pos_ref;
     state_.Vel_ref = tcmr->Vel_ref;
     state_.K_p = tcmr->K_p;
