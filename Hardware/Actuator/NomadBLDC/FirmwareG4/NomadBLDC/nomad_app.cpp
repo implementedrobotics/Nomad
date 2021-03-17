@@ -103,7 +103,7 @@ void StartCommunicationThreads()
     else
     {
         NomadFlash::LoadCANConfig(config);
-        Logger::Instance().Print("Loaded CAN: %d\r\n", config.id);
+        //Logger::Instance().Print("Loaded CAN: %d\r\n", config.id);
     }
 
     // Close it.
@@ -202,35 +202,11 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceLoadConfig, new Register(std::bind(&load_configuration)));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceRestart, new Register(std::bind(&reboot_system)));
 
+    // Register  *test_reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1);
+    // DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetDataPtr<uint8_t *>();
 
-
-  //  RegisterInterface::register_command_t test;
-  //  test.header.rwx = 0;
-  //  test.header.address = DeviceRegisters_e::DeviceUID1;
-   // test.header.data_type = 1;
-    //test.header.reserved = 1;
-  //  uint32_t new_val = 64001;
-
-
- //   DSR1.fet_temp = 54.556f;
-  //  memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
-
-   // memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
-
-  // FDCANDevice::FDCAN_msg_t msg;
-  // memcpy(msg.data, &test, 64);
-
-   //Register  *test_reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1);
-  // DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetDataPtr<uint8_t *>();
-   
- //  Logger::Instance().Print("TEMP: %f\r\n", d_reg1->fet_temp);
-  // Logger::Instance().Print("Message New: %x | %x!!\r\n", d_reg1, &DSR1);
-
- //  Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
- //  Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
-
-  // RegisterInterface::HandleCommand(msg, fdcan);
-  // Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
+    // Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
+    // Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
 }
 
 void DebugTask()
@@ -305,6 +281,22 @@ extern "C" int app_main() //
     return 0;
 }
 
+
+void ms_poll_task(void *arg)
+{
+    // Main millisecond polling loop
+    for (;;)
+    {
+        // Sample bus voltage
+        motor_controller->SampleBusVoltage();
+
+        // Sample FET Thermistor for Temperature
+        motor_controller->SampleFETTemperature();
+
+        // Delay 1 ms
+        osDelay(1);
+    }
+}
 
 FDCANDevice *get_can_device()
 {

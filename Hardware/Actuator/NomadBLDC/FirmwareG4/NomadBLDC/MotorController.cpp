@@ -60,21 +60,6 @@ extern "C"
 #include "motor_controller_interface.h"
 }
 
-void ms_poll_task(void *arg)
-{
-    // Main millisecond polling loop
-    for (;;)
-    {
-        // Sample bus voltage
-        motor_controller->SampleBusVoltage();
-
-        // Sample FET Thermistor for Temperature
-        motor_controller->SampleFETTemperature();
-
-        // Delay 1 ms
-        osDelay(1000);
-    }
-}
 
 void init_motor_controller(Save_format_t *load_data)
 {
@@ -314,8 +299,6 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
 
 int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice *dev)
 {
-   // RegisterInterface::register_command_t *cmd;
-   // cmd = (RegisterInterface::register_command_t *)command.data;
 
     // TODO: Error check this range?
     TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
@@ -331,15 +314,15 @@ int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice
     state_hat.T_est = state_.I_q * motor->config_.K_t * motor_->config_.gear_ratio;
 
     register_reply_t reply;
-    reply.header.sender_id = dev->ID();          // TODO: Need our CAN/Controller ID Here
-    reply.header.code = 0;                      // Error Codes Here
+    reply.header.sender_id = dev->ID();                                           // TODO: Need our CAN/Controller ID Here
+    reply.header.code = 0;                                                        // Error Codes Here
     reply.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand; // Address from Requested Register
     reply.header.length = 4;
 
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
 
     // Send it back
-    dev->Send(0x01, (uint8_t *)&reply, sizeof(response_header_t)+sizeof(JointState_t));
+    dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t)+sizeof(JointState_t));
 
     return 0;
 }

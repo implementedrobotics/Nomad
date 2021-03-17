@@ -43,57 +43,50 @@ Register* RegisterInterface::register_map_[kMaxRegisters] = {};
 
 void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev)
 {
-    register_command_t *cmd;
-    cmd = (register_command_t *)command.data;
-  //  Logger::Instance().Print("Command: %d\r\n", cmd->header.rwx);
-    //Logger::Instance().Print("Device PTR: %x\r\n", dev);
-    //Logger::Instance().Print("Address: %d : \r\n", cmd->address);
+    // Extract Register Command
+    register_command_t *cmd = (register_command_t *)command.data;
 
     if(cmd->header.rwx == 0) // Read
     {
+        // Reply packet
         register_reply_t reply;
-
+        
         // Read
         uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
+
+        // Send it back
         reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
         reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
 
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t) + size);
-
     }
     else if(cmd->header.rwx == 1) // Write
     {
-        // TODO: Address Return Callback
+        // TODO: Address Return Callback OVerride
+
         // Write
-       // Logger::Instance().Print("Write: %d : \r\n", cmd->header.address);
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
 
         // Check for callback
         register_reply_t reply;
-
-        //uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
         reply.header.sender_id = 2; // TODO: Need our CAN/Controller ID Here
         reply.header.code = 0; // Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
 
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
-        
     }
     else if(cmd->header.rwx == 2) // Execture
     {
         // TODO: Error Checking
         // Run Function
-       // Logger::Instance().Print("Execute: %d : \r\n", cmd->header.address);
-
-//TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
-   // Logger::Instance().Print("PREF: %f\r\n", tcmr->Pos_ref);
+        //Logger::Instance().Print("Execute: %d : \r\n", cmd->header.address);
         auto func = register_map_[cmd->header.address]->GetDataPtr<std::function<int8_t((register_command_t *, FDCANDevice *))>>();
-
-        
         int8_t ret_code = func(cmd, dev);
+
+        // TODO: Send back error code?  For now let's assume it's the executing functions responsibiliy
     }
     
     // std::bitset<2> rwx(cmd->rwx);

@@ -37,11 +37,12 @@ extern "C" {
 int app_main();
 
 // Move Save/Load Here
-
 int8_t save_configuration();
 int8_t load_configuration();
 
 int8_t reboot_system();
+
+void ms_poll_task(void *arg);
 
 
 

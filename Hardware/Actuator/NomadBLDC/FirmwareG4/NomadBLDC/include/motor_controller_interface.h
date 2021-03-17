@@ -33,7 +33,6 @@ extern "C" {
 
 // Entry point to facilitate transition to C++ for RTOS Task
 void init_motor_controller(Save_format_t *load_data);
-void ms_poll_task(void *arg);
 
 // void debug_thread_entry();
 
