@@ -51,6 +51,7 @@
 #include <LEDService.h>
 #include <Logger.h>
 #include <NomadFlash.h>
+#include <CommandHandler.h>
 #include <motor_controller_interface.h>
 #include <MotorController.h>
 #include <RegisterInterface.h>

@@ -32,7 +32,7 @@
 
 // Project Includes
 #include <Peripherals/uart.h>
-#include "CommandHandler.h"
+//#include "CommandHandler.h"
 
 class Logger
 {

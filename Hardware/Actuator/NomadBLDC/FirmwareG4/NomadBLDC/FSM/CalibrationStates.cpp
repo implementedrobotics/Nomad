@@ -29,6 +29,7 @@
 
 // Project Include Files
 #include <Logger.h>
+#include <CommandHandler.h>
 #include <FSM/CalibrationStates.h>
 #include <Utilities/math.h>
 
@@ -63,7 +64,7 @@ void MeasureResistanceState::Run_(float dt)
     float R = test_voltage_ / motor->config_.calib_current; 
 
     // Hit Cycle Count.  Now Compute Resistance
-    measurement_t measurement;
+    CommandHandler::measurement_t measurement;
     measurement.f32 = R;
 
     // Update Motor Config Value
@@ -75,11 +76,11 @@ void MeasureResistanceState::Run_(float dt)
        // Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\r\n", R);
 
         // Update Command Interface
-        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
+        CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
     }
 
     // Send Complete Signal
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+    CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
 
     // Set next state to idle
     data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -161,13 +162,13 @@ void MeasureInductanceState::Run_(float dt)
     float L = v_L / dI_by_dt;
     
     // Update Measurement
-    measurement_t measurement;
+    CommandHandler::measurement_t measurement;
     measurement.f32 = L;
 
     // TODO: arbitrary values set for now
     if (L < 1e-6f || L > 500e-6f)
     {
-        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
+        CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
     }
 
     // PMSM D/Q Inductance are the same.
@@ -175,7 +176,7 @@ void MeasureInductanceState::Run_(float dt)
     motor->config_.phase_inductance_q = L;
 
     // Logger::Instance().Print("Phase Inductance: %f Henries\r\n", L);
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+    CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
 
     // Set next state to idle
     data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -291,11 +292,11 @@ void MeasurePhaseOrderState::Run_(float dt)
             motor->PositionSensor()->SetPolePairs(pole_pairs);
 
             // Feedback measurement
-            measurement_t measurement;
+            CommandHandler::measurement_t measurement;
             measurement.i32 = motor->config_.phase_order;
 
             // Send Complete Feedback
-            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+            CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
 
             // Set next state to idle
             data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -470,11 +471,11 @@ void MeasureEncoderOffsetState::Run_(float dt)
             ComputeOffsetLUT();
 
             // Build Measurement
-            measurement_t elec_offset;
+            CommandHandler::measurement_t elec_offset;
             elec_offset.f32 = motor_->PositionSensor()->GetElectricalOffset();
 
             // Send Complete Feedback
-            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
+            CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
 
             // Set next state to idle
             data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);

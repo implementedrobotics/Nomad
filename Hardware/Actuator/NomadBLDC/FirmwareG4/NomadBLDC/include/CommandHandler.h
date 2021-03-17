@@ -37,7 +37,23 @@
 
 class CommandHandler
 {
-    public:
+public:
+    typedef enum
+    {
+        MEASURE_RESISTANCE_COMPLETE = 0,
+        MEASURE_INDUCTANCE_COMPLETE = 1,
+        MEASURE_PHASE_ORDER_COMPLETE = 2,
+        MEASURE_ENCODER_OFFSET_COMPLETE = 3
+    } command_feedback_t;
+
+    // Measurement Struct
+    typedef union
+    {
+        float f32;
+        int32_t i32;
+        uint32_t u32;
+    } measurement_t;
+    
     typedef enum
     {
         // Info/Status Commands
@@ -98,5 +114,5 @@ class CommandHandler
 
     static UARTDevice *gUART;
 
-}; // namespace CommandHandler
+};     // namespace CommandHandler
 #endif // COMMAND_HANDLER_H_

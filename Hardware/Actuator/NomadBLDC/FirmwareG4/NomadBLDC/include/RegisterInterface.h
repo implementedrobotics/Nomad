@@ -468,6 +468,54 @@ struct CANConfigRegister1_t
     float d_sample_point; // Data Sample Point Target
 };
 
+// TODO: Address field is bit too large.  But keeping clean alignment math here
+struct request_header_t // 4 Bytes
+{
+    uint32_t sender_id : 6; // Node ID of Sender
+    uint32_t rwx : 2;       // Read/Write/Execute
+    uint32_t address : 8;   // 8-bit address (256 Max Addresses)
+    uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
+    uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
+    uint32_t reserved : 8;  // Reserved / Padding
+    // MSG/ACK IDs?
+};
+
+struct response_header_t // 4 Bytes
+{
+    uint32_t sender_id : 6; // Node ID of Sender
+    uint32_t address : 8;   // 8-bit address (256 Max Addresses)
+    uint32_t code : 4;      // Return Code
+    uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
+    uint32_t reserved : 8;  // Reserved / Padding
+    // MSG/ACK IDs?
+};
+
+struct register_command_t
+{
+    union
+    {
+        struct
+        {
+            request_header_t header; // Command Header
+            uint8_t cmd_data[60];    // Command Data Buffer Payload
+        };
+        uint8_t data[64]; // Full 64-byte command buffer FDCAN
+    };
+};
+
+struct register_reply_t
+{
+    union // Union for mapping the full 64-byte data packet
+    {
+        struct
+        {
+            response_header_t header; // Response Reply Header
+            uint8_t cmd_data[60];     // Data Buffer Return
+        };
+        uint8_t data[64]; // Full 64-byte command buffer FDCAN
+    };
+};
+
 // TODO: A way to make register field read only?
 class RegisterData
 {
@@ -650,7 +698,7 @@ public:
 
 private:
     // Pointer to register memory location
-    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *,  std::function<int8_t(FDCANDevice::FDCAN_msg_t &, FDCANDevice *device)>> data_;
+    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *,  std::function<int8_t(register_command_t *, FDCANDevice *device)>> data_;
 
     // Mirror Type Sizes for Lookups
     static constexpr size_t data_sizes_[8] = {sizeof(uint8_t),
@@ -765,54 +813,6 @@ class RegisterInterface
 {
 public:
     static constexpr uint16_t kMaxRegisters = (1 << 8); // 8-bit addressing
-
-    // TODO: Address field is bit too large.  But keeping clean alignment math here
-    struct request_header_t // 4 Bytes
-    {
-        uint32_t sender_id : 6; // Node ID of Sender
-        uint32_t rwx : 2;       // Read/Write/Execute
-        uint32_t address : 8;   // 8-bit address (256 Max Addresses)
-        uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-        uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
-        uint32_t reserved: 8;   // Reserved / Padding
-        // MSG/ACK IDs?
-    };
-
-    struct response_header_t // 4 Bytes
-    {
-        uint32_t sender_id : 6; // Node ID of Sender
-        uint32_t address : 8;   // 8-bit address (256 Max Addresses)
-        uint32_t code : 4;      // Return Code
-        uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
-        uint32_t reserved: 8;   // Reserved / Padding
-        // MSG/ACK IDs?
-    };
-
-    struct register_command_t
-    {
-        union
-        {
-            struct
-            {
-                request_header_t header; // Command Header
-                uint8_t cmd_data[60];    // Command Data Buffer Payload
-            };
-            uint8_t data[64]; // Full 64-byte command buffer FDCAN
-        };
-    };
-
-    struct register_reply_t
-    {
-        union // Union for mapping the full 64-byte data packet
-        {
-            struct
-            {
-                response_header_t header; // Response Reply Header
-                uint8_t cmd_data[60];     // Data Buffer Return
-            };
-            uint8_t data[64]; // Full 64-byte command buffer FDCAN
-        };
-    };
 
    // RegisterInterface(); 
 

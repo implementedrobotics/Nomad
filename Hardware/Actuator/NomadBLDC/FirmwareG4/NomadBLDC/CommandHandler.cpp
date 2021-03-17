@@ -48,7 +48,7 @@ struct __attribute__((__packed__)) Measurement_info_t
     uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
     uint8_t status;            // Status
-    measurement_t measurement;         // Measurement Value
+    CommandHandler::measurement_t measurement;         // Measurement Value
 };
 
 struct __attribute__((__packed__)) Device_info_t

@@ -47,6 +47,7 @@
 #include "Motor.h"
 #include "RMSCurrentLimiter.h"
 #include "DRV8323.h"
+#include <RegisterInterface.h>
 #include <Peripherals/spi.h>
 #include <Peripherals/gpio.h>
 #include <Peripherals/fdcan.h>
@@ -61,24 +62,8 @@ extern MotorController *motor_controller;
 class ADCDevice;
 class Thermistor;
 class NomadBLDCFSM;
-class TorqueControlModeRegister_t;
+//class TorqueControlModeRegister_t;
 //class FDCANDevice;
-
-// Measurement Struct
-typedef union 
-{
-    float f32;
-    int32_t i32;
-    uint32_t u32;
-} measurement_t;
-
-typedef enum
-{
-    MEASURE_RESISTANCE_COMPLETE = 0,
-    MEASURE_INDUCTANCE_COMPLETE = 1,
-    MEASURE_PHASE_ORDER_COMPLETE = 2,
-    MEASURE_ENCODER_OFFSET_COMPLETE = 3
-} command_feedback_t;
 
 typedef enum: uint8_t
 {
@@ -302,7 +287,7 @@ private:
     static MotorController *singleton_; // Singleton
 
     // TODO: Should switch this to a abstract com device, uart, can, etc.
-    int8_t ClosedLoopTorqueCmd(FDCANDevice::FDCAN_msg_t &cmd, FDCANDevice *dev);
+    int8_t ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice *dev);
 
 };
 

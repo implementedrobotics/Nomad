@@ -312,10 +312,10 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     
 }
 
-int8_t MotorController::ClosedLoopTorqueCmd(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev)
+int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice *dev)
 {
-    RegisterInterface::register_command_t *cmd;
-    cmd = (RegisterInterface::register_command_t *)command.data;
+   // RegisterInterface::register_command_t *cmd;
+   // cmd = (RegisterInterface::register_command_t *)command.data;
 
     // TODO: Error check this range?
     TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
@@ -330,7 +330,7 @@ int8_t MotorController::ClosedLoopTorqueCmd(FDCANDevice::FDCAN_msg_t &command, F
     state_hat.Vel = motor->state_.theta_mech_dot;
     state_hat.T_est = state_.I_q * motor->config_.K_t * motor_->config_.gear_ratio;
 
-    RegisterInterface::register_reply_t reply;
+    register_reply_t reply;
     reply.header.sender_id = dev->ID();          // TODO: Need our CAN/Controller ID Here
     reply.header.code = 0;                      // Error Codes Here
     reply.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand; // Address from Requested Register
@@ -339,7 +339,7 @@ int8_t MotorController::ClosedLoopTorqueCmd(FDCANDevice::FDCAN_msg_t &command, F
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
 
     // Send it back
-    dev->Send(0x01, (uint8_t *)&reply, sizeof(RegisterInterface::response_header_t)+sizeof(JointState_t));
+    dev->Send(0x01, (uint8_t *)&reply, sizeof(response_header_t)+sizeof(JointState_t));
 
     return 0;
 }
