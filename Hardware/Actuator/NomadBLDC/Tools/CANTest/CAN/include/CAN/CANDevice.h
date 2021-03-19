@@ -33,9 +33,6 @@
 
 // Project Includes
 
-// CAN Driver Includes
-#include <linux/can.h>
-
 class CANDevice
 {
 
@@ -82,15 +79,19 @@ public:
         0, 1, 2, 3, 4, 5, 6, 7,
         8, 12, 16, 20, 24, 32, 48, 64};
 
-    // struct Config_t
-    // {
-    //     uint32_t id;         // CAN ID 11-bit max is 0x7ff
-    //     uint32_t bitrate;    // Nominal Bitrate
-    //     uint32_t d_bitrate;   // Data Bitrate
-    //     uint32_t mode_fd;     // FD mode or classic
-    //     float sample_point;  // Nominal Bitrate Sample Point Target
-    //     float d_sample_point;  // Data Sample Point Target
-    // };
+    struct Config_t
+    {
+        uint32_t id;         // CAN ID 11-bit max is 0x7ff
+        uint32_t bitrate;    // Nominal Bitrate
+        uint32_t d_bitrate;   // Data Bitrate
+        uint32_t mode_fd;     // FD mode or classic
+        float sample_point;  // Nominal Bitrate Sample Point Target
+        float d_sample_point;  // Data Sample Point Target
+
+        uint32_t clock_freq;   // CAN Device Clock HZ
+
+        // TODO: Bittimings?
+    };
 
     struct CAN_msg_t
     {
@@ -100,61 +101,42 @@ public:
     };
 
     // TODO: Support Extended IDs
-    // Constructors ( Default 250kbps without Bit rate switching)
-    //FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id = 0x123, uint32_t bitrate = 250000, uint32_t dbitrate = 250000);
-    //FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config);
     CANDevice();
     
     // Open CAN Port
-    // TODO: Make consistent with PCAN Proprietary Drivers
-    // TODO: Bitrate here vs OS defined
-    bool Open(const std::string &canid, int32_t timeout = 2);
-    bool Open(uint16_t index, int32_t timeout = 2);
+    virtual bool Open(const std::string &device_id, Config_t &config, bool bUseRXThread = false) = 0;
     
     // Close Can Port
-    bool Close();
+    virtual bool Close() = 0;
+
+    // Filtering Add
+    virtual bool AddFilter(uint32_t from, uint32_t to) = 0;
+
+    // Filtering Clear
+    virtual bool ClearFilters() = 0;
 
     // Send CAN Data Function
-    bool Send(uint32_t dest_id, uint8_t *data, uint16_t length);
+    virtual bool Send(uint32_t dest_id, uint8_t *data, uint16_t length) = 0;
 
     // Send CAN Message Function
-    bool Send(CAN_msg_t &msg);
-
-    // Receive CAN Data Function
-    bool Receive(uint8_t *data, uint16_t &length);
+    virtual bool Send(CAN_msg_t &msg) = 0;
 
     // Receive CAN Message Function
-    bool Receive(CAN_msg_t &msg);
+    virtual bool Receive(CAN_msg_t &msg) = 0;
 
-private:
+    // Notifier for receive complete callback
+    bool RegisterRXCallback();
+
+protected:
+
+    // Init/Start RX Thread
+    bool StartReceiveThread();
 
     // Calc Bit Timing Helper Function
     bool CalculateTimings();
 
-    // SocketCAN
-    int socket_;
-
-    // CAN Transmit/Receive Header
-    //FDCAN_TxHeaderTypeDef tx_header_;
-    //FDCAN_RxHeaderTypeDef rx_header_;
-
-    // CAN Receive Message Container
-    CAN_msg_t can_msg_;
-
-    // Data Buffer
-    //uint8_t can_rx_buffer_[kBufferSizeRX]; 
-
     // Config
-    //Config_t config_;
-
-    // Interrupts Enabled?
-    bool enable_interrupt_;
-
-    // Valid Timings
-    bool timings_valid_;
-
-    // Receive Timeout
-    int32_t rx_timeout_;
+    Config_t config_;
 
 };
 
