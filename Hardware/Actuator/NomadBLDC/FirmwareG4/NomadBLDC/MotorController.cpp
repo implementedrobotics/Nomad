@@ -231,6 +231,8 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     // TOOD: In Register
     in_limit_max_ = false;
     in_limit_min_ = false;
+    in_torque_limit_ = false;
+
     // TODO: Parameter
     rms_current_sample_period_ = 1.0f/10.0f;
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
@@ -360,6 +362,8 @@ void MotorController::Reset()
 
     in_limit_min_ = false;
     in_limit_max_ = false;
+
+    in_torque_limit_ = false;
 }
 
 void MotorController::CurrentMeasurementCB()
@@ -777,8 +781,9 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
 void MotorController::TorqueControl()
 {
     float deadband = 0.1f;
-    float torque_ref_in = state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+    //float torque_ref_in = state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     float torque_ref = 0.0f;
+
     // Check Position Limits
     if(motor->state_.theta_mech <= config_.pos_limit_min)
     {
@@ -802,13 +807,18 @@ void MotorController::TorqueControl()
             in_limit_min_ = false;
     }
 
-    
     // TODO: Also check velocity limits
     if(!in_limit_min_ && !in_limit_max_) // Not Limiting
     {
         torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
     }
-    
+
+    // Check torque limit
+    if(torque_ref > config_.torque_limit)
+        torque_ref = config_.torque_limit;
+    else if(torque_ref < -config_.torque_limit)
+        torque_ref = -config_.torque_limit;
+
     state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
     state_.I_d_ref = 0.0f;
     CurrentControl(); // Do Current Controller
