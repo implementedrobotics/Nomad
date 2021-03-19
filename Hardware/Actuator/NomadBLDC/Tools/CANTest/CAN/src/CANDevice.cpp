@@ -32,6 +32,19 @@
 #include <CAN/CANDevice.h>
 
 
+
+void CANDevice::ReceiveTask()
+{
+    CAN_msg_t msg;
+    while (1)
+    {
+        if (Receive(msg))
+        {
+            std::cout << "RECEIVING ClkAN" << std::endl;
+        }
+    }
+}
+
 CANDevice::CANDevice()
 {
 }
@@ -39,6 +52,7 @@ CANDevice::CANDevice()
 bool CANDevice::StartReceiveThread()
 {
     std::cout << "Starting Receive Thread" << std::endl;
+    rx_thread_ = std::thread(&CANDevice::ReceiveTask, this);
     return true;
 }
 bool CANDevice::RegisterRXCallback()
@@ -132,7 +146,8 @@ bool CANDevice::RegisterRXCallback()
 //     // if (write(socket_, &frame, sizeof(struct canfd_frame)) != sizeof(struct canfd_frame))
 //     // {
 //     //     perror("WRITE ERROR");
-//     //     return false;
+//     //     return f  tau1 = (kp*150*(pos2 - pos1) + kd*15*(vel2-vel1))*.05;
+
 //     // }
 
 //     // if (write(socket_, &frame, int(m_socket_mode)) != int(m_socket_mode)) {

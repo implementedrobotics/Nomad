@@ -30,6 +30,7 @@
 
 // C++ System Files
 #include <string>
+#include <thread>
 
 // Project Includes
 
@@ -137,6 +138,12 @@ protected:
 
     // Config
     Config_t config_;
+
+private:
+
+    void ReceiveTask();
+
+    std::thread rx_thread_;
 
 };
 

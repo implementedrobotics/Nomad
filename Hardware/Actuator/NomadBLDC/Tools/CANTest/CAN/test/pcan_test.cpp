@@ -11,8 +11,7 @@
 
 
 PCANDevice can;
-//uint32_t can_tx_id = 0x110;
-uint32_t can_tx_id = 0x110;
+uint32_t can_tx_id = 0x10;
 uint32_t can_tx_id2 = 0x110;
 
 float pos1 = 0.0f;
@@ -51,16 +50,18 @@ protected:
 CANTestNode::CANTestNode(const std::string &name, const double T_s) : Realtime::RealTimeTaskNode(name, T_s, Realtime::Priority::MEDIUM, -1, PTHREAD_STACK_MIN), time_(0.0)
 {
 }
+
 void CANTestNode::Run()
 {
 
    // auto start_time = std::chrono::high_resolution_clock::now();
 
-    tau1 = (kp*150*(pos2 - pos1) + kd*15*(vel2-vel1))*.05;
-    tau2 = (kp*150*(pos1 - pos2) + kd*15*(vel1-vel2));
+    tau1 = (kp*30*(pos2 - pos1) + kd*1*(vel2-vel1));
+    tau2 = (kp*30*(pos1 - pos2) + kd*1*(vel1-vel2));
 
-    tau1 = 0;
-    tau2 = 0;
+    std::cout << "TAU HERE: " << tau1 << " " << tau2 << std::endl;
+   // tau1 = 0;
+    //tau2 = 0;
     time_ += dt_actual_;
 
     //std::cout << "DT: " << time_ << std::endl;
@@ -119,25 +120,25 @@ void CANTestNode::Run()
     msg.id = can_tx_id2;
     msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
     memcpy(msg.data, &test, msg.length);
-    // can.Send(msg);
+    can.Send(msg);
 
-    // i = 0;
-    // while (!can.Receive(msg))
-    // {
-    //     if (i++ > 10000)
-    //         break;
+    i = 0;
+    while (!can.Receive(msg))
+    {
+        if (i++ > 10000)
+            break;
 
-    //    //  std::cout << "WAITING2: " << std::endl;
-    // }
+       //  std::cout << "WAITING2: " << std::endl;
+    }
 
-    // reponse = (register_reply_t *)msg.data;
+    reponse = (register_reply_t *)msg.data;
 
-    // joint_state = (JointState_t *)reponse->cmd_data;
-    // pos2 = joint_state->Pos;
-    // vel2 = joint_state->Vel;
+    joint_state = (JointState_t *)reponse->cmd_data;
+    pos2 = joint_state->Pos;
+    vel2 = joint_state->Vel;
 
 
- //  std::cout << "Tau 2: " << pos2 << " : " << pos1 <<  std::endl;
+  // std::cout << "Tau 2: " << tau1 << " : " << tau2 <<  std::endl;
 
 //   //  auto time_now = std::chrono::high_resolution_clock::now();
 //   // auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
@@ -150,23 +151,24 @@ void CANTestNode::Setup()
     // Bind any active output ports
     std::cout << "Setup Run! " << std::endl;
 
-
     CANDevice::Config_t config;
-    config.bitrate = 1e6;
-    config.d_bitrate = 2e6;
-    config.sample_point = .875;
-    config.d_sample_point = 0.6;
-    config.clock_freq = 80e6; // Read from driver?  
-    config.mode_fd = 1;
-    if(!can.Open(DEVICE, config, true))
+    config.bitrate = 1e6; //1mbps
+    config.d_bitrate = 2e6; //2mbps
+    config.sample_point = .875; //87.5% 
+    config.d_sample_point = 0.6; //60%
+    config.clock_freq = 80e6; // 80mhz // Read from driver?  
+    config.mode_fd = 1; // FD Mode
+
+    if(!can.Open(DEVICE, config, false))
     {
         std::cout << "Unable to open CAN Device" << std::endl;
         return;
     }
 
     // Setup Filters
-    can.ClearFilters(); // Clear Existing/Reset.  This seems to be required?
-    can.AddFilter(1, 2);
+    can.ClearFilters(); // Clear Existing/Reset.  Filters are saved on the device hardware.  Must make sure to clear
+    can.AddFilter(1, 1); // Only Listen to messages on id 0x01.  
+    //can.AddFilter(2000, 2000); // Some low priority logging/debug channel?
     std::cout << "Enabling BLDC." << std::endl;
 
     register_command_t enable;
@@ -197,9 +199,9 @@ void CANTestNode::Setup()
 
     usleep(1000000);
 
-    // msg.id = can_tx_id2;
-    // can.Send(msg);
-    // usleep(1000000);
+    msg.id = can_tx_id2;
+    can.Send(msg);
+    usleep(1000000);
 }
 
 void CANTestNode::Exit()
@@ -224,8 +226,8 @@ void CANTestNode::Exit()
 
     can.Send(msg);
 
-    // msg.id = can_tx_id2;
-    // can.Send(msg);
+    msg.id = can_tx_id2;
+    can.Send(msg);
 
 }
 
@@ -243,7 +245,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    CANTestNode nomad_can("Test", 1/750.0f); //10hz
+    CANTestNode nomad_can("Test", 1/500.0f); //10hz
     nomad_can.SetStackSize(1024 * 1024);
     nomad_can.SetTaskPriority(Realtime::Priority::HIGHEST);
     nomad_can.SetCoreAffinity(2);
@@ -257,16 +259,4 @@ int main(int argc, char *argv[])
 
     getchar();
 
-
-// 	int fd = pcanfd_open(DEVICE, OFD_BITRATE | OFD_DBITRATE | OFD_CLOCKHZ | OFD_NONBLOCKING, 1000000,2000000, 80000000);
-// 	if (fd < 0) {
-// 		perror("pcanfd_open() failed");
-// 		exit(1);
-// 	}
-
-
-//     struct pcanfd_init init;
-//     pcanfd_get_init(fd, &init);
-    
-//     std::cout << "Print Debug: " << init.data.bitrate << std::endl;
 }

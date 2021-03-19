@@ -58,13 +58,16 @@ bool PCANDevice::Open(const std::string &device_id, Config_t &config, bool bUseR
     }
     // TODO: Calculate Timings Instead?
     //CalculateTimings();
-    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_DBITRATE | OFD_CLOCKHZ | OFD_NONBLOCKING, config.bitrate, config.d_bitrate, config.clock_freq);
+    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_DBITRATE | OFD_CLOCKHZ /*| OFD_NONBLOCKING*/, config.bitrate, config.d_bitrate, config.clock_freq);
     if (fd_ < 0)
     {
         perror("[ERROR]: PCANDevice::Open: Failed to Open PCANFD.");
         return false;
     }
 
+    // Clear Filters
+    ClearFilters();
+    
     // Start RX Thread
     if(bUseRXThread)
         return StartReceiveThread();
@@ -146,14 +149,7 @@ bool PCANDevice::Receive(CAN_msg_t &msg)
         // TODO: Log Received Errors??
         return false;
     }
-
-    std::cout << "ID:  " << pcan_msg.id << std::endl;
-    if(pcan_msg.type != PCANFD_TYPE_CANFD_MSG || pcan_msg.id != 0x01)
-    {
-       // std::cout << "STATUS? " << std::endl;
-        return false;
-    }
-
+    
     msg.id = pcan_msg.id;
     msg.length = pcan_msg.data_len;
     memcpy(msg.data, pcan_msg.data, pcan_msg.data_len);
