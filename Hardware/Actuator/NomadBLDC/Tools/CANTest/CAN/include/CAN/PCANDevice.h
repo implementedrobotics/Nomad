@@ -69,4 +69,4 @@ protected:
 
 };
 
-#endif // CAN_CANDEVICE_H_
+#endif // PCAN_CANDEVICE_H_

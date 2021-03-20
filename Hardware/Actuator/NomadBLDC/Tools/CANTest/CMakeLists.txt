@@ -7,6 +7,9 @@ set(NOMADBLDC_VERSION_MINOR 1)
 # Communications Library
 add_subdirectory(CAN)
 
+# NomadBLDC Library
+add_subdirectory(NomadBLDC)
+
 
 
 
