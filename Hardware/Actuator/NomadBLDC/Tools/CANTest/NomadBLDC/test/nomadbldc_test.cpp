@@ -52,8 +52,16 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    std::cout << "Nomad Servo Connected!" << std::endl;
+    std::cout << "Nomad Servo: " << servo.GetServoId() << " Connected!" << std::endl;
+
+    servo.SetControlMode(10);
+
+    usleep(10000);
+
+    servo.ClosedLoopTorqueCommand(0.0f,0.0f, 0.0f,0.2f,0.0f);
 
 getchar();
+
+    servo.SetControlMode(1);
     return 0;
 }

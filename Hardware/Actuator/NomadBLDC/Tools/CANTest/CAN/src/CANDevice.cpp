@@ -40,7 +40,7 @@ void CANDevice::ReceiveTask()
     {
         if (Receive(msg))
         {
-            std::cout << "RECEIVING CAN_DEV: " << msg.length << std::endl;
+           // std::cout << "RECEIVING CAN_DEV: " << msg.length << std::endl;
             for(auto listener : rx_listeners_) // Pass to any registered listeners
             {
                 listener(msg);

@@ -58,10 +58,10 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         // Send it back
         reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
 
-        Logger::Instance().Print("ID: %d : \r\n", reply.header.sender_id );
+        Logger::Instance().Print("ID: %d : \r\n", size);
         reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
-
+        reply.header.length = size;
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t) + size);
     }

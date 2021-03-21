@@ -319,7 +319,7 @@ int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice
     reply.header.sender_id = dev->ID();                                           // TODO: Need our CAN/Controller ID Here
     reply.header.code = 0;                                                        // Error Codes Here
     reply.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand; // Address from Requested Register
-    reply.header.length = 4;
+    reply.header.length = sizeof(JointState_t);
 
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
 

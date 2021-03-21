@@ -43,21 +43,30 @@ public:
     bool Connect();
     void Disconnect();
     bool Reset();
-    void SetTorqueCommand();
+    bool ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff);
+    bool SetControlMode(uint32_t mode);
+    uint32_t GetServoId() const { return servo_id_; }
 
-    bool ReadRegister(uint32_t address, register_reply_t &register_data);
+    bool ReadRegister(uint32_t address, uint8_t *data);
+    bool WriteRegister(uint32_t address, uint8_t *data, size_t size);
+    bool ExecuteRegister(uint32_t address, uint8_t *data, uint8_t *return_data, size_t size);
 
 protected:
 
+    // TODO: Servo "Pretty Name"
     int servo_id_;
     int master_id_;
     CANDevice *transport_;
 
-    // Mutex?
-
     // Registers
     DeviceStatusRegister1_t dsr1_;
     DeviceStatusRegister2_t dsr2_;
+
+    TorqueControlModeRegister_t tcmr_;
+
+    JointState_t joint_state_;
+
+    uint32_t control_mode_; // TODO: To Register
 
 private:
     
@@ -68,6 +77,8 @@ private:
 
     // Connect Status
     bool connected_;
+
+
 
 };
 
