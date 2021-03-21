@@ -45,12 +45,22 @@ public:
     bool Reset();
     bool ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff);
     bool SetControlMode(uint32_t mode);
+
+    // Servo State
+    float GetPosition(){return joint_state_.Pos;}
+    float GetVelocity(){return joint_state_.Vel;}
+    float GetTorque(){return joint_state_.T_est;}
+
     uint32_t GetServoId() const { return servo_id_; }
 
     bool ReadRegister(uint32_t address, uint8_t *data);
     bool WriteRegister(uint32_t address, uint8_t *data, size_t size);
-    bool ExecuteRegister(uint32_t address, uint8_t *data, uint8_t *return_data, size_t size);
 
+    // TODO: Request/Reply Wrapper Class
+    bool ExecuteRegister(uint32_t address, uint8_t *parameter_data = nullptr, size_t size = 0, uint8_t *return_data = 0);
+
+    // Force sync of all async request(when we implement it)
+    bool Sync();
 protected:
 
     // TODO: Servo "Pretty Name"

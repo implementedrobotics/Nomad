@@ -21,22 +21,16 @@ NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master
 bool NomadBLDC::Connect()
 {
     // Try to read device status
-    //register_reply_t reply;
     bool status = ReadRegister(DeviceRegisters_e::DeviceStatusRegister1, (uint8_t*)&dsr1_);
 
     if(!status)
         return false;
 
-    //memcpy(&dsr1_, reply.cmd_data, sizeof(DeviceStatusRegister1_t));
-
-    // Copy Register Information
+    // Read next device status
     status = ReadRegister(DeviceRegisters_e::DeviceStatusRegister2, (uint8_t*)&dsr2_);
 
     if(!status)
         return false;
-
-   // DeviceStatusRegister2_t *dsr = (DeviceStatusRegister2_t *)reply.cmd_data;
-   // memcpy(&dsr2_, reply.cmd_data, sizeof(DeviceStatusRegister2_t));
 
     connected_ = true;
     return true;
@@ -59,10 +53,11 @@ bool NomadBLDC::ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, flo
     tcmr_.Vel_ref = vel_ref;
     tcmr_.T_ff = torque_ff;
 
-    bool status = ExecuteRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, (uint8_t*)&tcmr_, (uint8_t*)&joint_state_,sizeof(tcmr_));
+    bool status = ExecuteRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, (uint8_t*)&tcmr_, sizeof(tcmr_), (uint8_t*)&joint_state_);
     return true;
 }
 
+// TODO: ReadRegisterAsync, WriteRegisterAsync, ExecuteRegisterAsync
 bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
 {
     if(transport_ == nullptr)
@@ -93,12 +88,7 @@ bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
         memcpy(data, register_reply.cmd_data, register_reply.header.length);
         return true;
     }
-    else
-    {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 bool NomadBLDC::WriteRegister(uint32_t address, uint8_t *data, size_t size)
@@ -121,11 +111,13 @@ bool NomadBLDC::WriteRegister(uint32_t address, uint8_t *data, size_t size)
 
     transport_->Send(msg);
 
-    return true;
     // TODO: Reply?
+
+    return true;
+
 }
 
-bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *data, uint8_t *return_data, size_t size)
+bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *parameter_data, size_t size, uint8_t *return_data)
 {
     if(transport_ == nullptr)
         return false;
@@ -137,7 +129,7 @@ bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *data, uint8_t *return
     execute_cmd.header.sender_id = master_id_;
     execute_cmd.header.length = size;
 
-    memcpy(&execute_cmd.cmd_data, data, size);
+    memcpy(&execute_cmd.cmd_data, parameter_data, size);
 
     CANDevice::CAN_msg_t msg;
     msg.id = servo_id_;
@@ -157,12 +149,7 @@ bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *data, uint8_t *return
         memcpy(return_data, register_reply.cmd_data, register_reply.header.length);
         return true;
     }
-    else
-    {
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 bool NomadBLDC::SetTransport(CANDevice *dev)
@@ -184,6 +171,8 @@ void NomadBLDC::ReceiveMessage(CANDevice::CAN_msg_t &msg)
     if(reply->header.sender_id != servo_id_)
         return;
     
+    // TODO: This should be better linked with some sort of packet id?  I think we are safe for now
+    // TODO: Use high level request object?
     // Update Promise Token
     promise_[reply->header.address].set_value(*reply);
 }

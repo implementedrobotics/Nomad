@@ -60,7 +60,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
 
 
     // Setup Registers
-    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorConfigRegister1, new Register((MotorConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorConfigRegister1, new Register((MotorConfigRegister1_t *)&config_, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::PolePairs, new Register(&config_.num_pole_pairs));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::K_v, new Register(&config_.K_v));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::K_t, new Register(&config_.K_t));
@@ -72,16 +72,16 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     RegisterInterface::AddRegister(MotorConfigRegisters_e::GearRatio, new Register(&config_.gear_ratio));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::PhaseOrder, new Register(&config_.phase_order));
 
-    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorThermalConfigRegister, new Register((MotorThermalConfigRegister_t *)&config_.continuous_current_max, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorThermalConfigRegister, new Register((MotorThermalConfigRegister_t *)&config_.continuous_current_max, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::ContinuousCurrentLimit, new Register(&config_.continuous_current_max));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::ContinuousCurrentTau, new Register(&config_.continuous_current_tau));
     
-    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorCalibrationConfigRegister, new Register((MotorCalibrationConfigRegister_t *)&config_.calib_current, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorCalibrationConfigRegister, new Register((MotorCalibrationConfigRegister_t *)&config_.calib_current, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationCurrent, new Register(&config_.calib_current));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationVoltage, new Register(&config_.calib_voltage));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::ZeroOutputOffset, new Register(std::bind(&Motor::ZeroOutputPosition, this)));
 
-    RegisterInterface::AddRegister(MotorStateRegisters_e::MotorStateRegister1, new Register((MotorStateRegister1_t *)&state_, true));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::MotorStateRegister1, new Register((MotorStateRegister1_t *)&state_, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_A, new Register(&state_.I_a));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_B, new Register(&state_.I_b));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_C, new Register(&state_.I_c));

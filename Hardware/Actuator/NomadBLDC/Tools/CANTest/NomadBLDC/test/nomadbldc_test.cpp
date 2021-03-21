@@ -11,19 +11,6 @@
 #define DEVICE "/dev/pcanusbfd32"
 
 PCANDevice can;
-uint32_t can_tx_id = 0x10;
-uint32_t can_tx_id2 = 0x110;
-
-float pos1 = 0.0f;
-float pos2 = 0.0f;
-float vel1 = 0.0f;
-float vel2 = 0.0f;
-
-float kp = .050f;
-float kd = .010f;
-float tau1 = 0.0f;
-float tau2 = 0.0f;
-
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +45,7 @@ int main(int argc, char *argv[])
 
     usleep(10000);
 
-    servo.ClosedLoopTorqueCommand(0.0f,0.0f, 0.0f,0.2f,0.0f);
+    servo.ClosedLoopTorqueCommand(1.0f,0.0f, 0.0f,0.0f,0.0f);
 
 getchar();
 

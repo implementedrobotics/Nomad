@@ -1,5 +1,6 @@
 # Firmware TODO:
 * Keep alive support
+* Device Status register access -> MotorControl
 * Fix slight delay into current control before idle on bootup
 * Speed Controller ***
 * Arm Controller Function
@@ -8,7 +9,8 @@
 * Remove all HAL timers
 * Circular Buffer for general use. e.g. HDLC packet receive could be circular.  Right now is linear
 * Customize HDLC Command Callback.  And make consistent with CAN Bus once implemented
-* FET Thermistor/Motor Thermistor Variables in Config*. Adjustable LUT encoder offset size.  Update position sensor % modulus when this happens
+* FET Thermistor/Motor Thermistor Variables in Config. 
+* Adjustable LUT encoder offset size.  Update position sensor % modulus when this happens
 * Save stats for loop cycle time if in debug mode etc.
 * Error out if missing deadlines etc
 * Make RMS Current period configurable?  For now it is 1/10.  Reasonable memory use for 60.0s window.
