@@ -31,6 +31,8 @@
 // C++ System Files
 #include <string>
 #include <thread>
+#include <vector>
+#include <functional>
 
 // Project Includes
 
@@ -103,6 +105,7 @@ public:
 
     // TODO: Support Extended IDs
     CANDevice();
+    ~CANDevice();
     
     // Open CAN Port
     virtual bool Open(const std::string &device_id, Config_t &config, bool bUseRXThread = false) = 0;
@@ -126,7 +129,7 @@ public:
     virtual bool Receive(CAN_msg_t &msg) = 0;
 
     // Notifier for receive complete callback
-    bool RegisterRXCallback();
+    void RegisterListenerCB(const std::function<void(CAN_msg_t&)> &recv_cb);
 
 protected:
 
@@ -144,6 +147,8 @@ private:
     void ReceiveTask();
 
     std::thread rx_thread_;
+
+    std::vector<std::function<void(CAN_msg_t&)>> rx_listeners_;
 
 };
 

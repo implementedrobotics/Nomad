@@ -7,6 +7,7 @@ set(NOMADBLDC_LIBS CAN)
 
 
 include_directories("${PROJECT_SOURCE_DIR}/CAN/include")
+include_directories("${PROJECT_SOURCE_DIR}/NomadBLDC/include")
 
 add_library(NOMADBLDC STATIC ${NOMADBLDC_SOURCES})
 target_link_libraries(NOMADBLDC ${NOMADBLDC_LIBS})

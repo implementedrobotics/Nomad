@@ -22,9 +22,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
-
-
 // C System Files
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,10 +52,12 @@ bool PCANDevice::Open(const std::string &device_id, Config_t &config, bool bUseR
     if (config_.mode_fd == 0)
     {
         perror("[ERROR]: PCANDevice::Open(): Only CAN FD Ddevices Supported Currently.");
+        return false;
     }
     // TODO: Calculate Timings Instead?
     //CalculateTimings();
-    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_DBITRATE | OFD_CLOCKHZ /*| OFD_NONBLOCKING*/, config.bitrate, config.d_bitrate, config.clock_freq);
+    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_DBITRATE | OFD_CLOCKHZ /*| OFD_NONBLOCKING*/|PCANFD_INIT_FD, config.bitrate, config.d_bitrate, config.clock_freq);
+    //fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_BRPTSEGSJW | OFD_DBITRATE | OFD_BRPTSEGSJW | OFD_CLOCKHZ | PCANFD_INIT_FD, 1, 50, 29, 10, 1, 8, 7, 12, config.clock_freq);
     if (fd_ < 0)
     {
         perror("[ERROR]: PCANDevice::Open: Failed to Open PCANFD.");
@@ -149,7 +148,14 @@ bool PCANDevice::Receive(CAN_msg_t &msg)
         // TODO: Log Received Errors??
         return false;
     }
-    
+
+    // TODO: Handle Status/Error Messages somehow?  For now skip
+    // TODO: Support other messages. CAN FD ONLY!
+    if(pcan_msg.type != PCANFD_TYPE_CANFD_MSG)
+    {
+        return false;
+    }
+
     msg.id = pcan_msg.id;
     msg.length = pcan_msg.data_len;
     memcpy(msg.data, pcan_msg.data, pcan_msg.data_len);
@@ -182,14 +188,6 @@ bool PCANDevice::AddFilter(uint32_t from, uint32_t to)
         std::cout << "[ERROR]: PCANDevice::AddFilter(): Error setting filter value!" << std::endl;
         return false;
     }
-
-//struct pcanfd_msg_filters pfl;
-  // int ret_filter =  pcanfd_get_filters(fd_, &pfl);
-
-   // std::cout << "GOT: " << pfl.list[0].id_from << " : " << pfl.list[0].id_to << " " << pfl.count<< std::endl;
-
-    std::cout << "Filtered " <<  std::endl;
-
     return true;
 }
 

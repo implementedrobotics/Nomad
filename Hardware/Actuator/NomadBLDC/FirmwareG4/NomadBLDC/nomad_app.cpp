@@ -181,7 +181,7 @@ void SetupDeviceRegisters()
     // Add Register Addresses
 
     // Device Status Register 1
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true, sizeof(DeviceStatusRegister1_t)));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFault, new Register(&DSR1.fault_mode));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceControlMode, new Register(&DSR1.control_mode));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceVoltageBus, new Register(&DSR1.V_bus));
@@ -189,7 +189,7 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFETTemp, new Register(&DSR1.fet_temp));
 
     // Device Status Register 2
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister2, new Register(&DSR2, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister2, new Register(&DSR2, true, sizeof(DeviceStatusRegister2_t)));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR2.fw_major));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR2.fw_minor));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&DSR2.uid1));

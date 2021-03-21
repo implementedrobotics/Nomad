@@ -289,6 +289,7 @@ typedef enum // Controller Config Register
 
 } ControllerCommandRegisters_e;
 
+
 struct JointState_t
 {
     float Pos;   // Position Estimate
