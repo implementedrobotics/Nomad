@@ -306,9 +306,6 @@ FDCANDevice *get_can_device()
 int8_t save_configuration()
 {
     Logger::Instance().Print("\r\nSaving Configuration...\r\n");
-
-    //bool status = false;
-
     if (NomadFlash::Open(true))
     {
         // If we are writing a config assume for now we are calibrated
@@ -318,39 +315,39 @@ int8_t save_configuration()
         if (!NomadFlash::SaveMotorConfig(motor->config_))
         {
             NomadFlash::Close();
-            return -1;
+            return 0;
         }
         Logger::Instance().Print("Saved Motor Config.\r\n");
        // status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
         if (!NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_))
         {
             NomadFlash::Close();
-            return -1;
+            return 0;
         }
         Logger::Instance().Print("Saved Position Config.\r\n");
       //  status = NomadFlash::SaveControllerConfig(motor_controller->config_);
         if (!NomadFlash::SaveControllerConfig(motor_controller->config_))
         {
             NomadFlash::Close();
-            return -1;
+            return 0;
         }
         Logger::Instance().Print("Saved Controller Config.\r\n");
       //  status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
         if (!NomadFlash::SaveCANConfig(fdcan->ReadConfig()))
         {
             NomadFlash::Close();
-            return -1;
+            return 0;
         }
         Logger::Instance().Print("Saved CAN Config.\r\n");
     }
     else
     {
         Logger::Instance().Print("Unable to Open Flash!\r\n");
-        return -1;
+        return 0;
     }
 
     NomadFlash::Close();
-    return 0;
+    return 1;
 }
 
 int8_t load_configuration()

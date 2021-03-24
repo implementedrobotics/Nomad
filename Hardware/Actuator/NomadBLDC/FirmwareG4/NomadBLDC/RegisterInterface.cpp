@@ -51,14 +51,14 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         // Reply packet
         register_reply_t reply;
         
-        Logger::Instance().Print("Read: %d : \r\n", cmd->header.address);
+        //Logger::Instance().Print("Read: %d : \r\n", cmd->header.address);
         // Read
         uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
 
         // Send it back
         reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
 
-        Logger::Instance().Print("ID: %d : \r\n", size);
+        //Logger::Instance().Print("ID: %d : \r\n", size);
         reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
         reply.header.length = size;
@@ -74,14 +74,14 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
 
         // Check for callback
         register_reply_t reply;
-        reply.header.sender_id = 2; // TODO: Need our CAN/Controller ID Here
+        reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
         reply.header.code = 0; // Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
 
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
     }
-    else if(cmd->header.rwx == 2) // Execture
+    else if(cmd->header.rwx == 2) // Execute
     {
         // TODO: Error Checking
         // Run Function

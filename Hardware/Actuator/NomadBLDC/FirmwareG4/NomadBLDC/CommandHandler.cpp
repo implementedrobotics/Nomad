@@ -507,17 +507,15 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_WRITE_FLASH:
     {
         //Logger::Instance().Print("Writing\n");
-        bool status = false;
+        uint8_t status = false;
         if(motor_controller->GetControlMode() == control_mode_type_t::IDLE_MODE)
         {
             status = save_configuration();
         }
-        //bool status = save_configuration();
-
         uint8_t buffer[3];
         buffer[0] = COMM_WRITE_FLASH;
         buffer[1] = 1;
-        buffer[2] = (uint32_t)status;
+        buffer[2] = (uint8_t)status;
 
         // Send it
         gUART->SendBytes((uint8_t *)&buffer, 3);

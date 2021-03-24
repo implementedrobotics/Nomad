@@ -57,7 +57,7 @@ bool PCANDevice::Open(const std::string &device_id, Config_t &config, bool bUseR
     // TODO: Calculate Timings Instead?
     //CalculateTimings();
 
-    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_SAMPLEPT | OFD_DBITRATE | OFD_SAMPLEPT | OFD_CLOCKHZ /*| OFD_NONBLOCKING*/ | PCANFD_INIT_FD, config.bitrate, (int)config.sample_point * 10000, config.d_bitrate, (int)config.d_sample_point * 10000, config.clock_freq);
+    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_SAMPLEPT | OFD_DBITRATE | OFD_SAMPLEPT | OFD_CLOCKHZ /*| OFD_NONBLOCKING */| PCANFD_INIT_FD, config.bitrate, (int)config.sample_point * 10000, config.d_bitrate, (int)config.d_sample_point * 10000, config.clock_freq);
     //fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_BRPTSEGSJW | OFD_DBITRATE | OFD_BRPTSEGSJW | OFD_CLOCKHZ | PCANFD_INIT_FD, 1, 50, 29, 10, 1, 8, 7, 12, config.clock_freq);
     if (fd_ < 0)
     {
@@ -144,9 +144,11 @@ bool PCANDevice::Receive(CAN_msg_t &msg)
     struct pcanfd_msg pcan_msg;
 
     int rx_error = pcanfd_recv_msg(fd_, &pcan_msg);
+    std::cout << "RECEIVED: " << rx_error << std::endl;
     if (rx_error)
     {
         // TODO: Log Received Errors??
+        //std::cout << "FALSE: " << rx_error << std::endl;
         return false;
     }
 

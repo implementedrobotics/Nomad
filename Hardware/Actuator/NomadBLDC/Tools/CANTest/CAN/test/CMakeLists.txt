@@ -8,6 +8,8 @@ set(CAN_TEST_LIBS CAN)
 
 set(PCAN_TEST_SOURCES ${PROJECT_SOURCE_DIR}/CAN/test/pcan_test.cpp)
 set(PCAN_TEST_LIBS CAN pcanfd)
+
+
 # Definitions
 #add_definitions(-D_GNU_SOURCE)
 

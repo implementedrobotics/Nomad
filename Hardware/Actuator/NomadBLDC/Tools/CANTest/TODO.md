@@ -9,6 +9,7 @@
 * Set Position Limits
 * Set Current Limit
 * Get Device Status
+* Need to bail if not setup correctly.  Throw Exception?
 * Do we need Shared Futures?
 * Test SocketCAN
 * Report Bus Utilization in PCANDevice

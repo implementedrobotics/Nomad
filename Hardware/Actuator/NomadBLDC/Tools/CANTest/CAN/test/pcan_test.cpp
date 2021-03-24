@@ -54,14 +54,15 @@ CANTestNode::CANTestNode(const std::string &name, const double T_s) : Realtime::
 void CANTestNode::Run()
 {
 
-   // auto start_time = std::chrono::high_resolution_clock::now();
+
+    auto start_time = std::chrono::high_resolution_clock::now();
 
     tau1 = (kp*30*(pos2 - pos1) + kd*1*(vel2-vel1));
     tau2 = (kp*30*(pos1 - pos2) + kd*1*(vel1-vel2));
 
     std::cout << "TAU HERE: " << tau1 << " " << tau2 << std::endl;
-   // tau1 = 0;
-    //tau2 = 0;
+    tau1 = 0;
+    tau2 = 0;
     time_ += dt_actual_;
 
     //std::cout << "DT: " << time_ << std::endl;
@@ -103,7 +104,7 @@ void CANTestNode::Run()
         if (i++ > 10000)
             break;
 
-       // std::cout << "WAITING1: " << std::endl;
+        std::cout << "WAITING1: " << std::endl;
     }
 
    
@@ -114,35 +115,35 @@ void CANTestNode::Run()
     pos1 = joint_state->Pos;
     vel1 = joint_state->Vel;
 
-    tcmr.T_ff = tau2;
-    memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
+    // tcmr.T_ff = tau2;
+    // memcpy(&test.cmd_data, (uint8_t *)&tcmr, sizeof(TorqueControlModeRegister_t));
 
-    msg.id = can_tx_id2;
-    msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
-    memcpy(msg.data, &test, msg.length);
-    can.Send(msg);
+    // msg.id = can_tx_id2;
+    // msg.length = sizeof(request_header_t) + sizeof(TorqueControlModeRegister_t);
+    // memcpy(msg.data, &test, msg.length);
+    // can.Send(msg);
 
-    i = 0;
-    while (!can.Receive(msg))
-    {
-        if (i++ > 10000)
-            break;
+    // i = 0;
+    // while (!can.Receive(msg))
+    // {
+    //     if (i++ > 10000)
+    //         break;
 
-       //  std::cout << "WAITING2: " << std::endl;
-    }
+    //    //  std::cout << "WAITING2: " << std::endl;
+    // }
 
-    reponse = (register_reply_t *)msg.data;
+    // reponse = (register_reply_t *)msg.data;
 
-    joint_state = (JointState_t *)reponse->cmd_data;
-    pos2 = joint_state->Pos;
-    vel2 = joint_state->Vel;
+    // joint_state = (JointState_t *)reponse->cmd_data;
+    // pos2 = joint_state->Pos;
+    // vel2 = joint_state->Vel;
 
 
-  // std::cout << "Tau 2: " << tau1 << " : " << tau2 <<  std::endl;
+   std::cout << "Tau 2: " << pos1 << " : " << tau1 <<  std::endl;
 
-//   //  auto time_now = std::chrono::high_resolution_clock::now();
-//   // auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-//    //std::cout << "Duration: " << total_elapsed << "us" << std::endl;
+    auto time_now = std::chrono::high_resolution_clock::now();
+    auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
 //   //  std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
 }
@@ -186,22 +187,50 @@ void CANTestNode::Setup()
     // enable.header.sender_id = 0x001;
     // enable.header.length = 4;
 
-    uint32_t new_mode = 10;
-    memcpy(&enable.cmd_data, &new_mode, sizeof(uint32_t));
+    // uint32_t new_mode = 10;
+    // memcpy(&enable.cmd_data, &new_mode, sizeof(uint32_t));
 
-    CANDevice::CAN_msg_t msg;
-    msg.id = can_tx_id;
+      CANDevice::CAN_msg_t msg;
+    //  msg.id = can_tx_id;
 
-    msg.length = sizeof(request_header_t) + sizeof(uint32_t);
-    memcpy(msg.data, &enable, msg.length);
+    // msg.length = sizeof(request_header_t) + sizeof(uint32_t);
+    // memcpy(msg.data, &enable, msg.length);
 
-    can.Send(msg);
+    // can.Send(msg);
 
     usleep(1000000);
 
-    msg.id = can_tx_id2;
+    auto start_time = std::chrono::high_resolution_clock::now();
+    register_command_t test;
+    test.header.rwx = 0;
+    test.header.address = DeviceRegisters_e::DeviceStatusRegister1;
+    test.header.data_type = 1;
+    test.header.sender_id = 0x001;
+    test.header.length = 4;
+
+    msg.id = 0x10;
+    msg.length = sizeof(request_header_t);
+    memcpy(msg.data, &test, msg.length);
+
     can.Send(msg);
+
+    int i = 0;
+    while (!can.Receive(msg))
+    {
+        if (i++ > 10000)
+            break;
+
+        std::cout << "WAITING1: " << std::endl;
+    }
+
+    auto time_now = std::chrono::high_resolution_clock::now();
+    auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    std::cout << "Duration2: " << msg.length << " " << total_elapsed << "us" << std::endl;
+
     usleep(1000000);
+    // msg.id = can_tx_id2;
+    // can.Send(msg);
+    // usleep(1000000);
 }
 
 void CANTestNode::Exit()
@@ -226,8 +255,8 @@ void CANTestNode::Exit()
 
     can.Send(msg);
 
-    msg.id = can_tx_id2;
-    can.Send(msg);
+    // msg.id = can_tx_id2;
+    // can.Send(msg);
 
 }
 

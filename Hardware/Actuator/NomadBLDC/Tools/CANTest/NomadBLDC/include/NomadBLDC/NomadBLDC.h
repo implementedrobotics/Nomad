@@ -34,10 +34,53 @@
 #include <CAN/Registers.h>
 #include <CAN/CANDevice.h>
 
+
+// TODO: Timeout Pass
+class RequestReply
+{
+public:
+    RequestReply(uint32_t address, uint32_t timeout) : address_(address), timeout_(timeout)
+    {
+        reply_= promise_.get_future();
+    }
+
+    const uint32_t GetAddress() const { return address_; }
+    bool Get(register_reply_t &reply)
+    {
+        auto status = reply_.wait_for(std::chrono::microseconds(timeout_));
+        if (status == std::future_status::ready)
+        {
+            // TODO: Should we keep up with data sizes?  For now just mem copy all 60 cmd data bytes
+            reply = reply_.get();
+            return true;
+            //memcpy(data, register_reply.cmd_data, register_reply.header.length);
+            //return true;
+        }
+        else
+        {
+            std::cout << "Timed Out" << std::endl;
+        }
+        return false;
+    }
+    bool Set(register_reply_t &reply)
+    {
+        promise_.set_value(reply);
+        return true;
+    }
+
+private:
+    std::promise<register_reply_t> promise_;
+    std::future<register_reply_t> reply_;
+    uint32_t address_;
+    uint32_t timeout_;
+};
+
 class NomadBLDC
 {
 
 public:
+
+    NomadBLDC();
     NomadBLDC(int master_id, int servo_id, CANDevice *transport = nullptr);
     bool SetTransport(CANDevice *dev);
     bool Connect();
@@ -45,11 +88,13 @@ public:
     bool Reset();
     bool ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff);
     bool SetControlMode(uint32_t mode);
+    void SetName(const std::string &name) { name_ = name; }
+    const std::string& GetName() const { return name_; }
 
     // Servo State
-    float GetPosition(){return joint_state_.Pos;}
-    float GetVelocity(){return joint_state_.Vel;}
-    float GetTorque(){return joint_state_.T_est;}
+    float GetPosition() { return joint_state_.Pos; }
+    float GetVelocity() { return joint_state_.Vel; }
+    float GetTorque() { return joint_state_.T_est; }
 
     uint32_t GetServoId() const { return servo_id_; }
 
@@ -61,12 +106,17 @@ public:
 
     // Force sync of all async request(when we implement it)
     bool Sync();
+
+    void PrintState();
+
 protected:
 
     // TODO: Servo "Pretty Name"
     int servo_id_;
     int master_id_;
     CANDevice *transport_;
+
+    std::string name_;
 
     // Registers
     DeviceStatusRegister1_t dsr1_;
@@ -83,13 +133,13 @@ private:
     void ReceiveMessage(CANDevice::CAN_msg_t &msg);
 
     // Response for each register
-    std::promise<register_reply_t> promise_[1 << 8];
+    //std::promise<register_reply_t> promise_[1 << 8];
 
+    std::vector<RequestReply> request_queue_;
+
+    std::mutex requests_lock;
     // Connect Status
     bool connected_;
-
-
-
 };
 
 #endif // NOMADBLDC_LIB_H_

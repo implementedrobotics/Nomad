@@ -46,6 +46,7 @@ void CANDevice::ReceiveTask()
                 listener(msg);
             }
         }
+        usleep(1);
     }
 }
 
@@ -65,6 +66,6 @@ bool CANDevice::StartReceiveThread()
 }
 void CANDevice::RegisterListenerCB(const std::function<void(CAN_msg_t&)> &recv_cb)
 {
-    std::cout << "Registering Callback" << std::endl;
+    //std::cout << "Registering Callback" << std::endl;
     rx_listeners_.push_back(recv_cb);
 }

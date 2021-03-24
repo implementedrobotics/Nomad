@@ -3,6 +3,7 @@
 * Device Status register access -> MotorControl
 * Fix slight delay into current control before idle on bootup
 * Speed Controller ***
+* Fix Save Config Fail
 * Arm Controller Function
 * Gate driver fault checking and reporting ****
 * Verify optimization flags -O3 breaks something.  Looks like PWM timers don't start?
