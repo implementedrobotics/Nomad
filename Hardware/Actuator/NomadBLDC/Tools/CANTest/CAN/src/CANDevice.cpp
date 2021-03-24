@@ -46,7 +46,6 @@ void CANDevice::ReceiveTask()
                 listener(msg);
             }
         }
-        usleep(1);
     }
 }
 
@@ -60,7 +59,8 @@ CANDevice::~CANDevice()
 
 bool CANDevice::StartReceiveThread()
 {
-    std::cout << "Starting Receive Thread" << std::endl;
+    // TODO: Thread Affiniy?
+    std::cout << "[INFO]: CANDevice Receive Thread Started!" << std::endl;
     rx_thread_ = std::thread(&CANDevice::ReceiveTask, this);
     return true;
 }

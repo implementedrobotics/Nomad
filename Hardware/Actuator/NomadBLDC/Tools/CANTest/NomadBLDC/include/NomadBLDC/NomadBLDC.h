@@ -73,7 +73,8 @@ public:
             futures_.back() = promises_.back().get_future();
 
             // Add requested address
-            requests_.insert(requests_.end(), addresses.begin(), addresses.end());
+            //requests_.insert(requests_.end(), addresses.begin(), addresses.end());
+            requests_.push_back(address);
         }
 
         synced_future_ = synced_promise_.get_future();
@@ -181,6 +182,110 @@ private:
     uint32_t num_replies_;
 };
 
+// Request register of CAN bus
+class Requester {
+
+    public:
+        Requester(CANDevice *transport, uint32_t servo_id, uint32_t master_id) : transport_(transport), servo_id_(servo_id), master_id_(master_id)
+        {
+
+        }
+        RequestReply &CreateRequest(std::vector<uint32_t> &addresses, uint16_t request_type, uint32_t timeout)
+        {
+            // Lock Request Queue
+            requests_lock_.lock();
+
+            // Hold Request Messages
+            std::vector<CANDevice::CAN_msg_t> request_msgs;
+
+            // TODO: Pass Registers
+            // Loop requested address and cache our request messages
+            for (uint32_t address : addresses)
+            {
+                register_command_t read_cmd;
+                read_cmd.header.rwx = request_type; // 0 Read, 1 Write, 2 Executure
+                read_cmd.header.address = address;
+                read_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
+                read_cmd.header.sender_id = master_id_;
+                read_cmd.header.length = 0;
+
+                CANDevice::CAN_msg_t msg;
+                msg.id = servo_id_;
+                msg.length = sizeof(request_header_t);
+                memcpy(msg.data, &read_cmd, msg.length);
+
+                // Save it
+                request_msgs.push_back(msg);
+            }
+
+            // Generate Request
+            request_queue_.push_back({addresses, 2000});
+            auto &request = request_queue_.back();
+            requests_lock_.unlock();
+
+            // Send Request Message
+            for (CANDevice::CAN_msg_t &msg : request_msgs)
+            {
+                transport_->Send(msg);
+            }
+
+            return request;
+        }
+        // bool SendRequest()
+        // {
+        // }
+
+        void ProcessReply(register_reply_t *reply)
+        {
+            requests_lock_.lock();
+            for (int i = request_queue_.size() - 1; i >= 0; i--)
+            {
+                auto &request = request_queue_[i];
+
+                // TODO: Check for Stale request.  Timed out, already fulfilled etc
+                if (request.isFulfilled())
+                {
+                    request_queue_.erase(request_queue_.begin() + i);
+                    continue;
+                }
+                if (request.CheckAddress(reply->header.address))
+                {
+                    request.Set(*reply);
+                    if (request.isFulfilled())
+                    {
+                        // Fire Update Handler
+                        //UpdateRegisters(request);
+                        update_cb_(request);
+                        std::cout << "Completed Request" << std::endl;
+                    }
+                }
+            }
+            requests_lock_.unlock();
+        }
+        inline std::vector<RequestReply>& GetRequests()
+        {
+            return request_queue_;
+        }
+        inline void SetTransport(CANDevice *dev)
+        {
+            transport_ = dev;
+        }
+        inline void RegisterCompleteCB(const std::function<void(RequestReply&)> &update_cb)
+        {
+            update_cb_ = update_cb;
+        }
+
+    private:
+        CANDevice *transport_;
+        std::vector<RequestReply> request_queue_;
+        std::mutex requests_lock_;
+        int32_t servo_id_;
+        int32_t master_id_;
+
+        std::function<void(RequestReply&)> update_cb_ = [=](RequestReply&) {};
+        //std::function<void(RequestReply&)> update_cb_;
+};
+
 class NomadBLDC
 {
 
@@ -205,6 +310,7 @@ public:
     uint32_t GetServoId() const { return servo_id_; }
 
     bool ReadRegister(uint32_t address, uint8_t *data);
+    bool ReadRegisters(std::vector<uint32_t> addresses);
     bool WriteRegister(uint32_t address, uint8_t *data, size_t size);
 
     // TODO: Request/Reply Wrapper Class
@@ -243,7 +349,7 @@ private:
 
     // Response for each register
     //std::promise<register_reply_t> promise_[1 << 8];
-
+    Requester *requester_;
     std::vector<RequestReply> request_queue_;
 
     std::mutex requests_lock;

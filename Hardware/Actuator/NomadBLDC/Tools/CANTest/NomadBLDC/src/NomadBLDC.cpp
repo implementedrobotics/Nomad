@@ -10,23 +10,36 @@
 #include <NomadBLDC/NomadBLDC.h>
 #include <CAN/Registers.h>
 
-std::future<int> test;
-std::promise<int> test2;
+
+auto start_time = std::chrono::high_resolution_clock::now();
+
 NomadBLDC::NomadBLDC() :  master_id_(-1), servo_id_(-1), transport_(nullptr), connected_(false), control_mode_(0)
 {
     memset(&joint_state_,0,sizeof(JointState_t));
 
+    // Allocate Requester & Callback
+    using namespace std::placeholders;
+    requester_ = new Requester(transport_, servo_id_, master_id_);
+    requester_->RegisterCompleteCB(std::bind(&NomadBLDC::UpdateRegisters, this, _1));
+    
     // Setup Register Mappings
     SetupRegisterMap();
 }
 NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master_id_(master_id), servo_id_(servo_id), transport_(transport), connected_(false), control_mode_(0)
 {
+
     using namespace std::placeholders;
+    // Allocate Requester & Callback
+    requester_ = new Requester(transport_, servo_id_, master_id_);
+    requester_->RegisterCompleteCB(std::bind(&NomadBLDC::UpdateRegisters, this, _1));
+
+
     if(transport_ != nullptr)
     {
         transport_->RegisterListenerCB(std::bind(&NomadBLDC::ReceiveMessage, this, _1));
     }
     memset(&joint_state_,0,sizeof(JointState_t));
+
 
     // Setup Register Mappings
     SetupRegisterMap();
@@ -35,26 +48,17 @@ NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master
 
 void NomadBLDC::SetupRegisterMap()
 {
-    test = test2.get_future();
     register_map_.reserve(kMaxRegisters);
     register_map_[DeviceRegisters_e::DeviceStatusRegister1] = (uint8_t *)&dsr1_;
     register_map_[DeviceRegisters_e::DeviceStatusRegister2] = (uint8_t *)&dsr2_;
 }
 bool NomadBLDC::Connect()
 {
-    auto start_time = std::chrono::high_resolution_clock::now();
-
     // Try to read device status
-    bool status = ReadRegister(DeviceRegisters_e::DeviceStatusRegister1, (uint8_t*)&dsr1_);
+    bool status = ReadRegisters({DeviceRegisters_e::DeviceStatusRegister1, DeviceRegisters_e::DeviceStatusRegister2});
 
-    if(!status)
-        return false;
-
-    // Read next device status
-    status = ReadRegister(DeviceRegisters_e::DeviceStatusRegister2, (uint8_t*)&dsr2_);
-
-    if(!status)
-        return false;
+     if(!status)
+         return false;
 
     connected_ = true;
     return true;
@@ -81,6 +85,57 @@ bool NomadBLDC::ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, flo
     return true;
 }
 
+bool NomadBLDC::ReadRegisters(std::vector<uint32_t> addresses)
+{
+    if(transport_ == nullptr)
+        return false;
+
+    // Create Request
+    auto& request = requester_->CreateRequest(addresses, 0, 2000);
+
+    // // TODO: Requester::CreateRequest(Address, timeout)
+    // requests_lock.lock();
+    // std::vector<CANDevice::CAN_msg_t> request_msgs;
+    // for(uint32_t address : addresses)
+    // {
+    //     register_command_t read_cmd;
+    //     read_cmd.header.rwx = 0; // 0 Read, 1 Write, 2 Executure
+    //     read_cmd.header.address = address;
+    //     read_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
+    //     read_cmd.header.sender_id = master_id_;
+    //     read_cmd.header.length = 0;
+
+    //     CANDevice::CAN_msg_t msg;
+    //     msg.id = servo_id_;
+    //     msg.length = sizeof(request_header_t);
+    //     memcpy(msg.data, &read_cmd, msg.length);
+    //     request_msgs.push_back(msg);
+    // }
+    // request_queue_.push_back({addresses, 2000});
+    // auto& request = request_queue_.back();
+    // requests_lock.unlock();
+    // 
+
+    // Requester::SendRequest()
+    //auto sys_time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    //std::cout << "Send Time1: " << sys_time << "us" << std::endl;
+    // for(CANDevice::CAN_msg_t &msg : request_msgs)
+    // {
+    //     transport_->Send(msg);
+    // }
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    // TODO: If synced we wait... Pass Function Param for Async vs Not?
+    bool status = request.Wait(5000);
+
+    auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    std::cout << "Duration: " << total_elapsed << "us" << std::endl;
+
+    if (status) { return true; }
+
+    return false;
+}
 // TODO: ReadRegisterAsync, WriteRegisterAsync, ExecuteRegisterAsync
 bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
 {
@@ -89,7 +144,7 @@ bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
 
     register_command_t read_cmd;
     read_cmd.header.rwx = 0; // 0 Read, 1 Write, 2 Executure
-    read_cmd.header.address = address ;
+    read_cmd.header.address = address;
     read_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
     read_cmd.header.sender_id = master_id_;
     read_cmd.header.length = 0;
@@ -99,24 +154,38 @@ bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
     msg.length = sizeof(request_header_t);
     memcpy(msg.data, &read_cmd, msg.length);
 
-    transport_->Send(msg);
-
-
     // Create Request
     // TODO: CreateRequest(Address, timeout)
     requests_lock.lock();
-    request_queue_.push_back({read_cmd.header.address, 2000});
-
+    request_queue_.push_back({address, 2000});
     auto& request = request_queue_.back();
-
     requests_lock.unlock();
+
+    auto sys_time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    std::cout << "Send Time1: " << sys_time << "us" << std::endl;
+    transport_->Send(msg);
+
+    // register_command_t read_cmd2;
+    // read_cmd2.header.rwx = 0; // 0 Read, 1 Write, 2 Executure
+    // read_cmd2.header.address = DeviceRegisters_e::DeviceStatusRegister2 ;
+    // read_cmd2.header.data_type = 1; // TODO: Everything is 32-bit for now...
+    // read_cmd2.header.sender_id = master_id_;
+    // read_cmd2.header.length = 0;
+
+    // msg.id = servo_id_;
+    // msg.length = sizeof(request_header_t);
+    // memcpy(msg.data, &read_cmd2, msg.length);
+
+
+    // transport_->Send(msg);
+    //sys_time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    //std::cout << "Send Time2: " << sys_time << "us" << std::endl;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // TODO: If synced we wait... Pass Function Param for Async vs Not?
     bool status = request.Wait(5000);
 
-    auto time_now = std::chrono::high_resolution_clock::now();
     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
     std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
@@ -214,6 +283,9 @@ void NomadBLDC::UpdateRegisters(RequestReply &request)
 bool NomadBLDC::SetTransport(CANDevice *dev)
 {
     transport_ = dev;
+    
+    requester_->SetTransport(transport_);
+
     if(transport_ == nullptr)
         return false;
 
@@ -231,28 +303,11 @@ void NomadBLDC::ReceiveMessage(CANDevice::CAN_msg_t &msg)
     if(reply->header.sender_id != servo_id_)
         return;
     
-    requests_lock.lock();
-    for (int i = request_queue_.size() - 1; i >= 0; i--)
-    {
-        auto& request = request_queue_[i];
-
-        // TODO: Check for Stale request.  Timed out, already fulfilled etc
-        if(request.isFulfilled())
-        {
-            request_queue_.erase(request_queue_.begin() + i);
-            continue;
-        }
-        if (request.CheckAddress(reply->header.address))
-        {
-            request.Set(*reply);
-            if(request.isFulfilled())
-            {
-                // Fire Update Handler
-                UpdateRegisters(request);
-            }
-        }
-    }
-    requests_lock.unlock();
+    //auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    //std::cout << "Receive Time: " << total_elapsed << "us" << std::endl;
+    
+    //std::vector<RequestReply> &request_queue = requester_->GetRequests();
+    requester_->ProcessReply(reply);
    
 }
 

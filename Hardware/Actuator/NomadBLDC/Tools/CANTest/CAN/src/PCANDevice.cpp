@@ -143,8 +143,17 @@ bool PCANDevice::Receive(CAN_msg_t &msg)
 {
     struct pcanfd_msg pcan_msg;
 
+    // Check State
+    //struct pcanfd_state state;
+    //pcanfd_get_state(fd_, &state);
+    //std::cout << "Waiting: " << state.rx_pending_msgs << " and " << state.tx_pending_msgs << std::endl;
+    //auto start_time = std::chrono::high_resolution_clock::now();
     int rx_error = pcanfd_recv_msg(fd_, &pcan_msg);
-    //std::cout << "RECEIVED: " << rx_error << std::endl;
+    //auto time_now = std::chrono::high_resolution_clock::now();
+    //auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    //std::cout << "Read Duration: " << total_elapsed << "us" << std::endl;
+
+   // std::cout << "RECEIVED: TYPE: " << pcan_msg.type << std::endl;
     if (rx_error)
     {
         // TODO: Log Received Errors??
