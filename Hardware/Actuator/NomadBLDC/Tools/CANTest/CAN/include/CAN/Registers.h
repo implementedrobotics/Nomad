@@ -75,6 +75,21 @@ struct register_reply_t
     };
 };
 
+struct Register
+{
+    uint32_t address;
+    size_t size;
+    uint8_t *data;
+};
+
+// Request Type
+typedef enum
+{
+    Read = 0,
+    Write = 1,
+    Execute = 2
+} RequestType_e;
+
 /* Device Registers */
 typedef enum // Device Status Register
 {

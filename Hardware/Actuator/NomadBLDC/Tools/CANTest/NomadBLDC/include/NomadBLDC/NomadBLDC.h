@@ -42,28 +42,28 @@ class RequestReply
 {
 public:
 
-    RequestReply(uint32_t address, uint32_t timeout) : timeout_(timeout), num_requests_(1), num_replies_(0)
-    {
-        // Make sure new promises and futures
-        promises_.push_back({});
-        futures_.push_back({});
+    // RequestReply(uint32_t address, uint32_t timeout) : timeout_(timeout), num_requests_(1), num_replies_(0)
+    // {
+    //     // Make sure new promises and futures
+    //     promises_.push_back({});
+    //     futures_.push_back({});
 
-        // Link them
-        futures_.back() = promises_.back().get_future();
+    //     // Link them
+    //     futures_.back() = promises_.back().get_future();
         
-        // Add requested address
-        requests_.push_back(address);
+    //     // Add requested address
+    //     requests_.push_back(address);
 
-        synced_future_ = synced_promise_.get_future();
+    //     synced_future_ = synced_promise_.get_future();
 
 
-    }
+    // }
 
-    RequestReply(std::vector<uint32_t> addresses, uint32_t timeout) :  timeout_(timeout), num_replies_(0)
+    RequestReply(std::vector<Register> &registers, uint32_t timeout) :  timeout_(timeout), num_replies_(0)
     {
         // Reserve for address size
-        requests_.reserve(addresses.size());
-        for (auto &address : addresses) // Loop and add promise/futures
+        request_regs_.reserve(registers.size());
+        for (auto &reg : registers) // Loop and add promise/futures
         {
             // Make sure new promises and futures
             promises_.push_back({});
@@ -74,20 +74,22 @@ public:
 
             // Add requested address
             //requests_.insert(requests_.end(), addresses.begin(), addresses.end());
-            requests_.push_back(address);
+            request_regs_.push_back(reg);
+            //requests_.push_back(reg.address);
         }
 
         synced_future_ = synced_promise_.get_future();
-
-        // TODO: Can probably remove this
-        num_requests_ = requests_.size();
         
     }
     
     inline bool CheckAddress(uint32_t address) 
     {
-        ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), address));
-        if (pos >= requests_.size())
+        // Find Address Location
+        ptrdiff_t pos = std::distance(request_regs_.begin(), std::find_if(request_regs_.begin(),
+                                                                          request_regs_.end(),
+                                                                          [&address](const Register f) -> bool { return f.address == address; }));
+        //  ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), address));
+        if (pos >= request_regs_.size())
         {
             return false;
         }
@@ -117,9 +119,16 @@ public:
 
     inline bool Set(register_reply_t &reply)
     {
+         uint32_t address = reply.header.address;
         // Find Address Location
-        ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), reply.header.address));
-        if (pos >= requests_.size())
+
+        //ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), reply.header.address));
+
+        ptrdiff_t pos = std::distance(request_regs_.begin(), std::find_if(request_regs_.begin(),
+                                                                          request_regs_.end(),
+                                                                          [&address](const Register f) -> bool { return f.address == address; }));
+
+        if (pos >= request_regs_.size())
         {
             // Not there.  Bail
             return false;
@@ -135,7 +144,7 @@ public:
 
     inline bool isFulfilled() const
     {
-        return num_replies_ >= requests_.size();
+        return num_replies_ >= request_regs_.size();
     }
 
     inline void Sync()
@@ -173,10 +182,9 @@ private:
     std::future<void> synced_future_;
 
     // TODO: Make this Register(address, memory)
-    std::vector<uint32_t> requests_;
+    std::vector<Register> request_regs_;
+    //std::vector<uint32_t> requests_;
     uint32_t timeout_;
-    uint32_t uuid_;
-    uint32_t num_requests_;
 
     // Number of replies received
     uint32_t num_replies_;
@@ -190,21 +198,18 @@ class Requester {
         {
 
         }
-        RequestReply &CreateRequest(std::vector<uint32_t> &addresses, uint16_t request_type, uint32_t timeout)
+        RequestReply &CreateRequest(std::vector<Register> &registers, uint16_t request_type, uint32_t timeout)
         {
-            // Lock Request Queue
-            requests_lock_.lock();
-
             // Hold Request Messages
             std::vector<CANDevice::CAN_msg_t> request_msgs;
 
             // TODO: Pass Registers
             // Loop requested address and cache our request messages
-            for (uint32_t address : addresses)
+            for (Register& reg : registers)
             {
                 register_command_t read_cmd;
                 read_cmd.header.rwx = request_type; // 0 Read, 1 Write, 2 Executure
-                read_cmd.header.address = address;
+                read_cmd.header.address = reg.address;
                 read_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
                 read_cmd.header.sender_id = master_id_;
                 read_cmd.header.length = 0;
@@ -218,8 +223,11 @@ class Requester {
                 request_msgs.push_back(msg);
             }
 
+            // Lock Request Queue
+            requests_lock_.lock();
             // Generate Request
-            request_queue_.push_back({addresses, 2000});
+            // TODO: Only generate these for request expecting replies
+            request_queue_.push_back({registers, timeout});
             auto &request = request_queue_.back();
             requests_lock_.unlock();
 
@@ -309,8 +317,8 @@ public:
 
     uint32_t GetServoId() const { return servo_id_; }
 
-    bool ReadRegister(uint32_t address, uint8_t *data);
-    bool ReadRegisters(std::vector<uint32_t> addresses);
+    //bool ReadRegister(uint32_t address, uint8_t *data);
+    bool ReadRegisters(std::vector<Register> addresses, uint32_t timeout = 3000);
     bool WriteRegister(uint32_t address, uint8_t *data, size_t size);
 
     // TODO: Request/Reply Wrapper Class
@@ -357,7 +365,7 @@ private:
     std::mutex update_lock;
 
     
-    std::vector<uint8_t *> register_map_;
+    std::vector<Register> register_map_;
 
     // Connect Status
     bool connected_;
