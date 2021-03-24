@@ -10,9 +10,14 @@
 #include <NomadBLDC/NomadBLDC.h>
 #include <CAN/Registers.h>
 
+std::future<int> test;
+std::promise<int> test2;
 NomadBLDC::NomadBLDC() :  master_id_(-1), servo_id_(-1), transport_(nullptr), connected_(false), control_mode_(0)
 {
     memset(&joint_state_,0,sizeof(JointState_t));
+
+    // Setup Register Mappings
+    SetupRegisterMap();
 }
 NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master_id_(master_id), servo_id_(servo_id), transport_(transport), connected_(false), control_mode_(0)
 {
@@ -22,8 +27,19 @@ NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master
         transport_->RegisterListenerCB(std::bind(&NomadBLDC::ReceiveMessage, this, _1));
     }
     memset(&joint_state_,0,sizeof(JointState_t));
+
+    // Setup Register Mappings
+    SetupRegisterMap();
+
 }
 
+void NomadBLDC::SetupRegisterMap()
+{
+    test = test2.get_future();
+    register_map_.reserve(kMaxRegisters);
+    register_map_[DeviceRegisters_e::DeviceStatusRegister1] = (uint8_t *)&dsr1_;
+    register_map_[DeviceRegisters_e::DeviceStatusRegister2] = (uint8_t *)&dsr2_;
+}
 bool NomadBLDC::Connect()
 {
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -85,16 +101,20 @@ bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
 
     transport_->Send(msg);
 
+
     // Create Request
     // TODO: CreateRequest(Address, timeout)
     requests_lock.lock();
     request_queue_.push_back({read_cmd.header.address, 2000});
+
     auto& request = request_queue_.back();
+
     requests_lock.unlock();
 
     auto start_time = std::chrono::high_resolution_clock::now();
-    register_reply_t register_reply;
-    bool status = request.Get(register_reply);
+
+    // TODO: If synced we wait... Pass Function Param for Async vs Not?
+    bool status = request.Wait(5000);
 
     auto time_now = std::chrono::high_resolution_clock::now();
     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
@@ -102,25 +122,9 @@ bool NomadBLDC::ReadRegister(uint32_t address, uint8_t *data)
 
     if (status)
     {
-        memcpy(data, register_reply.cmd_data, register_reply.header.length);
         return true;
     }
     return false;
-
-    // Wait for Reply
-    // Reset Promise
-    //promise_[read_cmd.header.address] = std::promise<register_reply_t>();
-    //std::future<register_reply_t> future_reply = promise_[read_cmd.header.address].get_future();
-
-    // auto status = future_reply.wait_for(std::chrono::milliseconds(100));
-    // if (status == std::future_status::ready)
-    // {
-    //     // TODO: Should we keep up with data sizes?  For now just mem copy all 60 cmd data bytes
-    //     register_reply_t register_reply = future_reply.get();
-    //     memcpy(data, register_reply.cmd_data, register_reply.header.length);
-    //     return true;
-    // }
-    //return false;
 }
 
 bool NomadBLDC::WriteRegister(uint32_t address, uint8_t *data, size_t size)
@@ -144,9 +148,7 @@ bool NomadBLDC::WriteRegister(uint32_t address, uint8_t *data, size_t size)
     transport_->Send(msg);
 
     // TODO: Reply?
-
     return true;
-
 }
 
 bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *parameter_data, size_t size, uint8_t *return_data)
@@ -177,8 +179,8 @@ bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *parameter_data, size_
     requests_lock.unlock();
 
     auto start_time = std::chrono::high_resolution_clock::now();
-    register_reply_t register_reply;
-    bool status = request.Get(register_reply);
+    std::vector<register_reply_t> replies;
+    bool status = request.Get(replies);
 
     auto time_now = std::chrono::high_resolution_clock::now();
     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
@@ -186,25 +188,27 @@ bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *parameter_data, size_
 
     if(status)
     {
-        memcpy(return_data, register_reply.cmd_data, register_reply.header.length);
+        // TODO: Loop and Copy Data.  Actually need this to be a callback for Update Registers
+        //memcpy(return_data, register_reply.cmd_data, register_reply.header.length);
         return true;
     }
     return false;
-    
-    // Wait for Reply
-    //std::future<register_reply_t> future_reply = promise_[execute_cmd.header.address].get_future();
-    
-    
-    //future_reply = promise_[execute_cmd.header.address].get_future();
-    // auto status = future_reply.wait_for(std::chrono::milliseconds(100));
-    // if (status == std::future_status::ready)
-    // {
-    //     // TODO: Should we keep up with data sizes?  For now just mem copy all 60 cmd data bytes
-    //     register_reply_t register_reply = future_reply.get();
-    //     memcpy(return_data, register_reply.cmd_data, register_reply.header.length);
-    //     return true;
-    // }
-    return false;
+}
+
+void NomadBLDC::UpdateRegisters(RequestReply &request)
+{
+    std::vector<register_reply_t> replies;
+    bool status = request.Get(replies);
+
+    // TODO: Change this to lock guard etc
+    update_lock.lock();
+    for(auto& reply : replies)
+    {
+        memcpy(register_map_[reply.header.address], reply.cmd_data, reply.header.length);
+    }
+
+    request.Sync();
+    update_lock.unlock();
 }
 
 bool NomadBLDC::SetTransport(CANDevice *dev)
@@ -220,6 +224,7 @@ bool NomadBLDC::SetTransport(CANDevice *dev)
 
 void NomadBLDC::ReceiveMessage(CANDevice::CAN_msg_t &msg)
 {
+    // TODO: This should be better linked with some sort of packet id?  I think we are safe for now
     // Check Sender ID is linked to this servo object
     register_reply_t *reply = (register_reply_t *)msg.data;
 
@@ -229,16 +234,26 @@ void NomadBLDC::ReceiveMessage(CANDevice::CAN_msg_t &msg)
     requests_lock.lock();
     for (int i = request_queue_.size() - 1; i >= 0; i--)
     {
-        if (request_queue_[i].GetAddress() == reply->header.address)
+        auto& request = request_queue_[i];
+
+        // TODO: Check for Stale request.  Timed out, already fulfilled etc
+        if(request.isFulfilled())
         {
-            request_queue_[i].Set(*reply);
             request_queue_.erase(request_queue_.begin() + i);
+            continue;
+        }
+        if (request.CheckAddress(reply->header.address))
+        {
+            request.Set(*reply);
+            if(request.isFulfilled())
+            {
+                // Fire Update Handler
+                UpdateRegisters(request);
+            }
         }
     }
     requests_lock.unlock();
-    // TODO: This should be better linked with some sort of packet id?  I think we are safe for now
-    // TODO: Use high level request object?
-    // Update Promise Token
+   
 }
 
 void NomadBLDC::PrintState()

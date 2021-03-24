@@ -29,6 +29,7 @@
 
 // C++ System Files
 #include <future>
+#include <algorithm>
 
 // Project Includes
 #include <CAN/Registers.h>
@@ -36,43 +37,148 @@
 
 
 // TODO: Timeout Pass
+// TODO: Not all request expect a reply
 class RequestReply
 {
 public:
-    RequestReply(uint32_t address, uint32_t timeout) : address_(address), timeout_(timeout)
+
+    RequestReply(uint32_t address, uint32_t timeout) : timeout_(timeout), num_requests_(1), num_replies_(0)
     {
-        reply_= promise_.get_future();
+        // Make sure new promises and futures
+        promises_.push_back({});
+        futures_.push_back({});
+
+        // Link them
+        futures_.back() = promises_.back().get_future();
+        
+        // Add requested address
+        requests_.push_back(address);
+
+        synced_future_ = synced_promise_.get_future();
+
+
     }
 
-    const uint32_t GetAddress() const { return address_; }
-    bool Get(register_reply_t &reply)
+    RequestReply(std::vector<uint32_t> addresses, uint32_t timeout) :  timeout_(timeout), num_replies_(0)
     {
-        auto status = reply_.wait_for(std::chrono::microseconds(timeout_));
-        if (status == std::future_status::ready)
+        // Reserve for address size
+        requests_.reserve(addresses.size());
+        for (auto &address : addresses) // Loop and add promise/futures
         {
-            // TODO: Should we keep up with data sizes?  For now just mem copy all 60 cmd data bytes
-            reply = reply_.get();
-            return true;
-            //memcpy(data, register_reply.cmd_data, register_reply.header.length);
-            //return true;
+            // Make sure new promises and futures
+            promises_.push_back({});
+            futures_.push_back({});
+
+            // Link Them
+            futures_.back() = promises_.back().get_future();
+
+            // Add requested address
+            requests_.insert(requests_.end(), addresses.begin(), addresses.end());
         }
-        else
-        {
-            std::cout << "Timed Out" << std::endl;
-        }
-        return false;
+
+        synced_future_ = synced_promise_.get_future();
+
+        // TODO: Can probably remove this
+        num_requests_ = requests_.size();
+        
     }
-    bool Set(register_reply_t &reply)
+    
+    inline bool CheckAddress(uint32_t address) 
     {
-        promise_.set_value(reply);
+        ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), address));
+        if (pos >= requests_.size())
+        {
+            return false;
+        }
         return true;
     }
 
+    inline bool Get(std::vector<register_reply_t> &replies)
+    {
+        for(auto& future : futures_)
+        {
+            auto status = future.wait_for(std::chrono::microseconds(timeout_));
+            if (status == std::future_status::ready)
+            {
+                // TODO: Should we keep up with data sizes?
+                register_reply_t reply = future.get();
+                replies.push_back(reply);
+                //memcpy(data, register_reply.cmd_data, register_reply.header.length);
+            }
+            else
+            {
+                std::cout << "Timed Out" << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    inline bool Set(register_reply_t &reply)
+    {
+        // Find Address Location
+        ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), reply.header.address));
+        if (pos >= requests_.size())
+        {
+            // Not there.  Bail
+            return false;
+        }
+        // Update promise
+        promises_[pos].set_value(reply);
+        
+        // Update valid replies
+        num_replies_++;
+
+        return true;
+    }
+
+    inline bool isFulfilled() const
+    {
+        return num_replies_ >= requests_.size();
+    }
+
+    inline void Sync()
+    {
+       synced_promise_.set_value();
+    }
+
+    bool Wait(int32_t timeout = -1)
+    {
+        if (timeout < 0)
+        {
+            synced_future_.wait();
+            return true;
+        }
+        else
+        {
+            auto status = synced_future_.wait_for(std::chrono::microseconds(timeout));
+            if (status == std::future_status::ready)
+            {
+                return true;
+            }
+            else
+            {
+                std::cout << "Timed Out" << std::endl;
+                return false;
+            }
+        }
+    }
+
 private:
-    std::promise<register_reply_t> promise_;
-    std::future<register_reply_t> reply_;
-    uint32_t address_;
+    std::vector<std::promise<register_reply_t>> promises_;
+    std::vector<std::future<register_reply_t>> futures_;
+
+    std::promise<void> synced_promise_;
+    std::future<void> synced_future_;
+
+    // TODO: Make this Register(address, memory)
+    std::vector<uint32_t> requests_;
     uint32_t timeout_;
+    uint32_t uuid_;
+    uint32_t num_requests_;
+
+    // Number of replies received
+    uint32_t num_replies_;
 };
 
 class NomadBLDC
@@ -104,6 +210,8 @@ public:
     // TODO: Request/Reply Wrapper Class
     bool ExecuteRegister(uint32_t address, uint8_t *parameter_data = nullptr, size_t size = 0, uint8_t *return_data = 0);
 
+    void UpdateRegisters(RequestReply &reply);
+
     // Force sync of all async request(when we implement it)
     bool Sync();
 
@@ -129,8 +237,9 @@ protected:
     uint32_t control_mode_; // TODO: To Register
 
 private:
-    
+    static constexpr uint16_t kMaxRegisters = (1 << 8); // 8-bit addressing
     void ReceiveMessage(CANDevice::CAN_msg_t &msg);
+    void SetupRegisterMap();
 
     // Response for each register
     //std::promise<register_reply_t> promise_[1 << 8];
@@ -138,6 +247,12 @@ private:
     std::vector<RequestReply> request_queue_;
 
     std::mutex requests_lock;
+
+    std::mutex update_lock;
+
+    
+    std::vector<uint8_t *> register_map_;
+
     // Connect Status
     bool connected_;
 };

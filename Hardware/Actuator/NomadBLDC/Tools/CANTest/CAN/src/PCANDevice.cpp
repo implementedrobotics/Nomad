@@ -144,7 +144,7 @@ bool PCANDevice::Receive(CAN_msg_t &msg)
     struct pcanfd_msg pcan_msg;
 
     int rx_error = pcanfd_recv_msg(fd_, &pcan_msg);
-    std::cout << "RECEIVED: " << rx_error << std::endl;
+    //std::cout << "RECEIVED: " << rx_error << std::endl;
     if (rx_error)
     {
         // TODO: Log Received Errors??

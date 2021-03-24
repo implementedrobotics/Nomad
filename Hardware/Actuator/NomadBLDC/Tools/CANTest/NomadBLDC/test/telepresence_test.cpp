@@ -91,69 +91,69 @@ void TelepresenceTest::Setup()
     config.clock_freq = 80e6; // 80mhz // Read from driver?  
     config.mode_fd = 1; // FD Mode
 
-    if(!can.Open(DEVICE, config, false))
+    if(!can.Open(DEVICE, config, true))
     {
         std::cout << "Unable to open CAN Device" << std::endl;
         return;
     }
 
     // Setup Filters
-   // can.ClearFilters(); // Clear Existing/Reset.  Filters are saved on the device hardware.  Must make sure to clear
-   // can.AddFilter(1, 12); // Only Listen to messages on id 1.  
+    can.ClearFilters(); // Clear Existing/Reset.  Filters are saved on the device hardware.  Must make sure to clear
+    can.AddFilter(1, 2); // Only Listen to messages on id 1.  
 
-    CANDevice::CAN_msg_t msg;
-
-
-    register_command_t test;
-    test.header.rwx = 0;
-    test.header.address = DeviceRegisters_e::DeviceStatusRegister1;
-    test.header.data_type = 1;
-    test.header.sender_id = 0x001;
-    test.header.length = 4;
-
-    msg.id = 0x10;
-    msg.length = sizeof(request_header_t);
-    memcpy(msg.data, &test, msg.length);
+//     CANDevice::CAN_msg_t msg;
 
 
-    can.Send(msg);
+//     register_command_t test;
+//     test.header.rwx = 0;
+//     test.header.address = DeviceRegisters_e::DeviceStatusRegister1;
+//     test.header.data_type = 1;
+//     test.header.sender_id = 0x001;
+//     test.header.length = 4;
 
-//usleep(500);
-
-can.Send(msg);
-
-auto start_time = std::chrono::high_resolution_clock::now();
-int i = 0;
-    while (!can.Receive(msg))
-    {
-        if (i++ > 10000)
-            break;
-
-        std::cout << "WAITING10: " << std::endl;
-    }
-
-        auto time_now = std::chrono::high_resolution_clock::now();
-    auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-    std::cout << "Duration2: " << total_elapsed << "us" << std::endl;
+//     msg.id = 0x10;
+//     msg.length = sizeof(request_header_t);
+//     memcpy(msg.data, &test, msg.length);
 
 
+//     can.Send(msg);
 
-    start_time = std::chrono::high_resolution_clock::now();
-    i = 0;
-    while (!can.Receive(msg))
-    {
-        if (i++ > 10000)
-            break;
+// //usleep(500);
 
-        std::cout << "WAITING10: " << std::endl;
-    }
+// can.Send(msg);
 
-    std::cout << msg.length << std::endl;
-    time_now = std::chrono::high_resolution_clock::now();
-    total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-    std::cout << "Duration2: " << total_elapsed << "us" << std::endl;
+// auto start_time = std::chrono::high_resolution_clock::now();
+// int i = 0;
+//     while (!can.Receive(msg))
+//     {
+//         if (i++ > 10000)
+//             break;
 
-    return;
+//         std::cout << "WAITING10: " << std::endl;
+//     }
+
+//         auto time_now = std::chrono::high_resolution_clock::now();
+//     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+//     std::cout << "Duration2: " << total_elapsed << "us" << std::endl;
+
+
+
+//     start_time = std::chrono::high_resolution_clock::now();
+//     i = 0;
+//     while (!can.Receive(msg))
+//     {
+//         if (i++ > 10000)
+//             break;
+
+//         std::cout << "WAITING10: " << std::endl;
+//     }
+
+//     std::cout << msg.length << std::endl;
+//     time_now = std::chrono::high_resolution_clock::now();
+//     total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+//     std::cout << "Duration2: " << total_elapsed << "us" << std::endl;
+
+//     return;
     servo1 = new NomadBLDC(1, 0x10, &can);
     servo1->SetName("INPUT");
     if(!servo1->Connect())
