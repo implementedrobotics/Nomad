@@ -38,7 +38,6 @@
 #include <CAN/PCANDevice.h>
 
 
-
 PCANDevice::PCANDevice() :  CANDevice(), fd_(-1)
 {
 }
@@ -54,11 +53,22 @@ bool PCANDevice::Open(const std::string &device_id, Config_t &config, bool bUseR
         perror("[ERROR]: PCANDevice::Open(): Only CAN FD Ddevices Supported Currently.");
         return false;
     }
-    // TODO: Calculate Timings Instead?
-    //CalculateTimings();
 
-    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_SAMPLEPT | OFD_DBITRATE | OFD_SAMPLEPT | OFD_CLOCKHZ /*| OFD_NONBLOCKING */| PCANFD_INIT_FD, config.bitrate, (int)config.sample_point * 10000, config.d_bitrate, (int)config.d_sample_point * 10000, config.clock_freq);
-    //fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_BRPTSEGSJW | OFD_DBITRATE | OFD_BRPTSEGSJW | OFD_CLOCKHZ | PCANFD_INIT_FD, 1, 50, 29, 10, 1, 8, 7, 12, config.clock_freq);
+    if(!CalculateTimings())
+        return false;
+
+    //printf("Timings: %d %d %d %d %d\n", config_.tq,config_.brp,config_.tseg1,config_.tseg2,config_.sjw);
+    //printf("Data Timings: %d %d %d %d %d\n", config_.tq,config_.d_brp,config_.d_tseg1,config_.d_tseg2,config_.d_sjw);
+    //fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_SAMPLEPT | OFD_DBITRATE | OFD_SAMPLEPT | OFD_CLOCKHZ /*| OFD_NONBLOCKING */| PCANFD_INIT_FD, config.bitrate, (int)config.sample_point * 10000, config.d_bitrate, (int)config.d_sample_point * 10000, config.clock_freq);
+    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_BRPTSEGSJW | OFD_DBITRATE | OFD_BRPTSEGSJW | OFD_CLOCKHZ | OFD_NONBLOCKING | PCANFD_INIT_FD | PCANFD_INIT_BUS_LOAD_INFO, config_.brp,
+                      config_.tseg1,
+                      config_.tseg2,
+                      config_.sjw,
+                      config_.d_brp,
+                      config_.d_tseg1,
+                      config_.d_tseg2,
+                      config_.d_sjw,
+                      config.clock_freq);
     if (fd_ < 0)
     {
         perror("[ERROR]: PCANDevice::Open: Failed to Open PCANFD.");
@@ -73,6 +83,29 @@ bool PCANDevice::Open(const std::string &device_id, Config_t &config, bool bUseR
         return StartReceiveThread();
 
     return true;
+}
+
+void PCANDevice::Status()
+{
+    // Check State
+    struct pcanfd_state state;
+    pcanfd_get_state(fd_, &state);
+
+    float bus_load = state.bus_load/65536.0f * 100;
+    printf("\nCAN BUS State: ");
+    if (state.bus_state == PCANFD_ERROR_ACTIVE)
+        printf("ACTIVE");
+    else if (state.bus_state == PCANFD_ERROR_WARNING)
+        printf("WARNING");
+    else if (state.bus_state == PCANFD_ERROR_PASSIVE)
+        printf("PASSIVE");
+    else if (state.bus_state == PCANFD_ERROR_BUSOFF)
+        printf("BUS OFF");
+    printf("\n-----------------------------------------------\nChannel: %d\nBus Load: %.2f%%\n\rTX Sent/Error: %d/%d\tRX Received/Error: %d/%d\n", 
+    state.channel_number, bus_load, state.tx_frames_counter, state.tx_error_counter, state.rx_frames_counter, state.rx_error_counter);
+    printf("Tx/Rx Pending: %d/%d\n-----------------------------------------------\n\n", state.tx_pending_msgs, state.rx_pending_msgs);
+
+    // TODO: Auto Bus Restart?
 }
 
 bool PCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
@@ -142,11 +175,6 @@ bool PCANDevice::Send(CAN_msg_t &msg)
 bool PCANDevice::Receive(CAN_msg_t &msg)
 {
     struct pcanfd_msg pcan_msg;
-
-    // Check State
-    //struct pcanfd_state state;
-    //pcanfd_get_state(fd_, &state);
-    //std::cout << "Waiting: " << state.rx_pending_msgs << " and " << state.tx_pending_msgs << std::endl;
     //auto start_time = std::chrono::high_resolution_clock::now();
     int rx_error = pcanfd_recv_msg(fd_, &pcan_msg);
     //auto time_now = std::chrono::high_resolution_clock::now();

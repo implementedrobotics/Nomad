@@ -171,6 +171,10 @@ class Requester {
         {
 
         }
+        // TODO: Switch from Address matching to UUID Packet ID?  It is a bit of a problem assuming register address will match in reply
+        // This is the main reason for the below functions not being generic enough
+        
+        // TODO: Hacked this in for now.  I need a more generic request function to handle reads/writes/executes
         RequestReply &CreateExecuteRequest(std::vector<Register> &param_registers, std::vector<Register> &return_registers, uint16_t request_type, uint32_t timeout)
         {
 

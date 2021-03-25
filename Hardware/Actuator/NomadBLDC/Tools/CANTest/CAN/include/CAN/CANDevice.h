@@ -90,10 +90,19 @@ public:
         uint32_t mode_fd;     // FD mode or classic
         float sample_point;  // Nominal Bitrate Sample Point Target
         float d_sample_point;  // Data Sample Point Target
-
         uint32_t clock_freq;   // CAN Device Clock HZ
 
         // TODO: Bittimings?
+        uint16_t brp;   // Baud Rate Prescaler
+        uint16_t tq;    // Time Quanta (ns)
+        uint16_t tseg1; // Phase Time Segment 1
+        uint16_t tseg2; // Phase Time Segment 2
+        uint16_t sjw;   // Sync Jump Width
+
+        uint16_t d_brp;   // Baud Rate Prescaler
+        uint16_t d_tseg1; // Phase Time Segment 1
+        uint16_t d_tseg2; // Phase Time Segment 2
+        uint16_t d_sjw;   // Sync Jump Width
     };
 
     struct CAN_msg_t
@@ -128,6 +137,9 @@ public:
     // Receive CAN Message Function
     virtual bool Receive(CAN_msg_t &msg) = 0;
 
+    // Debug Bus Status
+    virtual void Status() = 0;
+    
     // Notifier for receive complete callback
     void RegisterListenerCB(const std::function<void(CAN_msg_t&)> &recv_cb);
 

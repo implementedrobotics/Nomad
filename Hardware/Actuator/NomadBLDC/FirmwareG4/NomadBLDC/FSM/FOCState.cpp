@@ -85,7 +85,15 @@ void FOCState::Enter_(uint32_t current_time)
     // Check Motor Calibribration
     if (!data_->controller->GetMotor()->config_.calibrated)
     {
-        Logger::Instance().Print("[FOCVoltageState]: ERROR: Motor NOT Calibrated!\r\nPlease calibrate and save a valid configuration.\r\n");
+        Logger::Instance().Print("[FOCState]: ERROR: Motor NOT Calibrated!\r\nPlease calibrate and save a valid configuration.\r\n");
+        data_->controller->SetControlMode(control_mode_type_t::ERROR_MODE);
+        return;
+    }
+
+    float output_pos = data_->controller->GetMotor()->state_.theta_mech;
+    if (output_pos <= data_->controller->config_.pos_limit_min || output_pos >= data_->controller->config_.pos_limit_max)
+    {
+        Logger::Instance().Print("[FOCState]: ERROR: Motor Position Limit Triggered!. Please rezero output.\r\n");
         data_->controller->SetControlMode(control_mode_type_t::ERROR_MODE);
         return;
     }
@@ -108,8 +116,6 @@ void FOCState::Enter_(uint32_t current_time)
 
 void FOCState::Exit_(uint32_t current_time)
 {
-   // Logger::Instance().Print("Exiting Measure Resistance State.\r\n");
-
     // Enable Gate Driver
     data_->controller->GetGateDriver()->DisableDriver();
 

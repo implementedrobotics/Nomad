@@ -63,6 +63,9 @@ public:
     // Receive CAN Message Function
     virtual bool Receive(CAN_msg_t &msg);
 
+    // Debug CAN Bus Status
+    virtual void Status();
+
 protected:
 
     int fd_; // PCAN File Descriptor

@@ -66,6 +66,9 @@ public:
     // Receive CAN Message Function
     virtual bool Receive(CAN_msg_t &msg);
 
+    // Debug Bus Status
+    virtual void Status();
+
 protected:
 
     int socket_; // Socket File Descriptor

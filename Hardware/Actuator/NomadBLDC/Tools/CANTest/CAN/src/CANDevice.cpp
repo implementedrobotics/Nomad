@@ -23,15 +23,22 @@
  */
 
 
+// C System Files
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+// C++ System Files
 #include <iostream>
+#include <cmath>
 
+
+// Third Party Includes
+#include <libpcanfd.h>
+
+// Project Includes
 #include <CAN/CANDevice.h>
-
-
 
 void CANDevice::ReceiveTask()
 {
@@ -40,21 +47,139 @@ void CANDevice::ReceiveTask()
     {
         if (Receive(msg))
         {
-           // std::cout << "RECEIVING CAN_DEV: " << msg.length << std::endl;
             for(auto listener : rx_listeners_) // Pass to any registered listeners
             {
                 listener(msg);
             }
         }
+        usleep(10);
     }
 }
 
 CANDevice::CANDevice()
 {
 }
+
 CANDevice::~CANDevice()
 {
     rx_thread_.detach();
+}
+
+bool CANDevice::CalculateTimings()
+{
+    // Reset Timings Flag
+    bool timings_valid_ = false;
+
+    // Get CAN Clock
+    float f_clkcan = config_.clock_freq;
+    
+    // Bit time for desired rate
+    float bit_time = 1.0f / config_.bitrate;
+
+    int t_sync = 1; // 1 TQ for Sync
+
+    // TODO: Support Propagation Delays?
+    // uint_t t_prop = 250; // propagation delay ns
+    uint16_t t_seg1 = 0;
+    uint16_t t_seg2 = 0;
+
+    // Compute Nominal Bitrate Timings
+    uint16_t prescaler = 0;
+    for(prescaler = 1; prescaler < kMaxNominalPrescaler; prescaler++)
+    {
+        // How many Time Quanta in this prescaler?
+        float tq = static_cast<float>(prescaler) / f_clkcan;
+
+        // Number of Time Quanta per bit
+        float num_tq = bit_time / tq;
+
+        // Check Whole Time Quanta
+        if(std::fmod(num_tq, 1) != 0)
+            continue;
+
+        t_seg1 = num_tq * config_.sample_point - t_sync;
+        t_seg2 = num_tq - t_seg1 - t_sync;
+
+        // Verify Time Segment Range 1
+        if(t_seg1 < kMinNominalTimeSeg || t_seg1 > kMaxNominalTimeSeg1)
+        {
+            // Try Next Prescaler
+            continue;
+        }
+
+        // Verify Time Segment Range 2 
+        if(t_seg2 < kMinNominalTimeSeg || t_seg2 > kMaxNominalTimeSeg2)
+        {
+            // Try Next Prescaler
+            continue;
+        }
+
+        // Update CAN Config
+        config_.brp = prescaler;
+        config_.tseg1 = t_seg1;
+        config_.tseg2 = t_seg2;
+        config_.sjw = t_seg2;
+        config_.tq = static_cast<float>(tq * 1e9);
+
+        timings_valid_ = true;
+        break;
+    }
+
+    // Check Valid Nominal Bitrate
+    if(!timings_valid_)
+        return false;
+
+    // Bit time for desired data rate
+    bit_time = 1.0f / config_.d_bitrate;
+
+    // TODO: Support Propagation Delays?
+    t_seg1 = 0;
+    t_seg2 = 0;
+
+    // Update Valid Return
+    timings_valid_ = false;
+
+    // Compute Data Bitrate Timings
+    prescaler = 0;
+    for(prescaler = 1; prescaler < kMaxDataPrescaler; prescaler++)
+    {
+        // How many Time Quanta in this prescaler?
+        float tq = static_cast<float>(prescaler) / f_clkcan;
+
+        // Number of Time Quanta per bit
+        float num_tq = bit_time / tq;
+
+        // Check Whole Time Quanta
+        if(std::fmod(num_tq, 1) != 0)
+            continue;
+
+        t_seg1 = num_tq * config_.d_sample_point - t_sync;
+        t_seg2 = num_tq - t_seg1 - t_sync;
+
+        // Verify Time Segment Range 1
+        if(t_seg1 < kMinDataTimeSeg || t_seg1 > kMaxDataTimeSeg1)
+        {
+            // Try Next Prescaler
+            continue;
+        }
+
+        // Verify Time Segment Range 2 
+        if(t_seg2 < kMinDataTimeSeg || t_seg2 > kMaxDataTimeSeg2)
+        {
+            // Try Next Prescaler
+            continue;
+        }
+
+        // Update CAN Config
+        config_.d_brp = prescaler;
+        config_.d_tseg1 = t_seg1;
+        config_.d_tseg2 = t_seg2;
+        config_.d_sjw = t_seg2;
+
+        timings_valid_ = true;
+        break;
+    }
+    return timings_valid_;
 }
 
 bool CANDevice::StartReceiveThread()

@@ -88,6 +88,12 @@ bool SocketCANDevice::Open(const std::string &device_id, Config_t &config, bool 
     // }
     return true;
 }
+
+void SocketCANDevice::Status()
+{
+    // No Op
+}
+
 bool SocketCANDevice::Send(uint32_t dest_id, uint8_t *data, uint16_t length)
 {
     if(length > 64)

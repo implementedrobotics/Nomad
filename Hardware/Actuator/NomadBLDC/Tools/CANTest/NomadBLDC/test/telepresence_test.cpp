@@ -44,6 +44,7 @@ TelepresenceTest::TelepresenceTest(const std::string &name, const double T_s) : 
 void TelepresenceTest::Run()
 {
 
+static int i = 0;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     float tau1 = 0.0f;
@@ -67,7 +68,7 @@ void TelepresenceTest::Run()
     // float pos2 = servo2.GetPosition();
     // float vel2 = servo2.GetVelocity();
 
-   // std::cout << "Tau 2: " << pos1 << " : " << vel1 <<  std::endl;
+    std::cout << "Tau 2: " << pos1 << " : " << vel1 <<  std::endl;
 
    // servo1->PrintState();
    // servo2.PrintState();
@@ -76,15 +77,17 @@ void TelepresenceTest::Run()
      auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
     // std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
+    if(i++ % 10000 == 0)
+        can.Status();
     //  std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
 }
 void TelepresenceTest::Setup()
 {
     CANDevice::Config_t config;
     config.bitrate = 1e6; //1mbps
-    config.d_bitrate = 2e6; //2mbps
-    config.sample_point = .80; //87.5% 
-    config.d_sample_point = 0.60; //60%
+    config.d_bitrate = 5e6; //2mbps
+    config.sample_point = 0.80f; //87.5% 
+    config.d_sample_point = 0.625f; //60%
     config.clock_freq = 80e6; // 80mhz // Read from driver?  
     config.mode_fd = 1; // FD Mode
 
@@ -146,7 +149,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    TelepresenceTest telepresenceNode("Test", 1/1500.0f); //500hz
+    TelepresenceTest telepresenceNode("Test", 1/200.0f); //500hz
     telepresenceNode.SetStackSize(1024 * 1024);
     telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
     telepresenceNode.SetCoreAffinity(2);

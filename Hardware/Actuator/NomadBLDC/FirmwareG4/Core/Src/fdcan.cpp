@@ -43,10 +43,10 @@ FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t 
     SetupRegisters();
 
     config_.id = node_id;            // Lowest Priority Standard ID (2047 max 11-bit)
-    config_.bitrate = bitrate;       // 250 kbps
-    config_.d_bitrate = dbitrate;    // 250 kbps
-    config_.sample_point = 0.80f;    // 80%
-    config_.d_sample_point = 0.625f; // 62.5%
+    config_.bitrate = bitrate;       // Bitrate
+    config_.d_bitrate = dbitrate;    // Data bitrate CAN FD
+    config_.sample_point = 0.80f;    // Sample Point
+    config_.d_sample_point = 0.625f; // Data Sample Point
     config_.mode_fd = 1;             // FD CAN ( Default to FD CAN? It is my preference anyways...)
 
 
@@ -60,7 +60,6 @@ FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id, uint32_t 
 
 FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config) : FDCAN_(FDCAN), config_(config), enable_interrupt_(false), timings_valid_(false)
 {
-
     // Setup Registers
     SetupRegisters();
 
@@ -68,8 +67,6 @@ FDCANDevice::FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config) : FDCAN_(F
     hfdcan_ = new FDCAN_HandleTypeDef();
     hfdcan_->Instance = FDCAN;
     CalculateTimings();
-
-
 }
 
 // Init FDCAN
