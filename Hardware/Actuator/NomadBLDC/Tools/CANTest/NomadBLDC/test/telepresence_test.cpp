@@ -44,7 +44,7 @@ TelepresenceTest::TelepresenceTest(const std::string &name, const double T_s) : 
 void TelepresenceTest::Run()
 {
 
-static int i = 0;
+    static int i = 0;
     auto start_time = std::chrono::high_resolution_clock::now();
 
     float tau1 = 0.0f;
@@ -60,29 +60,27 @@ static int i = 0;
     float pos1 = servo1->GetPosition();
     float vel1 = servo1->GetVelocity();
 
-    // servo1->ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau1);
-    // pos1 = servo1->GetPosition();
-    // vel1 = servo1->GetVelocity();
+    servo2->ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau2);
+    float pos2 = servo2->GetPosition();
+    float vel2 = servo2->GetVelocity();
 
-    // servo2.ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau2);
-    // float pos2 = servo2.GetPosition();
-    // float vel2 = servo2.GetVelocity();
+    //std::cout << "Tau 2: " << pos1 << " : " << vel1 <<  std::endl;
 
-    std::cout << "Tau 2: " << pos1 << " : " << vel1 <<  std::endl;
-
-   // servo1->PrintState();
-   // servo2.PrintState();
-
-     auto time_now = std::chrono::high_resolution_clock::now();
-     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    auto time_now = std::chrono::high_resolution_clock::now();
+    auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
     // std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
-    if(i++ % 10000 == 0)
+    if (i++ % 1000 == 0)
+    {
         can.Status();
+        servo1->PrintState();
+        servo2->PrintState();
+    }
     //  std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
 }
 void TelepresenceTest::Setup()
 {
+    // TODO: We need some sort of exceptions here if setup fails
     CANDevice::Config_t config;
     config.bitrate = 1e6; //1mbps
     config.d_bitrate = 5e6; //2mbps
@@ -106,24 +104,25 @@ void TelepresenceTest::Setup()
     if(!servo1->Connect())
     {
         std::cout << "[ERROR]: Unable to connect to Nomad Servo!" << std::endl;
+        exit(1);
+    }
+
+    std::cout << "Nomad Servo: " << "[" << servo1->GetName() << "] : " << servo1->GetServoId() << " Connected!" << std::endl;
+
+    servo2 = new NomadBLDC(1, 0x11, &can);
+    servo2->SetName("OUTPUT");
+    if(!servo2->Connect())
+    {
+        std::cout << "[ERROR]: Unable to connect to Nomad Servo!" << std::endl;
         return;
     }
 
-     std::cout << "Nomad Servo: " << "[" << servo1->GetName() << "] : " << servo1->GetServoId() << " Connected!" << std::endl;
-    // return;
-    // servo2 = NomadBLDC(1, 0x11, &can);
-    // servo2.SetName("OUTPUT");
-    // if(!servo2.Connect())
-    // {
-    //     std::cout << "[ERROR]: Unable to connect to Nomad Servo!" << std::endl;
-    //     return;
-    // }
-
-  //  std::cout << "Nomad Servo: " << "[" << servo2.GetName() << "]" << servo2.GetServoId() << " Connected!" << std::endl;
+    std::cout << "Nomad Servo: " << "[" << servo2->GetName() << "] : " << servo2->GetServoId() << " Connected!" << std::endl;
 
     // Start Motor Control Mode
     usleep(1000000);
     servo1->SetControlMode(10);
+    servo2->SetControlMode(10);
 }
 
 void TelepresenceTest::Exit()
@@ -132,7 +131,7 @@ void TelepresenceTest::Exit()
 
     // Set back to idle.  In theory when no commands are sent it should auto back to idle or edamp?
     servo1->SetControlMode(1);
-   // servo2->SetControlMode(1);
+    servo2->SetControlMode(1);
 }
 
 
@@ -149,7 +148,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    TelepresenceTest telepresenceNode("Test", 1/200.0f); //500hz
+    TelepresenceTest telepresenceNode("Test", 1/1500.0f); //500hz
     telepresenceNode.SetStackSize(1024 * 1024);
     telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
     telepresenceNode.SetCoreAffinity(2);

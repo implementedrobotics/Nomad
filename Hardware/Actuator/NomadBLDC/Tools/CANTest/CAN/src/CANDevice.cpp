@@ -52,7 +52,7 @@ void CANDevice::ReceiveTask()
                 listener(msg);
             }
         }
-        usleep(10);
+        //usleep(10);
     }
 }
 

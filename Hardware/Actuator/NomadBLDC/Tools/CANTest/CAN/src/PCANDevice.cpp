@@ -60,7 +60,7 @@ bool PCANDevice::Open(const std::string &device_id, Config_t &config, bool bUseR
     //printf("Timings: %d %d %d %d %d\n", config_.tq,config_.brp,config_.tseg1,config_.tseg2,config_.sjw);
     //printf("Data Timings: %d %d %d %d %d\n", config_.tq,config_.d_brp,config_.d_tseg1,config_.d_tseg2,config_.d_sjw);
     //fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_SAMPLEPT | OFD_DBITRATE | OFD_SAMPLEPT | OFD_CLOCKHZ /*| OFD_NONBLOCKING */| PCANFD_INIT_FD, config.bitrate, (int)config.sample_point * 10000, config.d_bitrate, (int)config.d_sample_point * 10000, config.clock_freq);
-    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_BRPTSEGSJW | OFD_DBITRATE | OFD_BRPTSEGSJW | OFD_CLOCKHZ | OFD_NONBLOCKING | PCANFD_INIT_FD | PCANFD_INIT_BUS_LOAD_INFO, config_.brp,
+    fd_ = pcanfd_open(device_id.c_str(), OFD_BITRATE | OFD_BRPTSEGSJW | OFD_DBITRATE | OFD_BRPTSEGSJW | OFD_CLOCKHZ | /*OFD_NONBLOCKING |*/ PCANFD_INIT_FD | PCANFD_INIT_BUS_LOAD_INFO, config_.brp,
                       config_.tseg1,
                       config_.tseg2,
                       config_.sjw,

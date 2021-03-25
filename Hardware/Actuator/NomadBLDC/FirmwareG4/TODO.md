@@ -1,9 +1,10 @@
 # Firmware TODO:
 * Keep alive support
+* Add Position Limit Enable
+* CAN Bootloader
 * Device Status register access -> MotorControl
 * Fix slight delay into current control before idle on bootup
 * Speed Controller ***
-* Fix Save Config Fail
 * Arm Controller Function
 * Gate driver fault checking and reporting ****
 * Verify optimization flags -O3 breaks something.  Looks like PWM timers don't start?
@@ -26,7 +27,7 @@
 * Variadic Templates?
 * Verify Good Location of Address Flash Page
 * Profile/Optimize CAN Interrupt Handling Function
-* PCAN FD 80mhz bit timings - 
+* PCAN FD 80mhz bit timings - Move this to cansetup.md
 1mbps = Prescaler = 1, tseg1 = 63(prop 47), tseg2 = 16, SJW = 16, SP = 80%
 2mbps = Prescaler = 1, tseg1 = 23 (prop 0), tseg2 = 16, SJW = 16, SP = 60%
 5mbps = Prescaler = 1, tseg1 = 9(prop 0),  tseg2 = 6, SJW = 6,  SP = 62.5%
