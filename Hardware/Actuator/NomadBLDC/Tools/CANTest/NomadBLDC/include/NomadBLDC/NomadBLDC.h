@@ -42,23 +42,6 @@ class RequestReply
 {
 public:
 
-    // RequestReply(uint32_t address, uint32_t timeout) : timeout_(timeout), num_requests_(1), num_replies_(0)
-    // {
-    //     // Make sure new promises and futures
-    //     promises_.push_back({});
-    //     futures_.push_back({});
-
-    //     // Link them
-    //     futures_.back() = promises_.back().get_future();
-        
-    //     // Add requested address
-    //     requests_.push_back(address);
-
-    //     synced_future_ = synced_promise_.get_future();
-
-
-    // }
-
     RequestReply(std::vector<Register> &registers, uint32_t timeout) :  timeout_(timeout), num_replies_(0)
     {
         // Reserve for address size
@@ -73,13 +56,10 @@ public:
             futures_.back() = promises_.back().get_future();
 
             // Add requested address
-            //requests_.insert(requests_.end(), addresses.begin(), addresses.end());
+            //request_regs_.insert(request_regs_.end(), registers.begin(), registers.end());
             request_regs_.push_back(reg);
-            //requests_.push_back(reg.address);
         }
-
         synced_future_ = synced_promise_.get_future();
-        
     }
     
     inline bool CheckAddress(uint32_t address) 
@@ -88,7 +68,6 @@ public:
         ptrdiff_t pos = std::distance(request_regs_.begin(), std::find_if(request_regs_.begin(),
                                                                           request_regs_.end(),
                                                                           [&address](const Register f) -> bool { return f.address == address; }));
-        //  ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), address));
         if (pos >= request_regs_.size())
         {
             return false;
@@ -103,14 +82,12 @@ public:
             auto status = future.wait_for(std::chrono::microseconds(timeout_));
             if (status == std::future_status::ready)
             {
-                // TODO: Should we keep up with data sizes?
                 register_reply_t reply = future.get();
                 replies.push_back(reply);
-                //memcpy(data, register_reply.cmd_data, register_reply.header.length);
             }
             else
             {
-                std::cout << "Timed Out" << std::endl;
+                // Timed out
                 return false;
             }
         }
@@ -119,11 +96,8 @@ public:
 
     inline bool Set(register_reply_t &reply)
     {
-         uint32_t address = reply.header.address;
+        uint32_t address = reply.header.address;
         // Find Address Location
-
-        //ptrdiff_t pos = std::distance(requests_.begin(), std::find(requests_.begin(), requests_.end(), reply.header.address));
-
         ptrdiff_t pos = std::distance(request_regs_.begin(), std::find_if(request_regs_.begin(),
                                                                           request_regs_.end(),
                                                                           [&address](const Register f) -> bool { return f.address == address; }));
@@ -135,7 +109,7 @@ public:
         }
         // Update promise
         promises_[pos].set_value(reply);
-        
+
         // Update valid replies
         num_replies_++;
 
@@ -175,15 +149,14 @@ public:
     }
 
 private:
+
     std::vector<std::promise<register_reply_t>> promises_;
     std::vector<std::future<register_reply_t>> futures_;
 
     std::promise<void> synced_promise_;
     std::future<void> synced_future_;
 
-    // TODO: Make this Register(address, memory)
     std::vector<Register> request_regs_;
-    //std::vector<uint32_t> requests_;
     uint32_t timeout_;
 
     // Number of replies received
@@ -198,36 +171,49 @@ class Requester {
         {
 
         }
-        RequestReply &CreateRequest(std::vector<Register> &registers, uint16_t request_type, uint32_t timeout)
+        RequestReply &CreateExecuteRequest(std::vector<Register> &param_registers, std::vector<Register> &return_registers, uint16_t request_type, uint32_t timeout)
         {
+
             // Hold Request Messages
             std::vector<CANDevice::CAN_msg_t> request_msgs;
 
-            // TODO: Pass Registers
             // Loop requested address and cache our request messages
-            for (Register& reg : registers)
+            for (Register& reg : param_registers)
             {
-                register_command_t read_cmd;
-                read_cmd.header.rwx = request_type; // 0 Read, 1 Write, 2 Executure
-                read_cmd.header.address = reg.address;
-                read_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
-                read_cmd.header.sender_id = master_id_;
-                read_cmd.header.length = 0;
+                register_command_t reg_cmd;
+                reg_cmd.header.rwx = request_type; // 0 Read, 1 Write, 2 Execute
+                reg_cmd.header.address = reg.address;
+                reg_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
+                reg_cmd.header.sender_id = master_id_;
 
+                if(request_type == RequestType_e::Read)
+                    reg_cmd.header.length = 0;
+                else // Write or Execute, i.e. Sending Data
+                    reg_cmd.header.length = reg.size;
+
+               
+                memcpy(&reg_cmd.cmd_data, reg.data, reg.size);
                 CANDevice::CAN_msg_t msg;
                 msg.id = servo_id_;
-                msg.length = sizeof(request_header_t);
-                memcpy(msg.data, &read_cmd, msg.length);
+                msg.length = sizeof(request_header_t) + reg.size;
+                memcpy(msg.data, &reg_cmd, msg.length);
 
                 // Save it
                 request_msgs.push_back(msg);
+
+              //  std::cout << "Execute: " << reg.address << " " << request_type << "size: " << reg.size << std::endl;;
             }
 
+            
+
+            // TODO: Need error checking if we have multiply request?  Something breaks if multiple items in queue
             // Lock Request Queue
             requests_lock_.lock();
             // Generate Request
             // TODO: Only generate these for request expecting replies
-            request_queue_.push_back({registers, timeout});
+            if(request_type != RequestType_e::Write)
+                request_queue_.push_back({return_registers, timeout});
+            
             auto &request = request_queue_.back();
             requests_lock_.unlock();
 
@@ -239,36 +225,84 @@ class Requester {
 
             return request;
         }
-        // bool SendRequest()
-        // {
-        // }
+        RequestReply &CreateRequest(std::vector<Register> &registers, uint16_t request_type, uint32_t timeout)
+        {
+            // Hold Request Messages
+            std::vector<CANDevice::CAN_msg_t> request_msgs;
+
+            // Loop requested address and cache our request messages
+            for (Register& reg : registers)
+            {
+                register_command_t reg_cmd;
+                reg_cmd.header.rwx = request_type; // 0 Read, 1 Write, 2 Execute
+                reg_cmd.header.address = reg.address;
+                reg_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
+                reg_cmd.header.sender_id = master_id_;
+
+                if(request_type == RequestType_e::Read)
+                    reg_cmd.header.length = 0;
+                else // Write or Execute, i.e. Sending Data
+                    reg_cmd.header.length = reg.size;
+
+               
+                memcpy(&reg_cmd.cmd_data, reg.data, reg.size);
+                CANDevice::CAN_msg_t msg;
+                msg.id = servo_id_;
+                msg.length = sizeof(request_header_t) + reg.size;
+                memcpy(msg.data, &reg_cmd, msg.length);
+
+                // Save it
+                request_msgs.push_back(msg);
+
+               // std::cout << "Execute: " << reg.address << " " << request_type << "size: " << reg.size << std::endl;;
+            }
+
+            
+
+            // TODO: Need error checking if we have multiply request?  Something breaks if multiple items in queue
+            // Lock Request Queue
+            requests_lock_.lock();
+            // Generate Request
+            // TODO: Only generate these for request expecting replies
+            if(request_type != RequestType_e::Write)
+                request_queue_.push_back({registers, timeout});
+            
+            auto &request = request_queue_.back();
+            requests_lock_.unlock();
+
+            // Send Request Message
+            for (CANDevice::CAN_msg_t &msg : request_msgs)
+            {
+                transport_->Send(msg);
+            }
+
+            return request;
+        }
 
         void ProcessReply(register_reply_t *reply)
         {
-            requests_lock_.lock();
+            std::lock_guard<std::mutex> lock(requests_lock_);
             for (int i = request_queue_.size() - 1; i >= 0; i--)
             {
                 auto &request = request_queue_[i];
-
+                
                 // TODO: Check for Stale request.  Timed out, already fulfilled etc
                 if (request.isFulfilled())
                 {
                     request_queue_.erase(request_queue_.begin() + i);
                     continue;
                 }
+               // std::cout << "Receiving: " << reply->header.address << std::endl;
                 if (request.CheckAddress(reply->header.address))
                 {
                     request.Set(*reply);
                     if (request.isFulfilled())
                     {
                         // Fire Update Handler
-                        //UpdateRegisters(request);
                         update_cb_(request);
-                        std::cout << "Completed Request" << std::endl;
                     }
                 }
             }
-            requests_lock_.unlock();
         }
         inline std::vector<RequestReply>& GetRequests()
         {
@@ -291,7 +325,6 @@ class Requester {
         int32_t master_id_;
 
         std::function<void(RequestReply&)> update_cb_ = [=](RequestReply&) {};
-        //std::function<void(RequestReply&)> update_cb_;
 };
 
 class NomadBLDC
@@ -317,12 +350,9 @@ public:
 
     uint32_t GetServoId() const { return servo_id_; }
 
-    //bool ReadRegister(uint32_t address, uint8_t *data);
-    bool ReadRegisters(std::vector<Register> addresses, uint32_t timeout = 3000);
-    bool WriteRegister(uint32_t address, uint8_t *data, size_t size);
-
-    // TODO: Request/Reply Wrapper Class
-    bool ExecuteRegister(uint32_t address, uint8_t *parameter_data = nullptr, size_t size = 0, uint8_t *return_data = 0);
+    bool ReadRegisters(std::vector<Register> registers, uint32_t timeout = 3000);
+    bool WriteRegisters(std::vector<Register> registers, uint32_t timeout = 3000);
+    bool ExecuteRegisters(std::vector<Register> param_registers, std::vector<Register> return_registers = {}, uint32_t timeout = 3000);
 
     void UpdateRegisters(RequestReply &reply);
 

@@ -27,12 +27,10 @@ NomadBLDC::NomadBLDC() :  master_id_(-1), servo_id_(-1), transport_(nullptr), co
 }
 NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master_id_(master_id), servo_id_(servo_id), transport_(transport), connected_(false), control_mode_(0)
 {
-
     using namespace std::placeholders;
     // Allocate Requester & Callback
     requester_ = new Requester(transport_, servo_id_, master_id_);
     requester_->RegisterCompleteCB(std::bind(&NomadBLDC::UpdateRegisters, this, _1));
-
 
     if(transport_ != nullptr)
     {
@@ -40,41 +38,34 @@ NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master
     }
     memset(&joint_state_,0,sizeof(JointState_t));
 
-
     // Setup Register Mappings
     SetupRegisterMap();
-
 }
 
 void NomadBLDC::SetupRegisterMap()
 {
     register_map_.reserve(kMaxRegisters);
+
     register_map_[DeviceRegisters_e::DeviceStatusRegister1] = {DeviceRegisters_e::DeviceStatusRegister1, sizeof(dsr1_), (uint8_t *)&dsr1_};
     register_map_[DeviceRegisters_e::DeviceStatusRegister2] = {DeviceRegisters_e::DeviceStatusRegister2, sizeof(dsr2_), (uint8_t *)&dsr2_};
+
+    register_map_[ControllerCommandRegisters_e::ClosedLoopTorqueCommand] = {ControllerCommandRegisters_e::ClosedLoopTorqueCommand, sizeof(tcmr_), (uint8_t *)&tcmr_};
+    register_map_[ControllerCommandRegisters_e::JointStateRegister] = {ControllerCommandRegisters_e::JointStateRegister, sizeof(joint_state_), (uint8_t *)&joint_state_};
+
+    
+    register_map_[ControllerStateRegisters_e::ControlMode] = {ControllerStateRegisters_e::ControlMode, sizeof(control_mode_), (uint8_t *)&control_mode_};
 }
+
 bool NomadBLDC::Connect()
 {
     // Try to read device status
-   // Register reg1;
-    Register reg1 = { /*.foo=*/ DeviceRegisters_e::DeviceStatusRegister1, /*.bar=*/ sizeof(dsr1_), (uint8_t *)&dsr1_};
+    bool status = ReadRegisters({register_map_[DeviceRegisters_e::DeviceStatusRegister1],
+                                 register_map_[DeviceRegisters_e::DeviceStatusRegister2]}, 10000);
 
-    //reg1.address = DeviceRegisters_e::DeviceStatusRegister1;
-   // reg1.size = sizeof(dsr1_);
-   // reg1.data = (uint8_t *)&dsr1_;
+    if (!status) // Failed
+        return false;
 
-    Register reg2;
-    reg2.address = DeviceRegisters_e::DeviceStatusRegister2;
-    reg2.size = sizeof(dsr2_);
-    reg2.data = (uint8_t *)&dsr2_;
-
-
-    //bool status = ReadRegisters({DeviceRegisters_e::DeviceStatusRegister1, DeviceRegisters_e::DeviceStatusRegister2});
-    bool status = ReadRegisters({reg1, reg2});
-
-     if(!status)
-         return false;
-
-    connected_ = true;
+    connected_ = true; // We have a valid device connection
     return true;
 }
 
@@ -82,8 +73,8 @@ bool NomadBLDC::SetControlMode(uint32_t control_mode)
 {
     // TODO: State Checking Here? i.e. make sure you only transition from idle->other modes etc
     control_mode_ = control_mode;
-    bool status = WriteRegister(ControllerStateRegisters_e::ControlMode, (uint8_t*)&control_mode_, sizeof(control_mode_));
-    return true;
+    bool status = WriteRegisters({register_map_[ControllerStateRegisters_e::ControlMode]});
+    return status;
 }
 
 bool NomadBLDC::ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff)
@@ -95,7 +86,9 @@ bool NomadBLDC::ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, flo
     tcmr_.Vel_ref = vel_ref;
     tcmr_.T_ff = torque_ff;
 
-    bool status = ExecuteRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, (uint8_t*)&tcmr_, sizeof(tcmr_), (uint8_t*)&joint_state_);
+    bool status = ExecuteRegisters({register_map_[ControllerCommandRegisters_e::ClosedLoopTorqueCommand]}, 
+    {register_map_[ControllerCommandRegisters_e::JointStateRegister]}, 5000);
+    //bool status = ExecuteRegisters(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, (uint8_t*)&tcmr_, sizeof(tcmr_), (uint8_t*)&joint_state_);
     return true;
 }
 
@@ -111,7 +104,7 @@ bool NomadBLDC::ReadRegisters(std::vector<Register> registers, uint32_t timeout)
 
     auto start_time = std::chrono::high_resolution_clock::now();
     // TODO: If synced we wait... Pass Function Param for Async vs Not?
-    bool status = request.Wait(5000);
+    bool status = request.Wait(timeout);
     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
     std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
@@ -120,72 +113,29 @@ bool NomadBLDC::ReadRegisters(std::vector<Register> registers, uint32_t timeout)
     return false;
 }
 
-bool NomadBLDC::WriteRegister(uint32_t address, uint8_t *data, size_t size)
+bool NomadBLDC::WriteRegisters(std::vector<Register> registers, uint32_t timeout)
 {
     if(transport_ == nullptr)
         return false;
 
-    register_command_t write_cmd;
-    write_cmd.header.rwx = 1; // 0 Read, 1 Write, 2 Executure
-    write_cmd.header.address = address;
-    write_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
-    write_cmd.header.sender_id = master_id_;
-    write_cmd.header.length = size;
+    // Create Request
+    auto& request = requester_->CreateRequest(registers, RequestType_e::Write, timeout);
 
-    memcpy(&write_cmd.cmd_data, data, size);
-    CANDevice::CAN_msg_t msg;
-    msg.id = servo_id_;
-    msg.length = sizeof(request_header_t) + size;
-    memcpy(msg.data, &write_cmd, msg.length);
-
-    transport_->Send(msg);
-
-    // TODO: Reply?
+    // TODO: Sync/Reply?
     return true;
 }
 
-bool NomadBLDC::ExecuteRegister(uint32_t address, uint8_t *parameter_data, size_t size, uint8_t *return_data)
+bool NomadBLDC::ExecuteRegisters(std::vector<Register> param_registers, std::vector<Register> return_registers, uint32_t timeout)
 {
     if(transport_ == nullptr)
         return false;
 
-    // register_command_t execute_cmd;
-    // execute_cmd.header.rwx = 2; // 0 Read, 1 Write, 2 Execute
-    // execute_cmd.header.address = address;
-    // execute_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
-    // execute_cmd.header.sender_id = master_id_;
-    // execute_cmd.header.length = size;
+    // Create Request
+    auto& request = requester_->CreateExecuteRequest(param_registers, return_registers, RequestType_e::Execute, timeout);
 
-    // memcpy(&execute_cmd.cmd_data, parameter_data, size);
-
-    // CANDevice::CAN_msg_t msg;
-    // msg.id = servo_id_;
-    // msg.length = sizeof(request_header_t) + size;
-    // memcpy(msg.data, &execute_cmd, msg.length);
-
-    // transport_->Send(msg);
-
-    // // Create Request
-    // requests_lock.lock();
-    // request_queue_.push_back({execute_cmd.header.address, 2000});
-    // auto& request = request_queue_.back();
-    // requests_lock.unlock();
-
-    // auto start_time = std::chrono::high_resolution_clock::now();
-    // std::vector<register_reply_t> replies;
-    // bool status = request.Get(replies);
-
-    // auto time_now = std::chrono::high_resolution_clock::now();
-    // auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-    // //std::cout << "Duration: " << total_elapsed << "us" << std::endl;
-
-    // if(status)
-    // {
-    //     // TODO: Loop and Copy Data.  Actually need this to be a callback for Update Registers
-    //     //memcpy(return_data, register_reply.cmd_data, register_reply.header.length);
-    //     return true;
-    // }
-    return false;
+    // TODO: Sync/Reply?
+     //bool status = request.Wait(5000);
+    return true;
 }
 
 void NomadBLDC::UpdateRegisters(RequestReply &request)
@@ -193,28 +143,34 @@ void NomadBLDC::UpdateRegisters(RequestReply &request)
     std::vector<register_reply_t> replies;
     bool status = request.Get(replies);
 
-    // TODO: Change this to lock guard etc
-    update_lock.lock();
+    std::lock_guard<std::mutex> lock(update_lock); // Lock for updates.
     for(auto& reply : replies)
     {
+        // Copy Data
         memcpy(register_map_[reply.header.address].data, reply.cmd_data, reply.header.length);
     }
 
+    // Update any waiters that we are now synced
     request.Sync();
-    update_lock.unlock();
 }
 
 bool NomadBLDC::SetTransport(CANDevice *dev)
 {
+    // Update Transport Pointer
     transport_ = dev;
     
-    requester_->SetTransport(transport_);
+    // Pass to requester interface
+    requester_->SetTransport(dev);
 
+    // If null then return
     if(transport_ == nullptr)
         return false;
 
+    // Update our listener callback to lower level can device
     using namespace std::placeholders;
     transport_->RegisterListenerCB(std::bind(&NomadBLDC::ReceiveMessage, this, _1));
+
+    // Success
     return true;
 }
 
@@ -224,13 +180,11 @@ void NomadBLDC::ReceiveMessage(CANDevice::CAN_msg_t &msg)
     // Check Sender ID is linked to this servo object
     register_reply_t *reply = (register_reply_t *)msg.data;
 
+    //std::cout << "Receiving Message!" << std::endl;
     if(reply->header.sender_id != servo_id_)
         return;
     
-    //auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-    //std::cout << "Receive Time: " << total_elapsed << "us" << std::endl;
-    
-    //std::vector<RequestReply> &request_queue = requester_->GetRequests();
+    // Send to requester
     requester_->ProcessReply(reply);
    
 }

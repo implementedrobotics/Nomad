@@ -43,8 +43,8 @@ TelepresenceTest::TelepresenceTest(const std::string &name, const double T_s) : 
 
 void TelepresenceTest::Run()
 {
-    return;
-     auto start_time = std::chrono::high_resolution_clock::now();
+
+    auto start_time = std::chrono::high_resolution_clock::now();
 
     float tau1 = 0.0f;
     float tau2 = 0.0f;
@@ -59,22 +59,22 @@ void TelepresenceTest::Run()
     float pos1 = servo1->GetPosition();
     float vel1 = servo1->GetVelocity();
 
-    servo1->ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau1);
-    pos1 = servo1->GetPosition();
-    vel1 = servo1->GetVelocity();
+    // servo1->ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau1);
+    // pos1 = servo1->GetPosition();
+    // vel1 = servo1->GetVelocity();
 
     // servo2.ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau2);
     // float pos2 = servo2.GetPosition();
     // float vel2 = servo2.GetVelocity();
 
-    // std::cout << "Tau 2: " << tau1 << " : " << tau2 <<  std::endl;
+   // std::cout << "Tau 2: " << pos1 << " : " << vel1 <<  std::endl;
 
    // servo1->PrintState();
    // servo2.PrintState();
 
      auto time_now = std::chrono::high_resolution_clock::now();
      auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-     std::cout << "Duration: " << total_elapsed << "us" << std::endl;
+    // std::cout << "Duration: " << total_elapsed << "us" << std::endl;
 
     //  std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
 }
@@ -82,9 +82,9 @@ void TelepresenceTest::Setup()
 {
     CANDevice::Config_t config;
     config.bitrate = 1e6; //1mbps
-    config.d_bitrate = 5e6; //2mbps
+    config.d_bitrate = 2e6; //2mbps
     config.sample_point = .80; //87.5% 
-    config.d_sample_point = 0.625; //60%
+    config.d_sample_point = 0.60; //60%
     config.clock_freq = 80e6; // 80mhz // Read from driver?  
     config.mode_fd = 1; // FD Mode
 
@@ -107,7 +107,7 @@ void TelepresenceTest::Setup()
     }
 
      std::cout << "Nomad Servo: " << "[" << servo1->GetName() << "] : " << servo1->GetServoId() << " Connected!" << std::endl;
-     return;
+    // return;
     // servo2 = NomadBLDC(1, 0x11, &can);
     // servo2.SetName("OUTPUT");
     // if(!servo2.Connect())
@@ -117,11 +117,14 @@ void TelepresenceTest::Setup()
     // }
 
   //  std::cout << "Nomad Servo: " << "[" << servo2.GetName() << "]" << servo2.GetServoId() << " Connected!" << std::endl;
+
+    // Start Motor Control Mode
+    usleep(1000000);
+    servo1->SetControlMode(10);
 }
 
 void TelepresenceTest::Exit()
 {
-    return;
     std::cout << "Exiting!" << std::endl;
 
     // Set back to idle.  In theory when no commands are sent it should auto back to idle or edamp?
@@ -143,7 +146,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    TelepresenceTest telepresenceNode("Test", 1/100.0f); //500hz
+    TelepresenceTest telepresenceNode("Test", 1/1500.0f); //500hz
     telepresenceNode.SetStackSize(1024 * 1024);
     telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
     telepresenceNode.SetCoreAffinity(2);

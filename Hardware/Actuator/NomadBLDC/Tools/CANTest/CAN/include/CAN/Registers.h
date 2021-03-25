@@ -301,6 +301,7 @@ typedef enum // Encoder Config Register
 typedef enum // Controller Config Register
 {
     ClosedLoopTorqueCommand = 0xC8, // Optimized Closed Loop Torque Command Function
+    JointStateRegister = 0xC9 // Optimized Closed Loop Joint State Register
 
 } ControllerCommandRegisters_e;
 

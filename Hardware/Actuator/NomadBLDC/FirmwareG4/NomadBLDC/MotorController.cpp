@@ -301,7 +301,6 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
 
 int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice *dev)
 {
-
     // TODO: Error check this range?
     TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
     state_.Pos_ref = tcmr->Pos_ref;
@@ -318,7 +317,7 @@ int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice
     register_reply_t reply;
     reply.header.sender_id = dev->ID();                                           // TODO: Need our CAN/Controller ID Here
     reply.header.code = 0;                                                        // Error Codes Here
-    reply.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand; // Address from Requested Register
+    reply.header.address = ControllerCommandRegisters_e::JointStateRegister; // Address from Requested Register
     reply.header.length = sizeof(JointState_t);
 
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
