@@ -343,7 +343,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
         self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech_true"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('g', width=2))
-        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech_dot"), title='Velocity', name='Vel', units='rads/s', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech_dot"), title='Velocity', name='Vel', units='rads/s', legend=True, row=0, col=0, pen=pg.mkPen('g', width=2))
         self.rt_plotter.AddData((self.nomad_dev, "controller_config.pos_limit_min"), title='Position Limit (Min)', name='Position Limit (Min)', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
         self.rt_plotter.AddData((self.nomad_dev, "controller_config.pos_limit_max"), title='Position Limit (Max)', name='Position Limit (Max)', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
        # self.rt_plotter.AddData((self.nomad_dev, "controller_config.position_limit"), title='Position Limit', name='Position Limit', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))

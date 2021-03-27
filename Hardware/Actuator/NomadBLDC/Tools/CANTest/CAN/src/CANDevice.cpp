@@ -62,7 +62,8 @@ CANDevice::CANDevice()
 
 CANDevice::~CANDevice()
 {
-    rx_thread_.detach();
+    if(rx_thread_.joinable())
+        rx_thread_.detach();
 }
 
 bool CANDevice::CalculateTimings()

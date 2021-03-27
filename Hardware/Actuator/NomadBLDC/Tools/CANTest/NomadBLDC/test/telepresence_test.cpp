@@ -7,6 +7,10 @@
 #include <math.h>
 
 #include <NomadBLDC/NomadBLDC.h>
+#include <nlohmann/json.hpp>
+
+#include <zmq.hpp>
+
 #define DEVICE "/dev/pcanusbfd32"
 
 
@@ -148,17 +152,64 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    TelepresenceTest telepresenceNode("Test", 1/1500.0f); //500hz
-    telepresenceNode.SetStackSize(1024 * 1024);
-    telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
-    telepresenceNode.SetCoreAffinity(2);
-    telepresenceNode.Start();
+    // {
+    //     "timestamp": time,
+    //     "test_data": {
+    //         "cos": math.cos(time),
+    //         "sin": math.sin(time)
+    //     }
 
-    getchar();
+    int time = 1123;
+    float sin_val = 1;
+    float cos_val = 0;
 
-    telepresenceNode.Exit();
-    telepresenceNode.Stop();
 
-    getchar();
+        // Test ZMQ -> PJ
+        zmq::context_t ctx;
+
+        zmq::socket_t publisher(ctx, ZMQ_PUB);
+        std::string transport("tcp://*:9872");
+        publisher.bind(transport);
+
+    while (1)
+    {
+
+        time++;
+        sin_val += 0.01f;
+        cos_val += 0.01f;
+
+            nlohmann::json test = {
+        {"timestamp", time},
+        {"test_data", {
+            {"cos", sin_val},
+            {"sin", cos_val}}
+    }};
+
+    std::string j = test.dump();
+
+        zmq::message_t message(j.length());
+        memcpy(message.data(), j.c_str(), j.length());
+        zmq::send_result_t res = publisher.send(message, zmq::send_flags::dontwait);
+       //  publisher.send(zmq::str_buffer("{\"timestamp\": 100, \"test_data\": {\"cos\": 1, \"sin\": 0.5}}"), zmq::send_flags::dontwait);
+
+       
+        usleep(5000);
+       // std::cout << "Sent: " << j.length() << std::endl;
+       // std::cout << res.value() << std::endl;
+    }
+    return 0;
+
+    // TelepresenceTest telepresenceNode("Test", 1/1500.0f); //500hz
+    // telepresenceNode.SetStackSize(1024 * 1024);
+    // telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
+    // telepresenceNode.SetCoreAffinity(2);
+    // telepresenceNode.Start();
+
+    // getchar();
+
+    // telepresenceNode.Exit();
+    // telepresenceNode.Stop();
+
+    // getchar();
 
 }

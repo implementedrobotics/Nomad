@@ -58,6 +58,8 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "bitset": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "forward_list": "cpp",
+        "valarray": "cpp"
     }
 }

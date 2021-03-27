@@ -8,6 +8,9 @@ set(NOMADBLDC_LIBS CAN)
 
 include_directories("${PROJECT_SOURCE_DIR}/CAN/include")
 include_directories("${PROJECT_SOURCE_DIR}/NomadBLDC/include")
+include_directories("${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann/include") # JSON
+
+
 
 add_library(NOMADBLDC STATIC ${NOMADBLDC_SOURCES})
 target_link_libraries(NOMADBLDC ${NOMADBLDC_LIBS})

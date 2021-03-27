@@ -10,6 +10,9 @@ add_subdirectory(CAN)
 # NomadBLDC Library
 add_subdirectory(NomadBLDC)
 
+# Third Party Library
+#add_subdirectory(ThirdParty)
+
 
 
 

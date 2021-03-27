@@ -469,7 +469,7 @@ color:white</string>
           <number>4</number>
          </property>
          <property name="maximum">
-          <double>0.100000000000000</double>
+          <double>5.000000000000000</double>
          </property>
          <property name="singleStep">
           <double>0.001000000000000</double>
@@ -485,7 +485,7 @@ color:white</string>
           <number>4</number>
          </property>
          <property name="maximum">
-          <double>2.000000000000000</double>
+          <double>20.000000000000000</double>
          </property>
          <property name="singleStep">
           <double>0.010000000000000</double>
