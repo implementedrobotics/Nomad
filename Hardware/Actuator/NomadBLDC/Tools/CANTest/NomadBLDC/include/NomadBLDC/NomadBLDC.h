@@ -190,12 +190,6 @@ class Requester {
                 reg_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
                 reg_cmd.header.sender_id = master_id_;
 
-                if(request_type == RequestType_e::Read)
-                    reg_cmd.header.length = 0;
-                else // Write or Execute, i.e. Sending Data
-                    reg_cmd.header.length = reg.size;
-
-               
                 memcpy(&reg_cmd.cmd_data, reg.data, reg.size);
                 CANDevice::CAN_msg_t msg;
                 msg.id = servo_id_;
@@ -204,19 +198,16 @@ class Requester {
 
                 // Save it
                 request_msgs.push_back(msg);
-
               //  std::cout << "Execute: " << reg.address << " " << request_type << "size: " << reg.size << std::endl;;
             }
-
-            
 
             // TODO: Need error checking if we have multiply request?  Something breaks if multiple items in queue
             // Lock Request Queue
             requests_lock_.lock();
             // Generate Request
             // TODO: Only generate these for request expecting replies
-            if(request_type != RequestType_e::Write)
-                request_queue_.push_back({return_registers, timeout});
+            // TODO: Always push back.  Set a no reply.  Which will satisfy fullfilled and remove from queue next cycle
+            request_queue_.push_back({return_registers, timeout});
             
             auto &request = request_queue_.back();
             requests_lock_.unlock();
@@ -343,6 +334,7 @@ public:
     void Disconnect();
     bool Reset();
     bool ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff);
+    bool ZeroOutput();
     bool SetControlMode(uint32_t mode);
     void SetName(const std::string &name) { name_ = name; }
     const std::string& GetName() const { return name_; }

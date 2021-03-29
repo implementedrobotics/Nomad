@@ -54,6 +54,8 @@ void NomadBLDC::SetupRegisterMap()
 
     
     register_map_[ControllerStateRegisters_e::ControlMode] = {ControllerStateRegisters_e::ControlMode, sizeof(control_mode_), (uint8_t *)&control_mode_};
+
+    register_map_[MotorConfigRegisters_e::ZeroOutputOffset] = {MotorConfigRegisters_e::ZeroOutputOffset, 0, nullptr};
 }
 
 bool NomadBLDC::Connect()
@@ -69,6 +71,12 @@ bool NomadBLDC::Connect()
     return true;
 }
 
+bool NomadBLDC::ZeroOutput()
+{
+    bool status = ExecuteRegisters({register_map_[MotorConfigRegisters_e::ZeroOutputOffset]}, {}, 5000);
+    return status;
+}
+
 bool NomadBLDC::SetControlMode(uint32_t control_mode)
 {
     // TODO: State Checking Here? i.e. make sure you only transition from idle->other modes etc
@@ -76,6 +84,7 @@ bool NomadBLDC::SetControlMode(uint32_t control_mode)
     bool status = WriteRegisters({register_map_[ControllerStateRegisters_e::ControlMode]});
     return status;
 }
+
 
 bool NomadBLDC::ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff)
 {

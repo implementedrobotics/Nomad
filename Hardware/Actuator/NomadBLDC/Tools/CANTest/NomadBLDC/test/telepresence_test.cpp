@@ -64,9 +64,9 @@ void TelepresenceTest::Run()
     float pos1 = servo1->GetPosition();
     float vel1 = servo1->GetVelocity();
 
-    servo2->ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau2);
-    float pos2 = servo2->GetPosition();
-    float vel2 = servo2->GetVelocity();
+    // servo2->ClosedLoopTorqueCommand(0.0f, 0.0f, 0.0f, 0.0f, tau2);
+    // float pos2 = servo2->GetPosition();
+    // float vel2 = servo2->GetVelocity();
 
     //std::cout << "Tau 2: " << pos1 << " : " << vel1 <<  std::endl;
 
@@ -78,7 +78,7 @@ void TelepresenceTest::Run()
     {
         can.Status();
         servo1->PrintState();
-        servo2->PrintState();
+       // servo2->PrintState();
     }
     //  std::cout << "Receive Message: " << reponse->header.address << " : " << pos1 <<  std::endl;
 }
@@ -113,20 +113,20 @@ void TelepresenceTest::Setup()
 
     std::cout << "Nomad Servo: " << "[" << servo1->GetName() << "] : " << servo1->GetServoId() << " Connected!" << std::endl;
 
-    servo2 = new NomadBLDC(1, 0x11, &can);
-    servo2->SetName("OUTPUT");
-    if(!servo2->Connect())
-    {
-        std::cout << "[ERROR]: Unable to connect to Nomad Servo!" << std::endl;
-        return;
-    }
+    // servo2 = new NomadBLDC(1, 0x11, &can);
+    // servo2->SetName("OUTPUT");
+    // if(!servo2->Connect())
+    // {
+    //     std::cout << "[ERROR]: Unable to connect to Nomad Servo!" << std::endl;
+    //     return;
+    // }
 
-    std::cout << "Nomad Servo: " << "[" << servo2->GetName() << "] : " << servo2->GetServoId() << " Connected!" << std::endl;
+    // std::cout << "Nomad Servo: " << "[" << servo2->GetName() << "] : " << servo2->GetServoId() << " Connected!" << std::endl;
 
     // Start Motor Control Mode
     usleep(1000000);
     servo1->SetControlMode(10);
-    servo2->SetControlMode(10);
+   // servo2->SetControlMode(10);
 }
 
 void TelepresenceTest::Exit()
@@ -135,7 +135,7 @@ void TelepresenceTest::Exit()
 
     // Set back to idle.  In theory when no commands are sent it should auto back to idle or edamp?
     servo1->SetControlMode(1);
-    servo2->SetControlMode(1);
+    //servo2->SetControlMode(1);
 }
 
 
@@ -152,64 +152,47 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
+    // int time = 1123;
+    // float sin_val = 1;
+    // float cos_val = 0;
+
+    // // Test ZMQ -> PJ
+    // zmq::context_t ctx;
+
+    // zmq::socket_t publisher(ctx, ZMQ_PUB);
+    // std::string transport("tcp://*:9872");
+    // publisher.bind(transport);
+
+    // while (1)
     // {
-    //     "timestamp": time,
-    //     "test_data": {
-    //         "cos": math.cos(time),
-    //         "sin": math.sin(time)
-    //     }
+    //     time++;
+    //     sin_val += 0.01f;
+    //     cos_val += 0.01f;
 
-    int time = 1123;
-    float sin_val = 1;
-    float cos_val = 0;
+    //     nlohmann::json test = {
+    //         {"timestamp", time},
+    //         {"test_data", {{"cos", sin_val}, {"sin", cos_val}}}};
+    //     auto data = nlohmann::json::to_msgpack(test);
+    //     // zmq::message_t message(j.length());
+    //     //memcpy(message.data(), j.c_str(), j.length());
+    //     // zmq::send_result_t res = publisher.send(message, zmq::send_flags::dontwait);
+    //     zmq::message_t message(data.size());
+    //     memcpy(message.data(), &data[0], data.size());
+    //     publisher.send(message, zmq::send_flags::dontwait);
+    //     usleep(5000);
+    // }
+    //return 0;
 
+    TelepresenceTest telepresenceNode("Test", 1/200.0f); //500hz
+    telepresenceNode.SetStackSize(1024 * 1024);
+    telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
+    telepresenceNode.SetCoreAffinity(2);
+    telepresenceNode.Start();
 
-        // Test ZMQ -> PJ
-        zmq::context_t ctx;
+    getchar();
 
-        zmq::socket_t publisher(ctx, ZMQ_PUB);
-        std::string transport("tcp://*:9872");
-        publisher.bind(transport);
+    telepresenceNode.Exit();
+    telepresenceNode.Stop();
 
-    while (1)
-    {
-
-        time++;
-        sin_val += 0.01f;
-        cos_val += 0.01f;
-
-            nlohmann::json test = {
-        {"timestamp", time},
-        {"test_data", {
-            {"cos", sin_val},
-            {"sin", cos_val}}
-    }};
-
-    std::string j = test.dump();
-
-        zmq::message_t message(j.length());
-        memcpy(message.data(), j.c_str(), j.length());
-        zmq::send_result_t res = publisher.send(message, zmq::send_flags::dontwait);
-       //  publisher.send(zmq::str_buffer("{\"timestamp\": 100, \"test_data\": {\"cos\": 1, \"sin\": 0.5}}"), zmq::send_flags::dontwait);
-
-       
-        usleep(5000);
-       // std::cout << "Sent: " << j.length() << std::endl;
-       // std::cout << res.value() << std::endl;
-    }
-    return 0;
-
-    // TelepresenceTest telepresenceNode("Test", 1/1500.0f); //500hz
-    // telepresenceNode.SetStackSize(1024 * 1024);
-    // telepresenceNode.SetTaskPriority(Realtime::Priority::HIGHEST);
-    // telepresenceNode.SetCoreAffinity(2);
-    // telepresenceNode.Start();
-
-    // getchar();
-
-    // telepresenceNode.Exit();
-    // telepresenceNode.Stop();
-
-    // getchar();
-
+    getchar();
 }

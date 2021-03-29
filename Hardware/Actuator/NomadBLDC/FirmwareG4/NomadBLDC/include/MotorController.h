@@ -91,6 +91,7 @@ typedef enum
     NOT_CALIBRATED_ERROR = 5,
     MEASUREMENT_OUT_OF_RANGE = 6,
     MEASUREMENT_TIMEOUT = 7,
+    WATCHDOG_TIMEOUT = 8,
 
 } error_type_t;
 
@@ -114,9 +115,7 @@ public:
         uint32_t ccr1_reserved[3]; // Reserved
         
         // Config Reg 2
-        //float K_p_min;         // Position Gain Minimum
         float K_p_max;           // Position Gain Maximum
-        //float K_d_min;         // Velocity Gain Minimum
         float K_d_max;           // Velocity Gain Maximum
         float K_p_limit;         // Position Limiting Mode Proportional Gain
         float K_i_limit;         // Position Limiting Mode Integral Gain
@@ -179,8 +178,8 @@ public:
     struct Debug_t                    // Debug Struct
     {
         uint32_t control_loop_ticks;  // DWT Ticks for control loop execution
-        uint32_t missed_deadlines;    // How manyh control deadlines have been misseduint
-        uint32_t cpu_utilization;     // Current CPU Utlization by the uC5
+        uint32_t missed_deadlines;    // How many control deadlines have been missed
+        uint32_t cpu_utilization;     // Current CPU Utlization by the uC
     };
 
     MotorController(Motor *motor);
@@ -223,6 +222,8 @@ public:
     // TODO: Move this and set FSM
     inline void SetControlMode(uint8_t mode) {control_mode_ = mode;}
     inline uint8_t GetControlMode() {return control_mode_;}
+
+    inline const WatchdogRegister_t& GetWatchdog() { return watchdog_; }
 
     bool CheckErrors();                 // Check for Controller Errors
 
@@ -283,6 +284,8 @@ private:
     // Control FSM
     NomadBLDCFSM* control_fsm_;
 
+    WatchdogRegister_t watchdog_;
+    
     //float control_loop_period_;
     static MotorController *singleton_; // Singleton
 

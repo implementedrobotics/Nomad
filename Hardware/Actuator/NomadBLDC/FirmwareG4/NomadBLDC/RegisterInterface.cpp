@@ -46,6 +46,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
     // Extract Register Command
     register_command_t *cmd = (register_command_t *)command.data;
 
+    // TODO: Write to watchdog register / timeout value.  Current timeout, Last Received time
     if(cmd->header.rwx == 0) // Read
     {
         // Reply packet
@@ -62,6 +63,8 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
         reply.header.length = size;
+
+
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t) + size);
     }
@@ -78,6 +81,10 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         reply.header.code = 0; // Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
 
+        // Update Watchdog Timeout
+        // TODO: Callback instead?
+        register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
+
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
     }
@@ -90,6 +97,10 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         int8_t ret_code = func(cmd, dev);
 
         // TODO: Send back error code?  For now let's assume it's the executing functions responsibiliy
+
+        // Update Watchdog Timeout
+        // TODO: Callback instead?
+        register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
     }
     
     // std::bitset<2> rwx(cmd->rwx);

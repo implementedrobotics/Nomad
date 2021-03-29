@@ -34,6 +34,7 @@
 #include <stddef.h>
 
 // C++ System Files
+#include <limits>
 
 // Project Includes
 #include "main.h"
@@ -251,6 +252,9 @@ extern "C" int app_main() //
     //uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
 
     //save_configuration();
+
+   // float desired = std::numeric_limits<float>::quiet_NaN();
+   // Logger::Instance().Print("Is Nan: %d\r\n", std::isnan(desired));
     //int i = 0;
     // Infinite Loop.
     for (;;)

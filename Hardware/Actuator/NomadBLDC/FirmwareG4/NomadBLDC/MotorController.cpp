@@ -238,6 +238,10 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
+    // Watchdog
+    watchdog_.command_time = 0;
+    watchdog_.timeout = 100; // Default (100 ms aka 10hz)
+
     // Setup Registers
     using namespace std::placeholders;
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister1, new Register((ControllerConfigRegister1_t *)&config_, true, sizeof(ControllerConfigRegister1_t)));
@@ -271,7 +275,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleC, new Register(&state_.dtc_C));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentRMS, new Register(&state_.I_rms));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::MaxCurrent, new Register(&state_.I_max));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::Timeout, new Register(&state_.timeout));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DeadlineMissed, new Register(&state_.timeout));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::ControlMode, new Register(&control_mode_));
 
 
@@ -292,6 +296,9 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentBus, new Register(&state_.I_bus));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::FETTemp, new Register(&state_.fet_temp));
 
+    // Watchdog
+    RegisterInterface::AddRegister(WatchdogRegisters_e::CommandTime, new Register(&watchdog_.command_time));
+    RegisterInterface::AddRegister(WatchdogRegisters_e::Timeout, new Register(&watchdog_.timeout));
 
     // Add some optimized commands ( Automatic reply with appropriate state information thus not requiring another request/rep )
     RegisterInterface::AddRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, new Register(std::bind(&MotorController::ClosedLoopTorqueCmd, this, _1, _2)));
@@ -425,11 +432,9 @@ void MotorController::CurrentMeasurementCB()
     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
 
-
     // Run FSM for timestep
     RunControlFSM();
 }
-
 
 void MotorController::SampleBusVoltage()
 {
@@ -632,7 +637,7 @@ void MotorController::StartADCs()
     adc_3_->GetFilter().Init(0.0f);
     
     // Set Bus Filter Alpha. For now ms sampling with 1000hz cutoff frequency
-    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(controller_update_period_, config_.current_bandwidth));
+    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(1e-3, config_.current_bandwidth));
     vbus_adc_->GetFilter().Init(24.0f / voltage_scale); // 24 volts/Read default system voltage
     
     // Enable ADCs

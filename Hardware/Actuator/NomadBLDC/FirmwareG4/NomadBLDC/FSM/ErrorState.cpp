@@ -36,8 +36,9 @@ ErrorState::ErrorState() : NomadBLDCState(NomadBLDCStateID::STATE_ERROR)
 }
 void ErrorState::Run_(float dt)
 {
-    //Logger::Instance().Print("Idle Running\r\n");
     // Idle Task does Idle Things
+
+    //Logger::Instance().Print("ERROR STATE RUN!\r\n");
 }
 void ErrorState::Enter_(uint32_t current_time)
 {
@@ -54,6 +55,8 @@ void ErrorState::Enter_(uint32_t current_time)
     // Reset Controller State
     data_->controller->Reset();
 
+    // Set Control Mode -> Error
+    data_->controller->SetControlMode(control_mode_type_t::ERROR_MODE);
     Logger::Instance().Print("Entering Error State!!!\r\n");
 }
 

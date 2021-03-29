@@ -50,6 +50,7 @@ NomadBLDCFSM::NomadBLDCFSM() : FiniteStateMachine()
 
     _CreateFSM();
 }
+
 bool NomadBLDCFSM::Run(float dt)
 {
     // Now run base FSM code
@@ -116,6 +117,9 @@ void NomadBLDCFSM::_CreateFSM()
     CommandModeEvent *transition_foc_current = new CommandModeEvent(control_mode_type_t::FOC_CURRENT_MODE, data_);
     CommandModeEvent *transition_foc_torque = new CommandModeEvent(control_mode_type_t::FOC_TORQUE_MODE, data_);
 
+    // Error Transitions
+    FaultModeEvent *transition_error = new FaultModeEvent(data_);
+
     /////////////////////////  Setup Transitions
     startup->AddTransitionEvent(transition_idle, idle);
     measure_resistance->AddTransitionEvent(transition_idle, idle);
@@ -123,8 +127,10 @@ void NomadBLDCFSM::_CreateFSM()
     measure_phase_order->AddTransitionEvent(transition_idle, idle);
     measure_encoder_offset->AddTransitionEvent(transition_idle, idle);
     foc_mode->AddTransitionEvent(transition_idle, idle);
+    foc_mode->AddTransitionEvent(transition_error, error);
 
     // Enter Measure Resistance Transition
+    //idle->AddTransitionEvent(transition_error, error);
     idle->AddTransitionEvent(transition_measure_resistance, measure_resistance);
 
     // Enter Measure Inductance Transition
@@ -153,6 +159,7 @@ void NomadBLDCFSM::_CreateFSM()
     AddState(measure_phase_order);
     AddState(measure_encoder_offset);
     AddState(foc_mode);
+    AddState(error);
     
     // Set Initials State
     SetInitialState(startup);

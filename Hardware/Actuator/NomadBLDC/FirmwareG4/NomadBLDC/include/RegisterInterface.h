@@ -125,7 +125,7 @@ typedef enum // Controller State Register
     DutyCycleC = 0x39,        // Duty Cycle for C phase
     CurrentRMS = 0x3A,        // Motor RMS Current Value
     MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
-    Timeout = 0x3C,           // Missed Input Control Deadline Count
+    DeadlineMissed = 0x3C,           // Missed Input Control Deadline Count
     ControlMode = 0x3D,       // Set Control Mode.  TODO: Should be a function instead and in new register
     // Reserved = 0x3E,
     // Reserved = 0x3F,
@@ -267,6 +267,14 @@ typedef enum // Controller Config Register
     JointStateRegister = 0xC9, // Optimized Closed Loop Joint State Register
 
 } ControllerCommandRegisters_e;
+
+/* Watchdog Registers */
+typedef enum // Controller Config Register
+{
+    CommandTime = 0xCA, // Last received command time
+    Timeout = 0xCB, // Timeout in ms
+
+} WatchdogRegisters_e;
 
 // TODO: Current Sense Amp Options
 
@@ -467,6 +475,12 @@ struct CANConfigRegister1_t
     uint32_t mode_fd;     // FD mode or classic
     float sample_point;   // Nominal Bitrate Sample Point Target
     float d_sample_point; // Data Sample Point Target
+};
+
+struct WatchdogRegister_t
+{
+    int32_t command_time;
+    int32_t timeout;
 };
 
 // TODO: Address field is bit too large.  But keeping clean alignment math here
