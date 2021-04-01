@@ -36,6 +36,43 @@
 #include <CAN/CANDevice.h>
 
 
+
+typedef enum : uint8_t
+{
+    STARTUP_MODE = 0,
+    IDLE_MODE = 1,
+    ERROR_MODE = 2,
+    MEASURE_RESISTANCE_MODE = 3,
+    MEASURE_INDUCTANCE_MODE = 4,
+    MEASURE_PHASE_ORDER_MODE = 5,
+    MEASURE_ENCODER_OFFSET_MODE = 6,
+    CALIBRATION_MODE = 7,
+    POSITION_MODE = 8,
+    VELOCITY_MODE = 9,
+    PD_MODE = 10,
+    TORQUE_MODE = 11,
+    CURRENT_MODE = 12,
+    VOLTAGE_MODE = 13
+} control_mode_type_t;
+
+typedef enum
+{
+    SUCCESSFUL = 0,
+    FOC_TIMING_ERROR = 1,
+    OVERVOLTAGE_ERROR = 2,
+    UNDERVOLTAGE_ERROR = 3,
+    OVERTEMPERATURE_ERROR = 4,
+    NOT_CALIBRATED_ERROR = 5,
+    MEASUREMENT_OUT_OF_RANGE = 6,
+    MEASUREMENT_TIMEOUT = 7,
+    WATCHDOG_TIMEOUT = 8,
+    OVERSPEED_ERROR = 9,
+    POSITION_LIMIT_EXCEEDED = 10,
+    TORQUE_LIMIT_EXCEEDED = 11,
+    CURRENT_LIMIT_EXCEEDED = 12,
+} error_type_t;
+
+
 // TODO: Timeout Pass
 // TODO: Not all request expect a reply
 class RequestReply

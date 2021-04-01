@@ -370,6 +370,8 @@ void MotorController::Reset()
     state_.d_int = 0.0f;
     state_.q_int = 0.0f;
 
+    state_.Vel_int = 0.0f;
+
     state_.V_d = 0.0f;
     state_.V_q = 0.0f;
 
@@ -797,48 +799,48 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
     SetDuty(state_.dtc_A, state_.dtc_B, state_.dtc_C);
 }
 
-void MotorController::TorqueControl()
-{
-    float deadband = 0.1f;
-    //float torque_ref_in = state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
-    float torque_ref = 0.0f;
+// void MotorController::TorqueControl()
+// {
+//     float deadband = 0.1f;
+//     //float torque_ref_in = state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+//     float torque_ref = 0.0f;
 
-    // Check Position Limits
-    if(motor->state_.theta_mech <= config_.pos_limit_min)
-    {
-        torque_ref = config_.K_p_limit * (config_.pos_limit_min - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
-        in_limit_min_ = true;
-    }
-    else if(motor->state_.theta_mech >= config_.pos_limit_max)
-    {
-        torque_ref = config_.K_p_limit * (config_.pos_limit_max - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
-        in_limit_max_ = true;
-    }
+//     // Check Position Limits
+//     if(motor->state_.theta_mech <= config_.pos_limit_min)
+//     {
+//         torque_ref = config_.K_p_limit * (config_.pos_limit_min - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
+//         in_limit_min_ = true;
+//     }
+//     else if(motor->state_.theta_mech >= config_.pos_limit_max)
+//     {
+//         torque_ref = config_.K_p_limit * (config_.pos_limit_max - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
+//         in_limit_max_ = true;
+//     }
 
-    if(in_limit_max_) // Check Hysteresis
-    {
-        if(motor->state_.theta_mech < config_.pos_limit_max-deadband)// || torque_ref_in < 0)
-            in_limit_max_ = false;
-    }
-    else if(in_limit_min_) // Check Hysteresis
-    {
-        if(motor->state_.theta_mech > config_.pos_limit_min+deadband)// || torque_ref_in > 0)
-            in_limit_min_ = false;
-    }
+//     if(in_limit_max_) // Check Hysteresis
+//     {
+//         if(motor->state_.theta_mech < config_.pos_limit_max-deadband)// || torque_ref_in < 0)
+//             in_limit_max_ = false;
+//     }
+//     else if(in_limit_min_) // Check Hysteresis
+//     {
+//         if(motor->state_.theta_mech > config_.pos_limit_min+deadband)// || torque_ref_in > 0)
+//             in_limit_min_ = false;
+//     }
 
-    // TODO: Also check velocity limits
-    if(!in_limit_min_ && !in_limit_max_) // Not Limiting
-    {
-        torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
-    }
+//     // TODO: Also check velocity limits
+//     if(!in_limit_min_ && !in_limit_max_) // Not Limiting
+//     {
+//         torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
+//     }
 
-    // Check torque limit
-    if(torque_ref > config_.torque_limit)
-        torque_ref = config_.torque_limit;
-    else if(torque_ref < -config_.torque_limit)
-        torque_ref = -config_.torque_limit;
+//     // Check torque limit
+//     if(torque_ref > config_.torque_limit)
+//         torque_ref = config_.torque_limit;
+//     else if(torque_ref < -config_.torque_limit)
+//         torque_ref = -config_.torque_limit;
 
-    state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
-    state_.I_d_ref = 0.0f;
-    CurrentControl(); // Do Current Controller
-}
+//     state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
+//     state_.I_d_ref = 0.0f;
+//     CurrentControl(); // Do Current Controller
+// }

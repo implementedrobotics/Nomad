@@ -50,8 +50,7 @@ void PlotJugglerTest::Run()
     auto start_time = std::chrono::high_resolution_clock::now();
     time_ += dt_actual_;
 
-
-    float freq = 2.0f; // 2 hz
+    float freq = 1.0f; // 2 hz
 
     float sin_val = std::sin(2 * M_PI * freq * time_);
     float cos_val = std::cos(2 * M_PI * freq * time_);
@@ -59,15 +58,14 @@ void PlotJugglerTest::Run()
     //std::cout << "Time: " << time_ << " : " << sin_val << std::endl;
     //return;
 
-    float pos = 0.5 * sin_val;
-    servo1->ClosedLoopTorqueCommand(0.0f, 0.8f, 0.0f, 4.0f, 0.0f);
+    float pos = 2 * sin_val;
+    servo1->ClosedLoopTorqueCommand(0.0f, 0.03f, 0.0f, .5f, 0.0f);
     float pos1 = servo1->GetPosition();
     float vel1 = servo1->GetVelocity();
 
-
     nlohmann::json test = {
         {"timestamp", time_},
-        {"motor", {{"pos", pos1}, {"pos_ref", pos},{"vel", vel1}}}};
+        {"motor", {{"pos", pos1}, {"pos_ref", 30.0f},{"vel", vel1}}}};
 
     auto data = nlohmann::json::to_msgpack(test);
     zmq::message_t message(data.size());
@@ -99,7 +97,7 @@ void PlotJugglerTest::Setup()
     can.ClearFilters(); // Clear Existing/Reset.  Filters are saved on the device hardware.  Must make sure to clear
     can.AddFilter(1, 2); // Only Listen to messages on id 1.  
 
-    servo1 = new NomadBLDC(1, 0x12, &can);
+    servo1 = new NomadBLDC(1, 0x10, &can);
     servo1->SetName("INPUT");
     if(!servo1->Connect())
     {
@@ -121,7 +119,7 @@ void PlotJugglerTest::Setup()
     
     // Start Motor Control Mode
     usleep(1000000);
-    servo1->SetControlMode(10);
+    servo1->SetControlMode(VELOCITY_MODE);
 }
 
 void PlotJugglerTest::Exit()
@@ -129,7 +127,7 @@ void PlotJugglerTest::Exit()
     std::cout << "Exiting!" << std::endl;
 
     // Set back to idle.  In theory when no commands are sent it should auto back to idle or edamp?
-    servo1->SetControlMode(1);
+    servo1->SetControlMode(IDLE_MODE);
    // servo2->SetControlMode(1);
 }
 
