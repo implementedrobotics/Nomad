@@ -113,9 +113,12 @@ void NomadBLDCFSM::_CreateFSM()
     CommandModeEvent *transition_measure_inductance = new CommandModeEvent(control_mode_type_t::MEASURE_INDUCTANCE_MODE, data_);
     CommandModeEvent *transition_measure_phase_order = new CommandModeEvent(control_mode_type_t::MEASURE_PHASE_ORDER_MODE, data_);
     CommandModeEvent *transition_measure_encoder_offset = new CommandModeEvent(control_mode_type_t::MEASURE_ENCODER_OFFSET_MODE, data_);
-    CommandModeEvent *transition_foc_voltage = new CommandModeEvent(control_mode_type_t::FOC_VOLTAGE_MODE, data_);
-    CommandModeEvent *transition_foc_current = new CommandModeEvent(control_mode_type_t::FOC_CURRENT_MODE, data_);
-    CommandModeEvent *transition_foc_torque = new CommandModeEvent(control_mode_type_t::FOC_TORQUE_MODE, data_);
+    CommandModeEvent *transition_foc_position = new CommandModeEvent(control_mode_type_t::POSITION_MODE, data_);
+    CommandModeEvent *transition_foc_velocity = new CommandModeEvent(control_mode_type_t::VELOCITY_MODE, data_);
+    CommandModeEvent *transition_foc_pd_mode = new CommandModeEvent(control_mode_type_t::PD_MODE, data_);
+    CommandModeEvent *transition_foc_torque = new CommandModeEvent(control_mode_type_t::TORQUE_MODE, data_);
+    CommandModeEvent *transition_foc_current = new CommandModeEvent(control_mode_type_t::CURRENT_MODE, data_);
+    CommandModeEvent *transition_foc_voltage = new CommandModeEvent(control_mode_type_t::VOLTAGE_MODE, data_);
 
     // Error Transitions
     FaultModeEvent *transition_error = new FaultModeEvent(data_);
@@ -142,14 +145,23 @@ void NomadBLDCFSM::_CreateFSM()
     // Enter Measure Encoder Offset Transition
     idle->AddTransitionEvent(transition_measure_encoder_offset, measure_encoder_offset);
 
-    // Enter FOC Voltage Drive Transition
-    idle->AddTransitionEvent(transition_foc_voltage, foc_mode);
+    // Enter Position Control Mode Transition
+    idle->AddTransitionEvent(transition_foc_position, foc_mode);
+    
+    // Enter Velocity Control Mode Transition
+    idle->AddTransitionEvent(transition_foc_velocity, foc_mode);
+    
+    // Enter PD Control Mode Transition
+    idle->AddTransitionEvent(transition_foc_pd_mode, foc_mode);
 
-    // Enter FOC Current Drive Transition
-    idle->AddTransitionEvent(transition_foc_current, foc_mode);
-
-    // Enter FOC Torque Drive Transition
+    // Enter Torque Control Mode Transition
     idle->AddTransitionEvent(transition_foc_torque, foc_mode);
+    
+    // Enter Current Mode Transition
+    idle->AddTransitionEvent(transition_foc_current, foc_mode);
+    
+    // Enter Voltage Mode Transition
+    idle->AddTransitionEvent(transition_foc_voltage, foc_mode);
 
     // Add the states to the FSM
     AddState(startup);

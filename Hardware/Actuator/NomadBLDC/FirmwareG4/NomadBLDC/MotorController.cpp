@@ -154,22 +154,27 @@ bool measure_encoder_offset()
 
 void start_torque_control()
 {
-    set_control_mode(FOC_TORQUE_MODE);
+    set_control_mode(TORQUE_MODE);
 }
 
 void start_current_control()
 {
-    set_control_mode(FOC_CURRENT_MODE);
+    set_control_mode(CURRENT_MODE);
 }
 
-void start_speed_control()
+void start_position_control()
 {
-    set_control_mode(FOC_SPEED_MODE);
+    set_control_mode(POSITION_MODE);
+}
+
+void start_velocity_control()
+{
+    set_control_mode(VELOCITY_MODE);
 }
 
 void start_voltage_control()
 {
-    set_control_mode(FOC_VOLTAGE_MODE);
+    set_control_mode(VOLTAGE_MODE);
 }
 
 void enter_idle()
@@ -205,6 +210,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.k_q = 0.0f;
     config_.k_i_d = 0.0f;
     config_.k_i_q = 0.0f;
+    config_.k_i_vel = 0.0f;
     //config_.alpha = 0.186350f;
     config_.overmodulation = 1.0f;
     config_.pos_limit_min = -12.5f;
@@ -220,7 +226,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.K_d_max = 5.0f; 
 
     config_.K_p_limit = 1.0f;
-    config_.K_i_limit = 0.0f;
+    //config_.K_i_limit = 0.0f;
     config_.K_d_limit = 0.0f;
 
     config_.pwm_freq = 40000.0f; // 40 khz
@@ -249,6 +255,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_Q, new Register(&config_.k_q));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_D, new Register(&config_.k_i_d));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_Q, new Register(&config_.k_i_q));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_VEL, new Register(&config_.k_i_vel));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentBandwidth, new Register(&config_.current_bandwidth));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::Overmodulation, new Register(&config_.overmodulation));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::PWM_Frequency, new Register(&config_.pwm_freq));
@@ -257,6 +264,8 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register((ControllerConfigRegister2_t *)&config_.K_p_max, true, sizeof(ControllerConfigRegister2_t)));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Max, new Register(&config_.K_p_max));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Max, new Register(&config_.K_d_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Limit, new Register(&config_.K_p_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Limit, new Register(&config_.K_d_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimitMin, new Register(&config_.pos_limit_min));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimitMax, new Register(&config_.pos_limit_max));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::VelocityLimit, new Register(&config_.velocity_limit));
@@ -277,6 +286,8 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::MaxCurrent, new Register(&state_.I_max));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::DeadlineMissed, new Register(&state_.timeout));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::ControlMode, new Register(&control_mode_));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_Vel, new Register(&state_.Vel_int));
+    
 
 
     RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register((ControllerStateRegister2_t *)&state_.V_d_ref, true, sizeof(ControllerStateRegister2_t)));
@@ -288,8 +299,8 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_Q, new Register(&state_.I_q_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::TorqueControlModeRegister, new Register((TorqueControlModeRegister_t *)&state_.Pos_ref, true, sizeof(TorqueControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::PositionSetpoint, new Register(&state_.Pos_ref));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_P, new Register(&state_.K_p));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_D, new Register(&state_.K_d));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageBus, new Register(&state_.Voltage_bus));
@@ -303,7 +314,11 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     // Add some optimized commands ( Automatic reply with appropriate state information thus not requiring another request/rep )
     RegisterInterface::AddRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, new Register(std::bind(&MotorController::ClosedLoopTorqueCmd, this, _1, _2)));
     
-    
+    // TODO: PD_Command(P,D, Pos, Vel, T_ff)
+    // TODO: PositionCommand(Pos, Vel, T_ff)
+    // TODO: VelocityCommand(Vel, T_ff)
+
+    // Return Joint State
 }
 
 int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice *dev)

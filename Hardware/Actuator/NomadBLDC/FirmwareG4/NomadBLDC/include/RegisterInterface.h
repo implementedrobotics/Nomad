@@ -82,11 +82,11 @@ typedef enum // Controller Config Register
     K_LOOP_Q = 0x18,         // Current Controller Loop Gain (Q Axis)
     K_I_D = 0x19,            // Current Controller Integrator Gain (D Axis)
     K_I_Q = 0x1A,            // Current Controller Integrator Gain (Q Axis)
-    CurrentBandwidth = 0x1B, // Current Loop Bandwidth (200 to 2000 hz)
-    Overmodulation = 0x1C,   // Overmodulation Amount
-    PWM_Frequency = 0x1D,    // PWM Switching Frequency
-    FOC_Divider = 0x1E,      // Divider to use for FOC Current control loop frequency
-    // Reserved = 0x1F,
+    K_I_VEL = 0x1B,          // Velocity Integrator Gain
+    CurrentBandwidth = 0x1C, // Current Loop Bandwidth (200 to 2000 hz)
+    Overmodulation = 0x1D,   // Overmodulation Amount
+    PWM_Frequency = 0x1E,    // PWM Switching Frequency
+    FOC_Divider = 0x1F,      // Divider to use for FOC Current control loop frequency
     // Reserved = 0x20,
     // Reserved = 0x21,
     // End Controller Config Register 1
@@ -95,16 +95,15 @@ typedef enum // Controller Config Register
     // Controller Config Register 2 Offsets
     K_P_Max = 0x23,
     K_D_Max = 0x24,
-    K_P_LIMIT = 0x25,         // Position Limiting Mode Proportional Gain
-    K_I_LIMIT = 0x26,         // Position Limiting Mode Integral Gain
-    K_D_LIMIT = 0x27,         // Position Limiting Mode Derivative Gain
-    PositionLimitMin = 0x28,     // Limit on position input max
-    PositionLimitMax = 0x29,     // Limit on position input min
-
-    VelocityLimit = 0x2A, // Limit on maximum velocity
-    PositionLimit = 0x2B, // Limit on maximum position
-    TorqueLimit = 0x2C,   // Limit on maximum torque
-    CurrentLimit = 0x2D,  // Limit on maximum current
+    K_P_Limit = 0x25,         // Position Limiting Mode Proportional Gain
+    K_D_Limit = 0x26,         // Position Limiting Mode Derivative Gain
+    PositionLimitMin = 0x27,     // Limit on position input max
+    PositionLimitMax = 0x28,     // Limit on position input min
+    VelocityLimit = 0x29, // Limit on maximum velocity
+    PositionLimit = 0x2A, // Limit on maximum position
+    TorqueLimit = 0x2B,   // Limit on maximum torque
+    CurrentLimit = 0x2C,  // Limit on maximum current
+    // Reserved = 0x2D,
     // Reserved = 0x2E,
     // Reserved = 0x2F,
     // End Device Status Register 2
@@ -127,7 +126,7 @@ typedef enum // Controller State Register
     MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
     DeadlineMissed = 0x3C,           // Missed Input Control Deadline Count
     ControlMode = 0x3D,       // Set Control Mode.  TODO: Should be a function instead and in new register
-    // Reserved = 0x3E,
+    IntegratorError_Vel = 0x3E,
     // Reserved = 0x3F,
     // End Controller State Register 1
 
@@ -144,15 +143,17 @@ typedef enum // Controller State Register
     // Torque Control Register Offsets
     TorqueControlModeRegister = 0x47,
     PositionSetpoint = 0x48, // Position Setpoint Reference
-    VelocitySetpoint = 0x49, // Velocity Setpoint Reference
-    K_P = 0x4A,              // Position Gain N*m/rad
+    K_P = 0x49,              // Position Gain N*m/rad
+    VelocitySetpoint = 0x4A, // Velocity Setpoint Reference
     K_D = 0x4B,              // Velocity Gain N*m/rad/s
     Torque_FF = 0x4C,        // Feed Forward Torque Value N*m
+
     VoltageBus = 0x4D,
     CurrentBus = 0x4E,
     FETTemp = 0x4F,
     // End Controller State Register 2
 } ControllerStateRegisters_e;
+
 
 /* Motor Registers */
 typedef enum // Motor Config Register
@@ -304,6 +305,7 @@ struct ControllerConfigRegister1_t
     float k_q;                // Current Controller Loop Gain (Q Axis)
     float k_i_d;              // Current Controller Integrator Gain (D Axis)
     float k_i_q;              // Current Controller Integrator Gain (Q Axis)
+    float k_i_vel;            // Velocity Integrator Gain
     float current_bandwidth;  // Current Loop Bandwidth (200 to 2000 hz)
     float overmodulation;     // Overmodulation Amount
     float pwm_freq;           // PWM Switching Frequency
@@ -336,6 +338,7 @@ struct ControllerStateRegister1_t
     float I_rms;      // Motor RMS Current Value
     float I_max;      // Maximum Allowable Commanded Current in next Time Step
     uint32_t timeout; // Keep up with number of controller timeouts for missed deadlines
+    float Vel_int;    // Velocity Integrator Error
 };
 
 struct ControllerStateRegister2_t
@@ -350,8 +353,8 @@ struct ControllerStateRegister2_t
 
     // Torque Control Setpoints
     float Pos_ref; // Position Setpoint Reference
-    float Vel_ref; // Velocity Setpoint Reference
     float K_p;     // Position Gain N*m/rad
+    float Vel_ref; // Velocity Setpoint Reference
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
 
@@ -376,8 +379,8 @@ struct CurrentControlModeRegister_t
 struct TorqueControlModeRegister_t
 {
     float Pos_ref; // Position Setpoint Reference
-    float Vel_ref; // Velocity Setpoint Reference
     float K_p;     // Position Gain N*m/rad
+    float Vel_ref; // Velocity Setpoint Reference
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
 };

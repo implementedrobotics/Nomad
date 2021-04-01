@@ -1,8 +1,9 @@
 # Firmware TODO:
 * Keep alive support/Watchdog
 * Add Position Limit Enable - NaN
+* Set Control Mode FUNCTION
 * CAN Bootloader
-* Move Critical Code higher up in FSM
+* Move Critical Code Protector higher up in FSM
 * Device Status register access -> MotorControl
 * Speed Controller w/ Integrator ***
 * Arm Controller Function
@@ -24,7 +25,6 @@
 * FD CAN Error Handler Function
 * Peripheral Base Class
 * Add register error check handling lambda/callbacks and scaling
-* Variadic Templates? - Nah
 * Verify Good Location of Address Flash Page
 * Profile/Optimize CAN Interrupt Handling Function - Fast enough for atleast 1khz
 * PCAN FD 80mhz bit timings - Move this to cansetup.md

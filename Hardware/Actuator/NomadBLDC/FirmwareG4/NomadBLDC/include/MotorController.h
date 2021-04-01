@@ -62,10 +62,8 @@ extern MotorController *motor_controller;
 class ADCDevice;
 class Thermistor;
 class NomadBLDCFSM;
-//class TorqueControlModeRegister_t;
-//class FDCANDevice;
 
-typedef enum: uint8_t
+typedef enum : uint8_t
 {
     STARTUP_MODE = 0,
     IDLE_MODE = 1,
@@ -75,10 +73,12 @@ typedef enum: uint8_t
     MEASURE_PHASE_ORDER_MODE = 5,
     MEASURE_ENCODER_OFFSET_MODE = 6,
     CALIBRATION_MODE = 7,
-    FOC_CURRENT_MODE = 8,
-    FOC_VOLTAGE_MODE = 9,
-    FOC_TORQUE_MODE = 10,
-    FOC_SPEED_MODE = 11
+    POSITION_MODE = 8,
+    VELOCITY_MODE = 9,
+    PD_MODE = 10,
+    TORQUE_MODE = 11,
+    CURRENT_MODE = 12,
+    VOLTAGE_MODE = 13
 } control_mode_type_t;
 
 typedef enum
@@ -92,12 +92,14 @@ typedef enum
     MEASUREMENT_OUT_OF_RANGE = 6,
     MEASUREMENT_TIMEOUT = 7,
     WATCHDOG_TIMEOUT = 8,
-
+    OVERSPEED_ERROR = 9,
+    POSITION_LIMIT_EXCEEDED = 10,
+    TORQUE_LIMIT_EXCEEDED = 11,
+    CURRENT_LIMIT_EXCEEDED = 12,
 } error_type_t;
 
 class MotorController
 {
-    // TODO: Setpoint references, etc.
 public:
 
     // Motor Controller Parameters
@@ -108,17 +110,17 @@ public:
         float k_q;               // Current Controller Loop Gain (Q Axis)
         float k_i_d;             // Current Controller Integrator Gain (D Axis)
         float k_i_q;             // Current Controller Integrator Gain (Q Axis)
+        float k_i_vel;           // Velocity Integrator Gain
         float current_bandwidth; // Current Loop Bandwidth (200 to 2000 hz)
         float overmodulation;    // Overmodulation Amount
         float pwm_freq;          // PWM Switching Frequency
         uint32_t foc_ccl_divider; // Divider to use for FOC Current control loop frequency
-        uint32_t ccr1_reserved[3]; // Reserved
+        uint32_t ccr1_reserved[2]; // Reserved
         
         // Config Reg 2
         float K_p_max;           // Position Gain Maximum
         float K_d_max;           // Velocity Gain Maximum
         float K_p_limit;         // Position Limiting Mode Proportional Gain
-        float K_i_limit;         // Position Limiting Mode Integral Gain
         float K_d_limit;         // Position Limiting Mode Derivative Gain
         float pos_limit_min;     // Limit on position input max
         float pos_limit_max;     // Limit on position input min
@@ -154,6 +156,8 @@ public:
         // Timeouts
         uint32_t timeout;            // Keep up with number of controller timeouts for missed deadlines
 
+        float Vel_int;      // Velocity Integrator Error
+        
         // Voltage Control Setpoints
         float V_d_ref; // Voltage Reference (D Axis)
         float V_q_ref; // Voltage Reference (Q Axis)
@@ -162,11 +166,15 @@ public:
         float I_d_ref; // Current Reference (D Axis)
         float I_q_ref; // Current Reference (Q Axis)
 
-        // Torque Control Setpoints
+        // Position Control Setpoints
         float Pos_ref;      // Position Setpoint Reference
-        float Vel_ref;      // Velocity Setpoint Reference
         float K_p;          // Position Gain N*m/rad
+
+        // Velocity Control Setpoints
+        float Vel_ref;      // Velocity Setpoint Reference
         float K_d;          // Velocity Gain N*m/rad/s
+
+        // Torque Feedforward Setpoint
         float T_ff;         // Feed Forward Torque Value N*m
 
         // TODO: Remove these when ported fully

@@ -130,27 +130,24 @@ class MotorConfig:
 @dataclass
 class ControllerConfig:
     #__fmt = "<16fI"
-    __packet : ClassVar[struct.Struct] = struct.Struct('<7fI3I10f2I')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<8f3I9f2I')
     # Config Reg 1
     k_d: float = None
     k_q: float = None
     k_i_d: float = None
     k_i_q: float = None
+    k_i_vel: float = None
     current_bandwidth: float = None
     overmodulation: float = None
     pwm_freq: float = None
     foc_ccl_divider: int = None
     ccr1_reserved_1: int = None
     ccr1_reserver_2: int = None
-    ccr1_reserver_3: int = None
     
     # Config Reg 2
-    #K_p_min: float = None
     K_p_max: float = None
-    #K_d_min: float = None
     K_d_max: float = None
     K_p_limit: float = None
-    K_i_limit: float = None
     K_d_limit: float = None
     pos_limit_min: float = None
     pos_limit_max: float = None
@@ -167,17 +164,16 @@ class ControllerConfig:
         self.k_q,
         self.k_i_d,
         self.k_i_q,
+        self.k_i_vel,
         self.current_bandwidth,
         self.overmodulation,
         self.pwm_freq,
         self.foc_ccl_divider,
         0,
         0,
-        0,
         self.K_p_max,
         self.K_d_max,
         self.K_p_limit,
-        self.K_i_limit,
         self.K_d_limit,
         self.pos_limit_min,
         self.pos_limit_max,
@@ -290,7 +286,7 @@ class MotorState:
 
 @dataclass
 class ControllerState:
-    __packet : ClassVar[struct.Struct] = struct.Struct('<11fI12f')
+    __packet : ClassVar[struct.Struct] = struct.Struct('<11fI13f')
     I_d: float = None
     I_q: float = None
     V_d: float = None
@@ -307,6 +303,8 @@ class ControllerState:
 
     timeout: int = None
 
+    Vel_int: float = None
+
     V_d_ref: float = None
     V_q_ref: float = None
 
@@ -314,15 +312,14 @@ class ControllerState:
     I_q_ref: float = None
 
     Pos_ref: float = None
-    Vel_ref: float = None
     K_p: float = None
+    Vel_ref: float = None
     K_d: float = None
     T_ff: float = None
 
     Voltage_bus: float = None
     I_bus: float = None
     fet_temp: float = None
-    
 
     def pack(self):
         return self.__packet.pack(self.I_d,
@@ -337,13 +334,14 @@ class ControllerState:
         self.I_rms,
         self.I_max,
         self.timeout,
+        self.Vel_int,
         self.V_d_ref,
         self.V_q_ref,
         self.I_d_ref,
         self.I_q_ref,
         self.Pos_ref,
-        self.Vel_ref,
         self.K_p,
+        self.Vel_ref,
         self.K_d,
         self.T_ff,
         self.Voltage_bus,

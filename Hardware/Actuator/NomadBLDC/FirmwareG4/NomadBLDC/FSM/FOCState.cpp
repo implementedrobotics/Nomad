@@ -47,35 +47,34 @@ void FOCState::Run_(float dt)
     MotorController *controller = data_->controller;
     switch (data_->controller->GetControlMode())
     {
-        case (control_mode_type_t::FOC_VOLTAGE_MODE):
-        {
-            controller->state_.V_d = controller->state_.V_d_ref;
-            controller->state_.V_q = controller->state_.V_q_ref;
+        // case (control_mode_type_t::FOC_VOLTAGE_MODE):
+        // {
+        //     controller->state_.V_d = controller->state_.V_d_ref;
+        //     controller->state_.V_q = controller->state_.V_q_ref;
 
-            // TODO: Voltage Limit for I_rms.  V_max = I_max * Phase_R -> Limit Norm/Modulus
+        //     // TODO: Voltage Limit for I_rms.  V_max = I_max * Phase_R -> Limit Norm/Modulus
+        //     controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
 
-            controller->SetModulationOutput(motor->state_.theta_elec, controller->state_.V_d_ref, controller->state_.V_q_ref);
-
-            // Update V_d/V_q
-            controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
-            controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
-            break;
-        }
-        case (control_mode_type_t::FOC_CURRENT_MODE):
-        {
-            controller->CurrentControl();
-            break;
-        }
-        case (control_mode_type_t::FOC_TORQUE_MODE):
-        {
-            controller->TorqueControl();
-            break;
-        }
+        //     // Update V_d/V_q
+        //     controller->state_.V_d = controller->state_.I_d * motor->config_.phase_resistance;
+        //     controller->state_.V_q = controller->state_.I_q * motor->config_.phase_resistance;
+        //     break;
+        // }
+        // case (control_mode_type_t::FOC_CURRENT_MODE):
+        // {
+        //     controller->CurrentControl();
+        //     break;
+        // }
+        // case (control_mode_type_t::FOC_TORQUE_MODE):
+        // {
+        //     controller->TorqueControl();
+        //     break;
+        // }
         default:
             break;
     }
     // uint32_t span = DWT->CYCCNT;
-    //Logger::Instance().Print("Count: %f\r\n", j);
+
     // Exit Critical
     __enable_irq();
 }

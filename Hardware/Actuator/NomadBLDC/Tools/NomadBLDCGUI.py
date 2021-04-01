@@ -269,7 +269,7 @@ class NomadBasicProgressDialog(QtWidgets.QDialog):
     
    # def CloseWindow(self):
 
-Mode_Map = ['STARTUP', 'IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['STARTUP', 'IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'POSITION MODE', 'VELOCITY MODE', 'PD MODE', 'TORQUE MODE', 'CURRENT MODE', 'VOLTAGE_MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -537,7 +537,7 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.posLimitMaxVal.setValue(self.nomad_dev.controller_config.pos_limit_max)
             
             self.posLimitPGainVal.setValue(self.nomad_dev.controller_config.K_p_limit)
-            self.posLimitIGainVal.setValue(self.nomad_dev.controller_config.K_i_limit)
+            #self.posLimitIGainVal.setValue(self.nomad_dev.controller_config.K_i_limit)
             self.posLimitDGainVal.setValue(self.nomad_dev.controller_config.K_d_limit)
             self.velLimitVal.setValue(self.nomad_dev.controller_config.velocity_limit)
             

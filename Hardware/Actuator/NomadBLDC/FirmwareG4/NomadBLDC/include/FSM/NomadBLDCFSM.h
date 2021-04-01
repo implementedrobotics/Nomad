@@ -77,7 +77,6 @@ public:
 
 protected:
     NomadBLDCData *data_;
-    // std::string name_;
 };
 
 // Transitions
@@ -123,21 +122,20 @@ public:
     bool Triggered()
     {
         // Check Watchdog (from PC) Timeout
-        WatchdogRegister_t watchdog = data_->controller->GetWatchdog();
-        if(watchdog.timeout > 0) // Watchdog Enabled.  Check it
-        {
-            uint32_t now = HAL_GetTick();
-            uint32_t deadline = watchdog.command_time + watchdog.timeout;
-            //Logger::Instance().Print("Check Timeout: %d : %d : %d\r\n", now, watchdog.command_time, deadline);
-            if(now >= deadline) // Expired
-            {
-                 // Set Error Code Here
-                 Logger::Instance().Print("TIMED OUT WATCHDOG!\r\n");
-                 return true;
-            }
-        }
+        // WatchdogRegister_t watchdog = data_->controller->GetWatchdog();
+        // if(watchdog.timeout > 0) // Watchdog Enabled.  Check it
+        // {
+        //     uint32_t now = HAL_GetTick();
+        //     uint32_t deadline = watchdog.command_time + watchdog.timeout;
+        //     //Logger::Instance().Print("Check Timeout: %d : %d : %d\r\n", now, watchdog.command_time, deadline);
+        //     if(now >= deadline) // Expired
+        //     {
+        //          // Set Error Code Here
+        //          Logger::Instance().Print("TIMED OUT WATCHDOG!\r\n");
+        //          return true;
+        //     }
+        // }
 
-       
         
         // Check Control Deadline Event
 
