@@ -8,10 +8,13 @@
 <material name="black">
   <color rgba="0.100 0.100 0.100 1.000"/>
 </material>
+<!-- 
+<link name="world">
+</link> -->
 
 <link name="base_link">
   <inertial>
-    <origin rpy="0 0 0" xyz="-0.04286515375447262 0.034667099417527505 0.2727933196007633"/>
+    <origin rpy="0 0 0" xyz="-0.04286515375447262 0.034667099417527505 0.8727933196007633"/>
     <mass value="7.087381218913908"/>
     <inertia ixx="100.2103659049128583" ixy="-0.010479469441884074" ixz="-0.015200771845420832" iyy="100.7568347193957309" iyz="0.06179568302961073" izz="100.5869748924777652"/>
   </inertial>
@@ -30,7 +33,7 @@
   </collision>
 </link>
 
-<link name="HFE_Actuator">
+<link name="HFE_Actuator1">
   <inertial>
     <origin rpy="0 0 0" xyz="0.020090606278027796 1.1368775533237852e-05 -0.0003192040040483901"/>
     <mass value="0.7810510004823594"/>
@@ -43,15 +46,15 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
+  <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.02 -0.000173 -0.470025"/>
     <geometry>
       <mesh filename="meshes/HFE_Actuator1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
-  </collision>
+  </collision> -->
 </link>
 
-<link name="KFE_Actuator">
+<link name="KFE_Actuator1">
   <inertial>
     <origin rpy="0 0 0" xyz="0.03649614210210746 0.00036815712221813105 0.000416109851651858"/>
     <mass value="0.8552943466477122"/>
@@ -64,15 +67,15 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
+  <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.063 -0.000173 -0.470025"/>
     <geometry>
       <mesh filename="meshes/KFE_Actuaor1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
-  </collision>
+  </collision> -->
 </link>
 
-<link name="Upper_Leg">
+<link name="Upper_Leg1">
   <inertial>
     <origin rpy="0 0 0" xyz="0.01733321405565416 -9.729819741887883e-05 -0.10592352500816093"/>
     <mass value="0.48935201093235564"/>
@@ -85,19 +88,19 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
+  <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.123 -0.000375 -0.470025"/>
     <geometry>
       <mesh filename="meshes/Upper_Leg1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
-  </collision>
+  </collision> -->
 </link>
 
-<link name="Lower_Leg">
+<link name="Lower_Leg1">
   <inertial>
-    <origin rpy="0 0 0" xyz="-1.4589471825088296e-08 -0.06151218577282326 0.11318829636588351"/>
-    <mass value="0.2652192384089546"/>
-    <inertia ixx="0.002460258515818818" ixy="-3.8620693969260156e-10" ixz="4.6071236409206406e-10" iyy="0.0017835417524496126" iyz="0.0010505447427862531" izz="0.0006955399706778231"/>
+    <origin rpy="0 0 0" xyz="-2.974420890144991e-08 -0.052154115024369896 0.10050387294028279"/>
+    <mass value="0.2372759399190525"/>
+    <inertia ixx="0.0018940728107995491" ixy="-7.235258989157778e-10" ixz="9.038791399379464e-10" iyy="0.0014156412134363715" iyz="0.0007845222120124143" izz="0.0004932824954085929"/>
   </inertial>
   <visual>
     <origin rpy="0 0 0" xyz="-0.1395 -0.000119 -0.190025"/>
@@ -106,15 +109,15 @@
     </geometry>
     <material name="black"/>
   </visual>
-  <collision>
+  <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.1395 -0.000119 -0.190025"/>
     <geometry>
       <mesh filename="meshes/Lower_Leg1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
-  </collision>
+  </collision> -->
 </link>
 
-<link name="Slider_Plate">
+<link name="Slider_Plate1">
   <inertial>
     <origin rpy="0 0 0" xyz="-0.0014706845703063385 0.00030798756510659034 -3.4098044326968946e-07"/>
     <mass value="0.22856712723152553"/>
@@ -127,39 +130,67 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <collision>
+  <!-- <collision>
     <origin rpy="0 0 0" xyz="0.005 -0.000173 -0.470025"/>
     <geometry>
       <mesh filename="meshes/Slider_Plate1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
-  </collision>
+  </collision> -->
 </link>
+
+<link name="Foot1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0024998859055051226 -0.0075597099794949 0.006277999224499842"/>
+    <mass value="0.027943298489902197"/>
+    <inertia ixx="6.619251468567566e-06" ixy="1.7933025073593734e-11" ixz="-1.0254211759222476e-11" iyy="5.5553343287695e-06" iyz="-1.301568006369146e-06" izz="5.036226401955923e-06"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.142 0.133296 -0.404643"/>
+    <geometry>
+      <mesh filename="meshes/Foot1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <!-- <collision>
+    <origin rpy="0 0 0" xyz="-0.142 0.133296 -0.404643"/>
+    <geometry>
+      <mesh filename="meshes/Foot1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision> -->
+</link>
+
+<!-- <joint name="base_to_world" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+  <parent link="world"/>
+  <child link="base_link"/>
+</joint> -->
 
 <joint name="slider_to_hip" type="fixed">
   <origin rpy="0 0 0" xyz="0.025 0.0 0.0"/>
-  <parent link="Slider_Plate"/>
-  <child link="HFE_Actuator"/>
+  <parent link="Slider_Plate1"/>
+  <child link="HFE_Actuator1"/>
 </joint>
 
 <joint name="j_hfe" type="continuous">
   <origin rpy="0 0 0" xyz="0.043 0.0 0.0"/>
-  <parent link="HFE_Actuator"/>
-  <child link="KFE_Actuator"/>
+  <parent link="HFE_Actuator1"/>
+  <child link="KFE_Actuator1"/>
   <axis xyz="-1.0 0.0 -0.0"/>
 </joint>
 
 <joint name="hfe_to_upper" type="fixed">
   <origin rpy="0 0 0" xyz="0.06 0.000202 0.0"/>
-  <parent link="KFE_Actuator"/>
-  <child link="Upper_Leg"/>
+  <parent link="KFE_Actuator1"/>
+  <child link="Upper_Leg1"/>
 </joint>
 
 <joint name="j_kfe" type="continuous">
   <origin rpy="0 0 0" xyz="0.0165 -0.000256 -0.28"/>
-  <parent link="Upper_Leg"/>
-  <child link="Lower_Leg"/>
+  <parent link="Upper_Leg1"/>
+  <child link="Lower_Leg1"/>
   <axis xyz="-1.0 -0.0 0.0"/>
 </joint>
+
 <!--
 <joint name="slider" type="prismatic">
   <origin rpy="0 0 0" xyz="-0.005 0.000173 0.470025"/>
@@ -173,7 +204,13 @@
 <joint name="slider" type="fixed">
   <origin rpy="0 0 0" xyz="-0.005 0.000173 0.470025"/>
   <parent link="base_link"/>
-  <child link="Slider_Plate"/>
+  <child link="Slider_Plate1"/>
 </joint>
 
+<joint name="j_foot" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0025 -0.133415 0.214618"/>
+  <parent link="Lower_Leg1"/>
+  <child link="Foot1"/>
+</joint>
 </robot>
+
