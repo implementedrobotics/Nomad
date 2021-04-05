@@ -60,6 +60,9 @@
         "bitset": "cpp",
         "future": "cpp",
         "forward_list": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "unordered_set": "cpp",
+        "list": "cpp",
+        "typeindex": "cpp"
     }
 }

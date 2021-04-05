@@ -8,12 +8,15 @@
 <material name="black">
   <color rgba="0.100 0.100 0.100 1.000"/>
 </material>
+<!-- 
+<link name="world">
+</link> -->
 
 <link name="base_link">
   <inertial>
-    <origin rpy="0 0 0" xyz="-0.04286515375447262 0.034667099417527505 0.2727933196007633"/>
+    <origin rpy="0 0 0" xyz="-0.04286515375447262 0.034667099417527505 0.8727933196007633"/>
     <mass value="7.087381218913908"/>
-    <inertia ixx="1.2103659049128583" ixy="-0.010479469441884074" ixz="-0.015200771845420832" iyy="0.7568347193957309" iyz="0.06179568302961073" izz="0.5869748924777652"/>
+    <inertia ixx="100.2103659049128583" ixy="-0.010479469441884074" ixz="-0.015200771845420832" iyy="100.7568347193957309" iyz="0.06179568302961073" izz="100.5869748924777652"/>
   </inertial>
   <visual>
     <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -53,9 +56,9 @@
 
 <link name="KFE_Actuator1">
   <inertial>
-    <origin rpy="0 0 0" xyz="0.03649614210210743 -0.0004167928095349341 0.0003681581192908068"/>
+    <origin rpy="0 0 0" xyz="0.03649614210210746 0.00036815712221813105 0.000416109851651858"/>
     <mass value="0.8552943466477122"/>
-    <inertia ixx="0.0017410880733711998" ixy="-1.7513876421998258e-05" ixz="7.081537317585318e-06" iyy="0.0010632034634895648" iyz="-1.0058059950756074e-07" izz="0.0010633747722274926"/>
+    <inertia ixx="0.001741088073367425" ixy="7.0815373175880285e-06" ixz="1.7513876422001196e-05" iyy="0.0010633747722278986" iyz="1.00580599395007e-07" izz="0.0010632034634898927"/>
   </inertial>
   <visual>
     <origin rpy="0 0 0" xyz="-0.063 -0.000173 -0.470025"/>
@@ -74,19 +77,19 @@
 
 <link name="Upper_Leg1">
   <inertial>
-    <origin rpy="0 0 0" xyz="0.017333214055653468 0.10592284205027887 -9.729720034751255e-05"/>
+    <origin rpy="0 0 0" xyz="0.01733321405565416 -9.729819741887883e-05 -0.10592352500816093"/>
     <mass value="0.48935201093235564"/>
-    <inertia ixx="0.004410723083100324" ixy="3.7287894585369755e-05" ixz="-3.4083010400087765e-08" iyy="0.0002997224782418373" iyz="3.5969845314717808e-06" izz="0.004234924211716114"/>
+    <inertia ixx="0.004410723083100282" ixy="-3.408301039446008e-08" ixz="-3.7287894585340264e-05" iyy="0.004234924211716035" iyz="-3.5969845314219888e-06" izz="0.00029972247824181994"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="-0.123 -0.000173 -0.470227"/>
+    <origin rpy="0 0 0" xyz="-0.123 -0.000375 -0.470025"/>
     <geometry>
       <mesh filename="meshes/Upper_Leg1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <!-- <collision>
-    <origin rpy="0 0 0" xyz="-0.123 -0.000173 -0.470227"/>
+    <origin rpy="0 0 0" xyz="-0.123 -0.000375 -0.470025"/>
     <geometry>
       <mesh filename="meshes/Upper_Leg1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -95,19 +98,19 @@
 
 <link name="Lower_Leg1">
   <inertial>
-    <origin rpy="0 0 0" xyz="-2.974421137169614e-08 -0.10050455589816557 -0.05215411402729847"/>
+    <origin rpy="0 0 0" xyz="-2.974420890144991e-08 -0.052154115024369896 0.10050387294028279"/>
     <mass value="0.2372759399190525"/>
-    <inertia ixx="0.0018940728107995422" ixy="-9.038791538157342e-10" ixz="-7.235259058546717e-10" iyy="0.0004932824954085868" iyz="-0.0007845222120124173" izz="0.001415641213436375"/>
+    <inertia ixx="0.0018940728107995491" ixy="-7.235258989157778e-10" ixz="9.038791399379464e-10" iyy="0.0014156412134363715" iyz="0.0007845222120124143" izz="0.0004932824954085929"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="-0.1395 -0.280173 -0.469971"/>
+    <origin rpy="0 0 0" xyz="-0.1395 -0.000119 -0.190025"/>
     <geometry>
       <mesh filename="meshes/Lower_Leg1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="black"/>
   </visual>
   <!-- <collision>
-    <origin rpy="0 0 0" xyz="-0.1395 -0.280173 -0.469971"/>
+    <origin rpy="0 0 0" xyz="-0.1395 -0.000119 -0.190025"/>
     <geometry>
       <mesh filename="meshes/Lower_Leg1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -137,24 +140,30 @@
 
 <link name="Foot1">
   <inertial>
-    <origin rpy="0 0 0" xyz="-0.0024998859055090084 -0.0062786821823827554 -0.007559708982423974"/>
+    <origin rpy="0 0 0" xyz="-0.0024998859055051226 -0.0075597099794949 0.006277999224499842"/>
     <mass value="0.027943298489902197"/>
-    <inertia ixx="6.619251468566265e-06" ixy="1.0254211650802258e-11" ixz="1.7933025073593734e-11" iyy="5.0362264019591756e-06" iyz="1.3015680063696881e-06" izz="5.555334328772102e-06"/>
+    <inertia ixx="6.619251468567566e-06" ixy="1.7933025073593734e-11" ixz="-1.0254211759222476e-11" iyy="5.5553343287695e-06" iyz="-1.301568006369146e-06" izz="5.036226401955923e-06"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="-0.142 -0.065555 -0.336556"/>
+    <origin rpy="0 0 0" xyz="-0.142 0.133296 -0.404643"/>
     <geometry>
       <mesh filename="meshes/Foot1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <!-- <collision>
-    <origin rpy="0 0 0" xyz="-0.142 -0.065555 -0.336556"/>
+    <origin rpy="0 0 0" xyz="-0.142 0.133296 -0.404643"/>
     <geometry>
       <mesh filename="meshes/Foot1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision> -->
 </link>
+
+<!-- <joint name="base_to_world" type="fixed">
+  <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+  <parent link="world"/>
+  <child link="base_link"/>
+</joint> -->
 
 <joint name="slider_to_hip" type="fixed">
   <origin rpy="0 0 0" xyz="0.025 0.0 0.0"/>
@@ -170,30 +179,38 @@
 </joint>
 
 <joint name="hfe_to_upper" type="fixed">
-  <origin rpy="0 0 0" xyz="0.06 0.0 0.000202"/>
+  <origin rpy="0 0 0" xyz="0.06 0.000202 0.0"/>
   <parent link="KFE_Actuator1"/>
   <child link="Upper_Leg1"/>
 </joint>
 
 <joint name="j_kfe" type="continuous">
-  <origin rpy="0 0 0" xyz="0.0165 0.28 -0.000256"/>
+  <origin rpy="0 0 0" xyz="0.0165 -0.000256 -0.28"/>
   <parent link="Upper_Leg1"/>
   <child link="Lower_Leg1"/>
   <axis xyz="-1.0 -0.0 0.0"/>
 </joint>
 
+<!--
 <joint name="slider" type="prismatic">
   <origin rpy="0 0 0" xyz="-0.005 0.000173 0.470025"/>
   <parent link="base_link"/>
-  <child link="Slider_Plate1"/>
-  <axis xyz="0.0 -0.0 1.0"/>
+  <child link="Slider_Plate"/>
+  <axis xyz="0.0 -0.0 -1.0"/>
   <limit effort="100" lower="0.0" upper="0.0" velocity="100"/>
+</joint>
+-->
+
+<joint name="slider" type="fixed">
+  <origin rpy="0 0 0" xyz="-0.005 0.000173 0.470025"/>
+  <parent link="base_link"/>
+  <child link="Slider_Plate1"/>
 </joint>
 
 <joint name="j_foot" type="fixed">
-  <origin rpy="0 0 0" xyz="0.0025 -0.214618 -0.133415"/>
+  <origin rpy="0 0 0" xyz="0.0025 -0.133415 0.214618"/>
   <parent link="Lower_Leg1"/>
   <child link="Foot1"/>
 </joint>
-
 </robot>
+
