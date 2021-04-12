@@ -18,6 +18,9 @@ set(PLOTJUGGLER_TEST_LIBS CAN NOMADBLDC pcanfd zmq)
 set(LEG_TEST_SOURCES ${PROJECT_SOURCE_DIR}/NomadBLDC/test/leg_test.cpp)
 set(LEG_TEST_LIBS CAN NOMADBLDC pcanfd zmq ${required_libraries})
 
+set(PARAM_TEST_SOURCES ${PROJECT_SOURCE_DIR}/NomadBLDC/test/param_test.cpp)
+set(PARAM_TEST_LIBS CAN NOMADBLDC pcanfd zmq ${required_libraries})
+
 
 # Definitions
 #add_definitions(-D_GNU_SOURCE)
@@ -33,3 +36,6 @@ target_link_libraries(plotjuggler_test ${PLOTJUGGLER_TEST_LIBS} )
 
 add_executable(leg_test ${LEG_TEST_SOURCES})
 target_link_libraries(leg_test ${LEG_TEST_LIBS} )
+
+add_executable(param_test ${PARAM_TEST_SOURCES})
+target_link_libraries(param_test ${PARAM_TEST_LIBS} )

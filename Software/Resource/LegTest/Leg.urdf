@@ -148,12 +148,12 @@
     </geometry>
     <material name="silver"/>
   </visual>
-  <!-- <collision>
+  <collision>
     <origin rpy="0 0 0" xyz="-0.142 -0.065555 -0.336556"/>
     <geometry>
       <mesh filename="meshes/Foot1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <joint name="slider_to_hip" type="fixed">

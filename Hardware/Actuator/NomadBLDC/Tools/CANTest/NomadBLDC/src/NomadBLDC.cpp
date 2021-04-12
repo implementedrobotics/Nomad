@@ -13,7 +13,7 @@
 
 auto start_time = std::chrono::high_resolution_clock::now();
 
-NomadBLDC::NomadBLDC() :  master_id_(-1), servo_id_(-1), transport_(nullptr), connected_(false), control_mode_(0)
+NomadBLDC::NomadBLDC() :  master_id_(-1), servo_id_(-1), transport_(nullptr), connected_(false), control_mode_(0), torque_limit_(0.0f), current_limit_(11.0f)
 {
     memset(&joint_state_,0,sizeof(JointState_t));
 
@@ -25,7 +25,7 @@ NomadBLDC::NomadBLDC() :  master_id_(-1), servo_id_(-1), transport_(nullptr), co
     // Setup Register Mappings
     SetupRegisterMap();
 }
-NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master_id_(master_id), servo_id_(servo_id), transport_(transport), connected_(false), control_mode_(0)
+NomadBLDC::NomadBLDC(int master_id, int servo_id, CANDevice *transport) : master_id_(master_id), servo_id_(servo_id), transport_(transport), connected_(false), control_mode_(0), torque_limit_(0.0f), current_limit_(11.0f)
 {
     using namespace std::placeholders;
     // Allocate Requester & Callback
@@ -55,7 +55,12 @@ void NomadBLDC::SetupRegisterMap()
     
     register_map_[ControllerStateRegisters_e::ControlMode] = {ControllerStateRegisters_e::ControlMode, sizeof(control_mode_), (uint8_t *)&control_mode_};
 
+    register_map_[ControllerConfigRegisters_e::CurrentLimit] = {ControllerConfigRegisters_e::CurrentLimit, sizeof(current_limit_), (uint8_t *)&current_limit_};
+    register_map_[ControllerConfigRegisters_e::TorqueLimit] = {ControllerConfigRegisters_e::TorqueLimit, sizeof(torque_limit_), (uint8_t *)&torque_limit_};
+
+
     register_map_[MotorConfigRegisters_e::ZeroOutputOffset] = {MotorConfigRegisters_e::ZeroOutputOffset, 0, nullptr};
+    register_map_[DeviceRegisters_e::DeviceSaveConfig] = {DeviceRegisters_e::DeviceSaveConfig, 0, nullptr};
 }
 
 bool NomadBLDC::Connect()
@@ -71,11 +76,54 @@ bool NomadBLDC::Connect()
     return true;
 }
 
+bool NomadBLDC::SetMaxTorque(float tau_max)
+{
+    torque_limit_ = tau_max;
+    bool status = WriteRegisters({register_map_[ControllerConfigRegisters_e::TorqueLimit]});
+    return status;
+}
+
+float NomadBLDC::GetMaxTorque()
+{
+    bool status = ReadRegisters({register_map_[ControllerConfigRegisters_e::TorqueLimit]}, -1);
+
+    //std::cout << "STATUS TORQUE: " << status << std::endl;
+    if (!status) // Failed
+        return -1.0f;
+    
+    return torque_limit_;
+}
+
+bool NomadBLDC::SetMaxCurrent(float current)
+{
+    current_limit_ = current;
+    bool status = WriteRegisters({register_map_[ControllerConfigRegisters_e::CurrentLimit]});
+    return status;
+}
+
+float NomadBLDC::GetMaxCurrent()
+{
+    bool status = ReadRegisters({register_map_[ControllerConfigRegisters_e::CurrentLimit]}, -1);
+
+    //std::cout << "STATUS TORQUE: " << status << std::endl;
+    if (!status) // Failed
+        return -1.0f;
+    
+    return current_limit_;
+}
+
 bool NomadBLDC::ZeroOutput()
 {
     bool status = ExecuteRegisters({register_map_[MotorConfigRegisters_e::ZeroOutputOffset]}, {}, 5000);
     return status;
 }
+
+bool NomadBLDC::SaveConfig()
+{
+    bool status = ExecuteRegisters({register_map_[DeviceRegisters_e::DeviceSaveConfig]}, {}, 5000);
+    return status;
+}
+
 
 bool NomadBLDC::SetControlMode(uint32_t control_mode)
 {
@@ -115,7 +163,9 @@ bool NomadBLDC::ReadRegisters(std::vector<Register> registers, uint32_t timeout)
     // TODO: If synced we wait... Pass Function Param for Async vs Not?
     bool status = request.Wait(timeout);
     auto total_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
-    std::cout << "Duration: " << total_elapsed << "us" << std::endl;
+   // std::cout << "Duration: " << total_elapsed << "us" << std::endl;
+
+   // std::cout << "Status: " << status << std::endl;
 
     if (status) { return true; }
 
@@ -128,9 +178,12 @@ bool NomadBLDC::WriteRegisters(std::vector<Register> registers, uint32_t timeout
         return false;
 
     // Create Request
-    auto& request = requester_->CreateRequest(registers, RequestType_e::Write, timeout);
+    //auto& request = 
+    requester_->CreateRequest(registers, RequestType_e::Write, timeout);
 
     // TODO: Sync/Reply?
+    //request.Wait();
+
     return true;
 }
 
@@ -149,8 +202,10 @@ bool NomadBLDC::ExecuteRegisters(std::vector<Register> param_registers, std::vec
 
 void NomadBLDC::UpdateRegisters(RequestReply &request)
 {
+  //  std::cout << "UPDATE REGISTERS" << std::endl;
     std::vector<register_reply_t> replies;
     bool status = request.Get(replies);
+
 
     std::lock_guard<std::mutex> lock(update_lock); // Lock for updates.
     for(auto& reply : replies)
