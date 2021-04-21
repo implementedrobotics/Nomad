@@ -492,7 +492,7 @@ struct request_header_t // 4 Bytes
     uint32_t sender_id : 6; // Node ID of Sender
     uint32_t rwx : 2;       // Read/Write/Execute
     uint32_t address : 8;   // 8-bit address (256 Max Addresses)
-    uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
+    uint32_t data_type : 2; // Data Type: 8-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
     uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
     uint32_t reserved : 8;  // Reserved / Padding
     // MSG/ACK IDs?
