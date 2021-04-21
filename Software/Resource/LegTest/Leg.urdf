@@ -39,9 +39,8 @@
   <visual>
     <origin rpy="0 0 0" xyz="-0.02 -0.000173 -0.470025"/>
     <geometry>
-      <mesh filename="meshes/HFE_Actuator1.stl" scale="0.001 0.001 0.001"/>
+      <mesh filename="meshes/HFE_Actuator1.dae" scale="1.001 1.001 1.001"/>
     </geometry>
-    <material name="silver"/>
   </visual>
   <!-- <collision>
     <origin rpy="0 0 0" xyz="-0.02 -0.000173 -0.470025"/>
