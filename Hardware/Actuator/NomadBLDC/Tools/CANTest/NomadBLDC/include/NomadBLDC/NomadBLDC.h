@@ -105,6 +105,7 @@ public:
         ptrdiff_t pos = std::distance(request_regs_.begin(), std::find_if(request_regs_.begin(),
                                                                           request_regs_.end(),
                                                                           [&address](const Register f) -> bool { return f.address == address; }));
+        
         if (pos >= request_regs_.size())
         {
             return false;
@@ -245,7 +246,7 @@ class Requester {
             // TODO: Only generate these for request expecting replies
             // TODO: Always push back.  Set a no reply.  Which will satisfy fullfilled and remove from queue next cycle
             request_queue_.push_back({return_registers, timeout});
-            
+            //std::cout << "Push Back Queue: " << request_queue_.size() << std::endl;
             auto &request = request_queue_.back();
             requests_lock_.unlock();
 
@@ -302,6 +303,9 @@ class Requester {
             auto &request = request_queue_.back();
             requests_lock_.unlock();
 
+            //std::cout << "Push Back RW Queue: " << request_queue_.size() << std::endl;
+           // std::cout << "QUEUE SIZE: " << request_queue_.size() << std::endl;
+
             // Send Request Message
             for (CANDevice::CAN_msg_t &msg : request_msgs)
             {
@@ -313,6 +317,7 @@ class Requester {
 
         void ProcessReply(register_reply_t *reply)
         {
+            //std::cout << "Process Reply!" << std::endl;
             std::lock_guard<std::mutex> lock(requests_lock_);
             for (int i = request_queue_.size() - 1; i >= 0; i--)
             {
@@ -321,17 +326,25 @@ class Requester {
                 // TODO: Check for Stale request.  Timed out, already fulfilled etc
                 if (request.isFulfilled())
                 {
+                    //std::cout << "QUEUE SIZE PRE ERASE: " << request_queue_.size() << std::endl;
                     request_queue_.erase(request_queue_.begin() + i);
+                   // std::cout << "QUEUE SIZE ERASE: " << request_queue_.size() << std::endl;
                     continue;
                 }
                // std::cout << "Receiving: " << reply->header.address << std::endl;
                 if (request.CheckAddress(reply->header.address))
                 {
+                   // std::cout << "Setting Here: " << reply->header.address << std::endl;
                     request.Set(*reply);
                     if (request.isFulfilled())
                     {
                         // Fire Update Handler
+                        //std::cout << "Updating Request!" << std::endl;
                         update_cb_(request);
+
+                        //std::cout << "QUEUE SIZE PRE ERASE: " << request_queue_.size() << std::endl;
+                        //request_queue_.erase(request_queue_.begin() + i);
+                        //std::cout << "QUEUE SIZE ERASE: " << request_queue_.size() << std::endl;
                     }
                 }
             }
@@ -372,6 +385,14 @@ public:
     bool Reset();
     bool ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff);
     bool ZeroOutput();
+    bool SetMaxTorque(float tau);
+    float GetMaxTorque();
+
+    bool SetMaxCurrent(float current);
+    float GetMaxCurrent();
+
+    bool SaveConfig();
+
     bool SetControlMode(uint32_t mode);
     void SetName(const std::string &name) { name_ = name; }
     const std::string& GetName() const { return name_; }
@@ -412,6 +433,9 @@ protected:
     JointState_t joint_state_;
 
     uint32_t control_mode_; // TODO: To Register
+
+    float torque_limit_;
+    float current_limit_;
 
 private:
     static constexpr uint16_t kMaxRegisters = (1 << 8); // 8-bit addressing

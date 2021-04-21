@@ -615,7 +615,7 @@ public:
         {
             //**data = *((float *)value);
             memcpy(*data, value, Size());
-          //  Logger::Instance().Print("Float Value32: %d\r\n", **data);
+            //Logger::Instance().Print("Float Value32: %f\r\n", **data);
             return true;
         }
         else

@@ -52,32 +52,33 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         // Reply packet
         register_reply_t reply;
         
-        //Logger::Instance().Print("Read: %d : \r\n", cmd->header.address);
         // Read
         uint8_t size = register_map_[cmd->header.address]->Get(reply.cmd_data, 0);
 
         // Send it back
-        reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
+        reply.header.sender_id = dev->ID();
 
         //Logger::Instance().Print("ID: %d : \r\n", size);
         reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
         reply.header.length = size;
 
-
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t) + size);
+        //  Logger::Instance().Print("Read: %d : \r\n", cmd->header.address);
+       //  Logger::Instance().Print("Returned: %d : \r\n", cmd->header.address);
     }
     else if(cmd->header.rwx == 1) // Write
     {
         // TODO: Address Return Callback OVerride
+        //Logger::Instance().Print("Write: %d : %f\r\n", cmd->header.address, *(float *)cmd->cmd_data);
 
         // Write
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
 
         // Check for callback
         register_reply_t reply;
-        reply.header.sender_id = dev->ID(); // TODO: Need our CAN/Controller ID Here
+        reply.header.sender_id = dev->ID();
         reply.header.code = 0; // Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
 
@@ -86,7 +87,9 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
 
         // Send it back
-        dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
+        // TODO: Need a packet ID here...
+        //dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
+
     }
     else if(cmd->header.rwx == 2) // Execute
     {
