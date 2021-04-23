@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 {
     CANDevice::Config_t config;
     config.bitrate = 1e6; //1mbps
-    config.d_bitrate = 2e6; //2mbps
+    config.d_bitrate = 5e6; //2mbps
     config.sample_point = .875; //87.5% 
     config.d_sample_point = 0.6; //60%
     config.clock_freq = 80e6; // 80mhz // Read from driver?  

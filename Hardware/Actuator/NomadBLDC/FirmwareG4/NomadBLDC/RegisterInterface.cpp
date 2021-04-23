@@ -37,9 +37,6 @@
 #include <Logger.h>
 
 Register* RegisterInterface::register_map_[kMaxRegisters] = {};
-// RegisterInterface::RegisterInterface()
-// {    
-// }
 
 void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev)
 {
@@ -58,21 +55,16 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         // Send it back
         reply.header.sender_id = dev->ID();
 
-        //Logger::Instance().Print("ID: %d : \r\n", size);
         reply.header.code = 0; // TODO: Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
-        reply.header.length = size;
+        reply.header.msg_id = cmd->header.msg_id; // Match message id for correlation
 
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t) + size);
-        //  Logger::Instance().Print("Read: %d : \r\n", cmd->header.address);
-       //  Logger::Instance().Print("Returned: %d : \r\n", cmd->header.address);
     }
     else if(cmd->header.rwx == 1) // Write
     {
-        // TODO: Address Return Callback OVerride
-        //Logger::Instance().Print("Write: %d : %f\r\n", cmd->header.address, *(float *)cmd->cmd_data);
-
+        // TODO: Address Return Callback Override
         // Write
         register_map_[cmd->header.address]->Set((uint8_t *)cmd->cmd_data, 0);
 
@@ -81,40 +73,34 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
         reply.header.sender_id = dev->ID();
         reply.header.code = 0; // Error Codes Here
         reply.header.address = cmd->header.address; // Address from Requested Register
+        reply.header.msg_id = cmd->header.msg_id; // Match message id for correlation
 
         // Update Watchdog Timeout
         // TODO: Callback instead?
         register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
 
         // Send it back
-        // TODO: Need a packet ID here...
-        //dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
+        dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
 
     }
     else if(cmd->header.rwx == 2) // Execute
     {
         // TODO: Error Checking
         // Run Function
-        //Logger::Instance().Print("Execute: %d : \r\n", cmd->header.address);
         auto func = register_map_[cmd->header.address]->GetDataPtr<std::function<int8_t((register_command_t *, FDCANDevice *))>>();
         int8_t ret_code = func(cmd, dev);
 
+        // TODO: If invalid return code, let's skip updating watchdog tiemout?
         // TODO: Send back error code?  For now let's assume it's the executing functions responsibiliy
 
         // Update Watchdog Timeout
         // TODO: Callback instead?
         register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
     }
-    
-    // std::bitset<2> rwx(cmd->rwx);
-    // std::bitset<12> address(cmd->address);
-    // std::bitset<8> byte1(cmd->data[0]);
-    // std::bitset<8> byte2(cmd->data[1]);   
 }
 
 void RegisterInterface::AddRegister(uint16_t address, Register *reg)
 {
-    //Logger::Instance().Print("Adding: %d: %d\r\n",address, reg->Get<uint16_t>(0));
     register_map_[address] = reg;
 }
 

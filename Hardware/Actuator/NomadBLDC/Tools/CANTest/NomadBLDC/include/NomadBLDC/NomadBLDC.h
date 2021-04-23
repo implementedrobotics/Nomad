@@ -79,7 +79,7 @@ class RequestReply
 {
 public:
 
-    RequestReply(std::vector<Register> &registers, uint32_t timeout) :  timeout_(timeout), num_replies_(0)
+    RequestReply(std::vector<Register> &registers, uint32_t id, uint32_t timeout) :  id_(id), timeout_(timeout), num_replies_(0)
     {
         // Reserve for address size
         request_regs_.reserve(registers.size());
@@ -99,8 +99,12 @@ public:
         synced_future_ = synced_promise_.get_future();
     }
     
-    inline bool CheckAddress(uint32_t address) 
+    inline bool CheckReply(uint32_t id, uint32_t address) 
     {
+        //std::cout << "THIS REPLY ID: " << id << " to: " << id_ << std::endl;
+        if(id != id_)
+            return false;
+        
         // Find Address Location
         ptrdiff_t pos = std::distance(request_regs_.begin(), std::find_if(request_regs_.begin(),
                                                                           request_regs_.end(),
@@ -195,7 +199,11 @@ private:
     std::future<void> synced_future_;
 
     std::vector<Register> request_regs_;
+
+    uint32_t id_; // Request ID
     uint32_t timeout_;
+
+
 
     // Number of replies received
     uint32_t num_replies_;
@@ -227,6 +235,7 @@ class Requester {
                 reg_cmd.header.address = reg.address;
                 reg_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
                 reg_cmd.header.sender_id = master_id_;
+                reg_cmd.header.msg_id = id_counter_;
 
                 memcpy(&reg_cmd.cmd_data, reg.data, reg.size);
                 CANDevice::CAN_msg_t msg;
@@ -236,6 +245,8 @@ class Requester {
 
                 // Save it
                 request_msgs.push_back(msg);
+
+              //  std::cout << "Create Request EXEC REPLY: " << id_counter_ << " : " << reg.address << std::endl;
               //  std::cout << "Execute: " << reg.address << " " << request_type << "size: " << reg.size << std::endl;;
             }
 
@@ -245,8 +256,7 @@ class Requester {
             // Generate Request
             // TODO: Only generate these for request expecting replies
             // TODO: Always push back.  Set a no reply.  Which will satisfy fullfilled and remove from queue next cycle
-            request_queue_.push_back({return_registers, timeout});
-            //std::cout << "Push Back Queue: " << request_queue_.size() << std::endl;
+            request_queue_.push_back({return_registers, id_counter_, timeout});
             auto &request = request_queue_.back();
             requests_lock_.unlock();
 
@@ -255,6 +265,10 @@ class Requester {
             {
                 transport_->Send(msg);
             }
+
+            // Increment Counter
+            if (id_counter_++ > 16383)
+                id_counter_ = 0;
 
             return request;
         }
@@ -271,13 +285,13 @@ class Requester {
                 reg_cmd.header.address = reg.address;
                 reg_cmd.header.data_type = 1; // TODO: Everything is 32-bit for now...
                 reg_cmd.header.sender_id = master_id_;
+                reg_cmd.header.msg_id = id_counter_;
 
-                if(request_type == RequestType_e::Read)
-                    reg_cmd.header.length = 0;
-                else // Write or Execute, i.e. Sending Data
-                    reg_cmd.header.length = reg.size;
+                // if(request_type == RequestType_e::Read)
+                //     reg_cmd.header.length = 0;
+                // else // Write or Execute, i.e. Sending Data
+                //     reg_cmd.header.length = reg.size;
 
-               
                 memcpy(&reg_cmd.cmd_data, reg.data, reg.size);
                 CANDevice::CAN_msg_t msg;
                 msg.id = servo_id_;
@@ -287,24 +301,20 @@ class Requester {
                 // Save it
                 request_msgs.push_back(msg);
 
-               // std::cout << "Execute: " << reg.address << " " << request_type << "size: " << reg.size << std::endl;;
+               // std::cout << "Create Request REPLY: " << id_counter_ << " : " << reg.address << std::endl;
             }
 
-            
-
-            // TODO: Need error checking if we have multiply request?  Something breaks if multiple items in queue
+            // TODO: Need error checking if we have multiple request?  Something breaks if multiple items in queue
             // Lock Request Queue
             requests_lock_.lock();
+
             // Generate Request
             // TODO: Only generate these for request expecting replies
-            if(request_type != RequestType_e::Write)
-                request_queue_.push_back({registers, timeout});
+            //if(request_type != RequestType_e::Write)
+                request_queue_.push_back({registers, id_counter_, timeout});
             
             auto &request = request_queue_.back();
             requests_lock_.unlock();
-
-            //std::cout << "Push Back RW Queue: " << request_queue_.size() << std::endl;
-           // std::cout << "QUEUE SIZE: " << request_queue_.size() << std::endl;
 
             // Send Request Message
             for (CANDevice::CAN_msg_t &msg : request_msgs)
@@ -312,12 +322,16 @@ class Requester {
                 transport_->Send(msg);
             }
 
+            // Increment Counter
+            if (id_counter_++ > 16383)
+                id_counter_ = 0;
+
             return request;
         }
 
         void ProcessReply(register_reply_t *reply)
         {
-            //std::cout << "Process Reply!" << std::endl;
+            //std::cout << "PROCESS REPLY: " << request_queue_.size() << std::endl;
             std::lock_guard<std::mutex> lock(requests_lock_);
             for (int i = request_queue_.size() - 1; i >= 0; i--)
             {
@@ -326,24 +340,21 @@ class Requester {
                 // TODO: Check for Stale request.  Timed out, already fulfilled etc
                 if (request.isFulfilled())
                 {
-                    //std::cout << "QUEUE SIZE PRE ERASE: " << request_queue_.size() << std::endl;
                     request_queue_.erase(request_queue_.begin() + i);
-                   // std::cout << "QUEUE SIZE ERASE: " << request_queue_.size() << std::endl;
                     continue;
                 }
-               // std::cout << "Receiving: " << reply->header.address << std::endl;
-                if (request.CheckAddress(reply->header.address))
+                //std::cout << "CHECK REPLY: " << reply->header.msg_id << " : " << reply->header.address << std::endl;
+                if (request.CheckReply(reply->header.msg_id, reply->header.address))
                 {
-                   // std::cout << "Setting Here: " << reply->header.address << std::endl;
+                   // std::cout << "SUCCESS!" << std::endl;
                     request.Set(*reply);
                     if (request.isFulfilled())
                     {
                         // Fire Update Handler
-                        //std::cout << "Updating Request!" << std::endl;
                         update_cb_(request);
 
                         //std::cout << "QUEUE SIZE PRE ERASE: " << request_queue_.size() << std::endl;
-                        //request_queue_.erase(request_queue_.begin() + i);
+                        request_queue_.erase(request_queue_.begin() + i);
                         //std::cout << "QUEUE SIZE ERASE: " << request_queue_.size() << std::endl;
                     }
                 }
@@ -368,7 +379,7 @@ class Requester {
         std::mutex requests_lock_;
         int32_t servo_id_;
         int32_t master_id_;
-
+        uint32_t id_counter_ = 0; // Send message "unique" ID Counter
         std::function<void(RequestReply&)> update_cb_ = [=](RequestReply&) {};
 };
 

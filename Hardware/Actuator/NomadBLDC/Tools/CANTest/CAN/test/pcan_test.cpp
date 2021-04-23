@@ -74,7 +74,8 @@ void CANTestNode::Run()
     test.header.address = ControllerCommandRegisters_e::ClosedLoopTorqueCommand;
     test.header.data_type = 1;
     test.header.sender_id = 0x001;
-    test.header.length = 4;
+    test.header.msg_id = 1;
+    //test.header.length = 4;
 
     TorqueControlModeRegister_t tcmr;
 
@@ -177,7 +178,7 @@ void CANTestNode::Setup()
     enable.header.address = ControllerStateRegisters_e::ControlMode;
     enable.header.data_type = 1;
     enable.header.sender_id = 0x001;
-    enable.header.length = 4;
+    enable.header.msg_id = 1;
 
 
     // register_command_t enable;
@@ -206,7 +207,7 @@ void CANTestNode::Setup()
     test.header.address = DeviceRegisters_e::DeviceStatusRegister1;
     test.header.data_type = 1;
     test.header.sender_id = 0x001;
-    test.header.length = 4;
+    test.header.msg_id = 1;
 
     msg.id = 0x10;
     msg.length = sizeof(request_header_t);
@@ -242,7 +243,7 @@ void CANTestNode::Exit()
     enable.header.address = ControllerStateRegisters_e::ControlMode;
     enable.header.data_type = 1;
     enable.header.sender_id = 0x001;
-    enable.header.length = 4;
+    enable.header.msg_id = 1;
 
     uint32_t new_mode = 1;
     memcpy(&enable.cmd_data, &new_mode, sizeof(uint32_t));

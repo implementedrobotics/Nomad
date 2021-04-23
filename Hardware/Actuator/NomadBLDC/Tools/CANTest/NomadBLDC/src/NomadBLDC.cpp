@@ -85,9 +85,8 @@ bool NomadBLDC::SetMaxTorque(float tau_max)
 
 float NomadBLDC::GetMaxTorque()
 {
-    bool status = ReadRegisters({register_map_[ControllerConfigRegisters_e::TorqueLimit]}, -1);
+    bool status = ReadRegisters({register_map_[ControllerConfigRegisters_e::TorqueLimit]}, 5000);
 
-    //std::cout << "STATUS TORQUE: " << status << std::endl;
     if (!status) // Failed
         return -1.0f;
     
@@ -103,9 +102,8 @@ bool NomadBLDC::SetMaxCurrent(float current)
 
 float NomadBLDC::GetMaxCurrent()
 {
-    bool status = ReadRegisters({register_map_[ControllerConfigRegisters_e::CurrentLimit]}, -1);
+    bool status = ReadRegisters({register_map_[ControllerConfigRegisters_e::CurrentLimit]}, 5000);
 
-    //std::cout << "STATUS TORQUE: " << status << std::endl;
     if (!status) // Failed
         return -1.0f;
     
@@ -120,7 +118,7 @@ bool NomadBLDC::ZeroOutput()
 
 bool NomadBLDC::SaveConfig()
 {
-    bool status = ExecuteRegisters({register_map_[DeviceRegisters_e::DeviceSaveConfig]}, {}, 5000);
+    bool status = ExecuteRegisters({register_map_[DeviceRegisters_e::DeviceSaveConfig]}, {}, -1);
     return status;
 }
 
@@ -143,9 +141,9 @@ bool NomadBLDC::ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, flo
     tcmr_.Vel_ref = vel_ref;
     tcmr_.T_ff = torque_ff;
 
-    bool status = ExecuteRegisters({register_map_[ControllerCommandRegisters_e::ClosedLoopTorqueCommand]}, 
-    {register_map_[ControllerCommandRegisters_e::JointStateRegister]}, 5000);
-    //bool status = ExecuteRegisters(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, (uint8_t*)&tcmr_, sizeof(tcmr_), (uint8_t*)&joint_state_);
+    bool status = ExecuteRegisters({register_map_[ControllerCommandRegisters_e::ClosedLoopTorqueCommand]},
+                                   {register_map_[ControllerCommandRegisters_e::JointStateRegister]}, 5000);
+
     return true;
 }
 
@@ -177,6 +175,7 @@ bool NomadBLDC::WriteRegisters(std::vector<Register> registers, uint32_t timeout
     if(transport_ == nullptr)
         return false;
 
+    // TODO: Pass in if we need an ack/reply?
     // Create Request
     //auto& request = 
     requester_->CreateRequest(registers, RequestType_e::Write, timeout);
@@ -192,6 +191,8 @@ bool NomadBLDC::ExecuteRegisters(std::vector<Register> param_registers, std::vec
     if(transport_ == nullptr)
         return false;
 
+    // TODO: Pass in if we need an ack/reply?
+    
     // Create Request
     auto& request = requester_->CreateExecuteRequest(param_registers, return_registers, RequestType_e::Execute, timeout);
 
@@ -211,7 +212,8 @@ void NomadBLDC::UpdateRegisters(RequestReply &request)
     for(auto& reply : replies)
     {
         // Copy Data
-        memcpy(register_map_[reply.header.address].data, reply.cmd_data, reply.header.length);
+        Register reg = register_map_[reply.header.address];
+        memcpy(reg.data, reply.cmd_data, reg.size);
     }
 
     // Update any waiters that we are now synced

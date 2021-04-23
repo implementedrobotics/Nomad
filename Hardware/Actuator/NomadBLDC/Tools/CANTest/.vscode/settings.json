@@ -63,6 +63,7 @@
         "valarray": "cpp",
         "unordered_set": "cpp",
         "list": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "condition": "cpp"
     }
 }

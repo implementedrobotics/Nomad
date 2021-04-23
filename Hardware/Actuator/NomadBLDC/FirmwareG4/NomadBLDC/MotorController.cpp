@@ -47,8 +47,6 @@
 #include "LEDService.h"
 #include "Logger.h"
 
-
-
 Motor *motor = 0;
 MotorController *motor_controller = 0;
 
@@ -97,7 +95,6 @@ void init_motor_controller(Save_format_t *load_data)
 
     // Is this best spot?
     motor->ZeroOutputPosition();
-
 }
 
 // Controller Mode Interface
@@ -211,7 +208,6 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.k_i_d = 0.0f;
     config_.k_i_q = 0.0f;
     config_.k_i_vel = 0.0f;
-    //config_.alpha = 0.186350f;
     config_.overmodulation = 1.0f;
     config_.pos_limit_min = -12.5f;
     config_.pos_limit_max = 12.5f;
@@ -220,9 +216,7 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.current_limit = 20.0f;  // +/-
     config_.current_bandwidth = 1000.0f;
 
-    //config_.K_p_min = 0.0f;
     config_.K_p_max = 500.0f;
-    //config_.K_d_min = 0.0f;
     config_.K_d_max = 5.0f; 
 
     config_.K_p_limit = 1.0f;
@@ -287,8 +281,6 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::DeadlineMissed, new Register(&state_.timeout));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::ControlMode, new Register(&control_mode_));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_Vel, new Register(&state_.Vel_int));
-    
-
 
     RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register((ControllerStateRegister2_t *)&state_.V_d_ref, true, sizeof(ControllerStateRegister2_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageControlModeRegister, new Register((VoltageControlModeRegister_t *)&state_.V_d_ref, true, sizeof(VoltageControlModeRegister_t)));
@@ -337,10 +329,10 @@ int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice
     state_hat.T_est = state_.I_q * motor->config_.K_t * motor_->config_.gear_ratio;
 
     register_reply_t reply;
-    reply.header.sender_id = dev->ID();                                           // TODO: Need our CAN/Controller ID Here
-    reply.header.code = 0;                                                        // Error Codes Here
+    reply.header.sender_id = dev->ID();
+    reply.header.code = 0; // Error Codes Here
     reply.header.address = ControllerCommandRegisters_e::JointStateRegister; // Address from Requested Register
-    reply.header.length = sizeof(JointState_t);
+    reply.header.msg_id = cmd->header.msg_id;
 
     memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
 
@@ -466,6 +458,7 @@ void MotorController::SampleFETTemperature()
 {
     if(!IsInitialized())
         return;
+
     // Sample FET Thermistor for Temperature
     state_.fet_temp = fet_therm_->SampleTemperature();
 }
@@ -507,10 +500,6 @@ void MotorController::Init()
     // Calibrate Sense Amplifier Bias/Offset
     gate_driver_->Calibrate();
     osDelay(10);
-    
-    // TODO: Member Function with Callback for Command Handler
-    // Load Configuration
-   // load_configuration();
 
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
@@ -697,7 +686,7 @@ void MotorController::UpdateControllerGains()
 
     config_.k_d = config_.k_q = k;
     config_.k_i_d = config_.k_i_q = k_i;
-    //config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
+
 }
 void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
@@ -799,48 +788,3 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
     SetDuty(state_.dtc_A, state_.dtc_B, state_.dtc_C);
 }
 
-// void MotorController::TorqueControl()
-// {
-//     float deadband = 0.1f;
-//     //float torque_ref_in = state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
-//     float torque_ref = 0.0f;
-
-//     // Check Position Limits
-//     if(motor->state_.theta_mech <= config_.pos_limit_min)
-//     {
-//         torque_ref = config_.K_p_limit * (config_.pos_limit_min - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
-//         in_limit_min_ = true;
-//     }
-//     else if(motor->state_.theta_mech >= config_.pos_limit_max)
-//     {
-//         torque_ref = config_.K_p_limit * (config_.pos_limit_max - motor->state_.theta_mech) + config_.K_d_limit * (0.0f - motor->state_.theta_mech_dot);
-//         in_limit_max_ = true;
-//     }
-
-//     if(in_limit_max_) // Check Hysteresis
-//     {
-//         if(motor->state_.theta_mech < config_.pos_limit_max-deadband)// || torque_ref_in < 0)
-//             in_limit_max_ = false;
-//     }
-//     else if(in_limit_min_) // Check Hysteresis
-//     {
-//         if(motor->state_.theta_mech > config_.pos_limit_min+deadband)// || torque_ref_in > 0)
-//             in_limit_min_ = false;
-//     }
-
-//     // TODO: Also check velocity limits
-//     if(!in_limit_min_ && !in_limit_max_) // Not Limiting
-//     {
-//         torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
-//     }
-
-//     // Check torque limit
-//     if(torque_ref > config_.torque_limit)
-//         torque_ref = config_.torque_limit;
-//     else if(torque_ref < -config_.torque_limit)
-//         torque_ref = -config_.torque_limit;
-
-//     state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
-//     state_.I_d_ref = 0.0f;
-//     CurrentControl(); // Do Current Controller
-// }

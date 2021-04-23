@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     can.ClearFilters(); // Clear Existing/Reset.  Filters are saved on the device hardware.  Must make sure to clear
     can.AddFilter(1, 2); // Only Listen to messages on id 0x01.  
 
-    NomadBLDC servo(1, 0x11, &can);
+    NomadBLDC servo(1, 0x10, &can);
    if(!servo.Connect())
    {
        std::cout << "[ERROR]: Unable to connect to Nomad Servo!" << std::endl;
@@ -40,23 +40,27 @@ int main(int argc, char *argv[])
    }
 
     std::cout << "Nomad Servo: " << servo.GetServoId() << " Connected!" << std::endl;
-   // servo.SetMaxCurrent(35.0f);
+    servo.SetMaxCurrent(35.5f);
+    servo.SetMaxTorque(1.530f);
 
 
-  //  usleep(100000);
 
 
- //  servo.SaveConfig();
 
-  //  std::cout << "SET!" << std::endl;
+   servo.SaveConfig();
+  std::cout << "OUT!!!" << std::endl;
+    usleep(1000000);
+    //std::cout << "SET!" << std::endl;
     float torque_max = servo.GetMaxCurrent();
 
    std::cout << "MAX A: " << torque_max << std::endl;
    // servo.SetControlMode(10);
 
-    //float torque_max2 = servo.GetMaxTorque();
+    float torque_max2 = servo.GetMaxTorque();
 
-   // usleep(10000);
+    std::cout << "MAX T: " << torque_max2 << std::endl;
+
+   usleep(10000);
 
    // servo.ClosedLoopTorqueCommand(1.0f,0.0f, 0.0f,0.0f,0.0f);
 

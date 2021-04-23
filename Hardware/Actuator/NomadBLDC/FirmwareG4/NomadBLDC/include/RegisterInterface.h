@@ -486,26 +486,29 @@ struct WatchdogRegister_t
     int32_t timeout;
 };
 
-// TODO: Address field is bit too large.  But keeping clean alignment math here
 struct request_header_t // 4 Bytes
 {
-    uint32_t sender_id : 6; // Node ID of Sender
+    uint32_t sender_id : 5; // Node ID of Sender
+    uint32_t ACK : 1;       // ACK Request
     uint32_t rwx : 2;       // Read/Write/Execute
     uint32_t address : 8;   // 8-bit address (256 Max Addresses)
     uint32_t data_type : 2; // Data Type: 8-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-    uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
-    uint32_t reserved : 8;  // Reserved / Padding
+    uint32_t msg_id : 14;    // MSG/ACK ID
+    //uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
+    //uint32_t reserved : 8;  // Reserved / Padding
+
     // MSG/ACK IDs?
 };
 
 struct response_header_t // 4 Bytes
 {
-    uint32_t sender_id : 6; // Node ID of Sender
+    uint32_t sender_id : 5; // Node ID of Sender
+    uint32_t reserved : 1; // Reserved/Padding
     uint32_t address : 8;   // 8-bit address (256 Max Addresses)
     uint32_t code : 4;      // Return Code
-    uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
-    uint32_t reserved : 8;  // Reserved / Padding
-    // MSG/ACK IDs?
+    uint32_t msg_id : 14;     // MSG/ACK ID
+    //uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
+    //uint32_t reserved : 8;  // Reserved / Padding
 };
 
 struct register_command_t

@@ -58,8 +58,8 @@ void PlotJugglerTest::Run()
     //std::cout << "Time: " << time_ << " : " << sin_val << std::endl;
     //return;
 
-    float pos = 1.1f * sin_val;
-    servo1->ClosedLoopTorqueCommand(1.0, 0.0f, pos, 0.0f, 0.0f);
+    float pos = 1.5f * sin_val;
+    servo1->ClosedLoopTorqueCommand(1.0f, 0.0f, pos, 0.0f, 0.0f);
     float pos1 = servo1->GetPosition();
     float vel1 = servo1->GetVelocity();
 
@@ -97,7 +97,7 @@ void PlotJugglerTest::Setup()
     can.ClearFilters(); // Clear Existing/Reset.  Filters are saved on the device hardware.  Must make sure to clear
     can.AddFilter(1, 2); // Only Listen to messages on id 1.  
 
-    servo1 = new NomadBLDC(1, 0x11, &can);
+    servo1 = new NomadBLDC(1, 0x10, &can);
     servo1->SetName("INPUT");
     if(!servo1->Connect())
     {
