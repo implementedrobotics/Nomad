@@ -48,6 +48,9 @@ typedef enum // Device Status Register
     DeviceVoltageBus = 0x03,
     DeviceCurrentBus = 0x04,
     DeviceFETTemp = 0x05,
+    DeviceSaveConfig = 0x06,
+    DeviceLoadConfig = 0x07,
+    DeviceRestart = 0x08,
     // Reserved = 0x06,
     // Reserved = 0x07,
     // Reserved = 0x08,
@@ -79,27 +82,27 @@ typedef enum // Controller Config Register
     K_LOOP_Q = 0x18,         // Current Controller Loop Gain (Q Axis)
     K_I_D = 0x19,            // Current Controller Integrator Gain (D Axis)
     K_I_Q = 0x1A,            // Current Controller Integrator Gain (Q Axis)
-    CurrentBandwidth = 0x1B, // Current Loop Bandwidth (200 to 2000 hz)
-    Overmodulation = 0x1C,   // Overmodulation Amount
-    PWM_Frequency = 0x1D,    // PWM Switching Frequency
-    FOC_Divider = 0x1E,      // Divider to use for FOC Current control loop frequency
-    // Reserved = 0x1F,
+    K_I_VEL = 0x1B,          // Velocity Integrator Gain
+    CurrentBandwidth = 0x1C, // Current Loop Bandwidth (200 to 2000 hz)
+    Overmodulation = 0x1D,   // Overmodulation Amount
+    PWM_Frequency = 0x1E,    // PWM Switching Frequency
+    FOC_Divider = 0x1F,      // Divider to use for FOC Current control loop frequency
     // Reserved = 0x20,
     // Reserved = 0x21,
     // End Controller Config Register 1
 
     ControllerConfigRegister2 = 0x22,
     // Controller Config Register 2 Offsets
-    K_P_Min = 0x23,
-    K_P_Max = 0x24,
-    K_D_Min = 0x25,
-    K_D_Max = 0x26,
-    VelocityLimit = 0x27, // Limit on maximum velocity
-    PositionLimit = 0x28, // Limit on maximum position
-    TorqueLimit = 0x29,   // Limit on maximum torque
-    CurrentLimit = 0x2A,  // Limit on maximum current
-    // Reserved = 0x2B,
-    // Reserved = 0x2C,
+    K_P_Max = 0x23,
+    K_D_Max = 0x24,
+    K_P_Limit = 0x25,         // Position Limiting Mode Proportional Gain
+    K_D_Limit = 0x26,         // Position Limiting Mode Derivative Gain
+    PositionLimitMin = 0x27,     // Limit on position input max
+    PositionLimitMax = 0x28,     // Limit on position input min
+    VelocityLimit = 0x29, // Limit on maximum velocity
+    PositionLimit = 0x2A, // Limit on maximum position
+    TorqueLimit = 0x2B,   // Limit on maximum torque
+    CurrentLimit = 0x2C,  // Limit on maximum current
     // Reserved = 0x2D,
     // Reserved = 0x2E,
     // Reserved = 0x2F,
@@ -121,9 +124,9 @@ typedef enum // Controller State Register
     DutyCycleC = 0x39,        // Duty Cycle for C phase
     CurrentRMS = 0x3A,        // Motor RMS Current Value
     MaxCurrent = 0x3B,        // Maximum Allowable Commanded Current in next Time Step
-    Timeout = 0x3C,           // Missed Input Control Deadline Count
-    // Reserved = 0x3D,
-    // Reserved = 0x3E,
+    DeadlineMissed = 0x3C,           // Missed Input Control Deadline Count
+    ControlMode = 0x3D,       // Set Control Mode.  TODO: Should be a function instead and in new register
+    IntegratorError_Vel = 0x3E,
     // Reserved = 0x3F,
     // End Controller State Register 1
 
@@ -140,15 +143,17 @@ typedef enum // Controller State Register
     // Torque Control Register Offsets
     TorqueControlModeRegister = 0x47,
     PositionSetpoint = 0x48, // Position Setpoint Reference
-    VelocitySetpoint = 0x49, // Velocity Setpoint Reference
-    K_P = 0x4A,              // Position Gain N*m/rad
+    K_P = 0x49,              // Position Gain N*m/rad
+    VelocitySetpoint = 0x4A, // Velocity Setpoint Reference
     K_D = 0x4B,              // Velocity Gain N*m/rad/s
     Torque_FF = 0x4C,        // Feed Forward Torque Value N*m
-    // Reserved = 0x4D,
-    // Reserved = 0x4E,
-    // Reserved = 0x4F,
+
+    VoltageBus = 0x4D,
+    CurrentBus = 0x4E,
+    FETTemp = 0x4F,
     // End Controller State Register 2
 } ControllerStateRegisters_e;
+
 
 /* Motor Registers */
 typedef enum // Motor Config Register
@@ -184,7 +189,7 @@ typedef enum // Motor Config Register
     CalibrationCurrent = 0x65,
     CalibrationVoltage = 0x66,
     Calibrated = 0x67,
-    //Reserved = 0x68,
+    ZeroOutputOffset = 0x68,
     //Reserved = 0x69,
     //Reserved = 0x6A,
     //Reserved = 0x6B,
@@ -235,6 +240,18 @@ typedef enum // Encoder Config Register
 } EncoderConfigRegisters_e;
 
 /* CAN Config Registers */
+typedef enum // CAN Config Register
+{
+    CANConfigRegister1 = 0x8C,
+    // CAN Config Register Offsets
+    ID = 0x8D,             // CAN ID 11-bit max is 0x7ff
+    Bitrate = 0x8E,        // Nominal Bitrate
+    DataBitrate = 0x8F,    // Data Bitrate
+    FD_MODE = 0x90,        // FD mode or classic
+    SamplePoint = 0x91,   // Nominal Bitrate Sample Point Target
+    DataSamplePoint = 0x92, // Data Sample Point Target
+
+} CANConfigRegisters_e;
 
 /* UART Config Registers */
 
@@ -243,6 +260,23 @@ typedef enum // Encoder Config Register
 /* Error State Registers */
 
 /* Gate Drive Registers */
+
+/* Motor Controller Registers */
+typedef enum // Controller Config Register
+{
+    ClosedLoopTorqueCommand = 0xC8, // Optimized Closed Loop Torque Command Function
+    JointStateRegister = 0xC9, // Optimized Closed Loop Joint State Register
+
+} ControllerCommandRegisters_e;
+
+/* Watchdog Registers */
+typedef enum // Controller Config Register
+{
+    CommandTime = 0xCA, // Last received command time
+    Timeout = 0xCB, // Timeout in ms
+
+} WatchdogRegisters_e;
+
 // TODO: Current Sense Amp Options
 
 // TODO: Where to put this?
@@ -260,7 +294,7 @@ struct DeviceStatusRegister2_t
     uint8_t fw_major;          // Firmware Version Major
     uint8_t fw_minor;          // Firmware Version Minor
     uint32_t uid1;             // Device Unique ID 1
-    uint32_t uid2;             // Device Unique ID 2
+    uint32_t uid2;           ;         // Position Limiting Mode Derivative Gain  // Device Unique ID 2
     uint32_t uid3;             // Device Unique ID 3
     uint32_t uptime;           // Device Uptime
 };
@@ -271,6 +305,7 @@ struct ControllerConfigRegister1_t
     float k_q;                // Current Controller Loop Gain (Q Axis)
     float k_i_d;              // Current Controller Integrator Gain (D Axis)
     float k_i_q;              // Current Controller Integrator Gain (Q Axis)
+    float k_i_vel;            // Velocity Integrator Gain
     float current_bandwidth;  // Current Loop Bandwidth (200 to 2000 hz)
     float overmodulation;     // Overmodulation Amount
     float pwm_freq;           // PWM Switching Frequency
@@ -303,6 +338,7 @@ struct ControllerStateRegister1_t
     float I_rms;      // Motor RMS Current Value
     float I_max;      // Maximum Allowable Commanded Current in next Time Step
     uint32_t timeout; // Keep up with number of controller timeouts for missed deadlines
+    float Vel_int;    // Velocity Integrator Error
 };
 
 struct ControllerStateRegister2_t
@@ -317,10 +353,15 @@ struct ControllerStateRegister2_t
 
     // Torque Control Setpoints
     float Pos_ref; // Position Setpoint Reference
-    float Vel_ref; // Velocity Setpoint Reference
     float K_p;     // Position Gain N*m/rad
+    float Vel_ref; // Velocity Setpoint Reference
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
+
+    // Still figuring out the best place for these
+    float Voltage_bus;
+    float I_bus;
+    float fet_temp;
 };
 
 struct VoltageControlModeRegister_t
@@ -338,10 +379,17 @@ struct CurrentControlModeRegister_t
 struct TorqueControlModeRegister_t
 {
     float Pos_ref; // Position Setpoint Reference
-    float Vel_ref; // Velocity Setpoint Reference
     float K_p;     // Position Gain N*m/rad
+    float Vel_ref; // Velocity Setpoint Reference
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
+};
+
+struct JointState_t
+{
+    float Pos;   // Position Estimate
+    float Vel;  // Velocity Estimate
+    float T_est; // Torque Estimate
 };
 
 struct MotorConfigRegister1_t
@@ -422,6 +470,73 @@ struct EncoderConfigOffsetLUT4_t
     int8_t offset_lut[32]; // Offset Lookup Table 4
 };
 
+struct CANConfigRegister1_t
+{
+    uint32_t id;          // CAN ID 11-bit max is 0x7ff
+    uint32_t bitrate;     // Nominal Bitrate
+    uint32_t d_bitrate;   // Data Bitrate
+    uint32_t mode_fd;     // FD mode or classic
+    float sample_point;   // Nominal Bitrate Sample Point Target
+    float d_sample_point; // Data Sample Point Target
+};
+
+struct WatchdogRegister_t
+{
+    int32_t command_time;
+    int32_t timeout;
+};
+
+struct request_header_t // 4 Bytes
+{
+    uint32_t sender_id : 5; // Node ID of Sender
+    uint32_t ACK : 1;       // ACK Request
+    uint32_t rwx : 2;       // Read/Write/Execute
+    uint32_t address : 8;   // 8-bit address (256 Max Addresses)
+    uint32_t data_type : 2; // Data Type: 8-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
+    uint32_t msg_id : 14;    // MSG/ACK ID
+    //uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
+    //uint32_t reserved : 8;  // Reserved / Padding
+
+    // MSG/ACK IDs?
+};
+
+struct response_header_t // 4 Bytes
+{
+    uint32_t sender_id : 5; // Node ID of Sender
+    uint32_t reserved : 1; // Reserved/Padding
+    uint32_t address : 8;   // 8-bit address (256 Max Addresses)
+    uint32_t code : 4;      // Return Code
+    uint32_t msg_id : 14;     // MSG/ACK ID
+    //uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
+    //uint32_t reserved : 8;  // Reserved / Padding
+};
+
+struct register_command_t
+{
+    union
+    {
+        struct
+        {
+            request_header_t header; // Command Header
+            uint8_t cmd_data[60];    // Command Data Buffer Payload
+        };
+        uint8_t data[64]; // Full 64-byte command buffer FDCAN
+    };
+};
+
+struct register_reply_t
+{
+    union // Union for mapping the full 64-byte data packet
+    {
+        struct
+        {
+            response_header_t header; // Response Reply Header
+            uint8_t cmd_data[60];     // Data Buffer Return
+        };
+        uint8_t data[64]; // Full 64-byte command buffer FDCAN
+    };
+};
+
 // TODO: A way to make register field read only?
 class RegisterData
 {
@@ -459,49 +574,51 @@ public:
         {
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+            //Logger::Instance().Print("Variant Value8: %d | %d\r\n", **data, Size());
+            //TorqueControlModeRegister_t *test = (TorqueControlModeRegister_t*)*data;
+           // Logger::Instance().Print("TEST: %f\r\n", test->K_p);
             return true;
         }
         else if (auto data = std::get_if<uint16_t *>(&data_))
         {
             //**data = *((uint16_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+            //Logger::Instance().Print("Variant Value16: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<uint32_t *>(&data_))
         {
             //**data = *((uint32_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+           // Logger::Instance().Print("Variant Value32: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<int8_t *>(&data_))
         {
             //**data = *((uint8_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value8: %d\r\n", **data);
+            //Logger::Instance().Print("Variant Value8: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<int16_t *>(&data_))
         {
             //**data = *((int16_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value16: %d\r\n", **data);
+          //  Logger::Instance().Print("Variant Value16: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<int32_t *>(&data_))
         {
             //**data = *((int32_t *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Variant Value32: %d\r\n", **data);
+          //  Logger::Instance().Print("Variant Value32: %d\r\n", **data);
             return true;
         }
         else if (auto data = std::get_if<float *>(&data_))
         {
             //**data = *((float *)value);
             memcpy(*data, value, Size());
-            Logger::Instance().Print("Float Value32: %d\r\n", **data);
+            //Logger::Instance().Print("Float Value32: %f\r\n", **data);
             return true;
         }
         else
@@ -517,7 +634,7 @@ public:
         if (auto data = std::get_if<T *>(&data_))
         {
             **data = value;
-            Logger::Instance().Print("Setting Value: %d\r\n", **data);
+            //Logger::Instance().Print("Setting Value: %d\r\n", **data);
             return true;
         }
         else
@@ -537,6 +654,18 @@ public:
         }
 
         Logger::Instance().Print("UNABLE TO GET TYPE\r\n");
+        return 0;
+    }
+
+    //TODO: Get Struct
+    template <typename T>
+    T GetDataPtr()
+    {
+        if (auto data = std::get_if<T>(&data_))
+        {
+            return *data;
+        }
+
         return 0;
     }
 
@@ -578,7 +707,7 @@ public:
             return Size();
         }
 
-        Logger::Instance().Print("UNABLE TO GET BYTESD\r\n");
+        Logger::Instance().Print("UNABLE TO GET BYTES!\r\n");
         return 0;
     }
 
@@ -590,7 +719,7 @@ public:
 
 private:
     // Pointer to register memory location
-    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *, std::function<void((void*))>> data_;
+    std::variant<uint8_t *, uint16_t *, uint32_t *, int8_t *, int16_t *, int32_t *, float *,  std::function<int8_t(register_command_t *, FDCANDevice *device)>> data_;
 
     // Mirror Type Sizes for Lookups
     static constexpr size_t data_sizes_[8] = {sizeof(uint8_t),
@@ -626,10 +755,10 @@ public:
 
     // Struct Valued Register
     template <typename T>
-    Register(T value, bool is_struct)
+    Register(T value, bool is_struct, size_t size = 0)
     {
         if(is_struct)
-            AddStructField(value);
+            AddStructField(value, size);
     }
 
     template <typename T>
@@ -641,9 +770,9 @@ public:
     }
 
     template <typename T>
-    void AddStructField(T value)
+    void AddStructField(T value, size_t size)
     {
-       RegisterData add_struct((uint8_t *)value, sizeof(T));
+       RegisterData add_struct((uint8_t *)value, size);
        fields_.push_back(add_struct);
        data_size_ += add_struct.Size();
     }
@@ -686,9 +815,17 @@ public:
         return fields_[offset].Get<T>();
     }
 
+    template <typename T>
+    T GetDataPtr(uint16_t offset = 0)
+    {
+        return fields_[offset].GetDataPtr<T>();
+    }
+
 private:
     std::vector<RegisterData> fields_;
     size_t data_size_;
+
+    //std::function<void(FDCAN_msg_t&, FDCANDevice *dev)> recv_callback_ = [=](FDCAN_msg_t&, FDCANDevice*) {};
 
 };
 
@@ -697,54 +834,6 @@ class RegisterInterface
 {
 public:
     static constexpr uint16_t kMaxRegisters = (1 << 8); // 8-bit addressing
-
-    // TODO: Address field is bit too large.  But keeping clean alignment math here
-    struct request_header_t // 3 Bytes
-    {
-        uint32_t sender_id : 6; // Node ID of Sender
-        uint32_t rwx : 2;       // Read/Write/Execute
-        uint32_t address : 8;   // 8-bit address (256 Max Addresses)
-        uint32_t data_type : 2; // Data Type: 12-bit fixed, 16-bit fixed, 32-bit fixed, 32-bit float
-        uint32_t length : 6;    // Expected payload length. //TODO: Technically should know this based on the register?
-        //uint32_t reserved: 8;   // Reserved
-        // MSG/ACK IDs?
-    };
-
-    struct response_header_t // 3 Bytes
-    {
-        uint32_t sender_id : 6; // Node ID of Sender
-        uint32_t address : 8;   // 8-bit address (256 Max Addresses)
-        uint32_t code : 4;      // Return Code
-        uint32_t length : 6;    // Expected payload length.  //TODO: Technically should know this based on the register?
-        //uint32_t reserved: 8;   // Reserved
-        // MSG/ACK IDs?
-    };
-
-    struct register_command_t
-    {
-        union
-        {
-            struct
-            {
-                request_header_t header; // Command Header
-                uint8_t cmd_data[60];    // Command Data Buffer Payload
-            };
-            uint8_t data[64]; // Full 64-byte command buffer FDCAN
-        };
-    };
-
-    struct register_reply_t
-    {
-        union // Union for mapping the full 64-byte data packet
-        {
-            struct
-            {
-                response_header_t header; // Response Reply Header
-                uint8_t cmd_data[60];     // Data Buffer Return
-            };
-            uint8_t data[64]; // Full 64-byte command buffer FDCAN
-        };
-    };
 
    // RegisterInterface(); 
 
@@ -757,7 +846,7 @@ public:
     // Store Base Memory Address
     // Register Will Offset From There
     // Support Float Return Precision Options
-    static void HandleCommand(FDCANDevice::FDCAN_msg_t &command);
+    static void HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDevice *dev_);
 
 private:
     static Register *register_map_[kMaxRegisters];

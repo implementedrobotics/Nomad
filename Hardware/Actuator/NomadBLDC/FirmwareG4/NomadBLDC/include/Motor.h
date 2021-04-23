@@ -95,7 +95,7 @@ public:
 
     void SetPolePairs(uint32_t pole_pairs);            // Set Motor Pole Count
     void SetKV(float K_v);                             // Set Motor KV Rating
-    void ZeroOutputPosition();                         // Zero Mechanical Position Offset
+    int8_t ZeroOutputPosition();                         // Zero Mechanical Position Offset
     bool Calibrate(MotorController *controller);       // Calibrate Motor Routine
     void SetSampleTime(float sample_time);             // Update controller sample rate
     void CCM_ATTRIBUTE Update(); // Update Motor State
@@ -112,7 +112,6 @@ public:
 private:
     
     float sample_time_; // Update Sample Time (=Current Control Update Rate)
-    bool dirty_; // Has unsaved changes to config
 
     PositionSensorAS5x47 *rotor_sensor_; // Rotor Position Sensor
 };

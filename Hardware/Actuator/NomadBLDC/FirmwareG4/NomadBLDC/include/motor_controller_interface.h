@@ -25,44 +25,44 @@
 #ifndef CORE_MOTOR_CONTROLLER_INTERFACE_H_
 #define CORE_MOTOR_CONTROLLER_INTERFACE_H_
 
+#include <NomadFlash.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Entry point to facilitate transition to C++ for RTOS Task
-void init_motor_controller();
-void ms_poll_task(void *arg);
+void init_motor_controller(Save_format_t *load_data);
 
 // void debug_thread_entry();
 
 // Callbacks
-void current_measurement_cb();
 
 // UI Callbacks
+// TODO: These Can be removed/refactored to registers
 bool measure_motor_resistance();
 bool measure_motor_inductance();
 bool measure_motor_phase_order();
 bool measure_encoder_offset();
 
 bool measure_motor_parameters();
-bool save_configuration();
-void load_configuration();
-void restore_configuration();
-void reboot_system();
+
+// TODO: These Can be removed/refactored to registers
 void start_torque_control();
 void start_current_control();
 void start_speed_control();
 void start_voltage_control();
 void enter_idle();
+
+// Maybe Reuse this?
 void zero_encoder_offset();
 
 //
 void set_control_mode(int mode);
-void set_controller_debug(bool debug);
-bool get_controller_debug();
 void set_torque_control_ref(float K_p, float K_d, float Pos_des, float Vel_des, float T_ff);
 void set_current_control_ref(float I_d, float I_q);
 void set_voltage_control_ref(float V_d, float V_q);
+
 
 #ifdef __cplusplus
 }

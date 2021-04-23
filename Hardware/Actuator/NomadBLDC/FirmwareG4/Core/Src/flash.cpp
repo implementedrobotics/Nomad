@@ -92,7 +92,7 @@ bool FlashDevice::Write(uint32_t index, uint8_t *buffer, size_t length)
     if (!ready_ || mode_ != FlashDevice::WRITE) // Need to be Ready and in Write Mode
         return false;
 
-    uint32_t write_addr = base_address_;
+    uint32_t write_addr = base_address_ + index;
     uint64_t data_64;
     for (uint32_t i = 0; i < length; i=i+8) // Loop buffer and write out in bytes
     {

@@ -35,7 +35,6 @@
 #include "nomad_hw.h"
 
 #include <Peripherals/thermistor.h>
-#include <Peripherals/flash.h>
 #include <Peripherals/cordic.h>
 #include <Peripherals/adc.h>
 #include <Peripherals/thermistor.h>
@@ -43,12 +42,10 @@
 
 #include <Utilities/utils.h>
 #include <Utilities/lpf.h>
-
+#include <NomadFlash.h>
 #include <FSM/NomadBLDCFSM.h>
 #include "LEDService.h"
 #include "Logger.h"
-
-#define FLASH_VERSION 2
 
 Motor *motor = 0;
 MotorController *motor_controller = 0;
@@ -61,40 +58,8 @@ extern "C"
 #include "motor_controller_interface.h"
 }
 
-// Flash Save Struct.  TODO: Move to own file
-#define FLASH_SAVE_SIGNATURE 0x78D5FC00
 
-struct __attribute__((__aligned__(8))) Save_format_t
-{
-    uint32_t signature;
-    uint32_t version;
-    Motor::Config_t motor_config;
-    uint8_t motor_reserved[128]; // Reserved;
-    PositionSensorAS5x47::Config_t position_sensor_config;
-    uint8_t position_reserved[128]; // Reserved;
-    MotorController::Config_t controller_config;
-    uint8_t controller_reserved[128]; // Reserved;
-    //FDCANDevice::Config_t can_config;
-    //uint8_t can_reserved[128]; // Reserved;
-};
-
-void ms_poll_task(void *arg)
-{
-    // Main millisecond polling loop
-    for (;;)
-    {
-        // Sample bus voltage
-        motor_controller->SampleBusVoltage();
-
-        // Sample FET Thermistor for Temperature
-        motor_controller->SampleFETTemperature();
-
-        // Delay 1 ms
-        osDelay(1000);
-    }
-}
-
-void init_motor_controller()
+void init_motor_controller(Save_format_t *load_data)
 {
     Logger::Instance().Print("Motor RT Controller Task Up.\r\n");
 
@@ -105,25 +70,31 @@ void init_motor_controller()
     cordic.SetPrecision(LL_CORDIC_PRECISION_6CYCLES);
 
     // Init Motor and Implicitly Position Sensor
-    motor = new Motor(0.000025f, 285, 12);
+    motor = new Motor(0.000025f, 80, 20);
 
     // Init Motor Controller
     motor_controller = new MotorController(motor);
 
-    // Load Config Here...
-    load_configuration();
+    // Valid Configuration?
+    if(load_data != nullptr)
+    {
+        Logger::Instance().Print("Found Valid Configuration.  Loading.\r\n");
 
+        // Update Config
+        motor->config_ = load_data->motor_config;
+        motor->PositionSensor()->config_ = load_data->position_sensor_config;
+        motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
+        motor_controller->config_ = load_data->controller_config;
+    }
+
+    // Init Controller
     motor_controller->Init();
 
     //Update Sample Time For Motor
     motor->SetSampleTime(motor_controller->GetControlUpdatePeriod());
 
-
-    // motor_controller->PrintConfig();
-    // motor->PrintConfig();
-    // motor->PositionSensor()->PrintConfig();
-
-    // //save_configuration();
+    // Is this best spot?
+    motor->ZeroOutputPosition();
 }
 
 // Controller Mode Interface
@@ -177,75 +148,30 @@ bool measure_encoder_offset()
     set_control_mode(MEASURE_ENCODER_OFFSET_MODE);
     return true;
 }
-bool save_configuration()
-{
-    Logger::Instance().Print("\r\nSaving Configuration...\r\n");
-
-    bool status = false;
-    Save_format_t save;
-    save.signature = FLASH_SAVE_SIGNATURE;
-    save.version = FLASH_VERSION; // Set Version
-
-    // If we are writing a config assume for now we are calibrated
-    // TODO: Do something better so we don't have to make this assumption
-    motor->config_.calibrated = 1;
-    save.motor_config = motor->config_;
-    save.position_sensor_config = motor->PositionSensor()->config_;
-    save.controller_config = motor_controller->config_;
-
-    // Write Flash
-    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_60, sizeof(save), FlashDevice::WRITE);
-    status = FlashDevice::Instance().Write(0, (uint8_t *)&save, sizeof(save));
-    FlashDevice::Instance().Close();
-
-    Logger::Instance().Print("\r\nSaved Configuration: %d\r\n",status);
-
-    return status;
-}
-void load_configuration()
-{
-    Save_format_t load;
-
-    FlashDevice::Instance().Open(ADDR_FLASH_PAGE_60, sizeof(load), FlashDevice::READ);
-    bool status = FlashDevice::Instance().Read(0, (uint8_t *)&load, sizeof(load));
-    FlashDevice::Instance().Close();
-
-    if (load.signature != FLASH_SAVE_SIGNATURE || load.version != FLASH_VERSION)
-    {
-        Logger::Instance().Print("ERROR: No Valid Configuration Found!  Please run setup before enabling drive: %d\r\n", status);
-        return;
-    }
-
-    motor->config_ = load.motor_config;
-    motor->PositionSensor()->config_ = load.position_sensor_config;
-    motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
-    motor_controller->config_ = load.controller_config;
-
-    motor->ZeroOutputPosition();
-}
-void reboot_system()
-{
-    NVIC_SystemReset();
-}
 
 void start_torque_control()
 {
-    set_control_mode(FOC_TORQUE_MODE);
+    set_control_mode(TORQUE_MODE);
 }
 
 void start_current_control()
 {
-    set_control_mode(FOC_CURRENT_MODE);
+    set_control_mode(CURRENT_MODE);
 }
 
-void start_speed_control()
+void start_position_control()
 {
-    set_control_mode(FOC_SPEED_MODE);
+    set_control_mode(POSITION_MODE);
+}
+
+void start_velocity_control()
+{
+    set_control_mode(VELOCITY_MODE);
 }
 
 void start_voltage_control()
 {
-    set_control_mode(FOC_VOLTAGE_MODE);
+    set_control_mode(VOLTAGE_MODE);
 }
 
 void enter_idle()
@@ -256,6 +182,11 @@ void enter_idle()
 void zero_encoder_offset()
 {
     motor->ZeroOutputPosition();
+}
+
+void closed_loop_torque_cmd(void *cmd)
+{
+
 }
 // Statics
 MotorController *MotorController::singleton_ = nullptr;
@@ -276,50 +207,66 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     config_.k_q = 0.0f;
     config_.k_i_d = 0.0f;
     config_.k_i_q = 0.0f;
-    //config_.alpha = 0.186350f;
+    config_.k_i_vel = 0.0f;
     config_.overmodulation = 1.0f;
-    config_.position_limit = 12.5f; // +/-
+    config_.pos_limit_min = -12.5f;
+    config_.pos_limit_max = 12.5f;
     config_.velocity_limit = 10.0f; // +/-
     config_.torque_limit = 10.0f; // +/-
     config_.current_limit = 20.0f;  // +/-
     config_.current_bandwidth = 1000.0f;
 
-    config_.K_p_min = 0.0f;
     config_.K_p_max = 500.0f;
-    config_.K_d_min = 0.0f;
     config_.K_d_max = 5.0f; 
+
+    config_.K_p_limit = 1.0f;
+    //config_.K_i_limit = 0.0f;
+    config_.K_d_limit = 0.0f;
 
     config_.pwm_freq = 40000.0f; // 40 khz
     config_.foc_ccl_divider = 1; // Default to not divide.  Current loops runs at same freq as PWM
 
     state_.Voltage_bus = 24.0f;
+
+    // TOOD: In Register
+    in_limit_max_ = false;
+    in_limit_min_ = false;
+    in_torque_limit_ = false;
+
     // TODO: Parameter
     rms_current_sample_period_ = 1.0f/10.0f;
     controller_loop_freq_ = (config_.pwm_freq / config_.foc_ccl_divider);
     controller_update_period_ = (1.0f) / controller_loop_freq_;
 
+    // Watchdog
+    watchdog_.command_time = 0;
+    watchdog_.timeout = 100; // Default (100 ms aka 10hz)
+
     // Setup Registers
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister1, new Register((ControllerConfigRegister1_t *)&config_, true));
+    using namespace std::placeholders;
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister1, new Register((ControllerConfigRegister1_t *)&config_, true, sizeof(ControllerConfigRegister1_t)));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_D, new Register(&config_.k_d));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_LOOP_Q, new Register(&config_.k_q));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_D, new Register(&config_.k_i_d));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_Q, new Register(&config_.k_i_q));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_I_VEL, new Register(&config_.k_i_vel));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentBandwidth, new Register(&config_.current_bandwidth));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::Overmodulation, new Register(&config_.overmodulation));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::PWM_Frequency, new Register(&config_.pwm_freq));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::FOC_Divider, new Register(&config_.foc_ccl_divider));
 
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register((ControllerConfigRegister2_t *)&config_.K_p_min, true));
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Min, new Register(&config_.K_p_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::ControllerConfigRegister2, new Register((ControllerConfigRegister2_t *)&config_.K_p_max, true, sizeof(ControllerConfigRegister2_t)));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Max, new Register(&config_.K_p_max));
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Min, new Register(&config_.K_d_min));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Max, new Register(&config_.K_d_max));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_P_Limit, new Register(&config_.K_p_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::K_D_Limit, new Register(&config_.K_d_limit));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimitMin, new Register(&config_.pos_limit_min));
+    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimitMax, new Register(&config_.pos_limit_max));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::VelocityLimit, new Register(&config_.velocity_limit));
-    RegisterInterface::AddRegister(ControllerConfigRegisters_e::PositionLimit, new Register(&config_.position_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::TorqueLimit, new Register(&config_.torque_limit));
     RegisterInterface::AddRegister(ControllerConfigRegisters_e::CurrentLimit, new Register(&config_.current_limit));
 
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister1, new Register((ControllerStateRegister1_t *)&state_, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister1, new Register((ControllerStateRegister1_t *)&state_, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_D, new Register(&state_.I_d));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Q, new Register(&state_.I_q));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::V_D, new Register(&state_.V_d));
@@ -331,29 +278,75 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
     RegisterInterface::AddRegister(ControllerStateRegisters_e::DutyCycleC, new Register(&state_.dtc_C));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentRMS, new Register(&state_.I_rms));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::MaxCurrent, new Register(&state_.I_max));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::Timeout, new Register(&state_.timeout));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::DeadlineMissed, new Register(&state_.timeout));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControlMode, new Register(&control_mode_));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::IntegratorError_Vel, new Register(&state_.Vel_int));
 
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register((ControllerStateRegister2_t *)&state_.V_d_ref, true));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageControlModeRegister, new Register((VoltageControlModeRegister_t *)&state_.V_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register((ControllerStateRegister2_t *)&state_.V_d_ref, true, sizeof(ControllerStateRegister2_t)));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageControlModeRegister, new Register((VoltageControlModeRegister_t *)&state_.V_d_ref, true, sizeof(VoltageControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_D, new Register(&state_.V_d_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_Q, new Register(&state_.V_q_ref));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrenteControlModeRegister, new Register((CurrentControlModeRegister_t *)&state_.I_d_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrenteControlModeRegister, new Register((CurrentControlModeRegister_t *)&state_.I_d_ref, true, sizeof(CurrentControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_D, new Register(&state_.I_d_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_Q, new Register(&state_.I_q_ref));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::TorqueControlModeRegister, new Register((TorqueControlModeRegister_t *)&state_.Pos_ref, true));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::TorqueControlModeRegister, new Register((TorqueControlModeRegister_t *)&state_.Pos_ref, true, sizeof(TorqueControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::PositionSetpoint, new Register(&state_.Pos_ref));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_P, new Register(&state_.K_p));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_D, new Register(&state_.K_d));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageBus, new Register(&state_.Voltage_bus));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentBus, new Register(&state_.I_bus));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::FETTemp, new Register(&state_.fet_temp));
+
+    // Watchdog
+    RegisterInterface::AddRegister(WatchdogRegisters_e::CommandTime, new Register(&watchdog_.command_time));
+    RegisterInterface::AddRegister(WatchdogRegisters_e::Timeout, new Register(&watchdog_.timeout));
+
+    // Add some optimized commands ( Automatic reply with appropriate state information thus not requiring another request/rep )
+    RegisterInterface::AddRegister(ControllerCommandRegisters_e::ClosedLoopTorqueCommand, new Register(std::bind(&MotorController::ClosedLoopTorqueCmd, this, _1, _2)));
+    
+    // TODO: PD_Command(P,D, Pos, Vel, T_ff)
+    // TODO: PositionCommand(Pos, Vel, T_ff)
+    // TODO: VelocityCommand(Vel, T_ff)
+
+    // Return Joint State
 }
 
+int8_t MotorController::ClosedLoopTorqueCmd(register_command_t *cmd, FDCANDevice *dev)
+{
+    // TODO: Error check this range?
+    TorqueControlModeRegister_t *tcmr = (TorqueControlModeRegister_t *)cmd->cmd_data;
+    state_.Pos_ref = tcmr->Pos_ref;
+    state_.Vel_ref = tcmr->Vel_ref;
+    state_.K_p = tcmr->K_p;
+    state_.K_d = tcmr->K_d;
+    state_.T_ff = tcmr->T_ff;
+
+    JointState_t state_hat;
+    state_hat.Pos = motor->state_.theta_mech;
+    state_hat.Vel = motor->state_.theta_mech_dot;
+    state_hat.T_est = state_.I_q * motor->config_.K_t * motor_->config_.gear_ratio;
+
+    register_reply_t reply;
+    reply.header.sender_id = dev->ID();
+    reply.header.code = 0; // Error Codes Here
+    reply.header.address = ControllerCommandRegisters_e::JointStateRegister; // Address from Requested Register
+    reply.header.msg_id = cmd->header.msg_id;
+
+    memcpy(&reply.cmd_data, (uint8_t *)&state_hat, sizeof(JointState_t));
+
+    // Send it back
+    dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t)+sizeof(JointState_t));
+
+    return 0;
+}
 void MotorController::PrintConfig()
 {
      // Print Configs
     Logger::Instance().Print("Controller Config: K_d: %f, K_q: %f, K_i_d: %f, K_i_q: %f, overmodulation: %f\r\n", config_.k_d, config_.k_q, config_.k_i_d, config_.k_i_q, config_.overmodulation);
-    Logger::Instance().Print("Controller Config: Vel_Limit: %f, Pos_Limit: %f, Tau_Limit: %f, Current_Limit: %f, Current BW: %f\r\n", config_.velocity_limit, config_.position_limit, config_.torque_limit, config_.current_limit, config_.current_bandwidth);
-    Logger::Instance().Print("Controller Config: K_p_min: %f, K_p_max: %f, K_d_min: %f, K_d_max: %f, PWM Freq: %f, FOC Divder: %d\r\n", config_.K_p_min, config_.K_p_max, config_.K_d_min, config_.K_d_max, config_.pwm_freq, config_.foc_ccl_divider);
+    Logger::Instance().Print("Controller Config: Vel_Limit: %f, Pos_Limit: %f, Tau_Limit: %f, Current_Limit: %f, Current BW: %f\r\n", config_.velocity_limit, config_.pos_limit_min, config_.torque_limit, config_.current_limit, config_.current_bandwidth);
+    Logger::Instance().Print("Controller Config: K_p_max: %f, K_d_max: %f, PWM Freq: %f, FOC Divder: %d\r\n", config_.K_p_max, config_.K_d_max, config_.pwm_freq, config_.foc_ccl_divider);
 }
 void MotorController::Reset()
 {
@@ -369,6 +362,8 @@ void MotorController::Reset()
     state_.d_int = 0.0f;
     state_.q_int = 0.0f;
 
+    state_.Vel_int = 0.0f;
+
     state_.V_d = 0.0f;
     state_.V_q = 0.0f;
 
@@ -379,6 +374,11 @@ void MotorController::Reset()
     state_.K_p = 0.0f;
     state_.K_d = 0.0f;
     state_.T_ff = 0.0f;
+
+    in_limit_min_ = false;
+    in_limit_max_ = false;
+
+    in_torque_limit_ = false;
 }
 
 void MotorController::CurrentMeasurementCB()
@@ -402,9 +402,9 @@ void MotorController::CurrentMeasurementCB()
     }
     else
     {
-        motor_->state_.I_a = current_scale * static_cast<float>(adc_1_->Read());
-        motor_->state_.I_b = current_scale * static_cast<float>(adc_3_->Read());
-        motor_->state_.I_c = current_scale * static_cast<float>(adc_2_->Read());
+        motor_->state_.I_a = current_scale * static_cast<float>(adc_2_->Read());
+        motor_->state_.I_b = current_scale * static_cast<float>(adc_1_->Read());
+        motor_->state_.I_c = current_scale * static_cast<float>(adc_3_->Read());
     }
     // We have some time to do things here.  We should squeeze in RMS current here
     
@@ -441,11 +441,9 @@ void MotorController::CurrentMeasurementCB()
     //LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
 
-
     // Run FSM for timestep
     RunControlFSM();
 }
-
 
 void MotorController::SampleBusVoltage()
 {
@@ -460,6 +458,7 @@ void MotorController::SampleFETTemperature()
 {
     if(!IsInitialized())
         return;
+
     // Sample FET Thermistor for Temperature
     state_.fet_temp = fet_therm_->SampleTemperature();
 }
@@ -501,10 +500,6 @@ void MotorController::Init()
     // Calibrate Sense Amplifier Bias/Offset
     gate_driver_->Calibrate();
     osDelay(10);
-    
-    // TODO: Member Function with Callback for Command Handler
-    // Load Configuration
-   // load_configuration();
 
     // Compute PWM Parameters
     pwm_counter_period_ticks_ = SystemCoreClock / (2 * config_.pwm_freq);
@@ -648,7 +643,7 @@ void MotorController::StartADCs()
     adc_3_->GetFilter().Init(0.0f);
     
     // Set Bus Filter Alpha. For now ms sampling with 1000hz cutoff frequency
-    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(controller_update_period_, config_.current_bandwidth));
+    vbus_adc_->GetFilter().SetAlpha(LowPassFilter::ComputeAlpha(1e-3, config_.current_bandwidth));
     vbus_adc_->GetFilter().Init(24.0f / voltage_scale); // 24 volts/Read default system voltage
     
     // Enable ADCs
@@ -691,9 +686,7 @@ void MotorController::UpdateControllerGains()
 
     config_.k_d = config_.k_q = k;
     config_.k_i_d = config_.k_i_q = k_i;
-    //config_.alpha = 1.0f - 1.0f / (1.0f - controller_update_period_ * config_.current_bandwidth * 2.0f * M_PI);
 
-    dirty_ = true;
 }
 void MotorController::SetDuty(float duty_A, float duty_B, float duty_C)
 {
@@ -795,10 +788,3 @@ void MotorController::SetModulationOutput(float v_alpha, float v_beta)
     SetDuty(state_.dtc_A, state_.dtc_B, state_.dtc_C);
 }
 
-void MotorController::TorqueControl()
-{
-    float torque_ref =  state_.T_ff + state_.K_p * (state_.Pos_ref - motor->state_.theta_mech) + state_.K_d * (state_.Vel_ref - motor->state_.theta_mech_dot);
-    state_.I_q_ref = torque_ref / (motor->config_.K_t * motor->config_.gear_ratio);
-    state_.I_d_ref = 0.0f;
-    CurrentControl(); // Do Current Controller
-}

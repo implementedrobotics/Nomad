@@ -78,6 +78,7 @@ class RealTimeDataPlotter:
         self.timer.start(50)
 
         #test.getAxis('left').setPen('b')
+        
         #test.getAxis('bottom').setPen('b')
         #self.graphicsView.resize(800,600)
 
@@ -268,7 +269,7 @@ class NomadBasicProgressDialog(QtWidgets.QDialog):
     
    # def CloseWindow(self):
 
-Mode_Map = ['STARTUP', 'IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'CURRENT MODE', 'VOLTAGE MODE', 'TORQUE MODE', 'SPEED MODE']
+Mode_Map = ['STARTUP', 'IDLE', 'ERROR', 'MEASURE R', 'MEASURE L', 'MEASURE PHASE DIRECTION', 'MEASURE ENCODER OFFSET', 'CALIBRATION MODE', 'POSITION MODE', 'VELOCITY MODE', 'PD MODE', 'TORQUE MODE', 'CURRENT MODE', 'VOLTAGE_MODE']
 class NomadBLDCGUI(QtWidgets.QMainWindow):
     def __init__(self):
         super(NomadBLDCGUI, self).__init__()
@@ -339,14 +340,20 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_b"), title='I(b)', row=1, col=0)
         #self.rt_plotter.AddData((self.nomad_dev, "motor_state.I_c"), title='I(c)', row=2, col=0)
 
-        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
-        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
-
-        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_max"), title='Max Current Demand', name='I(max)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('g', width=2))
-        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_rms"), title='Motor RMS Current', name='I(rms)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+       #self.rt_plotter.AddData((self.nomad_dev, "controller_state.Pos_ref"), title='Postion', name='Pos Ref', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('r', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech_true"), title='Position', name='Pos', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('g', width=2))
+       # self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech_dot"), title='Velocity', name='Vel', units='rads/s', legend=True, row=0, col=0, pen=pg.mkPen('g', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_config.pos_limit_min"), title='Position Limit (Min)', name='Position Limit (Min)', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_config.pos_limit_max"), title='Position Limit (Max)', name='Position Limit (Max)', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
+       # self.rt_plotter.AddData((self.nomad_dev, "controller_config.position_limit"), title='Position Limit', name='Position Limit', units='rads', legend=True, row=0, col=0, pen=pg.mkPen('b', width=2))
+        
         self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q_ref"), title='Q Axis Current', name='I(q) ref', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        self.rt_plotter.AddData((self.nomad_dev, "motor_state.theta_mech_dot"), title='Vel Est', name='Vel Est', units='rads/s', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_max"), title='Max Current Demand', name='I(max)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('g', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_rms"), title='Motor RMS Current', name='I(rms)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('r', width=2))
+        #self.rt_plotter.AddData((self.nomad_dev, "controller_state.I_q"), title='Q Axis Current', name='I(q)', units='A', legend=True, row=1, col=0, pen=pg.mkPen('b', width=2))
 
         # Start Updater
         self.updater = BackgroundUpdater(self.nomad_dev)
@@ -523,15 +530,32 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             self.integratorGainQAxisVal.setValue(self.nomad_dev.controller_config.k_i_q)
             #self.refFilterCoefficientVal.setValue(self.nomad_dev.controller_config.alpha)
             
-            self.posGainMinVal.setValue(self.nomad_dev.controller_config.K_p_min)
             self.posGainMaxVal.setValue(self.nomad_dev.controller_config.K_p_max)
-            self.velGainMinVal.setValue(self.nomad_dev.controller_config.K_d_min)
             self.velGainMaxVal.setValue(self.nomad_dev.controller_config.K_d_max)
 
+            self.posLimitMinVal.setValue(self.nomad_dev.controller_config.pos_limit_min)
+            self.posLimitMaxVal.setValue(self.nomad_dev.controller_config.pos_limit_max)
+            
+            self.posLimitPGainVal.setValue(self.nomad_dev.controller_config.K_p_limit)
+            #self.posLimitIGainVal.setValue(self.nomad_dev.controller_config.K_i_limit)
+            self.posLimitDGainVal.setValue(self.nomad_dev.controller_config.K_d_limit)
             self.velLimitVal.setValue(self.nomad_dev.controller_config.velocity_limit)
-            self.posLimitVal.setValue(self.nomad_dev.controller_config.position_limit)
+            
             self.currentLimitVal.setValue(self.nomad_dev.controller_config.current_limit)
             self.torqueLimitVal.setValue(self.nomad_dev.controller_config.torque_limit)
+
+
+            self.canIDVal.setValue(self.nomad_dev.can_config.id)
+            self.nominalBitrateVal.setValue((self.nomad_dev.can_config.bitrate)//1000)
+            self.dataBitrateVal.setValue((self.nomad_dev.can_config.d_bitrate)//1000)
+            self.nominalSamplePointVal.setValue(self.nomad_dev.can_config.sample_point * 100)
+            self.dataSamplePointVal.setValue(self.nomad_dev.can_config.d_sample_point * 100)
+
+            if(self.nomad_dev.can_config.mode_fd == 0):
+                self.canFDModeVal.setChecked(False)
+            else:
+                self.canFDModeVal.setChecked(True)
+
 
             if(show_confirm):
                 msgBox = QtWidgets.QMessageBox()
@@ -578,14 +602,18 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.controller_config.overmodulation = self.overmodulationPercentageVal.value() / 100.0
 
         self.nomad_dev.controller_config.velocity_limit = self.velLimitVal.value()
-        self.nomad_dev.controller_config.position_limit = self.posLimitVal.value()
+        self.nomad_dev.controller_config.pos_limit_min = self.posLimitMinVal.value()
+        self.nomad_dev.controller_config.pos_limit_max = self.posLimitMaxVal.value()
         self.nomad_dev.controller_config.torque_limit = self.torqueLimitVal.value()
         self.nomad_dev.controller_config.current_limit = self.currentLimitVal.value()
         self.nomad_dev.controller_config.current_bandwidth = self.loopBandwidthVal.value()
-        self.nomad_dev.controller_config.K_p_min = self.posGainMinVal.value()
-        self.nomad_dev.controller_config.K_p_max = self.posGainMaxVal.value()
-        self.nomad_dev.controller_config.K_d_min = self.velGainMinVal.value()
         self.nomad_dev.controller_config.K_d_max = self.velGainMaxVal.value()
+        self.nomad_dev.controller_config.K_p_max = self.posGainMaxVal.value()
+
+        self.nomad_dev.controller_config.K_p_limit = self.posLimitPGainVal.value()
+        self.nomad_dev.controller_config.K_i_limit = self.posLimitIGainVal.value()
+        self.nomad_dev.controller_config.K_d_limit = self.posLimitDGainVal.value()
+
         self.nomad_dev.controller_config.pwm_freq = self.pwmFreqVal.value()
         self.nomad_dev.controller_config.foc_ccl_divider = self.loopFreqDividerVal.value()
 
@@ -593,6 +621,18 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.encoder_config.cpr = self.encoderCPRVal.value()
         self.nomad_dev.encoder_config.offset_elec = self.electricalOffsetVal.value()
         self.nomad_dev.encoder_config.offset_mech = self.mechanicalOffsetVal.value()
+
+        # Update CAN Parameters
+        self.nomad_dev.can_config.id = self.canIDVal.value()
+        self.nomad_dev.can_config.bitrate = int(self.nominalBitrateVal.value() * 1000) # Convert back to bps
+        self.nomad_dev.can_config.d_bitrate = int(self.dataBitrateVal.value() * 1000)  # Convert back to bps
+        self.nomad_dev.can_config.sample_point = self.nominalSamplePointVal.value() / 100
+        self.nomad_dev.can_config.d_sample_point = self.dataSamplePointVal.value() / 100
+
+        if(self.canFDModeVal.isChecked() == True):
+            self.nomad_dev.can_config.mode_fd = 1
+        else:
+            self.nomad_dev.can_config.mode_fd = 0
 
         if(self.nomad_dev.save_configuration() != True):
             msgBox = QtWidgets.QMessageBox()
@@ -630,6 +670,8 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
         self.nomad_dev.enter_idle_mode()
 
     def SetVoltageSetPoint(self):
+
+        # TODO: Should be from bus voltage?  Or send 0->1 and let controller sort it
         max_voltage = 10.0
         v_q = max_voltage * self.voltageControlSlider.value()/1000.0
         self.nomad_dev.set_voltage_setpoint(0, v_q) 
@@ -708,10 +750,13 @@ class NomadBLDCGUI(QtWidgets.QMainWindow):
             motor_state = self.nomad_dev.motor_state
             controller_state = self.nomad_dev.controller_state
             encoder_state = self.nomad_dev.encoder_state
-            #print(controller_state)
-            max_current = self.nomad_dev.controller_config.current_limit
+            controller_config = self.nomad_dev.controller_config
+            #print(controller_config)
+            max_current = controller_config.current_limit
             I_d, I_q = self.nomad_dev.dq0(motor_state.theta_elec, motor_state.I_a, motor_state.I_b, motor_state.I_c)
             #print(I_q)
+            #print(I_d)
+           # print(controller_state.V_d)
            # print(state)
             self.idProgressVal.setFormat("I_d: {:0.2f} A".format(I_d))
             self.idProgressVal.setValue(int(abs(I_d/max_current)*100))

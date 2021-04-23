@@ -34,6 +34,7 @@
 #include <stddef.h>
 
 // C++ System Files
+#include <limits>
 
 // Project Includes
 #include "main.h"
@@ -50,6 +51,8 @@
 #include <DRV8323.h>
 #include <LEDService.h>
 #include <Logger.h>
+#include <NomadFlash.h>
+#include <CommandHandler.h>
 #include <motor_controller_interface.h>
 #include <MotorController.h>
 #include <RegisterInterface.h>
@@ -81,13 +84,39 @@ void StartCommunicationThreads()
     Logger::Instance().Enable(true);
     Logger::Instance().SetUART(uart);
 
-    // Start CAN (1mbps Nominal Rate w/ 5mbps Data Rate)
-    fdcan = new FDCANDevice(FDCAN3, 0x123, 1e6, 2e6);
+    // Load CAN Config
+    FDCANDevice::Config_t config;
+
+    // Open it.
+    if(!NomadFlash::Open())
+    {
+        Logger::Instance().Print("Unable to load CAN Configuration!\r\n");
+        // Load some defaults
+
+        //Start CAN (1mbps Nominal Rate w/ 2mbps Data Rate)
+        config.bitrate = 1e6;
+        config.d_bitrate = 2e6;
+        config.id = 0x123;
+        config.mode_fd = 1;
+        config.sample_point = 0.80f;    // 80%
+        config.d_sample_point = 0.625f; // 62.5%
+    }
+    else
+    {
+        NomadFlash::LoadCANConfig(config);
+        //Logger::Instance().Print("Loaded CAN: %d\r\n", config.id);
+    }
+
+    // Close it.
+    NomadFlash::Close();
+
+    // TODO: Make Instance...
+    fdcan = new FDCANDevice(FDCAN3, config);
     fdcan->Init();
     fdcan->Enable();
     fdcan->EnableIT();
     fdcan->Attach(&RegisterInterface::HandleCommand);
-    //Logger::Instance().Print("Device ID: %d\r\n", LL_DBGMCU_GetDeviceID());
+
 }
 
 void StartLEDService()
@@ -104,8 +133,25 @@ void StartLEDService()
 
 void StartMotorControlThread()
 {
-    // Start Motor Control Thread
-    init_motor_controller();
+    // Load from Flash
+    // Open it.
+    if(NomadFlash::Open())
+    {
+        // Load All
+        Save_format_t load_data;
+        NomadFlash::LoadAll(load_data);
+        
+        // Start Motor Control Thread
+        init_motor_controller(&load_data);
+    }
+    else
+    {
+        Logger::Instance().Print("No Valid Load Data Found.  Please configure and save!\r\n");
+        // Start Motor Control Thread
+        init_motor_controller(NULL);
+    }
+    
+    NomadFlash::Close();
 }
 
 void StartPollingThread()
@@ -136,7 +182,7 @@ void SetupDeviceRegisters()
     // Add Register Addresses
 
     // Device Status Register 1
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister1, new Register(&DSR1, true, sizeof(DeviceStatusRegister1_t)));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFault, new Register(&DSR1.fault_mode));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceControlMode, new Register(&DSR1.control_mode));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceVoltageBus, new Register(&DSR1.V_bus));
@@ -144,7 +190,7 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFETTemp, new Register(&DSR1.fet_temp));
 
     // Device Status Register 2
-    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister2, new Register(&DSR2, true));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceStatusRegister2, new Register(&DSR2, true, sizeof(DeviceStatusRegister2_t)));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMajor, new Register(&DSR2.fw_major));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceFirmwareMinor, new Register(&DSR2.fw_minor));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID1, new Register(&DSR2.uid1));
@@ -152,24 +198,16 @@ void SetupDeviceRegisters()
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUID3, new Register(&DSR2.uid3));
     RegisterInterface::AddRegister(DeviceRegisters_e::DeviceUptime, new Register(&DSR2.uptime));
 
-  //  RegisterInterface::register_command_t test;
-  //  test.header.rwx = 1;
-  ////  test.header.address = DeviceRegisters_e::DeviceUID1;
-  //  test.header.data_type = 1;
-  //  uint32_t new_val=  24;
+    // System Management Registers
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceSaveConfig, new Register(std::bind(&save_configuration)));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceLoadConfig, new Register(std::bind(&load_configuration)));
+    RegisterInterface::AddRegister(DeviceRegisters_e::DeviceRestart, new Register(std::bind(&reboot_system)));
 
-  //  memcpy(&test.cmd_data, (uint32_t *)&new_val, sizeof(uint32_t));
+    // Register  *test_reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1);
+    // DeviceStatusRegister1_t *d_reg1 = (DeviceStatusRegister1_t *)RegisterInterface::GetRegister(DeviceRegisters_e::DeviceStatusRegister1)->GetDataPtr<uint8_t *>();
 
-    //memcpy(&test.cmd_data, (uint8_t *)&test_me, sizeof(Test_Struct));
-
-   // FDCANDevice::FDCAN_msg_t msg;
-   // memcpy(msg.data, &test, 64);
-
-   // Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
-   // Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
-
-   // RegisterInterface::HandleCommand(msg);
-    //Logger::Instance().Print("Got New: %d\r\n", reg->Get<uint32_t>());
+    // Register *reg = RegisterInterface::GetRegister(DeviceRegisters_e::DeviceUID1);
+    // Logger::Instance().Print("From Reg: %d\r\n", reg->Get<uint32_t>());
 }
 
 void DebugTask()
@@ -204,34 +242,38 @@ extern "C" int app_main() //
     // Init a temp debug Task
     //DebugTask();
 
-    //  float theta = PI;
+    // float theta = PI;
     // int i = 0;
 
     // uint32_t start_ticks;
     // uint32_t stop_ticks;
     // uint32_t elapsed_ticks;
 
-    uint8_t Tx_Data[10] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12};
+    //uint8_t Tx_Data[15] = {0x5, 0x10, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
 
-    // int i =0;
+    //save_configuration();
+
+   // float desired = std::numeric_limits<float>::quiet_NaN();
+   // Logger::Instance().Print("Is Nan: %d\r\n", std::isnan(desired));
+    //int i = 0;
     // Infinite Loop.
     for (;;)
     {
-       // fdcan->Send(0x001, Tx_Data, 10);
+      //  fdcan->Send(0x001, Tx_Data, 15);
 
         // Update Device Stats
         //DSR2.uptime = HAL_GetTick() / 1000;
-       // osDelay(1000);
+        //osDelay(1000);
         //uint16_t length;
         // fdcan->Receive(Rx_Data, length);
-        // Logger::Instance().Print("Here: %d\r\n", i++);
-        //osDelay(50);
+        //Logger::Instance().Print("Here: %d\r\n", i++);
+        //osDelay(500);
         // start_ticks = SysTick->VAL;
         // temp = fet_temp->SampleTemperature();
 
         // LL_GPIO_SetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
 
-        // Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
+       //  Logger::Instance().Print("Test 0x%lX.\r\n", LL_DBGMCU_GetDeviceID());
 
         // LL_GPIO_ResetOutputPin(USER_GPIO_GPIO_Port, USER_GPIO_Pin);
         // stop_ticks = SysTick->VAL;
@@ -240,5 +282,114 @@ extern "C" int app_main() //
     }
 
     // Should not get here
+    return 0;
+}
+
+
+void ms_poll_task(void *arg)
+{
+    // Main millisecond polling loop
+    for (;;)
+    {
+        // Sample bus voltage
+        motor_controller->SampleBusVoltage();
+
+        // Sample FET Thermistor for Temperature
+        motor_controller->SampleFETTemperature();
+
+        // Delay 1 ms
+        osDelay(1);
+    }
+}
+
+FDCANDevice *get_can_device()
+{
+    return fdcan;
+}
+
+int8_t save_configuration()
+{
+    Logger::Instance().Print("\r\nSaving Configuration...\r\n");
+    if (NomadFlash::Open(true))
+    {
+        // If we are writing a config assume for now we are calibrated
+        // TODO: Do something better so we don't have to make this assumption
+        motor->config_.calibrated = 1;
+        //status = NomadFlash::SaveMotorConfig(motor->config_);
+        if (!NomadFlash::SaveMotorConfig(motor->config_))
+        {
+            NomadFlash::Close();
+            return 0;
+        }
+        Logger::Instance().Print("Saved Motor Config.\r\n");
+       // status = NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_);
+        if (!NomadFlash::SavePositionSensorConfig(motor->PositionSensor()->config_))
+        {
+            NomadFlash::Close();
+            return 0;
+        }
+        Logger::Instance().Print("Saved Position Config.\r\n");
+      //  status = NomadFlash::SaveControllerConfig(motor_controller->config_);
+        if (!NomadFlash::SaveControllerConfig(motor_controller->config_))
+        {
+            NomadFlash::Close();
+            return 0;
+        }
+        Logger::Instance().Print("Saved Controller Config.\r\n");
+      //  status = NomadFlash::SaveCANConfig(fdcan->ReadConfig());
+        if (!NomadFlash::SaveCANConfig(fdcan->ReadConfig()))
+        {
+            NomadFlash::Close();
+            return 0;
+        }
+        Logger::Instance().Print("Saved CAN Config.\r\n");
+    }
+    else
+    {
+        Logger::Instance().Print("Unable to Open Flash!\r\n");
+        return 0;
+    }
+
+    NomadFlash::Close();
+    return 1;
+}
+
+int8_t load_configuration()
+{
+    // // Open it.
+    // if(!NomadFlash::Open())
+    // {
+    //     Logger::Instance().Print("No Valid Load Data Found.  Please configure and save!\r\n");
+    //     NomadFlash::Close();
+    //     return false;
+    // }
+
+    // // Load All
+    // Save_format_t load_data;
+    // NomadFlash::LoadAll(load_data);
+
+    // // Load Motor Config
+    // NomadFlash::LoadMotorConfig(motor->config_);
+    // motor->PrintConfig();
+
+    // // Load Position Sensor Config
+    // NomadFlash::LoadPositionSensorConfig(motor->PositionSensor()->config_);
+    // motor->PositionSensor()->SetPolePairs(motor->config_.num_pole_pairs);
+    // motor->PositionSensor()->PrintConfig();
+
+    // // Load Controller Config
+    // NomadFlash::LoadControllerConfig(motor_controller->config_);
+    // motor_controller->PrintConfig();
+
+    // // Close it.
+    // NomadFlash::Close();
+
+    return true;
+}
+
+
+int8_t reboot_system()
+{
+    NVIC_SystemReset();
     return 0;
 }

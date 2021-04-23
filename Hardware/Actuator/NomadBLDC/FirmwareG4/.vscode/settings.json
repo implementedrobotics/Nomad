@@ -91,6 +91,7 @@
         "unordered_set": "cpp",
         "typeindex": "cpp",
         "bitset": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "future": "cpp"
     }
 }

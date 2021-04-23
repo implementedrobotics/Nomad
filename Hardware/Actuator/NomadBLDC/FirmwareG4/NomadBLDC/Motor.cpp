@@ -37,8 +37,7 @@
 #include <Utilities/math.h>
 #include <Utilities/utils.h>
 
-Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time),
-                                                                  dirty_(false)
+Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(sample_time)
 {
     // Zero State
     memset(&state_, 0, sizeof(state_));
@@ -61,7 +60,7 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
 
 
     // Setup Registers
-    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorConfigRegister1, new Register((MotorConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorConfigRegister1, new Register((MotorConfigRegister1_t *)&config_, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::PolePairs, new Register(&config_.num_pole_pairs));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::K_v, new Register(&config_.K_v));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::K_t, new Register(&config_.K_t));
@@ -73,15 +72,16 @@ Motor::Motor(float sample_time, float K_v, uint32_t pole_pairs) : sample_time_(s
     RegisterInterface::AddRegister(MotorConfigRegisters_e::GearRatio, new Register(&config_.gear_ratio));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::PhaseOrder, new Register(&config_.phase_order));
 
-    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorThermalConfigRegister, new Register((MotorThermalConfigRegister_t *)&config_.continuous_current_max, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorThermalConfigRegister, new Register((MotorThermalConfigRegister_t *)&config_.continuous_current_max, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::ContinuousCurrentLimit, new Register(&config_.continuous_current_max));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::ContinuousCurrentTau, new Register(&config_.continuous_current_tau));
     
-    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorCalibrationConfigRegister, new Register((MotorCalibrationConfigRegister_t *)&config_.calib_current, true));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::MotorCalibrationConfigRegister, new Register((MotorCalibrationConfigRegister_t *)&config_.calib_current, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationCurrent, new Register(&config_.calib_current));
     RegisterInterface::AddRegister(MotorConfigRegisters_e::CalibrationVoltage, new Register(&config_.calib_voltage));
+    RegisterInterface::AddRegister(MotorConfigRegisters_e::ZeroOutputOffset, new Register(std::bind(&Motor::ZeroOutputPosition, this)));
 
-    RegisterInterface::AddRegister(MotorStateRegisters_e::MotorStateRegister1, new Register((MotorStateRegister1_t *)&state_, true));
+    RegisterInterface::AddRegister(MotorStateRegisters_e::MotorStateRegister1, new Register((MotorStateRegister1_t *)&state_, true, sizeof(ControllerStateRegister1_t)));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_A, new Register(&state_.I_a));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_B, new Register(&state_.I_b));
     RegisterInterface::AddRegister(MotorStateRegisters_e::I_C, new Register(&state_.I_c));
@@ -116,23 +116,23 @@ void Motor::Update()
     rotor_sensor_->Update(sample_time_);
     
     // Update State
-    state_.theta_mech = rotor_sensor_->GetMechanicalPosition();
-    state_.theta_mech_true = rotor_sensor_->GetMechanicalPositionTrue();
-    state_.theta_mech_dot = rotor_sensor_->GetMechanicalVelocity();
+    state_.theta_mech = rotor_sensor_->GetMechanicalPosition() / config_.gear_ratio;
+    state_.theta_mech_true = rotor_sensor_->GetMechanicalPositionTrue() / config_.gear_ratio;
+    state_.theta_mech_dot = rotor_sensor_->GetMechanicalVelocity() / config_.gear_ratio;
     state_.theta_elec = rotor_sensor_->GetElectricalPosition();
     state_.theta_elec_dot = rotor_sensor_->GetElectricalVelocity();
 
     // Update Temparature Observer
 }
 
-void Motor::ZeroOutputPosition()
+int8_t Motor::ZeroOutputPosition()
 {
     Update(); // Make sure we are updated
     rotor_sensor_->ZeroPosition();
     Update(); // Post update
+
+    return 0;
 }
-
-
 
 void Motor::SetPolePairs(uint32_t pole_pairs)
 {
@@ -144,7 +144,6 @@ void Motor::SetPolePairs(uint32_t pole_pairs)
     config_.K_t_out = config_.K_t * config_.gear_ratio;
     // Update Rotor
     rotor_sensor_->SetPolePairs(pole_pairs);
-    dirty_ = true;
 }
 
 void Motor::SetKV(float K_v)
@@ -155,6 +154,4 @@ void Motor::SetKV(float K_v)
     config_.flux_linkage = 60.0f / (Core::Math::kSqrt3 * config_.K_v * M_PI * config_.num_pole_pairs * 2);
     config_.K_t = config_.flux_linkage * config_.num_pole_pairs * 1.5f;
     config_.K_t_out = config_.K_t * config_.gear_ratio;
-
-    dirty_ = true;
 }

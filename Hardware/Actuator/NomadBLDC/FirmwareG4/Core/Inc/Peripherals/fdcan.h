@@ -90,7 +90,7 @@ public:
         uint32_t id;         // CAN ID 11-bit max is 0x7ff
         uint32_t bitrate;    // Nominal Bitrate
         uint32_t d_bitrate;   // Data Bitrate
-        uint8_t mode_fd;     // FD mode or classic
+        uint32_t mode_fd;     // FD mode or classic
         float sample_point;  // Nominal Bitrate Sample Point Target
         float d_sample_point;  // Data Sample Point Target
     };
@@ -121,7 +121,7 @@ public:
 
     // Set Complete Callback
     // TODO: We have 2 interrupt lines.  For now attach only to 0
-    void Attach(const std::function<void(FDCAN_msg_t&)> &recv_cb)
+    void Attach(const std::function<void(FDCAN_msg_t&, FDCANDevice*)> &recv_cb)
     {
         recv_callback_ = recv_cb;
     }
@@ -135,6 +135,9 @@ public:
     // Receive CAN Message Function
     bool Receive(FDCAN_msg_t &msg) CCM_ATTRIBUTE;
 
+    // Get ID
+    uint32_t ID() { return config_.id; }
+
     // TODO: This should be up in a base "Peripheral Class"
     // TODO: Also for FDCAN this is ONLY a receive interrupt supporting function.
     // TODO: Eventually make this handle all things interrupt...
@@ -147,7 +150,7 @@ public:
             Receive(fdcan_msg_.data, fdcan_msg_.length);
 
             // Execute Callback ( Forward Message to Handler )
-            recv_callback_(fdcan_msg_);
+            recv_callback_(fdcan_msg_, this);
         }
 
         // Handle clearing registers etc
@@ -165,10 +168,16 @@ public:
     // Return Handle to FDCAN TypeDef
     inline FDCAN_HandleTypeDef* Handle() { return hfdcan_; };
 
+    void WriteConfig(Config_t &config) {config_ = config;}
+    Config_t& ReadConfig() {return config_;}
+    
 private:
 
     // Calc Bit Timing Helper Function
     bool CalculateTimings();
+
+    // Create Registers
+    void SetupRegisters();
 
     // STM32 FDCAN Types
     FDCAN_GlobalTypeDef *FDCAN_;
@@ -200,7 +209,7 @@ private:
     //static FDCANDevice* ISR_VTABLE[kMaxInterrupts];
 
     // Interrupt Callback
-    std::function<void(FDCAN_msg_t&)> recv_callback_ = [=](FDCAN_msg_t&) {};
+    std::function<void(FDCAN_msg_t&, FDCANDevice *dev)> recv_callback_ = [=](FDCAN_msg_t&, FDCANDevice*) {};
 };
 
 #endif // CORE_PERIPHERAL_FDCAN_H_

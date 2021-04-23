@@ -66,13 +66,13 @@ PositionSensorAS5x47::PositionSensorAS5x47(float sample_time, uint32_t pole_pair
 
     velocity_samples_ = new float[filter_size_];
 
-    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigRegister1, new Register((EncoderConfigRegister1_t *)&config_, true));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigRegister1, new Register((EncoderConfigRegister1_t *)&config_, true, sizeof(EncoderConfigRegister1_t)));
     RegisterInterface::AddRegister(EncoderConfigRegisters_e::ElectricalOffset, new Register(&config_.offset_elec));
     RegisterInterface::AddRegister(EncoderConfigRegisters_e::MechanicalOffset, new Register(&config_.offset_mech));
-    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT1, new Register((EncoderConfigOffsetLUT1_t *)&config_.offset_lut, true));
-    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT2, new Register((EncoderConfigOffsetLUT2_t *)&config_.offset_lut+32, true)); // 32-byte strides
-    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT3, new Register((EncoderConfigOffsetLUT3_t *)&config_.offset_lut+64, true)); // 32-byte strides
-    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT4, new Register((EncoderConfigOffsetLUT4_t *)&config_.offset_lut+96, true)); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT1, new Register((EncoderConfigOffsetLUT1_t *)&config_.offset_lut, true, sizeof(EncoderConfigOffsetLUT1_t)));
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT2, new Register((EncoderConfigOffsetLUT2_t *)&config_.offset_lut+32, true, sizeof(EncoderConfigOffsetLUT2_t))); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT3, new Register((EncoderConfigOffsetLUT3_t *)&config_.offset_lut+64, true, sizeof(EncoderConfigOffsetLUT3_t))); // 32-byte strides
+    RegisterInterface::AddRegister(EncoderConfigRegisters_e::EncoderConfigOffsetLUT4, new Register((EncoderConfigOffsetLUT4_t *)&config_.offset_lut+96, true, sizeof(EncoderConfigOffsetLUT4_t))); // 32-byte strides
 }
 
 void PositionSensorAS5x47::PrintConfig()
@@ -104,6 +104,7 @@ void PositionSensorAS5x47::Reset()
 
     config_.offset_elec = 0;
     config_.offset_mech = 0;
+    num_rotations_ = 0;
     dirty_ = true;
 }
 /* Setters */
@@ -268,7 +269,7 @@ void PositionSensorAS5x47::Update(float Ts)
     // Update Velocities
     velocity_mechanical_ = vel_sum / ((float)filter_size_);
     velocity_electrical_ = velocity_mechanical_ * pole_pairs_;
-    // TODO: Add in out LPF Filter
+    // TODO: Add in our LPF Filter
     velocity_electrical_filtered_ = 0.99f * velocity_electrical_filtered_ + 0.01f * velocity_electrical_;
     
 }

@@ -77,7 +77,6 @@ public:
 
 protected:
     NomadBLDCData *data_;
-    // std::string name_;
 };
 
 // Transitions
@@ -106,5 +105,57 @@ public:
 
 protected:
     control_mode_type_t req_mode_;
+};
+
+// Transitions
+class FaultModeEvent : public NomadBLDCTransitionEvent
+{
+public:
+    // Base Class Transition Event
+    // name = Transition Event name
+    FaultModeEvent(/*const std::string &name,*/
+                     NomadBLDCData *data) : NomadBLDCTransitionEvent(data)
+    {
+    }
+
+    // Stop state machine and cleans up
+    bool Triggered()
+    {
+        // Check Watchdog (from PC) Timeout
+        // WatchdogRegister_t watchdog = data_->controller->GetWatchdog();
+        // if(watchdog.timeout > 0) // Watchdog Enabled.  Check it
+        // {
+        //     uint32_t now = HAL_GetTick();
+        //     uint32_t deadline = watchdog.command_time + watchdog.timeout;
+        //     //Logger::Instance().Print("Check Timeout: %d : %d : %d\r\n", now, watchdog.command_time, deadline);
+        //     if(now >= deadline) // Expired
+        //     {
+        //          // Set Error Code Here
+        //          Logger::Instance().Print("TIMED OUT WATCHDOG!\r\n");
+        //          return true;
+        //     }
+        // }
+
+        
+        // Check Control Deadline Event
+
+        // Check E-Stop Event?
+
+        // Check Gate Driver Fault
+
+        // Check Over Temp Fault? Or Limit Control
+
+        // Check Position Limit Fault?
+        //std::cout << "Check: " << data_->control_mode << std::endl;
+        // if (data_->controller->GetControlMode() == req_mode_)
+        // {
+        //     //std::cout << "Event ID: " << name_ << " is SET!" << std::endl;
+        //     return true;
+        // }
+        return false;
+    };
+
+protected:
+
 };
 #endif // NOMADBLDC_FSM_NOMADBLDCFSM_H_

@@ -29,6 +29,7 @@
 
 // Project Include Files
 #include <Logger.h>
+#include <CommandHandler.h>
 #include <FSM/CalibrationStates.h>
 #include <Utilities/math.h>
 
@@ -63,7 +64,7 @@ void MeasureResistanceState::Run_(float dt)
     float R = test_voltage_ / motor->config_.calib_current; 
 
     // Hit Cycle Count.  Now Compute Resistance
-    measurement_t measurement;
+    CommandHandler::measurement_t measurement;
     measurement.f32 = R;
 
     // Update Motor Config Value
@@ -75,11 +76,11 @@ void MeasureResistanceState::Run_(float dt)
        // Logger::Instance().Print("ERROR: Resistance Measurement Out of Range: %f\r\n", R);
 
         // Update Command Interface
-        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
+        CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
     }
 
     // Send Complete Signal
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+    CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_RESISTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
 
     // Set next state to idle
     data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -161,13 +162,13 @@ void MeasureInductanceState::Run_(float dt)
     float L = v_L / dI_by_dt;
     
     // Update Measurement
-    measurement_t measurement;
+    CommandHandler::measurement_t measurement;
     measurement.f32 = L;
 
     // TODO: arbitrary values set for now
     if (L < 1e-6f || L > 500e-6f)
     {
-        CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
+        CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::MEASUREMENT_OUT_OF_RANGE, measurement);
     }
 
     // PMSM D/Q Inductance are the same.
@@ -175,7 +176,7 @@ void MeasureInductanceState::Run_(float dt)
     motor->config_.phase_inductance_q = L;
 
     // Logger::Instance().Print("Phase Inductance: %f Henries\r\n", L);
-    CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+    CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_INDUCTANCE_COMPLETE, error_type_t::SUCCESSFUL, measurement);
 
     // Set next state to idle
     data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -279,24 +280,23 @@ void MeasurePhaseOrderState::Run_(float dt)
             // Compute Pole Pairs
             float total_theta_mech = std::abs(theta_end_ - theta_start_);
             uint16_t pole_pairs = static_cast<uint16_t>(scan_range/total_theta_mech);
-
-            // Pole pairs should be evenly divisible by 3(3 phases)
-            if(pole_pairs % 3 != 0)
-            {
-                // If not.  We have some error but should be close enough to tick +/- to find it
-                pole_pairs = (pole_pairs+1) % 3 == 0 ? pole_pairs + 1 : pole_pairs - 1;
-            }
+            // Pole pairs should be evenly divisible by 3(3 phases) // ERROR THIS IS INCORRECT!
+            // if(pole_pairs % 3 != 0)
+            // {
+            //     // If not.  We have some error but should be close enough to tick +/- to find it
+            //     pole_pairs = (pole_pairs+1) % 3 == 0 ? pole_pairs + 1 : pole_pairs - 1;
+            // }
 
             // Update Config
             motor->config_.num_pole_pairs = pole_pairs;
             motor->PositionSensor()->SetPolePairs(pole_pairs);
 
             // Feedback measurement
-            measurement_t measurement;
+            CommandHandler::measurement_t measurement;
             measurement.i32 = motor->config_.phase_order;
 
             // Send Complete Feedback
-            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
+            CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_PHASE_ORDER_COMPLETE, error_type_t::SUCCESSFUL, measurement);
 
             // Set next state to idle
             data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -358,31 +358,6 @@ void MeasureEncoderOffsetState::Setup()
 
     // Sub sampling for smoothing         
     num_sub_samples_ = 160;                                             
-
-    error_forward_ = new float[num_samples_];
-    error_backward_ = new float[num_samples_];
-
-    error_ = new float[num_samples_];
-    error_filtered_ = new float[num_samples_];
-
-    // Zero Array.  Do this explicitly in case compilers vary
-    memset(error_forward_, 0, sizeof(float)*num_samples_);
-    memset(error_backward_, 0, sizeof(float)*num_samples_);
-    memset(error_, 0, sizeof(float)*num_samples_);
-    memset(error_filtered_, 0, sizeof(float)*num_samples_);
-
-    LUT_ = new int8_t[kLUTSize]; // Clear the previous lookup table.
-
-    // Zero Array.  Do this explicitly in case compilers vary
-    memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
-    
-    raw_forward_ = new int32_t[num_samples_];
-    raw_backward_ = new int32_t[num_samples_];
-
-    // Zero Array.  Do this explicitly in case compilers vary
-    memset(raw_forward_, 0, sizeof(int32_t)*num_samples_);
-    memset(raw_backward_, 0, sizeof(int32_t)*num_samples_);
-    
 }
 void MeasureEncoderOffsetState::Run_(float dt)
 {
@@ -407,6 +382,9 @@ void MeasureEncoderOffsetState::Run_(float dt)
 
             // Sample new rotor positipm
             motor_->Update(); 
+
+            // Reset
+            motor_->PositionSensor()->Reset();
 
             // Set Next State
             state_ = state_t::CALIBRATE_FORWARD;
@@ -493,11 +471,11 @@ void MeasureEncoderOffsetState::Run_(float dt)
             ComputeOffsetLUT();
 
             // Build Measurement
-            measurement_t elec_offset;
+            CommandHandler::measurement_t elec_offset;
             elec_offset.f32 = motor_->PositionSensor()->GetElectricalOffset();
 
             // Send Complete Feedback
-            CommandHandler::SendMeasurementComplete(command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
+            CommandHandler::SendMeasurementComplete(CommandHandler::command_feedback_t::MEASURE_ENCODER_OFFSET_COMPLETE, error_type_t::SUCCESSFUL, elec_offset);
 
             // Set next state to idle
             data_->controller->SetControlMode(control_mode_type_t::IDLE_MODE);
@@ -536,6 +514,32 @@ void MeasureEncoderOffsetState::Enter_(uint32_t current_time)
     // Reset Encoder Calibration
     motor_->PositionSensor()->Reset();
 
+    // Allocate
+    error_forward_ = new float[num_samples_];
+    error_backward_ = new float[num_samples_];
+
+    error_ = new float[num_samples_];
+    error_filtered_ = new float[num_samples_];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(error_forward_, 0, sizeof(float)*num_samples_);
+    memset(error_backward_, 0, sizeof(float)*num_samples_);
+    memset(error_, 0, sizeof(float)*num_samples_);
+    memset(error_filtered_, 0, sizeof(float)*num_samples_);
+
+    LUT_ = new int8_t[kLUTSize]; // Clear the previous lookup table.
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(LUT_, 0, sizeof(int8_t)*kLUTSize);
+    
+    raw_forward_ = new int16_t[num_samples_];
+    raw_backward_ = new int16_t[num_samples_];
+
+    // Zero Array.  Do this explicitly in case compilers vary
+    memset(raw_forward_, 0, sizeof(int16_t)*num_samples_);
+    memset(raw_backward_, 0, sizeof(int16_t)*num_samples_);
+
+
     // Initial State
     state_ = state_t::LOCK_ROTOR; 
 }
@@ -567,7 +571,7 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
     float offset = 0;
     for (int32_t i = 0; i < num_samples_; i++)
     {
-        offset += (error_forward_[i] + error_backward_[num_samples_ - 1 - i]) / (2.0f * num_samples_); // calclate average position sensor offset
+        offset += (error_forward_[i] + error_backward_[num_samples_ - 1 - i]) / (2.0f * num_samples_); // calculate average position sensor offset
     }
     offset = fmod(offset * motor_->config_.num_pole_pairs, Core::Math::k2PI); // convert mechanical angle to electrical angle
     
@@ -603,7 +607,6 @@ void MeasureEncoderOffsetState::ComputeOffsetLUT()
                 index -= num_samples_;
             }
             error_filtered_[i] += error_[index] / static_cast<float>(window_size_);
-            
         }
         mean += error_filtered_[i] / num_samples_;
     }

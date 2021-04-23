@@ -32,11 +32,13 @@
 
 // Project Includes
 #include <Peripherals/uart.h>
+#include <Peripherals/fdcan.h>
 
 #include "MotorController.h"
 #include "Motor.h"
 #include "motor_controller_interface.h"
 #include "nomad_hw.h"
+#include "nomad_app.h"
 #include <Logger.h>
 
 #define PACKET_DATA_OFFSET 2
@@ -46,7 +48,7 @@ struct __attribute__((__packed__)) Measurement_info_t
     uint8_t comm_id;           // Command ID
     uint8_t packet_length;     // Packet Length
     uint8_t status;            // Status
-    measurement_t measurement;         // Measurement Value
+    CommandHandler::measurement_t measurement;         // Measurement Value
 };
 
 struct __attribute__((__packed__)) Device_info_t
@@ -98,6 +100,14 @@ struct __attribute__((__packed__)) Controller_config_packet_t
     uint8_t comm_id;                     // Command ID
     uint8_t packet_length;               // Packet Length
     MotorController::Config_t config;    // Controller config
+};
+
+
+struct __attribute__((__packed__)) CAN_config_packet_t
+{
+    uint8_t comm_id;                     // Command ID
+    uint8_t packet_length;               // Packet Length
+    FDCANDevice::Config_t config;    // Controller config
 };
 
 struct __attribute__((__packed__)) Controller_state_packet_t
@@ -392,6 +402,18 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
 
     }
 
+    case COMM_WRITE_CAN_CONFIG:
+    {
+        FDCANDevice *fdcan = get_can_device();
+        FDCANDevice::Config_t *data = (FDCANDevice::Config_t *)(packet_buffer+PACKET_DATA_OFFSET);
+        FDCANDevice::Config_t config;
+        memcpy(&config, data, sizeof(FDCANDevice::Config_t));
+        fdcan->WriteConfig(config);
+
+        break;
+        // TODO: Return status
+    }
+
     // Read Configs
     case COMM_READ_MOTOR_CONFIG:
     {
@@ -410,7 +432,6 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
         packet.comm_id = COMM_READ_CONTROLLER_CONFIG;
         packet.packet_length = sizeof(MotorController::Config_t);
         packet.config = motor_controller->config_;
-
         // Send it
         gUART->SendBytes((uint8_t *)&packet, sizeof(Controller_config_packet_t));
         break;
@@ -424,6 +445,19 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     
         // Send it
         gUART->SendBytes((uint8_t *)&packet, sizeof(Position_config_packet_t));
+        break;
+    }
+
+    case COMM_READ_CAN_CONFIG:
+    {
+        FDCANDevice *fdcan = get_can_device();
+        CAN_config_packet_t packet;
+        packet.comm_id = COMM_READ_CAN_CONFIG;
+        packet.packet_length = sizeof(FDCANDevice::Config_t);
+        packet.config = fdcan->ReadConfig();
+    
+        // Send it
+        gUART->SendBytes((uint8_t *)&packet, sizeof(CAN_config_packet_t));
         break;
     }
 
@@ -473,22 +507,20 @@ void CommandHandler::ProcessPacket(const uint8_t *packet_buffer, uint16_t packet
     case COMM_WRITE_FLASH:
     {
         //Logger::Instance().Print("Writing\n");
-        bool status = false;
+        uint8_t status = false;
         if(motor_controller->GetControlMode() == control_mode_type_t::IDLE_MODE)
         {
             status = save_configuration();
         }
-        //bool status = save_configuration();
-
         uint8_t buffer[3];
         buffer[0] = COMM_WRITE_FLASH;
         buffer[1] = 1;
-        buffer[2] = (uint32_t)status;
+        buffer[2] = (uint8_t)status;
 
         // Send it
         gUART->SendBytes((uint8_t *)&buffer, 3);
 
-        //Logger::Instance().Print("Write to Flash: %d", status);
+       // Logger::Instance().Print("Write to Flash: %d", status);
         break;
     }
 

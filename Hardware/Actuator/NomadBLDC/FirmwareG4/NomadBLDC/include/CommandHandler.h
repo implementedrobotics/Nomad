@@ -37,7 +37,23 @@
 
 class CommandHandler
 {
-    public:
+public:
+    typedef enum
+    {
+        MEASURE_RESISTANCE_COMPLETE = 0,
+        MEASURE_INDUCTANCE_COMPLETE = 1,
+        MEASURE_PHASE_ORDER_COMPLETE = 2,
+        MEASURE_ENCODER_OFFSET_COMPLETE = 3
+    } command_feedback_t;
+
+    // Measurement Struct
+    typedef union
+    {
+        float f32;
+        int32_t i32;
+        uint32_t u32;
+    } measurement_t;
+    
     typedef enum
     {
         // Info/Status Commands
@@ -66,19 +82,24 @@ class CommandHandler
         COMM_READ_MOTOR_CONFIG = 17,
         COMM_READ_CONTROLLER_CONFIG = 18,
         COMM_READ_POSITION_CONFIG = 19,
-        COMM_WRITE_MOTOR_CONFIG = 20,
-        COMM_WRITE_CONTROLLER_CONFIG = 21,
-        COMM_WRITE_POSITION_CONFIG = 22,
-        COMM_WRITE_FLASH = 23,
+        COMM_READ_CAN_CONFIG = 20,
+        COMM_READ_UART_CONFIG = 21,
+        COMM_WRITE_MOTOR_CONFIG = 22,
+        COMM_WRITE_CONTROLLER_CONFIG = 23,
+        COMM_WRITE_POSITION_CONFIG = 24,
+        COMM_WRITE_CAN_CONFIG = 25,
+        COMM_WRITE_UART_CONFIG = 26,
+        COMM_WRITE_FLASH = 27,
+
 
         // Device Control
-        COMM_DEVICE_RESTART = 24,
-        COMM_DEVICE_ABORT = 25,
+        COMM_DEVICE_RESTART = 28,
+        COMM_DEVICE_ABORT = 29,
 
         // Set points
-        COMM_VOLTAGE_SETPOINT = 26,
-        COMM_CURRENT_SETPOINT = 27,
-        COMM_TORQUE_SETPOINT = 28,
+        COMM_VOLTAGE_SETPOINT = 30,
+        COMM_CURRENT_SETPOINT = 31,
+        COMM_TORQUE_SETPOINT = 32,
 
         COMM_LOGGING_OUTPUT = 100,
         COMM_CALIB_MOTOR = 101,
@@ -93,5 +114,5 @@ class CommandHandler
 
     static UARTDevice *gUART;
 
-}; // namespace CommandHandler
+};     // namespace CommandHandler
 #endif // COMMAND_HANDLER_H_
