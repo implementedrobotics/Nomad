@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
   g_nomad = std::make_shared<NomadRobot>(g_world);
 
   std::string urdf = std::getenv("NOMAD_RESOURCE_PATH");
-  urdf.append("/Robot/Nomad.urdf");
+  urdf.append("/Robot_V2/NOMAD.urdf");
 
   g_nomad->LoadFromURDF(urdf);
   g_nomad->SetInitialPose();

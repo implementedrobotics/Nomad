@@ -157,18 +157,18 @@ void NomadRobot::SetInitialPose()
 
     robot_->getRootJoint()->setPositions(pos); // Floating Base Position
 
-    robot_->getDof("j_hfe_FL")->setPosition(-M_PI_2);
-    robot_->getDof("j_hfe_FR")->setPosition(M_PI_2);
-    robot_->getDof("j_hfe_RL")->setPosition(-M_PI_2);
-    robot_->getDof("j_hfe_RR")->setPosition(M_PI_2);
+    robot_->getDof("j_haa_FL")->setPosition(-0.75f);
+    robot_->getDof("j_haa_FR")->setPosition(0.75f);
+    robot_->getDof("j_haa_RL")->setPosition(0.75f);
+    robot_->getDof("j_haa_RR")->setPosition(-0.75f);
 
-    robot_->getDof("j_kfe_FL")->setPositionLimits(-2.2, 0.0);
-    robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, 2.2);
-    robot_->getDof("j_kfe_RL")->setPositionLimits(-2.2, 0.0);
-    robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, 2.2);
+    robot_->getJoint("j_kfe_FL")->setPositionLimitEnforced(true);
+    robot_->getJoint("j_kfe_FR")->setPositionLimitEnforced(true);
+    robot_->getJoint("j_kfe_RL")->setPositionLimitEnforced(true);
+    robot_->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
 
-    //robot_->getDof("j_kfe_RL")->setPosition(-2.2);
-    //robot_->getDof("j_kfe_FL")->setPosition(-2.2);
-    //robot_->getDof("j_kfe_RR")->setPosition(2.2);
-    //robot_->getDof("j_kfe_FR")->setPosition(2.2);
+    robot_->getDof("j_kfe_FL")->setPositionLimits(0.0, -2.35);
+    robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, -2.35);
+    robot_->getDof("j_kfe_RL")->setPositionLimits(0.0, -2.35);
+    robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, -2.35);
 }

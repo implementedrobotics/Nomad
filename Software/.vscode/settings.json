@@ -88,6 +88,7 @@
         "timer": "cpp",
         "cameramanipulator": "cpp",
         "graphicswindow": "cpp",
-        "guieventadapter": "cpp"
+        "guieventadapter": "cpp",
+        "regex": "cpp"
     }
 }

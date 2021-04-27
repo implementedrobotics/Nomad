@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
     // Load DART from URDF
     std::string urdf = std::getenv("NOMAD_RESOURCE_PATH");
-    urdf.append("/Robot/Nomad.urdf");
+    urdf.append("/Robot_V2/NOMAD.urdf");
 
     dart::dynamics::SkeletonPtr robot = NomadRobot::Load(urdf);
 
