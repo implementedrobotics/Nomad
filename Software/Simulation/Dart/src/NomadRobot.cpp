@@ -162,13 +162,8 @@ void NomadRobot::SetInitialPose()
     robot_->getDof("j_haa_RL")->setPosition(0.75f);
     robot_->getDof("j_haa_RR")->setPosition(-0.75f);
 
-    robot_->getJoint("j_kfe_FL")->setPositionLimitEnforced(true);
-    robot_->getJoint("j_kfe_FR")->setPositionLimitEnforced(true);
-    robot_->getJoint("j_kfe_RL")->setPositionLimitEnforced(true);
-    robot_->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
-
-    robot_->getDof("j_kfe_FL")->setPositionLimits(0.0, -2.35);
-    robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, -2.35);
-    robot_->getDof("j_kfe_RL")->setPositionLimits(0.0, -2.35);
-    robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, -2.35);
+    robot_->getDof("j_kfe_FL")->setPositionLimits(-2.35, 0.0);
+    robot_->getDof("j_kfe_FR")->setPositionLimits(0.0, 2.35);
+    robot_->getDof("j_kfe_RL")->setPositionLimits(-2.35, 0.0);
+    robot_->getDof("j_kfe_RR")->setPositionLimits(0.0, 2.35);
 }

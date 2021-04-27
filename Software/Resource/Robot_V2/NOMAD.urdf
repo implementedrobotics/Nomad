@@ -454,6 +454,26 @@
 
 <link name="b_foot_RL">
   <inertial>
+    <origin rpy="0 0 0" xyz="0.006122245159931705 1.1409455055733098e-07 -0.007686010039724439"/>
+    <mass value="0.027943298489902194"/>
+    <inertia ixx="4.983300656834569e-06" ixy="-9.885900474973508e-12" ixz="-1.2898852533784356e-06" iyy="6.619251468567566e-06" iyz="1.8138666350170363e-11" izz="5.608260073885433e-06"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.32907 -0.1725 0.13188"/>
+    <geometry>
+      <mesh filename="meshes/b_foot_RL.dae" scale="1.0 1.0 1.0"/>
+    </geometry>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+      <sphere radius="0.025"/>
+    </geometry>
+  </collision>
+</link>
+
+<!-- <link name="b_foot_RL">
+  <inertial>
     <origin rpy="0 0 0" xyz="0.006257245159931535 0.3425001140945505 -0.007322010039724242"/>
     <mass value="0.027943298489902197"/>
     <inertia ixx="4.9833006568352194e-06" ixy="-9.885900908654377e-12" ixz="-1.2898852533782187e-06" iyy="6.619251468566699e-06" iyz="1.813866602490971e-11" izz="5.608260073886734e-06"/>
@@ -470,7 +490,7 @@
       <sphere radius="0.025"/>
     </geometry>
   </collision>
-</link>
+</link> -->
 
 <link name="b_foot_FR">
   <inertial>
@@ -620,14 +640,14 @@
   <origin rpy="0 0 0" xyz="-0.279936 -0.0165 0.006022"/>
   <parent link="b_upper_leg_RR"/>
   <child link="b_lower_leg_RR"/>
-  <axis xyz="-0.0 -1.0 0.0"/>
+  <axis xyz="-0.0 1.0 0.0"/>
 </joint>
 
 <joint name="j_kfe_FR" type="continuous">
   <origin rpy="0 0 0" xyz="-0.279969 -0.0165 0.004117"/>
   <parent link="b_upper_leg_FR"/>
   <child link="b_lower_leg_FR"/>
-  <axis xyz="0.0 -1.0 -0.0"/>
+  <axis xyz="0.0 1.0 -0.0"/>
 </joint>
 
 <joint name="j_kfe_FL" type="continuous">
@@ -651,7 +671,7 @@
 </joint>
 
 <joint name="j_knee_to_foot_RL" type="fixed">
-  <origin rpy="0 0 0" xyz="0.211714 -0.3425 -0.138133"/>
+  <origin rpy="0 0 0" xyz="0.211714 -0.0 -0.138133"/>
   <parent link="b_lower_leg_RL"/>
   <child link="b_foot_RL"/>
 </joint>
