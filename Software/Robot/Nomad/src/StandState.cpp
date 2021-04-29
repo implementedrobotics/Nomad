@@ -104,8 +104,8 @@ namespace Robot::Nomad::FSM
         qp_solver_.SetAlpha(0.005);
         qp_solver_.SetCurrentState(x);
         qp_solver_.SetDesiredState(x_desired);
-        qp_solver_.SetMass(7.3); // kgs // TODO: From Robot Parameter
-        qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.09165, 0.2716, 0.3391));
+        qp_solver_.SetMass(13.2); // kgs // TODO: From Robot Parameter
+        qp_solver_.SetCentroidalMOI(Eigen::Vector3d(0.1332, 0.4522, 0.5385));
 
         // Test out QP Solver
         qp_solver_.Solve();

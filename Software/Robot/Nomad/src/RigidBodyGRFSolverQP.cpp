@@ -108,10 +108,10 @@ namespace Robot::Nomad::Controllers
         w << 1,1,10,20,10,10;
         SetControlWeights(w);
         K_p_com_ = Eigen::Vector3d(50,50,150).asDiagonal();
-        K_d_com_ = Eigen::Vector3d(10,10,10).asDiagonal();
+        K_d_com_ = Eigen::Vector3d(20,20,20).asDiagonal();
 
-        K_p_base_ = Eigen::Vector3d(500,400,300).asDiagonal();
-        K_d_base_ = Eigen::Vector3d(20,10,10).asDiagonal();
+        K_p_base_ = Eigen::Vector3d(500,100,100).asDiagonal();
+        K_d_base_ = Eigen::Vector3d(20,20,10).asDiagonal();
 
         // PD Control Law
         Eigen::Vector3d x_com_dd_desired = K_p_com_ * (x_com_desired - x_com) + K_d_com_ * (x_com_dot_desired - x_com_dot);

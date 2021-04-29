@@ -88,7 +88,7 @@ namespace OperatorInterface::Teleop
             teleop_data_.psi = -1 * gamepad_->GetAxisState(GamepadInterface::ANALOG_RIGHT_STICK_X).value; // 
             teleop_data_.theta = gamepad_->GetAxisState(GamepadInterface::ANALOG_RIGHT_STICK_Y).value; // 
             teleop_data_.phi =  gamepad_->GetAxisState(GamepadInterface::ANALOG_LEFT_STICK_X).value; //
-            teleop_data_.z_com = 0.35 + (gamepad_->GetAxisState(GamepadInterface::ANALOG_LEFT_STICK_Y).value * -0.2);
+            teleop_data_.z_com = 0.45 + (gamepad_->GetAxisState(GamepadInterface::ANALOG_LEFT_STICK_Y).value * -0.2);
             //std::cout << "Theta: " << teleop_data_.theta << std::endl;
             break;
 

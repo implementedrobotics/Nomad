@@ -77,7 +77,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
 
         // Update Watchdog Timeout
         // TODO: Callback instead?
-        register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
+        register_map_[WatchdogRegisters_e::CommandTime]->Set<uint32_t>(HAL_GetTick());
 
         // Send it back
         dev->Send(cmd->header.sender_id, (uint8_t *)&reply, sizeof(response_header_t));
@@ -95,7 +95,7 @@ void RegisterInterface::HandleCommand(FDCANDevice::FDCAN_msg_t &command, FDCANDe
 
         // Update Watchdog Timeout
         // TODO: Callback instead?
-        register_map_[WatchdogRegisters_e::CommandTime]->Set<int32_t>(HAL_GetTick());
+        register_map_[WatchdogRegisters_e::CommandTime]->Set<uint32_t>(HAL_GetTick());
     }
 }
 

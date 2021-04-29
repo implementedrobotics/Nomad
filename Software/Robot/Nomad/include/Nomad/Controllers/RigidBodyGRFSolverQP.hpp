@@ -60,6 +60,8 @@ namespace Robot::Nomad::Controllers
         // Set Mass - Units = kg
         void SetMass(double mass) { mass_ = mass; }
         void SetCentroidalMOI(double inertia) { I_b_ = Eigen::Matrix3d::Identity() * inertia; }
+
+        // Set Intertia - Units = kg * m ^2
         void SetCentroidalMOI(Eigen::Vector3d inertia) { I_b_ = inertia.asDiagonal(); }
 
         // World Parameters

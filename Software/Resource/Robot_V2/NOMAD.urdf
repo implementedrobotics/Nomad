@@ -364,12 +364,12 @@
       <mesh filename="meshes/b_lower_leg_RR1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
   </visual>
-  <!-- <collision>
+  <collision>
     <origin rpy="0 0 0" xyz="0.540814 0.1725 -0.005894"/>
     <geometry>
       <mesh filename="meshes/b_lower_leg_RR1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <link name="b_lower_leg_FR">
@@ -384,12 +384,12 @@
       <mesh filename="meshes/b_lower_leg_FR1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
   </visual>
-  <!-- <collision>
+  <collision>
     <origin rpy="0 0 0" xyz="0.018847 0.1725 -0.003954"/>
     <geometry>
       <mesh filename="meshes/b_lower_leg_FR1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <link name="b_lower_leg_FL">
@@ -404,12 +404,12 @@
       <mesh filename="meshes/b_lower_leg_FL1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
   </visual>
-  <!-- <collision>
+  <collision>
     <origin rpy="0 0 0" xyz="0.018954 -0.1725 -0.003971"/>
     <geometry>
       <mesh filename="meshes/b_lower_leg_FL1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <link name="b_lower_leg_RL">
@@ -424,12 +424,12 @@
       <mesh filename="meshes/b_lower_leg_RL1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
   </visual>
-  <!-- <collision>
+  <collision>
     <origin rpy="0 0 0" xyz="0.540919 -0.1725 -0.005889"/>
     <geometry>
       <mesh filename="meshes/b_lower_leg_RL1.dae" scale="1.0 1.0 1.0"/>
     </geometry>
-  </collision> -->
+  </collision>
 </link>
 
 <link name="b_foot_RR">

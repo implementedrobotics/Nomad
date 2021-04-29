@@ -482,7 +482,7 @@ struct CANConfigRegister1_t
 
 struct WatchdogRegister_t
 {
-    int32_t command_time;
+    uint32_t command_time;
     int32_t timeout;
 };
 

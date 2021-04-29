@@ -117,6 +117,10 @@ void NomadRobot::LoadFromURDF(const std::string &urdf)
     robot_->getJoint("j_kfe_RL")->setPositionLimitEnforced(true);
     robot_->getJoint("j_kfe_RR")->setPositionLimitEnforced(true);
 
+    robot_->getDof("j_hfe_FL")->setDampingCoefficient(1.0f);
+    robot_->getDof("j_hfe_FR")->setDampingCoefficient(1.0f);
+    robot_->getDof("j_hfe_RL")->setDampingCoefficient(1.0f);
+    robot_->getDof("j_hfe_RR")->setDampingCoefficient(1.0f);
     //  int i = 0;
     //  for (auto dof : robot_->getDofs())
     //  {
