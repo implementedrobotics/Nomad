@@ -1,0 +1,4 @@
+# NOMAD Robot Config File
+
+mass: 13.2 # Robot Mass : Units = kg
+centroidal_moi: [0.1332, 0.4522, 0.5385] # Robot Centroidal MOI : Units = kg*m^2

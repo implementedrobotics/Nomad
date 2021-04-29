@@ -20,7 +20,7 @@ ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/GamepadTeleopFSM/Gamepad
 ${PROJECT_SOURCE_DIR}/Robot/Nomad/src/OperatorInterface/GamepadTeleopFSM/States/GamepadState.cpp
 )
 
-set(ROBOT_LIBS Common Communications Realtime Controllers Systems OptimalControl dart dart-utils-urdf)
+set(ROBOT_LIBS Common Communications Realtime Controllers Systems OptimalControl dart dart-utils-urdf yaml-cpp)
 
 include_directories("${PROJECT_SOURCE_DIR}/Robot/Nomad/include")
 include_directories("${PROJECT_SOURCE_DIR}/Communications/include")

@@ -12,6 +12,7 @@
 #include <Common/Time.hpp>
 #include <memory>
 
+#include <yaml-cpp/yaml.h>
 #include <unistd.h>
 #include <sys/mman.h>
 
@@ -36,6 +37,17 @@ using OperatorInterface::Teleop::RemoteTeleop;
 int main(int argc, char *argv[])
 {
 
+    // TODO: Validate proper path/config file.  And Error
+    std::string nomad_config = std::getenv("NOMAD_CONFIG_PATH");
+    nomad_config.append("/robot-config.yaml");
+
+    YAML::Node config = YAML::LoadFile(nomad_config);
+
+    double test = config["mass"].as<double>();
+
+    std::cout << "Read: " << test << std::endl;
+
+    return 0;
     // Create Manager Class Instance Singleton.
     // Must make sure this is done before any thread tries to access.
     // And thus tries to allocate memory inside the thread heap.
@@ -44,7 +56,7 @@ int main(int argc, char *argv[])
 
     if (!Realtime::RealTimeTaskManager::EnableRTMemory(500 * 1024 * 1024)) // 500MB
     {
-        // exit(-2);
+        exit(-2);
         std::cout << "Error configuring Realtime Memory Requiremets!  Realtime Execution NOT guaranteed." << std::endl;
     }
 
@@ -169,10 +181,4 @@ int main(int argc, char *argv[])
 
     // Port::Map(nomad_controller_node.GetInputPort(NomadControl::InputPort::FULL_STATE),
     //           nomad_dynamics_node.GetOutputPort(NomadDynamics::OutputPort::FULL_STATE));
-
-
-    // //  scope.DumpCSV("test.csv");
-    // //scope2.DumpCSV("test2.csv");
-    // // scope.RenderPlot();
-    // //scope2.RenderPlot();
 }
