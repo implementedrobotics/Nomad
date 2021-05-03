@@ -13,6 +13,8 @@
 #include <memory>
 
 #include <yaml-cpp/yaml.h>
+#include <nlohmann/json.hpp>
+
 #include <unistd.h>
 #include <sys/mman.h>
 
@@ -34,20 +36,56 @@ using Robot::Nomad::Estimators::FusedLegKinematicsStateEstimator;
 
 using OperatorInterface::Teleop::RemoteTeleop;
 
+
+
+// template <typename T>
+// struct conv;
+
+// template<>
+// struct conv<Hello> {
+//   static void encode() {
+//       std::cout << "YELLO2" << std::endl;
+//   }
+// };
+
+
+
+// template <typename  T>
+// struct PortConverter
+// {
+//     typedef T TestTypel;
+
+//     T me;
+
+//   void Receive() {
+//       std::cout << "YELLO3" << std::endl;
+//       me.Print();
+//   }
+
+// };
+
 int main(int argc, char *argv[])
 {
 
+
+    // PortConverter<Hello> converter;
+    // PortConverter<double> converter2;
+
+    // converter.Receive();
+
+    // conv<decltype(converter)::TestTypel>::encode();
+    // conv<decltype(converter2)::TestTypel>::encode();
     // TODO: Validate proper path/config file.  And Error
-    std::string nomad_config = std::getenv("NOMAD_CONFIG_PATH");
-    nomad_config.append("/robot-config.yaml");
+    // std::string nomad_config = std::getenv("NOMAD_CONFIG_PATH");
+    // nomad_config.append("/robot-config.yaml");
 
-    YAML::Node config = YAML::LoadFile(nomad_config);
+    // YAML::Node config = YAML::LoadFile(nomad_config);
 
-    double test = config["mass"].as<double>();
+    // double test = config["mass"].as<double>();
 
-    std::cout << "Read: " << test << std::endl;
+    // std::cout << "Read: " << test << std::endl;
 
-    return 0;
+    //return 0;
     // Create Manager Class Instance Singleton.
     // Must make sure this is done before any thread tries to access.
     // And thus tries to allocate memory inside the thread heap.
@@ -111,6 +149,14 @@ int main(int argc, char *argv[])
     std::shared_ptr<RemoteTeleop> teleop = std::make_shared<RemoteTeleop>(0.1);
     teleop->SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA, Port::TransportType::NATIVE, "native", "nomad.teleop.data");
     diagram.AddSystem(teleop);
+
+    // Add some debug port converter
+    // TODO: Move this logic to scope node
+    // "Connect<leg_command_t> to Port Blah.  This creates an inline converter so we don't need an additional system block?
+    std::shared_ptr<PortConverter<leg_controller_cmd_t>> converter = std::make_shared<PortConverter<leg_controller_cmd_t>>(0.001);
+    diagram.AddSystem(converter);
+
+    diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), converter->GetInputPort(0));
 
     // Connect the graph
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));

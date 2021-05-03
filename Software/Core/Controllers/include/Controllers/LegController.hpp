@@ -74,7 +74,7 @@ namespace Controllers::Locomotion
         // Update function for stateless outputs
         void UpdateStatelessOutputs();
 
-        // Update fucntion for next state from inputs
+        // Update function for next state from inputs
         void UpdateState();
 
         // Number of legs

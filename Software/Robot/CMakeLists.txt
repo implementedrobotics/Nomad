@@ -29,6 +29,8 @@ include_directories("${PROJECT_SOURCE_DIR}/Common/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Controllers/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/Systems/include")
 include_directories("${PROJECT_SOURCE_DIR}/Core/OptimalControl/include")
+include_directories("${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann/include") # JSON
+
 
 
 add_library(Robot STATIC ${ROBOT_SOURCES})
