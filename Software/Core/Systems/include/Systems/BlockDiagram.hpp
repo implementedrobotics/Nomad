@@ -50,16 +50,16 @@ namespace Core::Systems
         void AddSystem(std::shared_ptr<SystemBlock> system);
 
         // Get Output Port
-        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
+        std::shared_ptr<Communications::PortInterface> GetOutputPort(const int port_id) const;
 
         // Get Input Port
-        std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
+        std::shared_ptr<Communications::PortInterface> GetInputPort(const int port_id) const;
 
         // Set Transport Configuration for Port
-        void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
+        void SetPortOutput(const int port_id, const Communications::PortInterface::TransportType transport, const std::string &transport_url, const std::string &channel);
 
         // Connect Function
-        void Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input);
+        void Connect(std::shared_ptr<Communications::PortInterface> output, std::shared_ptr<Communications::PortInterface> input);
 
     protected:
 
@@ -73,10 +73,10 @@ namespace Core::Systems
         double T_s_;
 
         // Input Port Map
-        std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
+        std::shared_ptr<Communications::PortInterface> input_port_map_[MAX_PORTS];
 
         // Output Port Map
-        std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
+        std::shared_ptr<Communications::PortInterface> output_port_map_[MAX_PORTS];
 
         // Systems that belong to this block diagram
         std::vector<std::shared_ptr<SystemBlock>> systems_;

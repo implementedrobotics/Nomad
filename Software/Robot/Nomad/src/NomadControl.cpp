@@ -46,11 +46,11 @@ namespace Robot::Nomad::Controllers
     {
         // Create Ports
         // Primary Controller Input Port
-        input_port_map_[InputPort::TELEOP_DATA] = Communications::Port::CreateInput<teleop_data_t>("TELEOP_DATA");
-        input_port_map_[InputPort::FULL_STATE] = Communications::Port::CreateInput<full_state_t>("FULL_STATE");
+        input_port_map_[InputPort::TELEOP_DATA] = Communications::Port<teleop_data_t>::CreateInput("TELEOP_DATA");
+        input_port_map_[InputPort::FULL_STATE] = Communications::Port<full_state_t>::CreateInput("FULL_STATE");
 
         // Primary Controller Output Ports
-        output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port::CreateOutput("LEG_COMMAND");
+        output_port_map_[OutputPort::LEG_COMMAND] = Communications::Port<leg_controller_cmd_t>::CreateOutput("LEG_COMMAND");
 
         // Create FSM
         nomad_control_FSM_ = std::make_shared<Robot::Nomad::FSM::NomadControlFSM>(this);

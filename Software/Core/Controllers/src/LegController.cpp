@@ -62,10 +62,10 @@ namespace Controllers::Locomotion
 
         // Create Ports
         // Leg Controller Input Port
-        input_port_map_[InputPort::LEG_COMMAND] = Communications::Port::CreateInput<leg_controller_cmd_t>("LEG_COMMAND");
+        input_port_map_[InputPort::LEG_COMMAND] = Communications::Port<leg_controller_cmd_t>::CreateInput("LEG_COMMAND");
         
         // Leg Controller Output Ports
-        output_port_map_[OutputPort::SERVO_COMMAND] = Communications::Port::CreateOutput("SERVO_COMMAND");
+        output_port_map_[OutputPort::SERVO_COMMAND] = Communications::Port<joint_control_cmd_t>::CreateOutput("SERVO_COMMAND");
     }
 
     // Update function for stateful outputs

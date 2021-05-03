@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-using Communications::Port;
+using Communications::PortInterface;
 using Communications::PortManager;
 using Realtime::RealTimeTaskManager;
 using Realtime::RealTimeTaskNode;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     task_write.SetTaskFrequency(100); // 50 HZ
     task_write.SetCoreAffinity(-1);
     task_write.SetPortOutput(TaskWrite::JOINT_CONTROL_CMD_OUT,
-                                             Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
+                                             Communications::PortInterface::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
     task_write.Start();
     
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     task_read.SetTaskFrequency(10); // 50 HZ
     task_read.SetCoreAffinity(-1);
 
-    Port::Map(task_read.GetInputPort(TaskRead::InputPort::JOINT_CONTROL_CMD_IN),
+    PortInterface::Map(task_read.GetInputPort(TaskRead::InputPort::JOINT_CONTROL_CMD_IN),
                task_write.GetOutputPort(TaskRead::OutputPort::JOINT_CONTROL_CMD_OUT));
 
     task_read.Start();

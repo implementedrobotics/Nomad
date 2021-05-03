@@ -58,7 +58,7 @@ namespace Robot
                 //input_port_map_[InputPort::COM_STATE_IN] = Communications::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
 
                 // Outputs
-                output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL", rt_period_);
+                output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port<joint_control_cmd_t>::CreateOutput("JOINT_CONTROL", rt_period_);
 
                 memset(&joint_command_, 0, sizeof(joint_control_cmd_t));
             }

@@ -56,13 +56,13 @@ namespace Core::Systems
         void AddSubSystem();
 
         // Get Output Port
-        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
+        std::shared_ptr<Communications::PortInterface> GetOutputPort(const int port_id) const;
 
         // Get Input Port
-        std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
+        std::shared_ptr<Communications::PortInterface> GetInputPort(const int port_id) const;
 
         // Set Transport Configuration for Port
-        void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
+        void SetPortOutput(const int port_id, const Communications::PortInterface::TransportType transport, const std::string &transport_url, const std::string &channel);
 
         // Overriden Run Function
         virtual void Run(double d_t);
@@ -102,10 +102,10 @@ namespace Core::Systems
         std::string name_;
 
         // Input Port Map
-        std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
+        std::shared_ptr<Communications::PortInterface> input_port_map_[MAX_PORTS];
 
         // Output Port Map
-        std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
+        std::shared_ptr<Communications::PortInterface> output_port_map_[MAX_PORTS];
 
     };
 
@@ -124,7 +124,7 @@ namespace Core::Systems
             Eigen::Map<Eigen::VectorXd>(constant_.data.data(), constant_.length) = value;
 
             // Create Output Port
-            output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONSTANT", T_s_));
+            output_port_map_[0] = std::move(Communications::Port<double_vec_t>::CreateOutput("CONSTANT", T_s_));
         }
 
     protected:
@@ -170,7 +170,7 @@ namespace Core::Systems
         AddBlock(const double T_s = -1) : SystemBlock("ADD", T_s)
         {
             // Create Output Port
-            output_port_map_[0] = Communications::Port::CreateOutput("ADD", T_s_);
+            output_port_map_[0] = Communications::Port<double_vec_t>::CreateOutput("ADD", T_s_);
         }
 
         void AddInput(OperandType op_type, const int dimension)
@@ -191,7 +191,7 @@ namespace Core::Systems
             }
 
             // Create Port
-            input_port_map_[operands_.size()] = Communications::Port::CreateInput<double_vec_t>(std::to_string(operands_.size()), T_s_);
+            input_port_map_[operands_.size()] = Communications::Port<double_vec_t>::CreateInput(std::to_string(operands_.size()), T_s_);
             
             // Update Operation Type
             operation_types_.push_back(op_type);
@@ -270,45 +270,45 @@ namespace Core::Systems
 
 
 
-    template <typename  T>
-    class PortConverter : public SystemBlock
-    {
+    // template <typename  T>
+    // class PortConverter : public SystemBlock
+    // {
 
-    public:
-        // Constant System Block Node
-        // name = Task Name
-        PortConverter(const double T_s = -1) : SystemBlock("CONVERTER", T_s)
-        {
+    // public:
+    //     // Constant System Block Node
+    //     // name = Task Name
+    //     PortConverter(const double T_s = -1) : SystemBlock("CONVERTER", T_s)
+    //     {
 
-            // Create Input Port
-            input_port_map_[0] = Communications::Port::CreateInput<T>("INPUT");
+    //         // Create Input Port
+    //         input_port_map_[0] = Communications::Port::CreateInput<T>("INPUT");
 
-            // Create Output Port
-            output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONVERTED", T_s_));
-        }
+    //         // Create Output Port
+    //         output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONVERTED", T_s_));
+    //     }
 
-    protected:
+    // protected:
 
-        // Update function for stateful outputs
-        void UpdateStateOutputs()
-        {
+    //     // Update function for stateful outputs
+    //     void UpdateStateOutputs()
+    //     {
 
-        }
+    //     }
 
-        // Update function for stateless outputs
-        void UpdateStatelessOutputs()
-        {
-            std::cout << "GETTING INPUT" << std::endl;
-        }
+    //     // Update function for stateless outputs
+    //     void UpdateStatelessOutputs()
+    //     {
+    //         std::cout << "GETTING INPUT" << std::endl;
+    //     }
 
-        // Update fucntion for next state from inputs
-        void UpdateState()
-        {
+    //     // Update fucntion for next state from inputs
+    //     void UpdateState()
+    //     {
 
-        }
+    //     }
 
-        T msg_type_;
-    };
+    //     T msg_type_;
+    // };
 
 } // namespace Controllers::Systems
 

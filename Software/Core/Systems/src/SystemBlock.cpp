@@ -84,20 +84,20 @@ namespace Core::Systems
     }
 
     // Get Output Port
-    std::shared_ptr<Communications::Port> SystemBlock::GetOutputPort(const int port_id) const
+    std::shared_ptr<Communications::PortInterface> SystemBlock::GetOutputPort(const int port_id) const
     {
         assert(port_id >= 0 && port_id < MAX_PORTS);
         return output_port_map_[port_id];
     }
 
     // Get Input Port
-    std::shared_ptr<Communications::Port> SystemBlock::GetInputPort(const int port_id) const
+    std::shared_ptr<Communications::PortInterface> SystemBlock::GetInputPort(const int port_id) const
     {
         assert(port_id >= 0 && port_id < MAX_PORTS);
         return input_port_map_[port_id];
     }
 
-    void SystemBlock::SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel)
+    void SystemBlock::SetPortOutput(const int port_id, const Communications::PortInterface::TransportType transport, const std::string &transport_url, const std::string &channel)
     {
         assert(port_id >= 0 && port_id < MAX_PORTS);
         output_port_map_[port_id]->SetTransport(transport, transport_url, channel);

@@ -38,18 +38,19 @@
 
 // Project Includes
 #include <Common/Time.hpp>
+#include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/int32_vec_t.hpp>
+#include <Communications/Messages/generic_msg_t.hpp>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
 
 namespace Communications
 {
-    class Port
+    class PortInterface
     {
 
     public:
-        static const int MAX_LISTENERS = 16;
-        
         // Transport Type Enum
         enum TransportType
         {
@@ -79,18 +80,26 @@ namespace Communications
             OUTPUT
         };
 
-        Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period);
-        Port(const std::string &name, Direction direction, int period);
-        ~Port();
+        PortInterface(const std::string &name, Direction direction, DataType data_type, int dimension, int period);
+        PortInterface(const std::string &name, Direction direction, int period);
+        virtual ~PortInterface() {}
 
-        template <typename T>
-        static std::shared_ptr<Port> CreateInput(const std::string &name, int period = -1);
-        static std::shared_ptr<Port> CreateOutput(const std::string &name, int period = -1);
+        // Connect
+        virtual bool Connect() = 0;
 
-        Port::DataType GetDataType();
-        int GetDimension() { return dimension_; }
+        // Bind Port
+        virtual bool Bind() = 0;
 
-        const std::string &GetName() const { return name_; }
+        // Send message type data on port
+        template <typename PortType>
+        bool Send(PortType &msg);
+
+        // Receive message type data on port
+        template <typename PortType>
+        bool Receive(PortType &msg, std::chrono::microseconds timeout = std::chrono::microseconds(0));
+
+        // Map Ports
+        static bool Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output);
 
         // Transport
         // For INPROC/IPC transport URL should depend on block/noblock?  Not technically necessary to set.
@@ -104,23 +113,12 @@ namespace Communications
         // Signal Labels
         void SetSignalLabel(const int signal_idx, const std::string &label);
 
-        // Map Ports
-        static bool Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output);
+        PortInterface::DataType GetDataType();
+        int GetDimension() { return dimension_; }
 
-        // Connect Port
-        template <class T>
-        bool Connect();
+        const std::string &GetName() const { return name_; }
 
-        // Bind Port
-        bool Bind();
-
-        // Send message type data on port
-        template <class T>
-        bool Send(T &msg);
-
-        // Receive message type data on port
-        template <class T>
-        bool Receive(T &msg, std::chrono::microseconds timeout = std::chrono::microseconds(0));
+        static const int MAX_LISTENERS = 16;
 
     protected:
         // Port Name
@@ -136,7 +134,7 @@ namespace Communications
         int dimension_;
 
         // Port Type
-        DataType data_type_;
+       // DataType data_type_;
 
         // Port Direction
         Direction direction_;
@@ -168,17 +166,42 @@ namespace Communications
 
         // Thread Synchronization and Handling for Native Communications
         // Current Listener Ports
-        std::vector<std::shared_ptr<Port>> listeners_;
+        std::vector<std::shared_ptr<PortInterface>> listeners_;
+    };
+
+    template <typename PortType = double_vec_t>
+    class Port : public PortInterface
+    {
+
+    public:
+        Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period);
+        Port(const std::string &name, Direction direction, int period);
+        ~Port();
+
+        static std::shared_ptr<PortInterface> CreateInput(const std::string &name, int period = -1);
+        static std::shared_ptr<PortInterface> CreateOutput(const std::string &name, int period = -1);
+
+        // Connect Port
+        bool Connect();
+
+        // Bind Port
+        bool Bind();
+
+    protected:
+
+        // Port Type
+        PortType port_type_t;
 
     private:
-        template <class T>
+
         void _CreateHandler();
+
     };
 
     template <class T>
     class PortHandler
     {
-        friend class Port;
+        friend class PortInterface;
 
     public:
         // Base class for RealTimeTaskNode PortHandler
@@ -244,7 +267,6 @@ namespace Communications
         std::shared_ptr<zcm::ZCM> inproc_context_;
 
     private:
-
         // Singleton Instance
         static PortManager *manager_instance_;
     };

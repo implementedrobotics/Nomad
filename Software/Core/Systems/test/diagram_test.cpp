@@ -33,15 +33,15 @@ int main(int argc, char *argv[])
 
     Eigen::Vector3d vec = Eigen::Vector3d::Ones();
     std::shared_ptr<ConstantBlock> cb = std::make_shared<ConstantBlock>(vec, 2.0);
-    cb->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.A");
+    cb->SetPortOutput(0, Communications::PortInterface::TransportType::NATIVE, "native", "system.A");
     diagram.AddSystem(cb);
 
     std::shared_ptr<ConstantBlock> cb2 = std::make_shared<ConstantBlock>(vec*2, 2.0);
-    cb2->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.B");
+    cb2->SetPortOutput(0, Communications::PortInterface::TransportType::NATIVE, "native", "system.B");
     diagram.AddSystem(cb2);
 
     std::shared_ptr<AddBlock> ab = std::make_shared<AddBlock>(2.0);
-    ab->SetPortOutput(0, Communications::Port::TransportType::NATIVE, "native", "system.C");
+    ab->SetPortOutput(0, Communications::PortInterface::TransportType::NATIVE, "native", "system.C");
     diagram.AddSystem(ab);
 
     ab->AddInput(AddBlock::ADD, 3);

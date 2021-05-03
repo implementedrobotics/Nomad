@@ -44,22 +44,22 @@ namespace Robot::Nomad::Interface
     {
         // Create Ports
         // Sim Inputs
-        std::shared_ptr<Communications::Port> sim_in = Communications::Port::CreateInput<sim_data_t>("SIM_DATA");
-        sim_in->SetTransport(Communications::Port::TransportType::UDP, sim_url, "nomad.sim.data");
+        std::shared_ptr<Communications::PortInterface> sim_in = Communications::Port<sim_data_t>::CreateInput("SIM_DATA");
+        sim_in->SetTransport(Communications::PortInterface::TransportType::UDP, sim_url, "nomad.sim.data");
 
         // TODO: SetPortInput
         input_port_map_[InputPort::SIM_DATA] = sim_in;
 
         // Control Inputs
-        input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port::CreateInput<joint_control_cmd_t>("JOINT_CONTROL");
+        input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port<joint_control_cmd_t>::CreateInput("JOINT_CONTROL");
 
         // Outputs
-        output_port_map_[OutputPort::IMU_DATA] = Communications::Port::CreateOutput("IMU_DATA");
-        output_port_map_[OutputPort::JOINT_STATE] = Communications::Port::CreateOutput("JOINT_STATE");
-        output_port_map_[OutputPort::COM_STATE] = Communications::Port::CreateOutput("POSE_STATE");
-        output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL");
+        output_port_map_[OutputPort::IMU_DATA] = Communications::Port<imu_data_t>::CreateOutput("IMU_DATA");
+        output_port_map_[OutputPort::JOINT_STATE] = Communications::Port<joint_state_t>::CreateOutput("JOINT_STATE");
+        output_port_map_[OutputPort::COM_STATE] = Communications::Port<com_state_t>::CreateOutput("POSE_STATE");
+        output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port<joint_control_cmd_t>::CreateOutput("JOINT_CONTROL");
 
-        SetPortOutput(SimulationInterface::JOINT_CONTROL_CMD_OUT,  Communications::Port::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
+        SetPortOutput(SimulationInterface::JOINT_CONTROL_CMD_OUT,  Communications::PortInterface::TransportType::UDP, sim_url, "nomad.sim.joint_cmd");
 
         // Zero Output to be safe
         memset(&joint_command_, 0, sizeof(joint_control_cmd_t));

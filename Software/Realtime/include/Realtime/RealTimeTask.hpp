@@ -104,13 +104,13 @@ namespace Realtime
         void SetCoreAffinity(const int core_id) { rt_core_id_ = core_id; }
 
         // Get Output Port
-        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id) const;
+        std::shared_ptr<Communications::PortInterface> GetOutputPort(const int port_id) const;
 
         // Get Input Port
-        std::shared_ptr<Communications::Port> GetInputPort(const int port_id) const;
+        std::shared_ptr<Communications::PortInterface> GetInputPort(const int port_id) const;
 
         // Set Transport Configuration for Port
-        void SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel);
+        void SetPortOutput(const int port_id, const Communications::PortInterface::TransportType transport, const std::string &transport_url, const std::string &channel);
 
     protected:
         // Override Me for thread function
@@ -120,10 +120,10 @@ namespace Realtime
         virtual void Setup() = 0;
 
         // Input Port Map
-        std::shared_ptr<Communications::Port> input_port_map_[MAX_PORTS];
+        std::shared_ptr<Communications::PortInterface> input_port_map_[MAX_PORTS];
 
         // Output Port Map
-        std::shared_ptr<Communications::Port> output_port_map_[MAX_PORTS];
+        std::shared_ptr<Communications::PortInterface> output_port_map_[MAX_PORTS];
 
         // Task Name
         std::string task_name_;

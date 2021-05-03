@@ -20,7 +20,7 @@
 
 using namespace Core::Systems;
 
-using Communications::Port;
+using Communications::PortInterface;
 // using Communications::PortManager;
 // using Realtime::RealTimeTaskManager;
 // using Realtime::RealTimeTaskNode;
@@ -106,14 +106,14 @@ int main(int argc, char *argv[])
 
     // Sim Interface
     std::shared_ptr<SimulationInterface> sim = std::make_shared<SimulationInterface>(0.001);
-    sim->SetPortOutput(SimulationInterface::COM_STATE, Port::TransportType::NATIVE, "native", "nomad.com_state");
-    sim->SetPortOutput(SimulationInterface::IMU_DATA, Port::TransportType::NATIVE, "native", "nomad.imu");
-    sim->SetPortOutput(SimulationInterface::JOINT_STATE, Port::TransportType::NATIVE, "native", "nomad.joint_state");
+    sim->SetPortOutput(SimulationInterface::COM_STATE, PortInterface::TransportType::NATIVE, "native", "nomad.com_state");
+    sim->SetPortOutput(SimulationInterface::IMU_DATA, PortInterface::TransportType::NATIVE, "native", "nomad.imu");
+    sim->SetPortOutput(SimulationInterface::JOINT_STATE, PortInterface::TransportType::NATIVE, "native", "nomad.joint_state");
     diagram.AddSystem(sim);
 
     // Estimator
     std::shared_ptr<FusedLegKinematicsStateEstimator> estimate = std::make_shared<FusedLegKinematicsStateEstimator>(0.001);
-    estimate->SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT, Port::TransportType::NATIVE, "native", "nomad.body.state");
+    estimate->SetPortOutput(FusedLegKinematicsStateEstimator::OutputPort::BODY_STATE_HAT, PortInterface::TransportType::NATIVE, "native", "nomad.body.state");
     diagram.AddSystem(estimate);
 
     // Nomad Dynamics Computation Task
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     dart::dynamics::SkeletonPtr robot = NomadRobot::Load(urdf);
 
     dynamics->SetRobotSkeleton(robot->cloneSkeleton());
-    dynamics->SetPortOutput(NomadDynamics::OutputPort::FULL_STATE, Port::TransportType::NATIVE, "native", "nomad.robot.state");
+    dynamics->SetPortOutput(NomadDynamics::OutputPort::FULL_STATE, PortInterface::TransportType::NATIVE, "native", "nomad.robot.state");
     diagram.AddSystem(dynamics);
     
     // Port::Map(nomad_dynamics_node.GetInputPort(NomadDynamics::InputPort::JOINT_STATE),
@@ -138,25 +138,25 @@ int main(int argc, char *argv[])
 
     // Control FSM Task
     std::shared_ptr<NomadControl> control = std::make_shared<NomadControl>(0.001);
-    control->SetPortOutput(NomadControl::OutputPort::LEG_COMMAND, Port::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
+    control->SetPortOutput(NomadControl::OutputPort::LEG_COMMAND, PortInterface::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
     diagram.AddSystem(control);
 
     // Leg Controller
     std::shared_ptr<LegController> leg_controller = std::make_shared<LegController>(0.001);
-    leg_controller->SetPortOutput(LegController::OutputPort::SERVO_COMMAND, Port::TransportType::NATIVE, "native", "nomad.control.servo_cmd");
+    leg_controller->SetPortOutput(LegController::OutputPort::SERVO_COMMAND, PortInterface::TransportType::NATIVE, "native", "nomad.control.servo_cmd");
     diagram.AddSystem(leg_controller);
 
     std::shared_ptr<RemoteTeleop> teleop = std::make_shared<RemoteTeleop>(0.1);
-    teleop->SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA, Port::TransportType::NATIVE, "native", "nomad.teleop.data");
+    teleop->SetPortOutput(RemoteTeleop::OutputPort::TELEOP_DATA, PortInterface::TransportType::NATIVE, "native", "nomad.teleop.data");
     diagram.AddSystem(teleop);
 
     // Add some debug port converter
     // TODO: Move this logic to scope node
     // "Connect<leg_command_t> to Port Blah.  This creates an inline converter so we don't need an additional system block?
-    std::shared_ptr<PortConverter<leg_controller_cmd_t>> converter = std::make_shared<PortConverter<leg_controller_cmd_t>>(0.001);
-    diagram.AddSystem(converter);
+    // std::shared_ptr<PortConverter<leg_controller_cmd_t>> converter = std::make_shared<PortConverter<leg_controller_cmd_t>>(0.001);
+    // diagram.AddSystem(converter);
 
-    diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), converter->GetInputPort(0));
+    //diagram.Connect(control->GetOutputPort(NomadControl::OutputPort::LEG_COMMAND), converter->GetInputPort(0));
 
     // Connect the graph
     diagram.Connect(sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE), estimate->GetInputPort(FusedLegKinematicsStateEstimator::InputPort::COM_STATE));

@@ -64,13 +64,14 @@ namespace Controllers::Locomotion
 
         // Create Ports
         // Reference Output Port
+        // TODO: Change to CreatePorts
         // TODO: Independent port speeds.  For now all ports will be same speed as task node
-        output_port_map_[OutputPort::REFERENCE] = std::make_shared<Communications::Port>("REFERENCE", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period_);
+        output_port_map_[OutputPort::REFERENCE] = std::make_shared<Communications::Port<double_vec_t>>("REFERENCE", Communications::PortInterface::Direction::OUTPUT, Communications::PortInterface::DataType::DOUBLE, num_states_, rt_period_);
 
         // TODO: Move to "CONNECT"
-        input_port_map_[InputPort::STATE_HAT] = std::make_shared<Communications::Port>("STATE_HAT", Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period_);
+        input_port_map_[InputPort::STATE_HAT] = std::make_shared<Communications::Port<double_vec_t>>("STATE_HAT", Communications::PortInterface::Direction::INPUT, Communications::PortInterface::DataType::DOUBLE, num_states_, rt_period_);
 
-        input_port_map_[InputPort::SETPOINT] = std::make_shared<Communications::Port>("SETPOINT", Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, 4, rt_period_);
+        input_port_map_[InputPort::SETPOINT] = std::make_shared<Communications::Port<double_vec_t>>("SETPOINT", Communications::PortInterface::Direction::INPUT, Communications::PortInterface::DataType::DOUBLE, 4, rt_period_);
     }
 
     void ReferenceTrajectoryGenerator::Run()

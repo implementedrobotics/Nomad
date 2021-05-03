@@ -60,11 +60,11 @@ namespace Robot::Nomad::Dynamics
 
         // Create Ports
         // Input Ports
-        input_port_map_[InputPort::BODY_STATE_HAT] = Communications::Port::CreateInput<com_state_t>("BODY_STATE_HAT");
-        input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE");
+        input_port_map_[InputPort::BODY_STATE_HAT] = Communications::Port<com_state_t>::CreateInput("BODY_STATE_HAT");
+        input_port_map_[InputPort::JOINT_STATE] = Communications::Port<joint_state_t>::CreateInput("JOINT_STATE");
 
         // Output Ports
-        output_port_map_[OutputPort::FULL_STATE] = Communications::Port::CreateOutput("FULL_STATE");
+        output_port_map_[OutputPort::FULL_STATE] = Communications::Port<full_state_t>::CreateOutput("FULL_STATE");
     }
 
     void NomadDynamics::UpdateStateOutputs()

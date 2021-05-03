@@ -54,7 +54,7 @@ namespace Robot
             {
                 // Create Ports
                 // Sim Inputs
-                input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port::CreateInput<joint_control_cmd_t>("JOINT_CMD", rt_period_);
+                input_port_map_[InputPort::JOINT_CONTROL_CMD_IN] = Communications::Port<joint_control_cmd_t>::CreateInput("JOINT_CMD", rt_period_);
                 //input_port_map_[InputPort::JOINT_STATE_IN] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE", rt_period_);
                 //input_port_map_[InputPort::COM_STATE_IN] = Communications::Port::CreateInput<com_state_t>("POSE_STATE", rt_period_);
 

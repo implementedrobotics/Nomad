@@ -59,11 +59,11 @@ namespace Robot::Nomad::FSM
 
     protected:
 
-        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id)
+        std::shared_ptr<Communications::PortInterface> GetOutputPort(const int port_id)
         {
             return parent_->GetOutputPort(port_id);
         }
-        std::shared_ptr<Communications::Port> GetInputPort(const int port_id)
+        std::shared_ptr<Communications::PortInterface> GetInputPort(const int port_id)
         {
             return parent_->GetInputPort(port_id);
         }

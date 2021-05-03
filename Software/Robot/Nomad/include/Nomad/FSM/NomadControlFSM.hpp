@@ -75,8 +75,8 @@ namespace Robot::Nomad::FSM
 
 
         // Port Accesor Functions
-        std::shared_ptr<Communications::Port> GetOutputPort(const int port_id);
-        std::shared_ptr<Communications::Port> GetInputPort(const int port_id);
+        std::shared_ptr<Communications::PortInterface> GetOutputPort(const int port_id);
+        std::shared_ptr<Communications::PortInterface> GetInputPort(const int port_id);
 
         // Shared Data Pointer.  TODO: Switch to ZCM Port?
         std::shared_ptr<NomadControlData> data_;

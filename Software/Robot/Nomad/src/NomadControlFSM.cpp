@@ -64,12 +64,12 @@ namespace Robot::Nomad::FSM
         return data_;
     }
 
-    std::shared_ptr<Communications::Port> NomadControlFSM::GetOutputPort(const int port_id)
+    std::shared_ptr<Communications::PortInterface> NomadControlFSM::GetOutputPort(const int port_id)
     {
         return control_->GetOutputPort(port_id);
     }
 
-    std::shared_ptr<Communications::Port> NomadControlFSM::GetInputPort(const int port_id)
+    std::shared_ptr<Communications::PortInterface> NomadControlFSM::GetInputPort(const int port_id)
     {
         return control_->GetInputPort(port_id);
     }

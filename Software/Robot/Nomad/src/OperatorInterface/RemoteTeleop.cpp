@@ -42,7 +42,7 @@ namespace OperatorInterface::Teleop
     RemoteTeleop::RemoteTeleop(const double T_s)  : SystemBlock("Gamepad_Teleop", T_s)
     {
         // Create Ports
-        output_port_map_[OutputPort::TELEOP_DATA] = Communications::Port::CreateOutput("TELEOP_DATA");
+        output_port_map_[OutputPort::TELEOP_DATA] = Communications::Port<teleop_data_t>::CreateOutput("TELEOP_DATA");
 
         // Create Gamepad Object
         // TODO: Needs to be a parameter for game pad device

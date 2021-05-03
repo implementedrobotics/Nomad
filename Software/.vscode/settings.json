@@ -89,6 +89,7 @@
         "cameramanipulator": "cpp",
         "graphicswindow": "cpp",
         "guieventadapter": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "texgen": "cpp"
     }
 }

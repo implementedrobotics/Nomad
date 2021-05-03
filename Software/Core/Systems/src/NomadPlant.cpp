@@ -77,13 +77,14 @@ NomadPlant::NomadPlant(const std::string &name, const double T_s) : Realtime::Re
     // Create Rigid Body
     block_ = RigidBlock1D(10.0, Eigen::Vector3d(1.0, 0.5, 0.25), T_s);
 
+    // TODO: The below map is old.  Need to use Create Input/Output
     // TODO: Move to "CONNECT"
     // Create Ports
     // State Estimate Input Port
-    input_port_map_[InputPort::FORCES] = std::make_shared<Communications::Port>("FORCES", Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, 1, rt_period_);
+    input_port_map_[InputPort::FORCES] = std::make_shared<Communications::Port<double_vec_t>>("FORCES", Communications::PortInterface::Direction::INPUT, Communications::PortInterface::DataType::DOUBLE, 1, rt_period_);
 
     // Optimal Force Solution Output Port
-    output_port_map_[OutputPort::STATE] = std::make_shared<Communications::Port>("STATE", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, num_states_, rt_period_);
+    output_port_map_[OutputPort::STATE] = std::make_shared<Communications::Port<double_vec_t>>("STATE", Communications::PortInterface::Direction::OUTPUT, Communications::PortInterface::DataType::DOUBLE, num_states_, rt_period_);
 
     // Create Messages
     output_state_.length = num_states_;

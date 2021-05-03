@@ -47,14 +47,14 @@ namespace Robot::Nomad::Estimators
     FusedLegKinematicsStateEstimator::FusedLegKinematicsStateEstimator(const double T_s)  : SystemBlock("Leg_Kin_State_Estimator_Task", T_s)
     {
         // State Estimate Input Port
-        input_port_map_[InputPort::IMU_DATA] = Communications::Port::CreateInput<imu_data_t>("IMU_STATE");
-        input_port_map_[InputPort::JOINT_STATE] = Communications::Port::CreateInput<joint_state_t>("JOINT_STATE");
-        input_port_map_[InputPort::COM_STATE] = Communications::Port::CreateInput<com_state_t>("POSE_STATE");
-        input_port_map_[InputPort::FOOT_STATE] = Communications::Port::CreateInput<full_state_t>("FOOT_STATE");
+        input_port_map_[InputPort::IMU_DATA] = Communications::Port<imu_data_t>::CreateInput("IMU_STATE");
+        input_port_map_[InputPort::JOINT_STATE] = Communications::Port<joint_state_t>::CreateInput("JOINT_STATE");
+        input_port_map_[InputPort::COM_STATE] = Communications::Port<com_state_t>::CreateInput("POSE_STATE");
+        input_port_map_[InputPort::FOOT_STATE] = Communications::Port<full_state_t>::CreateInput("FOOT_STATE");
 
         // State Estimate Output Port
-        output_port_map_[OutputPort::BODY_STATE_HAT] = Communications::Port::CreateOutput("BODY_STATE_HAT");
-        output_port_map_[OutputPort::BODY_STATE_ACTUAL] = Communications::Port::CreateOutput("BODY_STATE_ACTUAL");
+        output_port_map_[OutputPort::BODY_STATE_HAT] = Communications::Port<com_state_t>::CreateOutput("BODY_STATE_HAT");
+        //output_port_map_[OutputPort::BODY_STATE_ACTUAL] = Communications::Port::CreateOutput("BODY_STATE_ACTUAL");
     }
 
     // Update function for stateful outputs

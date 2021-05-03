@@ -54,10 +54,10 @@ namespace Robot
             {
                 // Create Ports
                 // Sim Inputs
-                input_port_map_[InputPort::SIM_DATA] = Communications::Port::CreateInput<sim_data_t>("SIM_DATA", rt_period_);
+                input_port_map_[InputPort::SIM_DATA] = Communications::Port<sim_data_t>::CreateInput("SIM_DATA", rt_period_);
 
                 // Outputs
-                output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port::CreateOutput("JOINT_CONTROL", rt_period_);
+                output_port_map_[OutputPort::JOINT_CONTROL_CMD_OUT] = Communications::Port<joint_control_cmd_t>::CreateOutput("JOINT_CONTROL", rt_period_);
             }
 
             void StandController::Run()

@@ -77,28 +77,28 @@ namespace Core::Systems
     }
 
     // Get Output Port
-    std::shared_ptr<Communications::Port> BlockDiagram::GetOutputPort(const int port_id) const
+    std::shared_ptr<Communications::PortInterface> BlockDiagram::GetOutputPort(const int port_id) const
     {
         assert(port_id >= 0 && port_id < MAX_PORTS);
         return output_port_map_[port_id];
     }
 
     // Get Input Port
-    std::shared_ptr<Communications::Port> BlockDiagram::GetInputPort(const int port_id) const
+    std::shared_ptr<Communications::PortInterface> BlockDiagram::GetInputPort(const int port_id) const
     {
         assert(port_id >= 0 && port_id < MAX_PORTS);
         return input_port_map_[port_id];
     }
 
-    void BlockDiagram::SetPortOutput(const int port_id, const Communications::Port::TransportType transport, const std::string &transport_url, const std::string &channel)
+    void BlockDiagram::SetPortOutput(const int port_id, const Communications::PortInterface::TransportType transport, const std::string &transport_url, const std::string &channel)
     {
         assert(port_id >= 0 && port_id < MAX_PORTS);
         output_port_map_[port_id]->SetTransport(transport, transport_url, channel);
     }
 
-    void BlockDiagram::Connect(std::shared_ptr<Communications::Port> output, std::shared_ptr<Communications::Port> input)
+    void BlockDiagram::Connect(std::shared_ptr<Communications::PortInterface> output, std::shared_ptr<Communications::PortInterface> input)
     {
-        Communications::Port::Map(input, output);
+        Communications::PortInterface::Map(input, output);
     }
 
 } // namespace Controllers::Systems

@@ -59,7 +59,7 @@ void PlotterTaskNode::Run()
     // Get Inputs
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
-        std::shared_ptr<Communications::Port> input = GetInputPort(i);
+        std::shared_ptr<Communications::PortInterface> input = GetInputPort(i);
         if (input == nullptr)
         {
             continue;
@@ -84,7 +84,7 @@ void PlotterTaskNode::Setup()
     // Connect Mapped Ports:
     for (int i = 0; i < InputPort::MAX_PORTS; i++)
     {
-        std::shared_ptr<Communications::Port> input = GetInputPort(i);
+        std::shared_ptr<Communications::PortInterface> input = GetInputPort(i);
         if (input == nullptr)
             continue;
 
@@ -92,11 +92,11 @@ void PlotterTaskNode::Setup()
     }
 }
 
-void PlotterTaskNode::ConnectInput(InputPort port_id, std::shared_ptr<Communications::Port> output_port)
+void PlotterTaskNode::ConnectInput(InputPort port_id, std::shared_ptr<Communications::PortInterface> output_port)
 {
     // TODO: Make sure port is not already taken, etc.  If so error.
-    std::shared_ptr<Communications::Port> in_port = std::make_shared<Communications::Port>(output_port->GetName(), Communications::Port::Direction::INPUT, Communications::Port::DataType::DOUBLE, -1, rt_period_);
-    Communications::Port::Map(in_port, output_port); // Map It
+    std::shared_ptr<Communications::PortInterface> in_port = std::make_shared<Communications::Port<double_vec_t>>(output_port->GetName(), Communications::PortInterface::Direction::INPUT, Communications::PortInterface::DataType::DOUBLE, -1, rt_period_);
+    Communications::PortInterface::Map(in_port, output_port); // Map It
     input_port_map_[port_id] = in_port;        // Cache It
 
     // Reserve

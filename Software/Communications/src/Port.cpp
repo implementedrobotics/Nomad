@@ -34,77 +34,56 @@
 #include <chrono>
 #include <map>
 
-#include <Communications/Messages/double_vec_t.hpp>
-#include <Communications/Messages/int32_vec_t.hpp>
-#include <Communications/Messages/generic_msg_t.hpp>
-
 namespace Communications
 {
 
-    Port::Port(const std::string &name, Direction direction, DataType data_type, int dimension, int period) : direction_(direction), data_type_(data_type), name_(name), update_period_(period), sequence_num_(0), dimension_(dimension), started_(false)
+    PortInterface::PortInterface(const std::string &name, Direction direction, DataType data_type, int dimension, int period)
     {
         queue_size_ = 1;
         transport_type_ = TransportType::NATIVE;
         transport_url_ = "native"; // TODO: Noblock?
 
-        // If Input Port Create Handlers
-        if (direction == Direction::INPUT)
-        {
-            if (data_type == DataType::DOUBLE)
-            {
-                PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
-                handler_ = (void *)handler;
-            }
-            else if (data_type == DataType::INT32)
-            {
-                PortHandler<int32_vec_t> *handler = new PortHandler<int32_vec_t>(queue_size_);
-                handler_ = (void *)handler;
-            }
-            else if (data_type == DataType::BYTE)
-            {
-                PortHandler<generic_msg_t> *handler = new PortHandler<generic_msg_t>(queue_size_);
-                handler_ = (void *)handler;
-            }
-        }
-        else // Setup Outputs
-        {
-        }
+        // // If Input Port Create Handlers
+        // if (direction == Direction::INPUT)
+        // {
+        //     if (data_type == DataType::DOUBLE)
+        //     {
+        //         PortHandler<double_vec_t> *handler = new PortHandler<double_vec_t>(queue_size_);
+        //         handler_ = (void *)handler;
+        //     }
+        //     else if (data_type == DataType::INT32)
+        //     {
+        //         PortHandler<int32_vec_t> *handler = new PortHandler<int32_vec_t>(queue_size_);
+        //         handler_ = (void *)handler;
+        //     }
+        //     else if (data_type == DataType::BYTE)
+        //     {
+        //         PortHandler<generic_msg_t> *handler = new PortHandler<generic_msg_t>(queue_size_);
+        //         handler_ = (void *)handler;
+        //     }
+        // }
+        // else // Setup Outputs
+        // {
+        // }
     }
 
-    Port::Port(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0), started_(false)
+    PortInterface::PortInterface(const std::string &name, Direction direction, int period) : direction_(direction), name_(name), update_period_(period), sequence_num_(0), started_(false)
     {
         queue_size_ = 1;
         transport_type_ = TransportType::NATIVE;
         transport_url_ = "native"; // TODO: Noblock?
 
-        if(direction == Direction::OUTPUT)
+        if (direction == Direction::OUTPUT)
             listeners_.reserve(MAX_LISTENERS); // Reserve Space for Output Listeners
     }
 
-    std::shared_ptr<Port> Port::CreateOutput(const std::string &name, int period)
-    {
-        std::shared_ptr<Communications::Port> port = std::make_shared<Communications::Port>(name, Direction::OUTPUT, period);
-        return port;
-    }
-
-    // TODO: Clear Handler Memory Etc,
-    Port::~Port()
-    {
-    }
-
-    void Port::SetSignalLabel(const int signal_idx, const std::string &label)
-    {
-        signal_labels_.insert(std::make_pair(signal_idx, label));
-    }
-
-    // TODO: I do not love this...
-    bool Port::Map(std::shared_ptr<Port> input, std::shared_ptr<Port> output)
+    bool PortInterface::Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output)
     {
         input->transport_url_ = output->transport_url_;
         input->channel_ = output->channel_;
         input->transport_type_ = output->transport_type_;
         input->dimension_ = output->dimension_;
-        input->data_type_ = output->data_type_;
+        //input->data_type_ = output->data_type_;
         input->signal_labels_ = output->signal_labels_;
 
         // Add to listeners
@@ -114,38 +93,9 @@ namespace Communications
        // std::cout << "Map: " << input->transport_url_ << " " << input->channel_ << std::endl;
     }
 
-    bool Port::Bind()
+    void PortInterface::SetSignalLabel(const int signal_idx, const std::string &label)
     {
-        // Reset and Clear Reference
-        context_.reset();
-
-        // Setup Contexts
-        if (transport_type_ == TransportType::INPROC)
-        {
-            context_ = PortManager::Instance()->GetInprocContext();
-        }
-        else if (transport_type_ == TransportType::IPC)
-        {
-            context_ = std::make_shared<zcm::ZCM>("ipc");
-        }
-        else if (transport_type_ == TransportType::UDP)
-        {
-            context_ = std::make_shared<zcm::ZCM>(transport_url_);
-        }
-        else if (transport_type_ == TransportType::SERIAL)
-        {
-            context_ = std::make_shared<zcm::ZCM>(transport_url_);
-        }
-        else if (transport_type_ == TransportType::NATIVE)
-        {
-            std::cout << "Binding Output Native." << std::endl;
-        }
-        else
-        {
-            std::cout << "[PORT:BIND]: ERROR: Invalid Transport Type!" << std::endl;
-            return false;
-        }
-        return true;
+        signal_labels_.insert(std::make_pair(signal_idx, label));
     }
 
     ///////////////////////

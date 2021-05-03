@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
     Realtime::RealTimeTaskManager::Instance();
     Communications::PortManager::Instance();
 
-    std::shared_ptr<Communications::Port> GAZEBO_IMU = std::make_shared<Communications::Port>("GAZEBO_IMU", Communications::Port::Direction::OUTPUT, Communications::Port::DataType::DOUBLE, 2, 10);
-    GAZEBO_IMU->SetTransport(Communications::Port::TransportType::UDP, gazebo_url, "nomad.imu");
+    std::shared_ptr<Communications::PortInterface> GAZEBO_IMU = std::make_shared<Communications::Port<double_vec_t>>("GAZEBO_IMU", Communications::PortInterface::Direction::OUTPUT, Communications::PortInterface::DataType::DOUBLE, 2, 10);
+    GAZEBO_IMU->SetTransport(Communications::PortInterface::TransportType::UDP, gazebo_url, "nomad.imu");
 
     // Remote Teleop Task
     // OperatorInterface::Teleop::RemoteTeleop teleop_node("Remote_Teleop");
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     estimator_node.SetTaskFrequency(freq2); // 1000 HZ
     estimator_node.SetCoreAffinity(1);
     estimator_node.SetPortOutput(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT,
-                                 Communications::Port::TransportType::INPROC, "inproc", "nomad.state");
+                                 Communications::PortInterface::TransportType::INPROC, "inproc", "nomad.state");
 
     //Reference Trajectory Generator
     Controllers::Locomotion::ReferenceTrajectoryGenerator ref_generator_node("Reference_Trajectory_Task", N, T);
@@ -71,10 +71,10 @@ int main(int argc, char *argv[])
     ref_generator_node.SetTaskFrequency(freq1); // 50 HZ
     ref_generator_node.SetCoreAffinity(-1);
     ref_generator_node.SetPortOutput(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE,
-                                     Communications::Port::TransportType::INPROC, "inproc", "nomad.reference");
+                                     Communications::PortInterface::TransportType::INPROC, "inproc", "nomad.reference");
 
     // Map State Estimator Output to Trajectory Reference Input
-    Communications::Port::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
+    Communications::PortInterface::Map(ref_generator_node.GetInputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::InputPort::STATE_HAT),
                         estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
     // // Map Setpoint Output to Trajectory Reference Generator Input
@@ -89,14 +89,14 @@ int main(int argc, char *argv[])
     convex_mpc_node.SetTaskPriority(Realtime::Priority::HIGH);
     convex_mpc_node.SetTaskFrequency(freq1); // 50 HZ
     convex_mpc_node.SetCoreAffinity(2);
-    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Communications::Port::TransportType::UDP, gazebo_url, "nomad.forces");
+    convex_mpc_node.SetPortOutput(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES, Communications::PortInterface::TransportType::UDP, gazebo_url, "nomad.forces");
 
     // Map State Estimator Output to Trajectory Reference Input
-    Communications::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT),
+    Communications::PortInterface::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::STATE_HAT),
                         estimator_node.GetOutputPort(Controllers::Estimators::StateEstimator::OutputPort::BODY_STATE_HAT));
 
     // Map Reference Trajectory Output to Trajectory Reference Input of MPC
-    Communications::Port::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY),
+    Communications::PortInterface::Map(convex_mpc_node.GetInputPort(Controllers::Locomotion::ConvexMPC::InputPort::REFERENCE_TRAJECTORY),
                         ref_generator_node.GetOutputPort(Controllers::Locomotion::ReferenceTrajectoryGenerator::OutputPort::REFERENCE));
 
     convex_mpc_node.Start();
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     //Communications::Port::Map(nomad.GetInputPort(Systems::Nomad::NomadPlant::InputPort::FORCES),
     // convex_mpc_node.GetOutputPort(Controllers::Locomotion::ConvexMPC::OutputPort::FORCES));
 
-    Communications::Port::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU_DATA),
+    Communications::PortInterface::Map(estimator_node.GetInputPort(Controllers::Estimators::StateEstimator::InputPort::IMU_DATA),
                         GAZEBO_IMU);
 
     //nomad.Start();
