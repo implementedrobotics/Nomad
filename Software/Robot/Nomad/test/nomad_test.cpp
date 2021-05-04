@@ -64,10 +64,27 @@ using OperatorInterface::Teleop::RemoteTeleop;
 
 // };
 
+template <typename T = int>
+class Foo{
+
+    public:
+    T a;
+};
+
+
+
 int main(int argc, char *argv[])
 {
 
 
+    std::vector<Foo<>*> vec;
+
+    Foo<int> me;
+
+    vec.push_back(&me);
+    
+    std::cout << sizeof(me) << std::endl;
+    return true;
     // PortConverter<Hello> converter;
     // PortConverter<double> converter2;
 

@@ -84,7 +84,8 @@ namespace Communications
         auto test2 = input->getSelf();
 
 
-       // decltype(test)::port_type_t;
+        //Communications::PortInterface::MapNew(test, test2);
+        //test.MapNew(test2);
         //port_input.Port
         output->Map(input);
         input->transport_url_ = output->transport_url_;

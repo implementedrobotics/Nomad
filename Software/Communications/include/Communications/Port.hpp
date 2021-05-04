@@ -47,14 +47,6 @@
 
 namespace Communications
 {
-    template <typename Subclass>
-    struct AddGetSelf
-    {
-        auto getSelf() -> Subclass &
-        {
-            return static_cast<Subclass &>(*this);
-        }
-    };
     class PortInterface
     {
 
@@ -93,23 +85,33 @@ namespace Communications
         virtual ~PortInterface() {}
 
         // Connect
-        virtual bool Connect(){}// = 0;
+        virtual bool Connect(){return false;}// = 0;
 
         // Bind Port
-        virtual bool Bind(){}// = 0;
+        virtual bool Bind(){return false;}// = 0;
 
         // Map
-        virtual bool Map(std::shared_ptr<PortInterface> output){}// = 0;
+        virtual bool Map(std::shared_ptr<PortInterface> output){return false;}// = 0;
+
+        // Map Ports
+        static bool Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output);
+
+        // template <typename PortT, typename OutputPortType, typename InputPortType>
+        // bool MapNew(std::shared_ptr<PortT<OutputPortType>> output, std::shared_ptr<<InputPortType>> input){std::cout << "mapping : " << std::endl;}
+
+        template <typename T_IN,typename T_OUT,
+           template<typename> class Port>
+        bool MapNew(Port<T_IN> output, Port<T_OUT> input)
+        {
+            std::cout << "mapping : " << std::endl;
+            return true;
+        }
+
 
         virtual auto getSelf() -> PortInterface& {
            std::cout << "SUPER" << std::endl;
        return *this;
    }
-
-    //    virtual auto getType() -> double_vec_t& {
-    //        double_vecss_t vec;
- //return vec;
-   // }
 
         // Send message type data on port
         template <typename PortType>
@@ -119,8 +121,8 @@ namespace Communications
         template <typename PortType>
         bool Receive(PortType &msg, std::chrono::microseconds timeout = std::chrono::microseconds(0));
 
-        // Map Ports
-        static bool Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output);
+        // // Map Ports
+        // static bool Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output);
 
         // Transport
         // For INPROC/IPC transport URL should depend on block/noblock?  Not technically necessary to set.
@@ -199,7 +201,6 @@ namespace Communications
         Port(const std::string &name, Direction direction, int period);
         ~Port();
 
-
         // Port Type
         typedef PortType port_type_t;
 
@@ -215,15 +216,12 @@ namespace Communications
         // Map Input Output
         virtual bool Map(std::shared_ptr<PortInterface> output);
 
-        template <typename OutputPortType, typename InputPortType>
-        static bool MapNew(std::shared_ptr<Port<OutputPortType>> output, std::shared_ptr<Port<InputPortType>> input){std::cout << "mapping : " << std::endl;}
+        auto getSelf() -> Port<PortType> & override
+        {
+            std::cout << "SUB" << typeid(port_type_t).name() << std::endl;
 
-auto getSelf() -> Port<PortType>& override {
-    std::cout << "SUB" << typeid(port_type_t).name() << std::endl;
-
-
-        return *this;
-    }
+            return *this;
+        }
 
     // auto getType() -> port_type_t& override {
     //     port_type_t var;
