@@ -90,6 +90,7 @@
         "graphicswindow": "cpp",
         "guieventadapter": "cpp",
         "regex": "cpp",
-        "texgen": "cpp"
+        "texgen": "cpp",
+        "valarray": "cpp"
     }
 }

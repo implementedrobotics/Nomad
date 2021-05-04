@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     }
 
     // Create Block Diagram
-    BlockDiagram diagram("Test", 0.001); //10hz
+    BlockDiagram diagram("NOMAD", 0.001); //1khz
     diagram.SetStackSize(16 * 1024 * 1024);
     diagram.SetTaskPriority(Realtime::Priority::HIGHEST);
     diagram.SetCoreAffinity(-1);

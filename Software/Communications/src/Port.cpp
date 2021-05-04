@@ -79,6 +79,14 @@ namespace Communications
 
     bool PortInterface::Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output)
     {
+
+        auto test = output->getSelf();
+        auto test2 = input->getSelf();
+
+
+       // decltype(test)::port_type_t;
+        //port_input.Port
+        output->Map(input);
         input->transport_url_ = output->transport_url_;
         input->channel_ = output->channel_;
         input->transport_type_ = output->transport_type_;

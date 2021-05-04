@@ -29,6 +29,8 @@
 // C++ System Includes
 #include <iostream>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
 
 // Third-Party Includes
 
@@ -97,7 +99,8 @@ namespace Core::Systems
     }
 
     void BlockDiagram::Connect(std::shared_ptr<Communications::PortInterface> output, std::shared_ptr<Communications::PortInterface> input)
-    {
+    {        
+        //output->getSelf().test();
         Communications::PortInterface::Map(input, output);
     }
 

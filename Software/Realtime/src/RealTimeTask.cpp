@@ -121,7 +121,7 @@ namespace Realtime
         if (stacksize != task->stack_size_)
         {
             std::cout << "[RealTimeTaskNode]: "
-                      << "Staco Task: " << task->task_name_ << std::endl;
+                      << "Stack Task: " << task->task_name_ << std::endl;
         }
 
         // TODO: Do we want to have support for adding to multiple CPUs here?

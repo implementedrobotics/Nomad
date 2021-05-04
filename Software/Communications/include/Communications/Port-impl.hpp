@@ -377,4 +377,13 @@ namespace Communications
         return true;
     }
 
+    // Map Port
+    template <typename PortType>
+    bool Port<PortType>::Map(std::shared_ptr<PortInterface> output)
+    {
+        std::cout << "MAPPING!" << std::endl;
+        
+        return true;
+    }
+
 } // namespace Communications

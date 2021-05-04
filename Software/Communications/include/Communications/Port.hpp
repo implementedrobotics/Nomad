@@ -47,6 +47,14 @@
 
 namespace Communications
 {
+    template <typename Subclass>
+    struct AddGetSelf
+    {
+        auto getSelf() -> Subclass &
+        {
+            return static_cast<Subclass &>(*this);
+        }
+    };
     class PortInterface
     {
 
@@ -85,10 +93,23 @@ namespace Communications
         virtual ~PortInterface() {}
 
         // Connect
-        virtual bool Connect() = 0;
+        virtual bool Connect(){}// = 0;
 
         // Bind Port
-        virtual bool Bind() = 0;
+        virtual bool Bind(){}// = 0;
+
+        // Map
+        virtual bool Map(std::shared_ptr<PortInterface> output){}// = 0;
+
+        virtual auto getSelf() -> PortInterface& {
+           std::cout << "SUPER" << std::endl;
+       return *this;
+   }
+
+    //    virtual auto getType() -> double_vec_t& {
+    //        double_vecss_t vec;
+ //return vec;
+   // }
 
         // Send message type data on port
         template <typename PortType>
@@ -178,6 +199,10 @@ namespace Communications
         Port(const std::string &name, Direction direction, int period);
         ~Port();
 
+
+        // Port Type
+        typedef PortType port_type_t;
+
         static std::shared_ptr<PortInterface> CreateInput(const std::string &name, int period = -1);
         static std::shared_ptr<PortInterface> CreateOutput(const std::string &name, int period = -1);
 
@@ -187,10 +212,27 @@ namespace Communications
         // Bind Port
         bool Bind();
 
+        // Map Input Output
+        virtual bool Map(std::shared_ptr<PortInterface> output);
+
+        template <typename OutputPortType, typename InputPortType>
+        static bool MapNew(std::shared_ptr<Port<OutputPortType>> output, std::shared_ptr<Port<InputPortType>> input){std::cout << "mapping : " << std::endl;}
+
+auto getSelf() -> Port<PortType>& override {
+    std::cout << "SUB" << typeid(port_type_t).name() << std::endl;
+
+
+        return *this;
+    }
+
+    // auto getType() -> port_type_t& override {
+    //     port_type_t var;
+    //     return var;
+    // }
+
+
     protected:
 
-        // Port Type
-        PortType port_type_t;
 
     private:
 
