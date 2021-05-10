@@ -77,14 +77,14 @@ int main(int argc, char *argv[])
 {
 
 
-    std::vector<Foo<>*> vec;
+    // std::vector<Foo<>*> vec;
 
-    Foo<int> me;
+    // Foo<int> me;
 
-    vec.push_back(&me);
+    // vec.push_back(&me);
     
-    std::cout << sizeof(me) << std::endl;
-    return true;
+    // std::cout << sizeof(me) << std::endl;
+    // return true;
     // PortConverter<Hello> converter;
     // PortConverter<double> converter2;
 
@@ -188,6 +188,10 @@ int main(int argc, char *argv[])
     
     diagram.Connect(teleop->GetOutputPort(RemoteTeleop::OutputPort::TELEOP_DATA), control->GetInputPort(NomadControl::InputPort::TELEOP_DATA));
 
+    sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE)->Demux();
+
+
+    return 0;
     // Start Run
     diagram.Start();
 

@@ -96,23 +96,6 @@ namespace Communications
         // Map Ports
         static bool Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output);
 
-        // template <typename PortT, typename OutputPortType, typename InputPortType>
-        // bool MapNew(std::shared_ptr<PortT<OutputPortType>> output, std::shared_ptr<<InputPortType>> input){std::cout << "mapping : " << std::endl;}
-
-        template <typename T_IN,typename T_OUT,
-           template<typename> class Port>
-        bool MapNew(Port<T_IN> output, Port<T_OUT> input)
-        {
-            std::cout << "mapping : " << std::endl;
-            return true;
-        }
-
-
-        virtual auto getSelf() -> PortInterface& {
-           std::cout << "SUPER" << std::endl;
-       return *this;
-   }
-
         // Send message type data on port
         template <typename PortType>
         bool Send(PortType &msg);
@@ -120,6 +103,13 @@ namespace Communications
         // Receive message type data on port
         template <typename PortType>
         bool Receive(PortType &msg, std::chrono::microseconds timeout = std::chrono::microseconds(0));
+
+        // Demux/Mux Helpers
+        virtual std::vector<std::shared_ptr<PortInterface>> Demux()
+        {
+            std::cout << "Demux Main" << std::endl;
+            return std::vector<std::shared_ptr<PortInterface>>();
+        }
 
         // // Map Ports
         // static bool Map(std::shared_ptr<PortInterface> input, std::shared_ptr<PortInterface> output);
@@ -216,11 +206,17 @@ namespace Communications
         // Map Input Output
         virtual bool Map(std::shared_ptr<PortInterface> output);
 
-        auto getSelf() -> Port<PortType> & override
-        {
-            std::cout << "SUB" << typeid(port_type_t).name() << std::endl;
+        // auto getSelf() -> Port<PortType> & override
+        // {
+        //     std::cout << "SUB" << typeid(port_type_t).name() << std::endl;
 
-            return *this;
+        //     return *this;
+        // }
+
+        virtual std::vector<std::shared_ptr<PortInterface>> Demux()
+        {
+            std::cout << "Demux Sub" << std::endl;
+            return std::vector<std::shared_ptr<PortInterface>>();
         }
 
     // auto getType() -> port_type_t& override {
