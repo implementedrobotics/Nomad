@@ -41,9 +41,14 @@
 #include <Communications/Messages/double_vec_t.hpp>
 #include <Communications/Messages/int32_vec_t.hpp>
 #include <Communications/Messages/generic_msg_t.hpp>
+#include <Communications/Messages/msg_helpers.hpp>
 
 // Third Party Includes
 #include <zcm/zcm-cpp.hpp>
+
+
+template <typename T>
+struct conv;
 
 namespace Communications
 {
@@ -216,6 +221,7 @@ namespace Communications
         virtual std::vector<std::shared_ptr<PortInterface>> Demux()
         {
             std::cout << "Demux Sub" << std::endl;
+            conv<port_type_t>::Demux();
             return std::vector<std::shared_ptr<PortInterface>>();
         }
 
