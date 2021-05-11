@@ -1,0 +1,21 @@
+struct full_state_t
+{
+    int64_t timestamp;
+    int64_t sequence_num;
+
+    double q[18];        // Robot Position State
+    double q_dot[18];    // Robot Velocity State
+    double foot_pos[12]; // Foot Position State (Hip Base Relative)
+    double foot_vel[12]; // Foot Velocity State (Hip Base Relative)
+    
+    double foot_pos_wcs[12]; // Foot Position State (World Inertial Frame Relative)
+    double foot_vel_wcs[12]; // Foot Velocity State (World Inertial Frame Relative)
+
+    double CoS[3];           // Center of Support (Body Frame Relative)
+    double CoS_wcs[3];       // Center of Support (World Framee Relative)
+
+    double M[324];       // Mass Inertia Matrix (324 = 18 * 18)
+    double g[18];                      // Gravity Terms Vector
+    double b[18];                      // Coriolis Terms Vector
+    double J_c[216]; // Contact Jacobian (216 = 3 * 4 * 18 or contact dofs * num contacts * total dofs)
+}

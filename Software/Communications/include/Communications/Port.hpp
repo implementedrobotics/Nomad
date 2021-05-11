@@ -221,7 +221,7 @@ namespace Communications
         virtual std::vector<std::shared_ptr<PortInterface>> Demux()
         {
             std::cout << "Demux Sub" << std::endl;
-            conv<port_type_t>::Demux();
+            Communications::conv<port_type_t>::Demux();
             return std::vector<std::shared_ptr<PortInterface>>();
         }
 

@@ -1,0 +1,9 @@
+struct joint_state_t
+{
+    int64_t timestamp;
+    int64_t sequence_num;
+
+    double q[12];      // Joint Position
+    double q_dot[12];  // Joint Velocity
+    double tau[12];    // Torque
+}
