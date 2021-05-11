@@ -270,45 +270,53 @@ namespace Core::Systems
 
 
 
-    // template <typename  T>
-    // class PortConverter : public SystemBlock
-    // {
+    template <typename  T>
+    class Demux : public SystemBlock
+    {
 
-    // public:
-    //     // Constant System Block Node
-    //     // name = Task Name
-    //     PortConverter(const double T_s = -1) : SystemBlock("CONVERTER", T_s)
-    //     {
+    public:
+        // Constant System Block Node
+        // name = Task Name
+        Demux(const double T_s = -1) : SystemBlock("DEMUX", T_s)
+        {
 
-    //         // Create Input Port
-    //         input_port_map_[0] = Communications::Port::CreateInput<T>("INPUT");
+            // Create Input Port
+            input_port_map_[0] = Communications::Port::CreateInput<T>("INPUT");
 
-    //         // Create Output Port
-    //         output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONVERTED", T_s_));
-    //     }
+            // Create Output Port
+            output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONVERTED", T_s_));
+        }
 
-    // protected:
+    protected:
 
-    //     // Update function for stateful outputs
-    //     void UpdateStateOutputs()
-    //     {
+        // Update function for stateful outputs
+        void UpdateStateOutputs()
+        {
 
-    //     }
+        }
 
-    //     // Update function for stateless outputs
-    //     void UpdateStatelessOutputs()
-    //     {
-    //         std::cout << "GETTING INPUT" << std::endl;
-    //     }
+        // Update function for stateless outputs
+        void UpdateStatelessOutputs()
+        {
+            std::cout << "GETTING INPUT" << std::endl;
 
-    //     // Update fucntion for next state from inputs
-    //     void UpdateState()
-    //     {
+            // Read Type
 
-    //     }
+            // Pass to Converter
 
-    //     T msg_type_;
-    // };
+            // Send Outputs
+            
+
+        }
+
+        // Update fucntion for next state from inputs
+        void UpdateState()
+        {
+
+        }
+
+        T msg_type_;
+    };
 
 } // namespace Controllers::Systems
 

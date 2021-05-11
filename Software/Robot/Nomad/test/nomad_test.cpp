@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 
     return 0;
 
-    // diagram.AddSystem(sim);
+   // diagram.AddSystem(sim);
 
     // // Estimator
     // std::shared_ptr<FusedLegKinematicsStateEstimator> estimate = std::make_shared<FusedLegKinematicsStateEstimator>(0.001);
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 
     // // Control FSM Task
     // std::shared_ptr<NomadControl> control = std::make_shared<NomadControl>(0.001);
-    // control->SetPortOutput(NomadControl::OutputPort::LEG_COMMAND, PortInterface::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
+    //0 control->SetPortOutput(NomadControl::OutputPort::LEG_COMMAND, PortInterface::TransportType::NATIVE, "native", "nomad.control.fsm.leg_cmd");
     // diagram.AddSystem(control);
 
     // // Leg Controller
