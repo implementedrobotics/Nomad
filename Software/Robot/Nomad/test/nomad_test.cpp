@@ -169,6 +169,9 @@ int main(int argc, char *argv[])
     sim->SetPortOutput(SimulationInterface::IMU_DATA, PortInterface::TransportType::NATIVE, "native", "nomad.imu");
     sim->SetPortOutput(SimulationInterface::JOINT_STATE, PortInterface::TransportType::NATIVE, "native", "nomad.joint_state");
 
+
+    std::shared_ptr<Core::Systems::Demux<com_state_t>> demux = std::make_shared<Core::Systems::Demux<com_state_t>>(0.001);
+
     sim->GetOutputPort(SimulationInterface::OutputPort::COM_STATE)->Demux();
 
 

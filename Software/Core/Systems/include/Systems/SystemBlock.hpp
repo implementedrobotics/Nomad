@@ -35,6 +35,7 @@
 #include <Eigen/Dense>
 #include <Communications/Port.hpp>
 #include <Communications/Messages/double_vec_t.hpp>
+#include <Communications/Messages/msg_helpers.hpp>
 
 
 
@@ -281,10 +282,13 @@ namespace Core::Systems
         {
 
             // Create Input Port
-            input_port_map_[0] = Communications::Port::CreateInput<T>("INPUT");
+            input_port_map_[0] = Communications::Port<T>::CreateInput("INPUT");
+
+            // Demux for Output
+            Communications::conv<T>::Demux();
 
             // Create Output Port
-            output_port_map_[0] = std::move(Communications::Port::CreateOutput("CONVERTED", T_s_));
+            output_port_map_[0] = std::move(Communications::Port<T>::CreateOutput("CONVERTED", T_s_));
         }
 
     protected:
