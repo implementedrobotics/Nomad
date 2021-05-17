@@ -106,14 +106,6 @@ using OperatorInterface::Teleop::RemoteTeleop;
 
 // }
 
-template <typename T = int>
-class Foo{
-
-    public:
-    T a;
-};
-
-
 
 int main(int argc, char *argv[])
 {
