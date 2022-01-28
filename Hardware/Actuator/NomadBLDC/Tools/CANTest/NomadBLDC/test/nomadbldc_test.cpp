@@ -8,8 +8,8 @@
 
 #include <NomadBLDC/NomadBLDC.h>
 
-#define DEVICE "/dev/pcanusbfd32"
-
+//#define DEVICE "/dev/pcanusbfd32"
+#define DEVICE "/dev/pcanpcifd1"
 PCANDevice can;
 
 int main(int argc, char *argv[])
@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
     CANDevice::Config_t config;
     config.bitrate = 1e6; //1mbps
     config.d_bitrate = 5e6; //2mbps
-    config.sample_point = .875; //87.5% 
-    config.d_sample_point = 0.6; //60%
+    config.sample_point = 0.80; //87.5% 
+    config.d_sample_point = 0.625; //60%
     config.clock_freq = 80e6; // 80mhz // Read from driver?  
     config.mode_fd = 1; // FD Mode
 

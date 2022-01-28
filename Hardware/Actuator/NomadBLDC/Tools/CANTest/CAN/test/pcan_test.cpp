@@ -7,8 +7,10 @@
 #include <math.h>
 
 
-#define DEVICE "/dev/pcanusbfd32"
-
+// USB
+//#define DEVICE "/dev/pcanusbfd32"
+// PCI/M.2
+#define DEVICE "/dev/pcanpcifd0"
 
 PCANDevice can;
 uint32_t can_tx_id = 0x10;
@@ -164,6 +166,7 @@ void CANTestNode::Setup()
     if(!can.Open(DEVICE, config, false))
     {
         std::cout << "Unable to open CAN Device" << std::endl;
+	exit(-2);
         return;
     }
 
