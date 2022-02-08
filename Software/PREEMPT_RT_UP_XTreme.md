@@ -42,7 +42,7 @@ Copy the current kernel config for defaults
 cp /boot/config-5.4.0-1-generic .config
 ```
 
-### Option 1 (CLI Based)
+### Option 1 (CLI Based Configuration)
 Edit .config with your favorite editor, i.e.,
 
 ```xdg-open .config``` - GUI based editor
@@ -95,10 +95,37 @@ Set default governer state => PERFORMANCE
 
 These flags can also be set with cpufrequtils
 
-### Option 2 (GUI Based)
+### Option 2 (GUI Based Configuration)
 
 ```make menuconfig```
 Using the search **/** shortcut locate and set all of the parameters from Option 1
 
 TODO: Where in menu config options are + screenshots?
+
+## Build Kernel
+
+Compile kernel sources
+
+```make -j8```
+
+Compile kernel modules and install
+
+```sudo make modules_isntall -j8```
+
+``` sudo make install -j8```
+
+Verify correct kernel is installed
+
+```cd /boot```
+
+```ls```
+
+Should see...
+
+## Update Grub and Restart
+
+```sudo update-grub```
+
+```sudo reboot```
+
 
