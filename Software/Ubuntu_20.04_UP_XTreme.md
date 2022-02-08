@@ -135,10 +135,14 @@ Add current user to **dialout** (Serial/UART) group
 sudo usermod -a -G dialout ${USER}
 ```
 
+Reboot to apply permissions
+```
+sudo reboot
+```
 ### Add PWM Support in user space (WIP)
 
 ```
-wget https://github.com/up-board/up-community/blob/main/files/PWM%20rules_udev/pwm%20udev_v0.3.zip?raw=true```
+wget https://github.com/up-board/up-community/blob/main/files/PWM%20rules_udev/pwm%20udev_v0.3.zip?raw=true
 ```
 
 * Extract zip files to a folder
