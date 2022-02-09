@@ -47,11 +47,11 @@ Update
 
 Remove default installed generic kernels.  When prompted ```Abort Kernel Removal``` enter ```No```
 
-```sudo apt autoremove --purge 'linux-.*generic'```
+```sudo apt-get autoremove --purge 'linux-.*generic'```
 
 Install custom upboard kernel from PPA repository. (Note: 20.04 and 18.04 use the same base kernel)
 
-```sudo apt install linux-generic-hwe-18.04-5.4-upboard```
+```sudo apt-get install linux-generic-hwe-18.04-5.4-upboard```
 
 Install updates:
 
