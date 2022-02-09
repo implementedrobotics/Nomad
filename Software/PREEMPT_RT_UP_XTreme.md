@@ -5,7 +5,7 @@
 
 ## Install dependencies
 ```
-sudo apt install build-essential* fakeroot dpkg-dev perl libssl-dev* bc gnupg dirmngr libncurses5-dev* libelf-dev* flex* bison* git*
+sudo apt install libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf git
 ```
 
 ## Download Kernel Sources for UP
@@ -108,11 +108,11 @@ Compile kernel sources
 
 ```make -j8```
 
-Compile kernel modules and install
+Compile kernel modules and install.
 
-```sudo make modules_isntall -j8```
+```sudo make INSTALL_MOD_STRIP=1 modules_install -j8```
 
-``` sudo make install -j8```
+```sudo make install -j8```
 
 Verify correct kernel is installed
 
@@ -122,10 +122,22 @@ Verify correct kernel is installed
 
 ```vmlinuz-5.4.65-rt38+```
 
+Also verify size of initial ramdisk, can have debug symbols that will create a very large/slow initial ram disk
+```
+$ ls -lh /boot
+49M initrd.ing-5.4.65-rt38+
+```
+
 ## Update Grub and Restart
 
 ```sudo update-grub```
 
 ```sudo reboot```
 
+## Verify newly compiled RT Kernel is active
+
+```
+$ uname -a
+Linux nomad 5.4.65-rt38+ #1 SMP PREEMPT_RT Wed Feb 9 12:32:15 CST 2022 x86_64 x86_64 x86_64 GNU/Linux
+```
 
