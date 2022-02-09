@@ -120,7 +120,7 @@ Verify correct kernel is installed
 
 ```ls```
 
-Should see...
+```vmlinuz-5.4.65-rt38+```
 
 ## Update Grub and Restart
 
