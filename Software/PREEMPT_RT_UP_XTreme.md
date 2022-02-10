@@ -143,4 +143,70 @@ Linux nomad 5.4.65-rt38+ #1 SMP PREEMPT_RT Wed Feb 9 12:32:15 CST 2022 x86_64 x8
 
 ## Setup User Permissions
 
-Add a ```realtime``` user group
+Running user applications with real time scheduling priorities (SCHED_FIFO and SCHED_RR) requires increased security permissions.  There are 3 options to achieve this:
+
+1.  Run application as the super user/root (Not recommended)
+2.  Change permissions on the executable binary directly using ```setcap```
+
+e.g.
+```
+sudo setcap cap_sys_nice+ep <EXECUTABLE BINARY>
+sudo setcap cap_ipc_lock+ep <EXECUTABLE BINARY>
+```
+
+Finally for the last and preferred option
+3.  Add a ```realtime``` user group with permissions and add default user to this group
+
+Add realtime group.
+
+```sudo groupadd realtime```
+
+Add current user to realtime group.
+
+```sudo usermod -aG realtime ${USER}```
+
+Add security permissions for realtime group to access low latency options
+```
+sudo nano /etc/security/limits.d/99-realtime.conf
+```
+
+Add the following lines and save:
+
+```
+@realtime soft rtprio 99
+@realtime soft priority 99
+@realtime soft memlock 104857600
+@realtime hard rtprio 99
+@realtime hard priority 99
+@realtime hard memlock 104857600
+```
+
+**Note:** For memlock options this is the size in *Bytes* (100 * 1024 * 1024 = **100MB** in this case) that is allowed to be locked into physical RAM and not paged out to virtual memory.  If you attempt to allocate more than this amount you will get an error which should be handled.  Otherwise you will **NOT** be guaranteed the low latency you are expecting.
+
+**Note:** Also you can pass **-1** as the byte value. Now memlock will impose **NO** allocation limits.  Be careful with this, if you go over the amount of physical RAM of the hardware there will be errors/crash.
+
+Reboot to apply new permissions to the user.
+
+```sudo reboot```
+
+Once system has restarted let's verify correct permissions.
+
+* Check user is in realtime group.
+
+```
+$ groups | grep -o realtime
+realtime
+```
+
+* Check memlock allocation limits.
+
+```
+$ ulimit -l
+104857600
+```
+
+
+
+
+
+
