@@ -179,13 +179,13 @@ Add the following lines and save:
 ```
 @realtime soft rtprio 99
 @realtime soft priority 99
-@realtime soft memlock 104857600
+@realtime soft memlock 102400
 @realtime hard rtprio 99
 @realtime hard priority 99
-@realtime hard memlock 104857600
+@realtime hard memlock 102400
 ```
 
-**Note:** For memlock options this is the size in *Bytes* (100 * 1024 * 1024 = **100MB** in this case) that is allowed to be locked into physical RAM and not paged out to virtual memory.  If you attempt to allocate more than this amount you will get an error which should be handled.  Otherwise you will **NOT** be guaranteed the low latency you are expecting.
+**Note:** For memlock options this is the size in *KBytes* (100 * 1024 = **100MB** in this case) that is allowed to be locked into physical RAM and not paged out to virtual memory.  If you attempt to allocate more than this amount you will get an error which should be handled.  Otherwise you will **NOT** be guaranteed the low latency you are expecting.
 
 **Note:** Also you can pass ```-1``` as the byte value. Now memlock will impose **NO** allocation limits.  Be careful with this, if you go over the amount of physical RAM of the hardware there will be errors/crashes.
 
