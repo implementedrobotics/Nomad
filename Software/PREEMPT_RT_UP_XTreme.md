@@ -27,7 +27,7 @@ $ make kernelversion
 
 Locate on [kernel.org](http://https://kernel.org/) RT patch closest or equal to this version for best success in patching(less code differences)
 
-For instance with kernel version 5.4.65 use **5.4.66-rt38**
+For instance with kernel version **5.4.65** use **5.4.66-rt38**
 
 ```wget https://mirrors.edge.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-5.4.66-rt38.patch.xz```
 
