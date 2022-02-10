@@ -93,7 +93,7 @@ Set default governer state => PERFORMANCE
 
 ```CONFIG_CPU_FREQ_GOV_PERFORMANCE=y```
 
-These flags can also be set with cpufrequtils
+These flags can also be set more dynamically.  See ```cpufrequtils``` setup instructions [below](#cpu-performance).
 
 ### Option 2 (GUI Based Configuration)
 
@@ -122,7 +122,7 @@ Verify correct kernel is installed
 
 ```vmlinuz-5.4.65-rt38+```
 
-Also verify size of initial ramdisk, can have debug symbols that will create a very large/slow initial ram disk
+Also verify size of initial ramdisk, it is possible debug symbols were included that will create a very large/slow initial ram disk
 ```
 $ ls -lh /boot
 49M initrd.ing-5.4.65-rt38+
@@ -183,7 +183,7 @@ Add the following lines and save:
 
 **Note:** For memlock options this is the size in *Bytes* (100 * 1024 * 1024 = **100MB** in this case) that is allowed to be locked into physical RAM and not paged out to virtual memory.  If you attempt to allocate more than this amount you will get an error which should be handled.  Otherwise you will **NOT** be guaranteed the low latency you are expecting.
 
-**Note:** Also you can pass **-1** as the byte value. Now memlock will impose **NO** allocation limits.  Be careful with this, if you go over the amount of physical RAM of the hardware there will be errors/crash.
+**Note:** Also you can pass ```-1``` as the byte value. Now memlock will impose **NO** allocation limits.  Be careful with this, if you go over the amount of physical RAM of the hardware there will be errors/crash.
 
 Reboot to apply new permissions to the user.
 
@@ -205,7 +205,29 @@ $ ulimit -l
 104857600
 ```
 
+## CPU Performance
 
+If opted not to include these CPU performance settings in the kernel config, it can be setup as below.  Benefit of this method is the ability to enable/disable these settings without kernel recompilation.
+
+Install ```cpufrequtils``` utility to set CPU governor and scaling parameters:
+
+```sudo apt install cpufrequtils```
+
+Disable load dependent ```ondemand``` CPU governor.
+
+```sudo systemctl disable ondemand```
+
+Enable ```cpufrequtils``` service.
+
+```sudo systemctl enable cpufrequtils```
+
+Set CPU governor to ```performance``` mode.
+
+```sudo sh -c 'echo "GOVERNOR=performance" > /etc/default/cpufrequtils'```
+
+Reload system services to apply changes
+
+```sudo systemctl daemon-reload && sudo systemctl restart cpufrequtils```
 
 
 
