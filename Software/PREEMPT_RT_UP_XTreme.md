@@ -1,14 +1,15 @@
-# PREEMPT_RT Kernel Instructions for UP XTreme SBC
+# PREEMPT_RT Kernel Instructions for UP XTreme SBC on Ubuntu 20.04.03
 
 #### Please make sure to complete steps in Ubuntu OS Installation Wiki first!
 
 
 ## Install dependencies
+
 ```
 sudo apt install libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf git
 ```
 
-## Download Kernel Sources for UP
+## Download kernel sources from UP
 
 ```mkdir ~/kernel && cd ~/kernel```
 
@@ -18,8 +19,11 @@ sudo apt install libncurses-dev flex bison openssl libssl-dev dkms libelf-dev li
 
 ```git checkout hwe-5.4-upboard```
 
-## Apply RT Patch to Kernel Sources
+## Apply RT patch to kernel Sources
+
+
 ### Display kernel version information
+
 ``` 
 $ make kernelversion
 5.4.65
@@ -35,14 +39,14 @@ Apply patch
 
 ```unxz -cd patch-5.4.66-rt38.patch.xz | patch -p1```
 
-## Kernel Configuration
+## Kernel configuration
 Copy the current kernel config for defaults
 
 ```
 cp /boot/config-5.4.0-1-generic .config
 ```
 
-### Option 1 (CLI Based Configuration)
+### Option 1 (CLI based configuration)
 Edit .config with your favorite editor, i.e.,
 
 ```xdg-open .config``` - GUI based editor
@@ -65,9 +69,9 @@ Set the following RT parameters:
 
 ```CONFIG_AUFS_FS=n```
 
-#### Optional CPU Maximum Performance Configuration 
+#### Optional CPU maximum performance configuration 
 
-Disable CPU Idle state
+Disable CPU idle state
 
 ```CONFIG_CPU_IDLE=n```
 
@@ -87,7 +91,7 @@ Remove power saving governor states
 
 ```CONFIG_CPU_FREQ_GOV_CONSERVATIVE=n```
 
-Set default governer state => PERFORMANCE
+Set default governor state => PERFORMANCE
 
 ```CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y```
 
@@ -95,14 +99,14 @@ Set default governer state => PERFORMANCE
 
 These flags can also be set more dynamically.  See ```cpufrequtils``` setup instructions [below](#cpu-performance).
 
-### Option 2 (GUI Based Configuration)
+### Option 2 (GUI based configuration)
 
 ```make menuconfig```
 Using the search **/** shortcut locate and set all of the parameters from Option 1
 
-TODO: Where in menu config options are + screenshots?
+TODO: Where in the menu config options are + screenshots?
 
-## Build Kernel
+## Build kernel
 
 Compile kernel sources
 
@@ -128,20 +132,20 @@ $ ls -lh /boot
 49M initrd.ing-5.4.65-rt38+
 ```
 
-## Update Grub and Restart
+## Update grub and restart
 
 ```sudo update-grub```
 
 ```sudo reboot```
 
-## Verify newly compiled RT Kernel is active
+## Verify newly compiled RT kernel is active
 
 ```
 $ uname -a
 Linux nomad 5.4.65-rt38+ #1 SMP PREEMPT_RT Wed Feb 9 12:32:15 CST 2022 x86_64 x86_64 x86_64 GNU/Linux
 ```
 
-## Setup User Permissions
+## Setup user permissions
 
 Running user applications with real time scheduling priorities (SCHED_FIFO and SCHED_RR) requires increased security permissions.  There are 3 options to achieve this:
 
@@ -157,11 +161,11 @@ sudo setcap cap_ipc_lock+ep <EXECUTABLE BINARY>
 Finally for the last and preferred option
 3.  Add a ```realtime``` user group with permissions and add default user to this group
 
-Add realtime group.
+Add a realtime group.
 
 ```sudo groupadd realtime```
 
-Add current user to realtime group.
+Add the current user to the realtime group.
 
 ```sudo usermod -aG realtime ${USER}```
 
@@ -183,15 +187,15 @@ Add the following lines and save:
 
 **Note:** For memlock options this is the size in *Bytes* (100 * 1024 * 1024 = **100MB** in this case) that is allowed to be locked into physical RAM and not paged out to virtual memory.  If you attempt to allocate more than this amount you will get an error which should be handled.  Otherwise you will **NOT** be guaranteed the low latency you are expecting.
 
-**Note:** Also you can pass ```-1``` as the byte value. Now memlock will impose **NO** allocation limits.  Be careful with this, if you go over the amount of physical RAM of the hardware there will be errors/crash.
+**Note:** Also you can pass ```-1``` as the byte value. Now memlock will impose **NO** allocation limits.  Be careful with this, if you go over the amount of physical RAM of the hardware there will be errors/crashes.
 
 Reboot to apply new permissions to the user.
 
 ```sudo reboot```
 
-Once system has restarted let's verify correct permissions.
+Once the system has restarted let's verify correct permissions.
 
-* Check user is in realtime group.
+* Check if the user is in the realtime group.
 
 ```
 $ groups | grep -o realtime
@@ -205,7 +209,7 @@ $ ulimit -l
 104857600
 ```
 
-## CPU Performance
+## CPU performance
 
 If opted not to include these CPU performance settings in the kernel config, it can be setup as below.  Benefit of this method is the ability to enable/disable these settings without kernel recompilation.
 
@@ -237,11 +241,11 @@ Add the following to this file:
 
 Now by echoing ```0``` to ```/dev/cpu_dma_latency``` we can on demand adjust processor idle C states for minimal latency
 
-Reboot for udev rules to take affect.
+Reboot for udev rules to take effect.
 
 ```sudo reboot```
 
-## Test and Verify Real-Time Latency
+## Test and verify Real-Time latency
 
 ### Setup rt-tests 
 
@@ -249,7 +253,7 @@ Reboot for udev rules to take affect.
 
 ### Run tests
 
-**Note:** If the below commands give errors, make sure user/group realtime has been setup.  Alternatively, run with ```sudo```.
+**Note:** If the below commands give errors, make sure user/group realtime has been set up.  Alternatively, run with ```sudo```.
 
 Run the cyclic test to analyze max latency and jitter
 
@@ -281,7 +285,7 @@ T: 6 ( 1952) P:99 I:4000 C: 5274  Min: 1 Act: 2 Avg: 2 Max: 46
 T: 7 ( 1953) P:99 I:4500 C: 4688  Min: 1 Act: 2 Avg: 2 Max: 41
 ```
   
-Ideally you will see Min/Average latency  **<2us** with a worst cast maximum latency  **<100us**(best results under 50us)
+Ideally you will see Min/Average latency  **<2us** with a worst case maximum latency  **<100us**(best results under 50us)
 
 ### Check latency under stress
 
@@ -295,7 +299,7 @@ git clone https://github.com/QiayuanLiao/Ubuntu-RT-UP-Board.git
 
 ```cd ~/Ubuntu-RT-UP-Board/test```
 
-**Note:** In rt-test.sh, adjust number of CPU cores to stress on line 2, ```--cpu``` parameter. Also the number of cores to run RT threads on line 11, ```cores``` parameter.
+**Note:** In rt-test.sh, adjust the number of CPU cores to stress on line 2, ```--cpu``` parameter. Also the number of cores to run RT threads on line 11, ```cores``` parameter.
 
 Run test.
 ```sudo sh ./rt-test.sh```
@@ -310,12 +314,13 @@ Expected RT System Results:
 
 ![plot](https://user-images.githubusercontent.com/39070514/153476110-3db9f1d9-6a76-4565-a7a8-6b46b8519570.png)
 
-## CPU Isolation
+## CPU isolation
 
 ### Configure
 To help further meet our expected RT latency requirements we can isolate specific cores away from the kernel/os.  The UP XTreme used in NOMAD has 8 independent cores available.  Let's isolate the last 4 cores away from the linux scheduler.  Tasks will have to be manually pinned to these CPUs, which we control, via CPU affinity or C library calls.
 
 Set grub parameters to isolate CPUs.  
+
 **Note:** Indexing is 0-based.
 
 To reserve last 4 cores 4,5,6,7 do:
@@ -337,7 +342,7 @@ sudo reboot
 
 ### Verify
 
-Should show total number of CPU cores available.
+Should show the total number of CPU cores available.
 
 ```
 $ lscpu | grep '^CPU.s'
@@ -351,4 +356,4 @@ $ taskset -cp 1
 $ pid 1's current affinity list: 0-3
 ```
 
-If you have gotten to here you have successfully setup the Real-Time system on the UP board!
+If you have gotten here you have successfully set up the Real-Time system on the UP board!
