@@ -225,9 +225,81 @@ Set CPU governor to ```performance``` mode.
 
 ```sudo sh -c 'echo "GOVERNOR=performance" > /etc/default/cpufrequtils'```
 
-Reload system services to apply changes
+Reload system services to apply changes.
 
 ```sudo systemctl daemon-reload && sudo systemctl restart cpufrequtils```
+
+Set CPU DMA latency permissions.
+```sudo nano /etc/udev/rules.d/55-cpu_dma_latency.rules```
+
+Add the following to this file:
+```KERNEL=="cpu_dma_latency", NAME="cpu_dma_latency", MODE="0666"```
+
+Now by echoing ```0``` to ```/dev/cpu_dma_latency``` we can on demand adjust processor idle C states for minimal latency
+
+Reboot for udev rules to take affect.
+
+```sudo reboot```
+
+## Test and Verify Real-Time Latency
+
+### Setup rt-tests 
+Change to a preferred directory and checkout rt-tests sources
+
+```
+git clone git://git.kernel.org/pub/scm/utils/rt-tests/rt-tests.git
+```
+
+Compile and install RT test utils.
+
+```cd rt-tests```
+
+```git checkout stable/v1.0```
+
+```make all```
+
+```sudo make install```
+
+### Run tests
+
+**Note:** If the below commands give errors, make sure user/group realtime has been setup.  Alternatively, run with ```sudo```.
+
+Run the cyclic test to analyze max latency and jitter
+
+```cyclictest -a -t -n -p99```
+
+
+Expected Non RT System Results:
+
+```
+T: 0 ( 1946) P:99 I:1000 C: 21097 Min: 3 Act: 8 Avg: 7 Max: 7756
+T: 1 ( 1947) P:99 I:1500 C: 14064 Min: 3 Act: 8 Avg: 7 Max: 1697
+T: 2 ( 1948) P:99 I:2000 C: 10548 Min: 3 Act: 7 Avg: 6 Max: 1582
+T: 3 ( 1949) P:99 I:2500 C: 8439  Min: 3 Act: 9 Avg: 8 Max: 1556
+T: 4 ( 1950) P:99 I:3000 C: 7032  Min: 3 Act: 5 Avg: 6 Max: 3502
+T: 5 ( 1951) P:99 I:3500 C: 6027  Min: 3 Act: 6 Avg: 8 Max: 4108
+T: 6 ( 1952) P:99 I:4000 C: 5274  Min: 3 Act: 7 Avg: 8 Max: 6850
+T: 7 ( 1953) P:99 I:4500 C: 4688  Min: 3 Act: 6 Avg: 7 Max: 5412
+```
+
+Expected RT System Results:
+  
+```
+T: 0 ( 1946) P:99 I:1000 C: 21097 Min: 1 Act: 2 Avg: 2 Max: 45
+T: 1 ( 1947) P:99 I:1500 C: 14064 Min: 1 Act: 3 Avg: 2 Max: 45
+T: 2 ( 1948) P:99 I:2000 C: 10548 Min: 1 Act: 1 Avg: 2 Max: 43
+T: 3 ( 1949) P:99 I:2500 C: 8439  Min: 1 Act: 2 Avg: 2 Max: 33
+T: 4 ( 1950) P:99 I:3000 C: 7032  Min: 1 Act: 2 Avg: 2 Max: 36
+T: 5 ( 1951) P:99 I:3500 C: 6027  Min: 1 Act: 2 Avg: 2 Max: 50
+T: 6 ( 1952) P:99 I:4000 C: 5274  Min: 1 Act: 2 Avg: 2 Max: 46
+T: 7 ( 1953) P:99 I:4500 C: 4688  Min: 1 Act: 2 Avg: 2 Max: 41
+```
+  
+Ideally you will see Min/Average latency  **<2us** with a worst cast maximum latency  **<100us**(best results under 50us)
+
+
+
+
 
 
 
