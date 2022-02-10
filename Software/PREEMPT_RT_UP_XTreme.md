@@ -141,3 +141,6 @@ $ uname -a
 Linux nomad 5.4.65-rt38+ #1 SMP PREEMPT_RT Wed Feb 9 12:32:15 CST 2022 x86_64 x86_64 x86_64 GNU/Linux
 ```
 
+## Setup User Permissions
+
+Add a ```realtime``` user group
