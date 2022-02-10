@@ -244,21 +244,8 @@ Reboot for udev rules to take affect.
 ## Test and Verify Real-Time Latency
 
 ### Setup rt-tests 
-Change to a preferred directory and checkout rt-tests sources
 
-```
-git clone git://git.kernel.org/pub/scm/utils/rt-tests/rt-tests.git
-```
-
-Compile and install RT test utils.
-
-```cd rt-tests```
-
-```git checkout stable/v1.0```
-
-```make all```
-
-```sudo make install```
+```sudo apt install rt-tests```
 
 ### Run tests
 
@@ -267,7 +254,6 @@ Compile and install RT test utils.
 Run the cyclic test to analyze max latency and jitter
 
 ```cyclictest -a -t -n -p99```
-
 
 Expected Non RT System Results:
 
@@ -297,10 +283,72 @@ T: 7 ( 1953) P:99 I:4500 C: 4688  Min: 1 Act: 2 Avg: 2 Max: 41
   
 Ideally you will see Min/Average latency  **<2us** with a worst cast maximum latency  **<100us**(best results under 50us)
 
+### Check latency under stress
 
+The previous test performed for "optimal" latency.  The following test will run the same test but will also stress the CPU simultaneously to show more real world results under load.
 
+Change to a preferred directory and checkout stress tests sources
 
+```
+git clone https://github.com/QiayuanLiao/Ubuntu-RT-UP-Board.git
+```
 
+```cd ~/Ubuntu-RT-UP-Board/test```
 
+**Note:** In rt-test.sh, adjust number of CPU cores to stress on line 2, ```--cpu``` parameter. Also the number of cores to run RT threads on line 11, ```cores``` parameter.
 
+Run test.
+```sudo sh ./rt-test.sh```
 
+Show latency plot.
+
+```
+xdg-open plot.png
+```
+
+Expected RT System Results:
+
+![plot](https://user-images.githubusercontent.com/39070514/153476110-3db9f1d9-6a76-4565-a7a8-6b46b8519570.png)
+
+## CPU Isolation
+
+### Configure
+To help further meet our expected RT latency requirements we can isolate specific cores away from the kernel/os.  The UP XTreme used in NOMAD has 8 independent cores available.  Let's isolate the last 4 cores away from the linux scheduler.  Tasks will have to be manually pinned to these CPUs, which we control, via CPU affinity or C library calls.
+
+Set grub parameters to isolate CPUs.  
+**Note:** Indexing is 0-based.
+
+To reserve last 4 cores 4,5,6,7 do:
+
+```nano /etc/default/grub```
+
+Update the following line to:
+
+```GRUB_CMDLINE_LINUX_DEFAULT="quiet splash isolcpus=4,5,6,7"```
+
+Now the linux scheduler will only use the first 4 cores.
+
+Update grub and restart:
+
+```
+sudo update-grub
+sudo reboot
+```
+
+### Verify
+
+Should show total number of CPU cores available.
+
+```
+$ lscpu | grep '^CPU.s'
+$ CPU(s): 8
+```
+
+Show CPU affinity for the first kernel task.  If setup was successful the affinity list should only include the non-isolated cores.  In this case 0,1,2, and 3.
+
+```
+$ taskset -cp 1
+$ pid 1's current affinity list: 0-3
+```
+
+If you have gotten to here you have successfully setup the Real-Time system on the UP board!
