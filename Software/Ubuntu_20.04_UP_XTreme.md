@@ -57,6 +57,18 @@ Install updates:
 
 ```sudo apt dist-upgrade -y```
 
+Fix HDMI Audio Issue
+
+```
+sudo nano /etc/default/grub
+```
+
+Change this line and appened ```snd_hda_intel.dmic_detect=0```
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash snd_hda_intel.dmic_detect=0"
+```
+
 Update grub configuration:
 
 ```sudo update-grub```
