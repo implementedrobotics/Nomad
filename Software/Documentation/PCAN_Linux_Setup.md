@@ -79,8 +79,14 @@ sudo modprobe pcan
 
 ## Install PCAN Basic API
 
+Download latest [PCAN Basic API](https://www.peak-system.com/quick/BasicLinux)
+
+Extract files to ```~/drivers/peak```
+
 ```
-cd ~/drivers/peak
-wget https://www.peak-system.com/quick/BasicLinux
+cd ~/drivers/peak/PCAN-Basic_Linux-4.5.4/libpcanbasic/pcanbasic
+make clean
+make
+sudo make install
 ```
 
