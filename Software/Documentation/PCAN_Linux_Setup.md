@@ -86,7 +86,70 @@ Extract files to ```~/drivers/peak```
 ```
 cd ~/drivers/peak/PCAN-Basic_Linux-4.5.4/libpcanbasic/pcanbasic
 make clean
-make
+make -j4
 sudo make install
+```
+
+## Verify successful driver installation
+
+```
+for f in /sys/class/pcan/pcanpcifd1/*; do [ -f $f ] && echo -n "`basename $f` = " && cat $f; done
+```
+
+```
+./lspcan -T -t -i
+```
+
+## Optimize driver latency
+
+Edit pcan.conf configuration file
+
+```
+sudo nano /etc/modprobe.d/pcan.conf
+```
+
+Add the following three ```options``` parameters
+
+```
+options pcan fdirqtl=1
+options pcan fdirqcl=1
+options pcan fdusemsi=1
+```
+
+The resulting file should now be:
+
+```
+# pcan - automatic made entry, begin --------
+# if required add options and remove comment
+# options pcan type=isa,sp
+options pcan fdirqtl=1
+options pcan fdirqcl=1
+options pcan fdusemsi=1
+install pcan modprobe --ignore-install pcan
+# pcan - automatic made entry, end ----------
+```
+
+Reload pcan driver
+
+```
+sudo rmmod pcan
+sudo modprobe pcan
+```
+
+
+
+## TODO: CAN Bus Timings for Nomad Server 1/5mbps
+## TODO: Testing
+
+
+## Uninstall PCAN-M.2 Driver for Ubuntu 20.04.04
+
+In the event of needing to purge the driver for either reinstall, or switch back to netdev/SocketCAN driver:
+
+```
+cd ~/drivers/peak/peak-linux-driver-8.14.0/ 
+sudo make uninstall
+rmmod pcan
+sudo reboot
 ```
 
