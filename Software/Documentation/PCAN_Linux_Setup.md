@@ -97,8 +97,13 @@ for f in /sys/class/pcan/pcanpcifd1/*; do [ -f $f ] && echo -n "`basename $f` = 
 ```
 
 ```
-./lspcan -T -t -i
+$ lspcan -T -t -i
 ```
+
+Sample output
+
+INSERT IMAGE HERE
+
 
 ## Optimize driver latency
 
@@ -142,7 +147,7 @@ sudo modprobe pcan
 ## TODO: Testing
 
 
-## Uninstall PCAN-M.2 Driver for Ubuntu 20.04.04
+## Uninstall PCAN-M.2 Driver for Ubuntu 20.04.03
 
 In the event of needing to purge the driver for either reinstall, or switch back to netdev/SocketCAN driver:
 
