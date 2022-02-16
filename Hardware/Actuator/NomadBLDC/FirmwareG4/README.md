@@ -77,5 +77,20 @@ cd $HOME/Nomad/Hardware/Actuator/NomadBLDC/Firmware/BUILD
 st-flash write NomadBLDC.bin 0x8000000
 ```
 
+## NOMAD BLDC GUI Setup
+
+Install dependencies
+
+```
+pip3 install pyqtgraph pyserial
+```
+
+Now run tool
+
+```
+cd Nomad/Hardware/Actuator/NomadBLDC/Tools
+python3 NomadBLDCGUI.py
+```
+
 ## VS Code Setup:
 TODO
