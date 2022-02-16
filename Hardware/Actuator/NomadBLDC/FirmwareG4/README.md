@@ -17,6 +17,7 @@ sudo apt-get install gcc-arm-none-eabi
 sudo apt-get install git build-essential libusb-1.0.0-dev cmake
 cd $HOME
 wget https://github.com/stlink-org/stlink/releases/download/v1.7.0/stlink_1.7.0-1_amd64.deb
+dpkg -i stlink_1.7.0-1_amd64.deb
 ```
 
 To use the STLINK flash utility without root you must add a new group for ```stlink```:
@@ -25,6 +26,7 @@ To use the STLINK flash utility without root you must add a new group for ```stl
 sudo addgroup stlink
 sudo adduser <USERNAME> stlink
 ```
+
 You will need to logout or reboot for the group modification to take effect.
 
 Now verify that your programmer is found:
