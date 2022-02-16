@@ -93,5 +93,6 @@
         "bitset": "cpp",
         "variant": "cpp",
         "future": "cpp"
-    }
+    },
+    "stm32-for-vscode.openOCDPath": false
 }

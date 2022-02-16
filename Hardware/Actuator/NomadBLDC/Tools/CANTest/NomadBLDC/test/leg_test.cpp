@@ -38,7 +38,7 @@ Eigen::Vector2d foot_pos_des_;
 Eigen::Vector2d foot_vel_des_;
 
 Eigen::Vector2d k_P(2500, 2500);
-Eigen::Vector2d k_D(20, 20);
+Eigen::Vector2d k_D(5, 5);
 
 
 typedef enum
@@ -325,7 +325,7 @@ void LegTest::Run()
     switch (current_state_)
     {
     case FSMState_e::Homing:
-        //std::cout << " STATE HOMING " << std::endl;
+       // std::cout << " STATE HOMING " << std::endl;
             servo1->ClosedLoopTorqueCommand(20.0f, 0.75f, home_target, 0.0f, 0.0f);
             servo2->ClosedLoopTorqueCommand(20.0f, 0.75f, 0.0f, 0.0f, 0.0f);
 
@@ -336,9 +336,9 @@ void LegTest::Run()
 
                 if(debounce > 1000)
                 {
-                   // std::cout << "NEXT STATE!" << std::endl;
+                //std::cout << "NEXT STATE!" << std::endl;
                    time_ = 0.0f;
-                   com_traj_.Generate(foot_pos_[1], -0.42f, 0.0, 0.0, 0.0, 1.0f);
+                   com_traj_.Generate(foot_pos_[1], -0.42f, 0.0, 0.0, 0.0, 0.8f);
                    current_state_ = FSMState_e::Stand;
                 }
             }
@@ -370,11 +370,11 @@ void LegTest::Run()
 
         if (time_ > 1.0f)
         {
-            time_ = 0.0f;
-            com_traj_.Generate(foot_pos_[1], -0.27f, 0.0, 0.0, 0.0, 0.3f);
-            current_state_ = FSMState_e::Crouch;
+            //time_ = 0.0f;
+            //com_traj_.Generate(foot_pos_[1], -0.27f, 0.0, 0.0, 0.0, 1.0f);
+            //current_state_ = FSMState_e::Crouch;
 
-            std::cout << "GO TO CROUCH" << std::endl;
+           // std::cout << "GO TO CROUCH" << std::endl;
         }
 
         break;
@@ -465,9 +465,9 @@ void LegTest::Setup()
     // TODO: We need some sort of exceptions here if setup fails
     CANDevice::Config_t config;
     config.bitrate = 1e6; //1mbps
-    config.d_bitrate = 5e6; //2mbps
-    config.sample_point = 0.80f; //87.5% 
-    config.d_sample_point = 0.625f; //60%
+    config.d_bitrate = 5e6; //5mbps
+    config.sample_point = 0.80f; //80.0% 
+    config.d_sample_point = 0.625f; //62.5%
     config.clock_freq = 80e6; // 80mhz // Read from driver?  
     config.mode_fd = 1; // FD Mode
 
@@ -506,7 +506,7 @@ void LegTest::Setup()
     std::string transport("tcp://*:9872");
     publisher->bind(transport);
 
-    std::cout << "Please Zero Ac`tuator.  Enter to Continue." << std::endl;
+    std::cout << "Please Zero Actuator.  Enter to Continue." << std::endl;
     getchar();
 
     // Load DART
@@ -521,6 +521,7 @@ void LegTest::Setup()
     usleep(8000000);
     servo1->SetControlMode(PD_MODE);
     servo2->SetControlMode(PD_MODE);
+    usleep(30000);
 
     servo1->ClosedLoopTorqueCommand(0.0, 0.0f, 0.0f, 0.0f, 0.0f);
     servo2->ClosedLoopTorqueCommand(0.0, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -558,8 +559,8 @@ void LegTest::Setup()
     foot_vel_ = (J_ * robot_->getVelocities()).tail(2);
     foot_pos_des_ = foot_pos_;
 
-    std::cout << "Press Key to Start Control." << std::endl;
-    usleep(5000000);
+    //std::cout << "Press Key to Start Control." << std::endl;
+    //usleep(5000000);
     current_state_ = FSMState_e::Homing;
     std::cout << "Foot Pos Here: " << foot_pos_[0] << ", " << foot_pos_[1] << std::endl;
 }
@@ -584,7 +585,7 @@ int main(int argc, char *argv[])
         std::cout << "Real Time Memory Enabled!" << std::endl;
     }
 
-    LegTest pj_Node("Test", 1/1000.0f); //500hz
+    LegTest pj_Node("Test", 1/1000.0f); //1000hz
     pj_Node.SetStackSize(1024 * 1024);
     pj_Node.SetTaskPriority(Realtime::Priority::HIGHEST);
     pj_Node.SetCoreAffinity(2);

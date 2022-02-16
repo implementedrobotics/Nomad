@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = nomad+bldc_fw_g4
+TARGET = nomad_bldc_fw_g4
 
 
 ######################################
@@ -247,13 +247,13 @@ clean:
 # flash
 #######################################
 flash:
-        st-flash --reset write ./build/nomad_bldc_fw_g4.bin 0x08000000
+	st-flash --reset write ./build/nomad_bldc_fw_g4.bin 0x08000000
 	
 #######################################
 # erase
 #######################################
 erase:
-        st-flash erase  
+	st-flash erase  
 #######################################
 # dependencies
 #######################################
