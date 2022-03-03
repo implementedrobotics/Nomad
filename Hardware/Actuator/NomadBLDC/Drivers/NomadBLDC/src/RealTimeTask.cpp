@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <CAN/RealTimeTask.hpp>
+#include <NomadBLDC/RealTimeTask.hpp>
 
 #include <limits.h>
 #include <pthread.h>

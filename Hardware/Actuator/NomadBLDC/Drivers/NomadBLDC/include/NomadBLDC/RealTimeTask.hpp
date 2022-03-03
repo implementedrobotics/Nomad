@@ -38,7 +38,7 @@
 // Third Party Includes
 
 // Project Includes
-#include <CAN/Statistics.hpp>
+#include <NomadBLDC/Statistics.hpp>
 
 namespace Realtime
 {

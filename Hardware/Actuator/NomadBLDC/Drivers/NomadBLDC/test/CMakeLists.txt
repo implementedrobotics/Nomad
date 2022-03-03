@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/CAN/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/NomadBLDC/include" "${PROJECT_SOURCE_DIR}/CAN/include")
 
 set(required_components utils-urdf)
 set(required_libraries dart dart-utils-urdf)

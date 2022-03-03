@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 set(NOMADBLDC_SOURCES ${PROJECT_SOURCE_DIR}/NomadBLDC/src/NomadBLDC.cpp 
+${PROJECT_SOURCE_DIR}/NomadBLDC/src/RealTimeTask.cpp 
 )
 
 set(NOMADBLDC_LIBS CAN)

@@ -1,15 +1,15 @@
 
 #include <CAN/PCANDevice.h>
-#include <CAN/Registers.h>
-#include <CAN/RealTimeTask.hpp>
+#include <NomadBLDC/Registers.h>
+#include <NomadBLDC/RealTimeTask.hpp>
 #include <string.h>
 #include <unistd.h>
 #include <iostream>
 
 #include <NomadBLDC/NomadBLDC.h>
 
-//#define DEVICE "/dev/pcanusbfd32"
-#define DEVICE "/dev/pcanpcifd1"
+#define DEVICE "/dev/pcanusbfd32"
+//#define DEVICE "/dev/pcanpcifd1"
 PCANDevice can;
 
 int main(int argc, char *argv[])
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     usleep(10000);
 
-    servo.ClosedLoopTorqueCommand(1.0f,0.0f, 0.0f,0.0f,0.0f);
+    servo.ClosedLoopTorqueCommand(5.0f,0.0f, 0.0f,0.0f,0.0f);
 
 getchar();
 

@@ -8,7 +8,7 @@
 
 // Project Includes
 #include <NomadBLDC/NomadBLDC.h>
-#include <CAN/Registers.h>
+#include <NomadBLDC/Registers.h>
 
 
 auto start_time = std::chrono::high_resolution_clock::now();

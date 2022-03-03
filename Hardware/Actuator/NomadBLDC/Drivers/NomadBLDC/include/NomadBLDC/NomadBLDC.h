@@ -32,7 +32,7 @@
 #include <algorithm>
 
 // Project Includes
-#include <CAN/Registers.h>
+#include <NomadBLDC/Registers.h>
 #include <CAN/CANDevice.h>
 
 

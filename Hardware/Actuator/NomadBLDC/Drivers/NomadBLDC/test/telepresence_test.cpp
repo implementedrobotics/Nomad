@@ -1,6 +1,6 @@
 #include <CAN/PCANDevice.h>
-#include <CAN/Registers.h>
-#include <CAN/RealTimeTask.hpp>
+#include <NomadBLDC/Registers.h>
+#include <NomadBLDC/RealTimeTask.hpp>
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
