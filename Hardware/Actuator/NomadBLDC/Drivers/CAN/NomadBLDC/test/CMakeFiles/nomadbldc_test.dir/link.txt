@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/nomadbldc_test.dir/nomadbldc_test.cpp.o  -o nomadbldc_test  ../../CAN/libCAN.a ../libNOMADBLDC.a -lpcanfd -lzmq ../../CAN/libCAN.a -lpthread -lrt 

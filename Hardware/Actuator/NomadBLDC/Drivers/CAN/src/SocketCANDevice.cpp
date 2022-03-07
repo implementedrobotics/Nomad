@@ -129,7 +129,7 @@ bool SocketCANDevice::Send(CAN_msg_t &msg)
 
     frame.can_id = msg.id;
     frame.len = msg.length;// DLC_LUT[msg.length] << 16;
-    memcpy(frame.data, msg.data, msg.length);
+    memcpy(frame.data, msg.data.data(), msg.length);
 
     if (write(socket_, &frame, sizeof(struct canfd_frame)) != sizeof(struct canfd_frame))
     {
@@ -158,7 +158,7 @@ bool SocketCANDevice::Receive(CAN_msg_t &msg)
     //std::cout << "WHO TO: " << pcan_msg.id << std::endl;
     msg.id = frame.can_id;
     msg.length = frame.len;
-    memcpy(msg.data, frame.data, frame.len);
+    memcpy(msg.data.data(), frame.data, frame.len);
     return true;
 }
 

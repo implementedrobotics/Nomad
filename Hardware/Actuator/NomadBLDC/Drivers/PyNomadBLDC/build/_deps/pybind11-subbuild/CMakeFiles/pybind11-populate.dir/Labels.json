@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/CMakeFiles/pybind11-populate"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/CMakeFiles/pybind11-populate.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/CMakeFiles/pybind11-populate-complete.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-install.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-download.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-update.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-patch.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-configure.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-build.rule"
+		},
+		{
+			"file" : "/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/PyNomadBLDC/build/_deps/pybind11-subbuild/pybind11-populate-prefix/src/pybind11-populate-stamp/pybind11-populate-test.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"pybind11-populate"
+		],
+		"name" : "pybind11-populate"
+	}
+}

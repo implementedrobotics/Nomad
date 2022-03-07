@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/nomadbldc_test.dir/nomadbldc_test.cpp.o  -o nomadbldc_test  -Wl,-rpath,/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/build/CAN ../libNOMADBLDC.a -lpcanfd -lzmq ../../CAN/libCAN.so -lpthread -lrt -lpcanfd 

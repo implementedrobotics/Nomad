@@ -1,0 +1,2 @@
+/usr/bin/ar qc libNOMADBLDC.a  CMakeFiles/NOMADBLDC.dir/src/NomadBLDC.cpp.o CMakeFiles/NOMADBLDC.dir/src/RealTimeTask.cpp.o
+/usr/bin/ranlib libNOMADBLDC.a

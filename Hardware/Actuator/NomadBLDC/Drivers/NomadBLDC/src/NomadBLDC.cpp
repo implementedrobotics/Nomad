@@ -244,7 +244,7 @@ void NomadBLDC::ReceiveMessage(CANDevice::CAN_msg_t &msg)
 {
     // TODO: This should be better linked with some sort of packet id?  I think we are safe for now
     // Check Sender ID is linked to this servo object
-    register_reply_t *reply = (register_reply_t *)msg.data;
+    register_reply_t *reply = (register_reply_t *)msg.data.data();
 
     //std::cout << "Receiving Message!" << std::endl;
     if(reply->header.sender_id != servo_id_)

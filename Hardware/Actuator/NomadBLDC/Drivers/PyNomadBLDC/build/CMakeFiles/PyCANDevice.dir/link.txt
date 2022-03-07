@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -flto -shared  -o PyCANDevice.cpython-38-x86_64-linux-gnu.so CMakeFiles/PyCANDevice.dir/src/PyCANDevice.cpp.o 

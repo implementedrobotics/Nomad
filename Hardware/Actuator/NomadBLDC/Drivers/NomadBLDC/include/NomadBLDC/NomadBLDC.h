@@ -241,7 +241,7 @@ class Requester {
                 CANDevice::CAN_msg_t msg;
                 msg.id = servo_id_;
                 msg.length = sizeof(request_header_t) + reg.size;
-                memcpy(msg.data, &reg_cmd, msg.length);
+                memcpy(msg.data.data(), &reg_cmd, msg.length);
 
                 // Save it
                 request_msgs.push_back(msg);
@@ -296,7 +296,7 @@ class Requester {
                 CANDevice::CAN_msg_t msg;
                 msg.id = servo_id_;
                 msg.length = sizeof(request_header_t) + reg.size;
-                memcpy(msg.data, &reg_cmd, msg.length);
+                memcpy(msg.data.data(), &reg_cmd, msg.length);
 
                 // Save it
                 request_msgs.push_back(msg);

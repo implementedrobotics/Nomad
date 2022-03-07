@@ -5,12 +5,12 @@ ${PROJECT_SOURCE_DIR}/CAN/src/PCANDevice.cpp
 ${PROJECT_SOURCE_DIR}/CAN/src/SocketCANDevice.cpp 
 )
 
-set(CAN_LIBS pthread rt)
+set(CAN_LIBS pthread rt pcanfd)
 
 
 include_directories("${PROJECT_SOURCE_DIR}/CAN/include")
 
-add_library(CAN STATIC ${CAN_SOURCES})
+add_library(CAN SHARED ${CAN_SOURCES})
 target_link_libraries(CAN ${CAN_LIBS})
 
 # TODO: Make Options "Build Test/Examples etc"

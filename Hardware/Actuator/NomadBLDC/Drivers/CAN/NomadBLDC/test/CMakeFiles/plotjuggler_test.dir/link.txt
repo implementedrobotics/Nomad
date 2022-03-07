@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/plotjuggler_test.dir/plotjuggler_test.cpp.o  -o plotjuggler_test  ../../CAN/libCAN.a ../libNOMADBLDC.a -lpcanfd -lzmq ../../CAN/libCAN.a -lpthread -lrt 

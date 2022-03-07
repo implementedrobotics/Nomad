@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/telepresence_test.dir/telepresence_test.cpp.o  -o telepresence_test  -Wl,-rpath,/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/build/CAN ../libNOMADBLDC.a -lpcanfd -lzmq ../../CAN/libCAN.so -lpthread -lrt -lpcanfd 

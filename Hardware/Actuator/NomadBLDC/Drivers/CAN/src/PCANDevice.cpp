@@ -159,7 +159,7 @@ bool PCANDevice::Send(CAN_msg_t &msg)
     pcan_msg.flags = PCANFD_MSG_STD | PCANFD_MSG_BRS;
 
     // Copy Message Data to PCANFD
-    memcpy(pcan_msg.data, msg.data, msg.length);
+    memcpy(pcan_msg.data, msg.data.data(), msg.length);
 
     // Send Message
     int tx_error = pcanfd_send_msg(fd_, &pcan_msg);
@@ -198,7 +198,7 @@ bool PCANDevice::Receive(CAN_msg_t &msg)
 
     msg.id = pcan_msg.id;
     msg.length = pcan_msg.data_len;
-    memcpy(msg.data, pcan_msg.data, pcan_msg.data_len);
+    memcpy(msg.data.data(), pcan_msg.data, pcan_msg.data_len);
     return true;
 }
 

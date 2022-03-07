@@ -109,7 +109,7 @@ public:
     {
         uint32_t id = 0x7FF; // 11-bit max is 0x7FF.  Default to lowest prio message id
         uint16_t length = kBufferSizeRX; // Max FD CAN Length
-        uint8_t data[kBufferSizeRX];    // Buffer for message data
+        std::array<uint8_t, kBufferSizeRX> data;  // Buffer for message data
     };
 
     // TODO: Support Extended IDs

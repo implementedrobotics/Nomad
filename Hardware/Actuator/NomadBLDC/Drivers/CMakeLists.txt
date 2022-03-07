@@ -10,8 +10,11 @@ add_subdirectory(CAN)
 # NomadBLDC Library
 add_subdirectory(NomadBLDC)
 
+# PyNomadBLDC Library
+add_subdirectory(PyNomadBLDC)
 # Third Party Library
 #add_subdirectory(ThirdParty)
+
 
 
 

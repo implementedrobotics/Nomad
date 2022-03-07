@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -flto -shared -Wl,-soname,PyCANDevice.cpython-38-x86_64-linux-gnu.so -o PyCANDevice.cpython-38-x86_64-linux-gnu.so CMakeFiles/PyCANDevice.dir/src/PyCANDevice.cpp.o  ../CAN/libCAN.a -lpthread -lrt 
