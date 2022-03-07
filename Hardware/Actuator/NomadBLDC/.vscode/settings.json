@@ -1,4 +1,21 @@
 {
     "python.pythonPath": "/usr/bin/python3.7",
-    "stm32-for-vscode.openOCDPath": false
+    "stm32-for-vscode.openOCDPath": false,
+    "files.associations": {
+        "types": "cpp",
+        "array": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "valarray": "cpp",
+        "bufferobject": "cpp",
+        "image": "cpp",
+        "mixinvector": "cpp",
+        "texture": "cpp",
+        "vertexarraystate": "cpp",
+        "buffered_value": "cpp",
+        "fast_back_stack": "cpp",
+        "string": "cpp"
+    }
 }

@@ -16,11 +16,12 @@ endif()
 
 # Includes
 include_directories("${PROJECT_SOURCE_DIR}/CAN/include")
+include_directories("${PROJECT_SOURCE_DIR}/NomadBLDC/include")
 
 # Python Bindings
-pybind11_add_module(module_name src/PyCANDevice.cpp)
+pybind11_add_module(nomad src/PyCANDevice.cpp)
 
 # Library Linking
-target_link_libraries(module_name PRIVATE CAN pcanfd)
+target_link_libraries(nomad PRIVATE CAN NOMADBLDC pcanfd)
 
 

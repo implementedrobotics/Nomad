@@ -13,7 +13,7 @@ include_directories("${PROJECT_SOURCE_DIR}/ThirdParty/nlohmann/include") # JSON
 
 
 
-add_library(NOMADBLDC STATIC ${NOMADBLDC_SOURCES})
+add_library(NOMADBLDC SHARED ${NOMADBLDC_SOURCES})
 target_link_libraries(NOMADBLDC ${NOMADBLDC_LIBS})
 
 # TODO: Make Options "Build Test/Examples etc"

@@ -56,9 +56,9 @@ void CANDevice::ReceiveTask()
     }
 }
 
-CANDevice::CANDevice()
-{
-}
+// CANDevice::CANDevice()
+// {
+// }
 
 CANDevice::~CANDevice()
 {

@@ -2,8 +2,6 @@
 #include <unistd.h>
 
 // C++ System Files
-#include <cstring>
-#include <iostream>
 #include <future>
 
 // Project Includes
@@ -74,6 +72,17 @@ bool NomadBLDC::Connect()
 
     connected_ = true; // We have a valid device connection
     return true;
+}
+
+bool NomadBLDC::Disconnect()
+{
+    connected_ = false; // We have a valid device connection
+
+    if(transport_ == nullptr)
+        return false;
+
+    return transport_->Close();
+
 }
 
 bool NomadBLDC::SetMaxTorque(float tau_max)

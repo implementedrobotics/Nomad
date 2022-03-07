@@ -30,9 +30,12 @@
 // C++ System Files
 #include <future>
 #include <algorithm>
+#include <cstring>
+#include <iostream>
 
 // Project Includes
 #include <NomadBLDC/Registers.h>
+
 #include <CAN/CANDevice.h>
 
 
@@ -392,8 +395,8 @@ public:
     NomadBLDC(int master_id, int servo_id, CANDevice *transport = nullptr);
     bool SetTransport(CANDevice *dev);
     bool Connect();
-    void Disconnect();
-    bool Reset();
+    bool Disconnect();
+    bool Reset(){return false;}
     bool ClosedLoopTorqueCommand(float k_p, float k_d, float pos_ref, float vel_ref, float torque_ff);
     bool ZeroOutput();
     bool SetMaxTorque(float tau);
@@ -422,7 +425,7 @@ public:
     void UpdateRegisters(RequestReply &reply);
 
     // Force sync of all async request(when we implement it)
-    bool Sync();
+    bool Sync() {return false;};
 
     void PrintState();
 

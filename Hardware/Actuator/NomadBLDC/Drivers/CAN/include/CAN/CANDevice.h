@@ -113,7 +113,7 @@ public:
     };
 
     // TODO: Support Extended IDs
-    CANDevice();
+    //CANDevice();
     ~CANDevice();
     
     // Open CAN Port
