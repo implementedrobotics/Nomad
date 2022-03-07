@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/plotjuggler_test.dir/plotjuggler_test.cpp.o  -o plotjuggler_test  -Wl,-rpath,/home/nomad/dev/Nomad/Hardware/Actuator/NomadBLDC/Drivers/build/CAN ../libNOMADBLDC.a -lpcanfd -lzmq ../../CAN/libCAN.so -lpthread -lrt -lpcanfd 

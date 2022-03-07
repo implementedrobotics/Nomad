@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/telepresence_test.dir/telepresence_test.cpp.o  -o telepresence_test  ../../CAN/libCAN.a ../libNOMADBLDC.a -lpcanfd -lzmq ../../CAN/libCAN.a -lpthread -lrt 

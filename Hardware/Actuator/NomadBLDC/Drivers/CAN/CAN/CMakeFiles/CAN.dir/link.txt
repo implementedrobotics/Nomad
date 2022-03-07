@@ -1,2 +1,0 @@
-/usr/bin/ar qc libCAN.a  CMakeFiles/CAN.dir/src/CANDevice.cpp.o CMakeFiles/CAN.dir/src/PCANDevice.cpp.o CMakeFiles/CAN.dir/src/SocketCANDevice.cpp.o
-/usr/bin/ranlib libCAN.a
