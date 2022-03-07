@@ -13,7 +13,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(module_name, m)
+PYBIND11_MODULE(nomad, m)
 {
 
     m.doc() = "Python Wrapper for Nomad CAN Interfaces";

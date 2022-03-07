@@ -19,7 +19,7 @@ include_directories("${PROJECT_SOURCE_DIR}/CAN/include")
 include_directories("${PROJECT_SOURCE_DIR}/NomadBLDC/include")
 
 # Python Bindings
-pybind11_add_module(nomad src/PyCANDevice.cpp)
+pybind11_add_module(nomad src/PyNomad.cpp)
 
 # Library Linking
 target_link_libraries(nomad PRIVATE CAN NOMADBLDC pcanfd)
