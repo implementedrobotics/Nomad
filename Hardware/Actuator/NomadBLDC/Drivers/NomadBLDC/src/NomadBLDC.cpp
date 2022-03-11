@@ -206,16 +206,14 @@ bool NomadBLDC::ExecuteRegisters(std::vector<Register> param_registers, std::vec
     auto& request = requester_->CreateExecuteRequest(param_registers, return_registers, RequestType_e::Execute, timeout);
 
     // TODO: Sync/Reply?
-     //bool status = request.Wait(5000);
+    //bool status = request.Wait(5000);
     return true;
 }
 
 void NomadBLDC::UpdateRegisters(RequestReply &request)
 {
-  //  std::cout << "UPDATE REGISTERS" << std::endl;
     std::vector<register_reply_t> replies;
     bool status = request.Get(replies);
-
 
     std::lock_guard<std::mutex> lock(update_lock); // Lock for updates.
     for(auto& reply : replies)

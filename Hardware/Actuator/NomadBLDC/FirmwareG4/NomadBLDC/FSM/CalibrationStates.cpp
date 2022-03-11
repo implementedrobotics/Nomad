@@ -280,12 +280,12 @@ void MeasurePhaseOrderState::Run_(float dt)
             // Compute Pole Pairs
             float total_theta_mech = std::abs(theta_end_ - theta_start_);
             uint16_t pole_pairs = static_cast<uint16_t>(scan_range/total_theta_mech);
-            // Pole pairs should be evenly divisible by 3(3 phases) // ERROR THIS IS INCORRECT!
-            // if(pole_pairs % 3 != 0)
-            // {
-            //     // If not.  We have some error but should be close enough to tick +/- to find it
-            //     pole_pairs = (pole_pairs+1) % 3 == 0 ? pole_pairs + 1 : pole_pairs - 1;
-            // }
+            // Pole pairs should be even
+            if(pole_pairs % 2 != 0)
+            {
+                // If not.  We have some error but should be close enough to tick +/- to find it
+                pole_pairs = (pole_pairs+1) % 2 == 0 ? pole_pairs + 1 : pole_pairs - 1;
+            }
 
             // Update Config
             motor->config_.num_pole_pairs = pole_pairs;
@@ -380,7 +380,7 @@ void MeasureEncoderOffsetState::Run_(float dt)
             // Reset Sample Index
             sample_idx = 0; 
 
-            // Sample new rotor positipm
+            // Sample new rotor position
             motor_->Update(); 
 
             // Reset

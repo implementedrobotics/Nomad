@@ -104,7 +104,7 @@ public:
 
     // TODO: Support Extended IDs
     // Constructors ( Default 250kbps without Bit rate switching)
-    FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id = 0x123, uint32_t bitrate = 250000, uint32_t dbitrate = 250000);
+    FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, uint32_t node_id = 0x15, uint32_t bitrate = 250000, uint32_t dbitrate = 250000);
     FDCANDevice(FDCAN_GlobalTypeDef *FDCAN, Config_t config);
 
     // Init CAN

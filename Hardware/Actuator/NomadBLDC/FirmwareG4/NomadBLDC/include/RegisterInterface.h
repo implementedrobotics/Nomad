@@ -133,24 +133,25 @@ typedef enum // Controller State Register
     ControllerStateRegister2 = 0x40,
     // Controller State Register 2 Offsets
     VoltageControlModeRegister = 0x41,
+    ModulationControlModeRegister = 0x41,
     // Voltage Control Register Offsets
     V_Setpoint_D = 0x42, // Voltage Reference (D Axis)
     V_Setpoint_Q = 0x43, // Voltage Reference (Q Axis)
+    ThetaRef = 0x44,        // Rotor Angle Reference (Optional used primarily for calibration/open loop mode)
     // Current Control Register Offsets
-    CurrenteControlModeRegister = 0x44,
-    I_Setpoint_D = 0x45, // Current Reference (D Axis)
-    I_Setpoint_Q = 0x46, // Current Reference (Q Axis)
+    CurrentControlModeRegister = 0x45,
+    I_Setpoint_D = 0x46, // Current Reference (D Axis)
+    I_Setpoint_Q = 0x47, // Current Reference (Q Axis)
     // Torque Control Register Offsets
-    TorqueControlModeRegister = 0x47,
-    PositionSetpoint = 0x48, // Position Setpoint Reference
-    K_P = 0x49,              // Position Gain N*m/rad
-    VelocitySetpoint = 0x4A, // Velocity Setpoint Reference
-    K_D = 0x4B,              // Velocity Gain N*m/rad/s
-    Torque_FF = 0x4C,        // Feed Forward Torque Value N*m
-
-    VoltageBus = 0x4D,
-    CurrentBus = 0x4E,
-    FETTemp = 0x4F,
+    TorqueControlModeRegister = 0x48,
+    PositionSetpoint = 0x49, // Position Setpoint Reference
+    K_P = 0x4A,              // Position Gain N*m/rad
+    VelocitySetpoint = 0x4B, // Velocity Setpoint Reference
+    K_D = 0x4C,              // Velocity Gain N*m/rad/s
+    Torque_FF = 0x4D,        // Feed Forward Torque Value N*m
+    VoltageBus = 0x4E,
+    CurrentBus = 0x4F,
+    FETTemp = 0x50,
     // End Controller State Register 2
 } ControllerStateRegisters_e;
 
@@ -158,39 +159,38 @@ typedef enum // Controller State Register
 /* Motor Registers */
 typedef enum // Motor Config Register
 {
-    MotorConfigRegister1 = 0x50,
+    MotorConfigRegister1 = 0x51,
     // Motor Config Register 1 Offsets
-    PolePairs = 0x51,        // Pole Pairs of Motor (PAIRS)
-    K_v = 0x52,              // Motor KV Rating (RPM/V)
-    K_t = 0x53,              // Torque Constant (N*m/A)
-    K_t_out = 0x54,          // Torque Constant @ Output (N*m/A)
-    FluxLinkage = 0x55,      // Rotor Flux Linkage (Webers)
-    PhaseResistance = 0x56,  // Phase Resistance (Ohms)
-    PhaseInductanceD = 0x57, // D Axis Phase Inductance (Henries)
-    PhaseInductanceQ = 0x58, // Q Axis Phase Inductance (Henries)
-    GearRatio = 0x59,
-    PhaseOrder = 0x5A,
+    PolePairs = 0x52,        // Pole Pairs of Motor (PAIRS)
+    K_v = 0x53,              // Motor KV Rating (RPM/V)
+    K_t = 0x54,              // Torque Constant (N*m/A)
+    K_t_out = 0x55,          // Torque Constant @ Output (N*m/A)
+    FluxLinkage = 0x56,      // Rotor Flux Linkage (Webers)
+    PhaseResistance = 0x57,  // Phase Resistance (Ohms)
+    PhaseInductanceD = 0x58, // D Axis Phase Inductance (Henries)
+    PhaseInductanceQ = 0x59, // Q Axis Phase Inductance (Henries)
+    GearRatio = 0x5A,
+    PhaseOrder = 0x5B,
     // End Motor Config Register 1
 
-    MotorThermalConfigRegister = 0x5B, // Thermal Config Register
+    MotorThermalConfigRegister = 0x5C, // Thermal Config Register
     // Motor Thermal Config Register Offsets
-    ContinuousCurrentLimit = 0x5C, // Thermally calibrated Allowable Continuous Current (A)
-    ContinuousCurrentTau = 0x5D,   // Time Constant for Continuous Current (Seconds)
-    //Reserved = 0x5E,  // Observer Temp
-    //Reserved = 0x5F,  // Observer Resistance
-    //Reserved = 0x60,  // Thermal Capacitance
-    //Reserved = 0x61,  // R Theta
-    //Reserved = 0x62,
+    ContinuousCurrentLimit = 0x5D, // Thermally calibrated Allowable Continuous Current (A)
+    ContinuousCurrentTau = 0x5E,   // Time Constant for Continuous Current (Seconds)
+    //Reserved = 0x5F,  // Observer Temp
+    //Reserved = 0x60,  // Observer Resistance
+    //Reserved = 0x61,  // Thermal Capacitance
+    //Reserved = 0x62,  // R Theta
     //Reserved = 0x63,
+    //Reserved = 0x64,
     // End Motor Thermal Config Register
 
-    MotorCalibrationConfigRegister = 0x64, // Motor Calibration Config Register
+    MotorCalibrationConfigRegister = 0x65, // Motor Calibration Config Register
     // Motor Calibration Config Register Offsets
-    CalibrationCurrent = 0x65,
-    CalibrationVoltage = 0x66,
-    Calibrated = 0x67,
-    ZeroOutputOffset = 0x68,
-    //Reserved = 0x69,
+    CalibrationCurrent = 0x66,
+    CalibrationVoltage = 0x67,
+    Calibrated = 0x68,
+    ZeroOutputOffset = 0x69,
     //Reserved = 0x6A,
     //Reserved = 0x6B,
     //Reserved = 0x6C,
@@ -267,6 +267,8 @@ typedef enum // Controller Config Register
     ClosedLoopTorqueCommand = 0xC8, // Optimized Closed Loop Torque Command Function
     JointStateRegister = 0xC9, // Optimized Closed Loop Joint State Register
 
+    // TODO: Modulation Command
+
 } ControllerCommandRegisters_e;
 
 /* Watchdog Registers */
@@ -274,6 +276,7 @@ typedef enum // Controller Config Register
 {
     CommandTime = 0xCA, // Last received command time
     Timeout = 0xCB, // Timeout in ms
+    // TODO: Deadline missed?
 
 } WatchdogRegisters_e;
 
@@ -383,6 +386,13 @@ struct TorqueControlModeRegister_t
     float Vel_ref; // Velocity Setpoint Reference
     float K_d;     // Velocity Gain N*m/rad/s
     float T_ff;    // Feed Forward Torque Value N*m
+};
+
+struct ModulationControlModeRegister_t
+{
+    float V_d_ref; // Voltage Reference (D Axis)
+    float V_q_ref; // Voltage Reference (Q Axis)
+    float theta;   // Rotor Angle Reference
 };
 
 struct JointState_t

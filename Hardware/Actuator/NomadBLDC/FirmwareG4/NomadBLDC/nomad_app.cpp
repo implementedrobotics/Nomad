@@ -93,10 +93,10 @@ void StartCommunicationThreads()
         Logger::Instance().Print("Unable to load CAN Configuration!\r\n");
         // Load some defaults
 
-        //Start CAN (1mbps Nominal Rate w/ 2mbps Data Rate)
+        //Start CAN (1mbps Nominal Rate w/ 5mbps Data Rate)
         config.bitrate = 1e6;
-        config.d_bitrate = 2e6;
-        config.id = 0x123;
+        config.d_bitrate = 5e6;
+        config.id = 0x15;
         config.mode_fd = 1;
         config.sample_point = 0.80f;    // 80%
         config.d_sample_point = 0.625f; // 62.5%

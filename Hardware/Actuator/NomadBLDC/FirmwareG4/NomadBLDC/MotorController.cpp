@@ -284,17 +284,24 @@ MotorController::MotorController(Motor *motor) : motor_(motor)
 
     RegisterInterface::AddRegister(ControllerStateRegisters_e::ControllerStateRegister2, new Register((ControllerStateRegister2_t *)&state_.V_d_ref, true, sizeof(ControllerStateRegister2_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageControlModeRegister, new Register((VoltageControlModeRegister_t *)&state_.V_d_ref, true, sizeof(VoltageControlModeRegister_t)));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ModulationControlModeRegister, new Register((ModulationControlModeRegister_t *)&state_.V_d_ref, true, sizeof(ModulationControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_D, new Register(&state_.V_d_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::V_Setpoint_Q, new Register(&state_.V_q_ref));
-    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrenteControlModeRegister, new Register((CurrentControlModeRegister_t *)&state_.I_d_ref, true, sizeof(CurrentControlModeRegister_t)));
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::ThetaRef, new Register(&state_.Theta_ref));
+
+    RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentControlModeRegister, new Register((CurrentControlModeRegister_t *)&state_.I_d_ref, true, sizeof(CurrentControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_D, new Register(&state_.I_d_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::I_Setpoint_Q, new Register(&state_.I_q_ref));
+
     RegisterInterface::AddRegister(ControllerStateRegisters_e::TorqueControlModeRegister, new Register((TorqueControlModeRegister_t *)&state_.Pos_ref, true, sizeof(TorqueControlModeRegister_t)));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::PositionSetpoint, new Register(&state_.Pos_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_P, new Register(&state_.K_p));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::VelocitySetpoint, new Register(&state_.Vel_ref));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::K_D, new Register(&state_.K_d));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::Torque_FF, new Register(&state_.T_ff));
+
+
+    
     RegisterInterface::AddRegister(ControllerStateRegisters_e::VoltageBus, new Register(&state_.Voltage_bus));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::CurrentBus, new Register(&state_.I_bus));
     RegisterInterface::AddRegister(ControllerStateRegisters_e::FETTemp, new Register(&state_.fet_temp));

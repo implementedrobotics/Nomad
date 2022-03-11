@@ -162,6 +162,9 @@ public:
         float V_d_ref; // Voltage Reference (D Axis)
         float V_q_ref; // Voltage Reference (Q Axis)
 
+        // Modulation Control Theta Reference
+        float Theta_ref; // Rotor Angle Reference (Optional used primarily for calibration/open loop mode)
+
         // Current Control Setpoints
         float I_d_ref; // Current Reference (D Axis)
         float I_q_ref; // Current Reference (Q Axis)
