@@ -21,7 +21,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ErrorPage from 'Pages/ErrorPage';
 
 function NavigationMenu() {
-    let navigate = useNavigate();
+    const navigate = useNavigate();
 
     const [selectedIndex, setSelectedIndex] = React.useState(0);
 
