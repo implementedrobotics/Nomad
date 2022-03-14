@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 
 // Router
-import { Route, BrowserRouter as Router, Routes, Outlet, useNavigate } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes, Outlet, useNavigate, useRoutes } from 'react-router-dom';
 
 // Pages
 import Home from './Pages/Home';
@@ -10,7 +10,7 @@ import RealtimeVisualizer from './Pages/RealtimeVisualizer';
 import Settings from './Pages/Settings';
 
 // MUI
-import { Box, Paper, Container, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Paper, Container, ListItemButton, ListItemIcon, ListItemText, ThemeProvider } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
 // Icons
@@ -33,6 +33,24 @@ function NavigationMenu() {
                     setSelectedIndex(0);
                 }}
                 selected={selectedIndex === 0}
+                disableRipple
+                sx={{
+                    backgroundColor: true && 'rgba(255,255,255, 0.08)',
+                    borderRadius: 1,
+                    color: 'secondary.main',
+                    fontWeight: true && 'fontWeightBold',
+                    justifyContent: 'flex-start',
+                    px: 3,
+                    textAlign: 'left',
+                    textTransform: 'none',
+                    width: '100%',
+                    '& .MuiButton-startIcon': {
+                        color: 'secondary.main',
+                    },
+                    '&:hover': {
+                        backgroundColor: 'rgba(255,255,255, 0.08)',
+                    },
+                }}
             >
                 <ListItemIcon>
                     <DashboardIcon />
