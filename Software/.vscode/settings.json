@@ -92,5 +92,6 @@
         "regex": "cpp",
         "texgen": "cpp",
         "valarray": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
