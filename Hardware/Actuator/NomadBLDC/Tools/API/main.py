@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Path, Query, HTTPException, status
 from typing import Optional
 from pydantic import BaseModel
+from tinydb import TinyDB, Query
 
+
+db = TinyDB("db.json")
 app = FastAPI()
 
 
