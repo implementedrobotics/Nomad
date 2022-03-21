@@ -4,11 +4,6 @@ sio = socketio.Client()
 
 
 @sio.event
-def message(data):
-    print('I received a message!')
-
-
-@sio.event
 def connect():
     print("Connected!")
 
@@ -21,6 +16,7 @@ def connect_error(data):
 @sio.on('hey')
 def on_message(data):
     print('I received a message!')
+    print(data)
 
 
 sio.connect('http://localhost:8000/', socketio_path="ws/socket.io")

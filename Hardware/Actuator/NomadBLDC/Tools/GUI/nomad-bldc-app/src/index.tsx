@@ -4,6 +4,15 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import { DefaultService } from './client';
+
+async function main() {
+    const response = await DefaultService.getDevicesDevicesGet();
+
+    console.log(response);
+}
+
+main();
 ReactDOM.render(
     <React.StrictMode>
         <App />

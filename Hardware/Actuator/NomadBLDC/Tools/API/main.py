@@ -1,6 +1,10 @@
 # FastAPI
 import asyncio
+import telnetlib
 from fastapi import FastAPI, BackgroundTasks, Path, Query, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.models import Server
+
 import uuid
 
 # Socket IO
@@ -9,10 +13,16 @@ import socketio
 # Models
 from pydantic import BaseModel, Field
 
+# json helpers
+import json
+
 # Types
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
+
+# Models
+from models import CANInterfaceModel, NomadBLDCModel, AddNomadBLDCModel, UpdateNomadBLDCModel, TelemetryData
 
 # DB
 from tinydb import TinyDB, Query, where
@@ -27,6 +37,7 @@ nomad_bldc_device_table = db.table('NOMAD_BLDC_DEVICES')
 Interfaces = Query()
 NomadDevices = Query()
 
+globals()['BLAH'] = 2
 # test = CANInterfaceModel(id=1, bitrate=1000, d_bitrate=3000,
 #                          sample_point=87.5, d_sample_point=63.0, clock_freq=80, mode_fd=1)
 
@@ -46,15 +57,38 @@ NomadDevices = Query()
 # Create Socket IO Server
 sio = socketio.AsyncServer(cors_allowed_origins='*', async_mode='asgi')
 
+
 # Setup our App and Mount SIO sub app
-app = FastAPI()
+app = FastAPI(title="NomadBLDC API",
+              description="API for Nomad BLDC motor controllers",
+              version="0.1",
+              contact={
+                  "name": "Quincy Jones",
+                  "url": "http://www.implementedrobotics.com",
+                  "email": "quincy@implementedrobotics.com",
+              },
+              license_info={
+                  "name": "MIT",
+                  "url": "https://opensource.org/licenses/MIT",
+              },
+              servers=[{"url": "http://localhost:8000", "description": "test"}])
 app.mount('/ws', socketio.ASGIApp(socketio_server=sio, socketio_path="socket.io"))
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class NomadBLDC():
     def __init__(self):
 
-        # TODO: Really on need a wrapper and store PyNomad object
+        # TODO: Really only need a wrapper and store PyNomad object
         self.can_id = 0
         self.connected = False
         self.in_use = False
@@ -95,63 +129,29 @@ class NomadState(int, Enum):
 
 # TODO: Move to models.py
 
-class CANInterfaceModel(BaseModel):
-    id: int = Field(description="The UID of the PEAK CAN Interface/Adapter")
-    bitrate: int = Field(gt=0, le=1000000, default=1000000,
-                         description="CAN BUS desired nominal bitrate (1mbps max)")
-    d_bitrate: int = Field(gt=0, le=5000000, default=5000000,
-                           description="CAN BUS desired data bitrate (5mbps max)")
-    sample_point: float = Field(gt=0, le=100, default=80,
-                                description="CAN BUS desired nominal sample point")
-    d_sample_point: float = Field(gt=0, le=100, default=62.5,
-                                  description="CAN BUS desired data sample point")
-    clock_freq: int = Field(gt=0, le=8000000, default=8000000,
-                            description="PEAK CAN Device Driver Clock Frequency (0-80mhz)")
-    mode_fd: int = Field(ge=0, le=1, default=1,
-                         description="CAN BUS Flexible Data Rate Enable")
-
-
-class NomadBLDCModel(BaseModel):
-    id: str = Field(description="The UID of the Nomad BLDC Device")
-    name: str = Field(description="Friendly name of the Nomad BLDC Device")
-    # can_interface_id: int = Field(default=None,
-    #                               description="The UID of the CAN Transport Device")
-    can_bus_id: int = Field(
-        ge=0, le=31, description="The CAN BUS network identifier")
-    connected: bool = Field(default=False,
-                            description="Connection Status of Nomad BLDC Device")
-    last_connected: datetime = Field(default=None,
-                                     description="The last time Nomad BLDC Device was connected")
-
-
-class UpdateNomadBLDCModel(BaseModel):
-    id: str = Field(description="The UID of the Nomad BLDC Device")
-    name: Optional[str] = Field(
-        description="Friendly name of the Nomad BLDC Device")
-    can_bus_id: Optional[int] = Field(
-        description="The CAN BUS Identifier for Nomad BLDC Device")
-
-
-class AddNomadBLDCModel(BaseModel):
-    name: str = Field(description="Friendly name of the Nomad BLDC Device")
-    can_bus_id: int = Field(
-        description="The CAN BUS Identifier for Nomad BLDC Device")
-
 
 # TODO: Change to "Session Data"
 mutex = {"stop": False}
 
 
+class ResponseMessage(BaseModel):
+    message: str
+
 # TODO: Update Rate as Parameter
+# TODO: Also return if no user connected
+
+
 async def stream_data(update_rate: float):
 
+    test = [{"Name": "X", "type": 'float'},
+            {"Name": "Y", "type": 'float'}]
     i = 0
     while(mutex["stop"] != True):
         i = i + 1
         stop = mutex["stop"]
         print(f"READ DATA: {stop} : {i}")
 
-        await sio.emit('hey', 'joe')
+        await sio.emit('hey', json.dumps(test))
         await asyncio.sleep(update_rate)
 
     print("WE OUT!")
@@ -170,8 +170,9 @@ async def stream_data(update_rate: float):
     # sio.start_background_task(target=read_data)
     # print("WE OUT!")
 
-
 # Socket IO
+
+
 @sio.event
 async def connect(sid, environ, auth):
     print('connect ', sid)
@@ -180,6 +181,7 @@ async def connect(sid, environ, auth):
 
 @sio.event
 def disconnect(sid):
+    mutex["stop"] = True
     print('disconnect ', sid)
 
 
@@ -188,8 +190,9 @@ def root():
     return "NOMAD BLDC API V0.1"
 
 
-@app.get("/devices")
+@app.get("/devices", response_model=List[NomadBLDCModel])
 def get_devices():
+    # return {"message": "Item received"}
     return nomad_bldc_device_table.all()
 
 
@@ -197,9 +200,18 @@ def get_devices():
 def get_device(device_id: str):
     return nomad_bldc_device_table.search(where('id') == device_id)
 
+
+@app.post("/devices")
+def create_device(device: AddNomadBLDCModel) -> NomadBLDCModel:
+    add_device = NomadBLDCModel(
+        id=uuid.uuid4().hex, name=device.name, can_bus_id=device.can_bus_id)
+
+    nomad_bldc_device_table.insert(add_device.dict())
+    return add_device
+
+
 # TODO: Pass CAN INTERFACE DEVICE HERE as query param
 # TODO: Enable Streaming/SocketIO with query param for register
-
 
 @app.get("/devices/connect/{device_id}")
 async def connect_device(device_id: str, background_tasks: BackgroundTasks):
@@ -222,10 +234,7 @@ def connect_device(device_id: str):
     return "STATUS"
 
 
-@app.post("/devices")
-def create_device(device: AddNomadBLDCModel) -> NomadBLDCModel:
-    add_device = NomadBLDCModel(
-        id=uuid.uuid4().hex, name=device.name, can_bus_id=device.can_bus_id)
-
-    nomad_bldc_device_table.insert(add_device.dict())
-    return add_device
+@app.post("/stream")
+def stream_telemetry(telemetry: TelemetryData):
+    print(telemetry)
+    return "Success"

@@ -28,7 +28,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "format": "prettier --write {,*/**/}*.{ts,tsx,json}",
-    "openapi": "openapi-generator-cli generate -i swagger.json -o src/api-client/ -g typescript-axios --skip-validate-spec"
+    "openapi": "openapi-generator-cli generate -i openapi.json -o src/api-client/ -g typescript-axios --skip-validate-spec",
+    "generate-client": "openapi --input http://localhost:8000/openapi.json --output src/client --client fetch"
   },
   "eslintConfig": {
     "extends": [
@@ -57,6 +58,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.29.3",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "openapi-typescript-codegen": "^0.20.1",
     "prettier": "2.5.1"
   }
 }
