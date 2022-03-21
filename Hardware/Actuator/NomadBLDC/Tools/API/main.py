@@ -1,6 +1,5 @@
 # FastAPI
 import asyncio
-import telnetlib
 from fastapi import FastAPI, BackgroundTasks, Path, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.models import Server
