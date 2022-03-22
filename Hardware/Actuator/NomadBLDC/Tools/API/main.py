@@ -36,7 +36,7 @@ nomad_bldc_device_table = db.table('NOMAD_BLDC_DEVICES')
 Interfaces = Query()
 NomadDevices = Query()
 
-globals()['BLAH'] = 2
+# globals()['BLAH'] = 2
 # test = CANInterfaceModel(id=1, bitrate=1000, d_bitrate=3000,
 #                          sample_point=87.5, d_sample_point=63.0, clock_freq=80, mode_fd=1)
 
@@ -73,11 +73,11 @@ app = FastAPI(title="NomadBLDC API",
               servers=[{"url": "http://localhost:8000", "description": "test"}])
 app.mount('/ws', socketio.ASGIApp(socketio_server=sio, socketio_path="socket.io"))
 
-origins = ["*"]
+# origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

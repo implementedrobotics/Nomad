@@ -1,8 +1,8 @@
 // React
-import React, { useEffect } from 'react';
+import React from 'react';
 
 // Router
-import { Route, BrowserRouter as Router, Routes, Outlet, useNavigate, useRoutes } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes, useNavigate } from 'react-router-dom';
 
 // Pages
 import Home from './Pages/Home';
@@ -10,8 +10,7 @@ import RealtimeVisualizer from './Pages/RealtimeVisualizer';
 import Settings from './Pages/Settings';
 
 // MUI
-import { Box, Paper, Container, ListItemButton, ListItemIcon, ListItemText, ThemeProvider } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { Box, Paper, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 
 // Icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -34,23 +33,6 @@ function NavigationMenu() {
                 }}
                 selected={selectedIndex === 0}
                 disableRipple
-                sx={{
-                    backgroundColor: true && 'rgba(255,255,255, 0.08)',
-                    borderRadius: 1,
-                    color: 'secondary.main',
-                    fontWeight: true && 'fontWeightBold',
-                    justifyContent: 'flex-start',
-                    px: 3,
-                    textAlign: 'left',
-                    textTransform: 'none',
-                    width: '100%',
-                    '& .MuiButton-startIcon': {
-                        color: 'secondary.main',
-                    },
-                    '&:hover': {
-                        backgroundColor: 'rgba(255,255,255, 0.08)',
-                    },
-                }}
             >
                 <ListItemIcon>
                     <DashboardIcon />
@@ -63,6 +45,7 @@ function NavigationMenu() {
                     setSelectedIndex(1);
                 }}
                 selected={selectedIndex === 1}
+                disableRipple
             >
                 <ListItemIcon>
                     <TimelineIcon />
@@ -75,6 +58,7 @@ function NavigationMenu() {
                     setSelectedIndex(2);
                 }}
                 selected={selectedIndex === 2}
+                disableRipple
             >
                 <ListItemIcon>
                     <SettingsIcon />
@@ -98,12 +82,20 @@ function App() {
                 >
                     <NavigationMenu />
                 </Paper>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/realtime" element={<RealtimeVisualizer />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<ErrorPage />} />
-                </Routes>
+                <Paper
+                    elevation={4}
+                    square={false}
+                    sx={{
+                        margin: '12px',
+                    }}
+                >
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/realtime" element={<RealtimeVisualizer />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="*" element={<ErrorPage />} />
+                    </Routes>
+                </Paper>
             </Box>
         </Router>
     );
