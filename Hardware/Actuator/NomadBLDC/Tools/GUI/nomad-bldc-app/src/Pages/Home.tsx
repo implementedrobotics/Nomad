@@ -8,6 +8,11 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Avatar, Box, Button, Grid, Stack, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+
+import IconButton from '@mui/material/IconButton';
 
 function createData(name: string, id: number, status: string, voltage: number, current: number, connected: boolean) {
     return { name, id, status, voltage, current, connected };
@@ -16,6 +21,8 @@ function createData(name: string, id: number, status: string, voltage: number, c
 const rows = [createData('KFE', 0x10, 'IDLE', 23.85, 0.45, true), createData('HFE', 0x11, 'FOC', 22.85, 0.35, true)];
 
 export default function Home() {
+    const navigate = useNavigate();
+
     return (
         <Box sx={{ display: 'flex', padding: '12px' }}>
             <Stack>
@@ -52,12 +59,10 @@ export default function Home() {
                                     <TableCell
                                         component="th"
                                         scope="row"
-                                        onMouseEnter={() => {
-                                            console.log('ENTER');
-                                        }}
                                         onClick={() => {
-                                            console.log('SUP');
+                                            navigate('settings');
                                         }}
+                                        sx={{ cursor: 'pointer' }}
                                     >
                                         <Grid container>
                                             <Grid item alignContent="center" lg={3}>
@@ -81,7 +86,15 @@ export default function Home() {
                                         </Grid>
                                     </TableCell>
                                     <TableCell align="right">{row.status}</TableCell>
-                                    <TableCell align="right">CONNECTED</TableCell>
+                                    <TableCell align="right">
+                                        <IconButton
+                                            onClick={() => {
+                                                console.log('Show Menu');
+                                            }}
+                                        >
+                                            <MoreVertIcon />
+                                        </IconButton>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
